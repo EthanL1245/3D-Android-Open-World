@@ -6,6 +6,8 @@ public class FirstPersonController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform cameraTransform;
+    [SerializeField] private MobileJoystick moveJoystick;
+    [SerializeField] private TouchLookArea touchLookArea;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
@@ -13,10 +15,10 @@ public class FirstPersonController : MonoBehaviour
 
     [Header("Look")]
     [SerializeField] private float mouseSensitivity = 0.15f;
+    [SerializeField] private float touchSensitivity = 0.15f;
     [SerializeField] private float maxLookAngle = 80f;
 
     private CharacterController controller;
-
     private float verticalVelocity;
     private float cameraPitch;
 
@@ -27,8 +29,11 @@ public class FirstPersonController : MonoBehaviour
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (!Application.isMobilePlatform)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     private void Update()
@@ -39,23 +44,7 @@ public class FirstPersonController : MonoBehaviour
 
     private void HandleMovement()
     {
-        Vector2 input = Vector2.zero;
-
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.wKey.isPressed)
-                input.y += 1;
-
-            if (Keyboard.current.sKey.isPressed)
-                input.y -= 1;
-
-            if (Keyboard.current.dKey.isPressed)
-                input.x += 1;
-
-            if (Keyboard.current.aKey.isPressed)
-                input.x -= 1;
-        }
-
+        Vector2 input = ReadMovementInput();
         input = Vector2.ClampMagnitude(input, 1f);
 
         Vector3 movement =
@@ -64,7 +53,7 @@ public class FirstPersonController : MonoBehaviour
 
         controller.Move(movement * moveSpeed * Time.deltaTime);
 
-        if (controller.isGrounded && verticalVelocity < 0)
+        if (controller.isGrounded && verticalVelocity < 0f)
         {
             verticalVelocity = -2f;
         }
@@ -73,24 +62,58 @@ public class FirstPersonController : MonoBehaviour
             verticalVelocity += gravity * Time.deltaTime;
         }
 
-        controller.Move(
-            Vector3.up * verticalVelocity * Time.deltaTime
-        );
+        controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+    }
+
+    private Vector2 ReadMovementInput()
+    {
+        Vector2 keyboardInput = Vector2.zero;
+
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.wKey.isPressed)
+                keyboardInput.y += 1f;
+
+            if (Keyboard.current.sKey.isPressed)
+                keyboardInput.y -= 1f;
+
+            if (Keyboard.current.dKey.isPressed)
+                keyboardInput.x += 1f;
+
+            if (Keyboard.current.aKey.isPressed)
+                keyboardInput.x -= 1f;
+        }
+
+        Vector2 mobileInput =
+            moveJoystick != null ? moveJoystick.Value : Vector2.zero;
+
+        return mobileInput.sqrMagnitude > keyboardInput.sqrMagnitude
+            ? mobileInput
+            : keyboardInput;
     }
 
     private void HandleLook()
     {
-        if (Mouse.current == null)
-            return;
+        Vector2 lookDelta = Vector2.zero;
 
-        Vector2 mouseDelta = Mouse.current.delta.ReadValue();
+        if (!Application.isMobilePlatform && Mouse.current != null)
+        {
+            lookDelta += Mouse.current.delta.ReadValue() * mouseSensitivity;
+        }
 
-        float mouseX = mouseDelta.x * mouseSensitivity;
-        float mouseY = mouseDelta.y * mouseSensitivity;
+        if (touchLookArea != null)
+        {
+            Vector2 touchDelta = touchLookArea.ConsumeLookDelta();
 
-        transform.Rotate(Vector3.up * mouseX);
+            float dpi = Screen.dpi > 0f ? Screen.dpi : 160f;
+            float dpiScale = Mathf.Max(1f, dpi / 160f);
 
-        cameraPitch -= mouseY;
+            lookDelta += (touchDelta / dpiScale) * touchSensitivity;
+        }
+
+        transform.Rotate(Vector3.up * lookDelta.x);
+
+        cameraPitch -= lookDelta.y;
         cameraPitch = Mathf.Clamp(
             cameraPitch,
             -maxLookAngle,
