@@ -1,0 +1,10 @@
+<linker>
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.Mesh" preserve="all" />
+    <type fullname="UnityEngine.MeshFilter" preserve="all" />
+    <type fullname="UnityEngine.MeshRenderer" preserve="all" />
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+  </assembly>
+</linker>
