@@ -15,6 +15,8 @@ public class FishingHUD : MonoBehaviour
     private GameObject fightPanel;
     private Image tensionFill;
     private Image progressFill;
+    private Text tensionLabel;
+    private Text progressLabel;
 
     private GameObject inventoryPanel;
     private RectTransform inventoryList;
@@ -133,10 +135,18 @@ public class FishingHUD : MonoBehaviour
         float tension,
         float progress)
     {
+        tension =
+            Mathf.Clamp01(tension);
+
+        progress =
+            Mathf.Clamp01(progress);
+
         if (tensionFill != null)
         {
-            tensionFill.fillAmount =
-                Mathf.Clamp01(tension);
+            SetBarWidth(
+                tensionFill.rectTransform,
+                tension
+            );
 
             tensionFill.color =
                 Color.Lerp(
@@ -160,8 +170,30 @@ public class FishingHUD : MonoBehaviour
 
         if (progressFill != null)
         {
-            progressFill.fillAmount =
-                Mathf.Clamp01(progress);
+            SetBarWidth(
+                progressFill.rectTransform,
+                progress
+            );
+        }
+
+        if (tensionLabel != null)
+        {
+            tensionLabel.text =
+                "TENSION " +
+                Mathf.RoundToInt(
+                    tension * 100f
+                ) +
+                "%";
+        }
+
+        if (progressLabel != null)
+        {
+            progressLabel.text =
+                "CATCH " +
+                Mathf.RoundToInt(
+                    progress * 100f
+                ) +
+                "%";
         }
     }
 
@@ -699,7 +731,8 @@ public class FishingHUD : MonoBehaviour
                 0.78f,
                 0.42f
             ),
-            out tensionFill
+            out tensionFill,
+            out tensionLabel
         );
 
         CreateBar(
@@ -711,7 +744,8 @@ public class FishingHUD : MonoBehaviour
                 0.65f,
                 0.96f
             ),
-            out progressFill
+            out progressFill,
+            out progressLabel
         );
 
         fightPanel.SetActive(false);
@@ -722,16 +756,19 @@ public class FishingHUD : MonoBehaviour
         string label,
         Vector2 position,
         Color fillColor,
-        out Image fill)
+        out Image fill,
+        out Text labelText)
     {
-        Text text =
+        labelText =
             CreateText(
                 label + "Label",
                 parent,
-                label,
+                label + " 0%",
                 18,
                 TextAnchor.MiddleLeft
             );
+
+        Text text = labelText;
 
         RectTransform textRect =
             text.rectTransform;
@@ -797,16 +834,45 @@ public class FishingHUD : MonoBehaviour
         fill =
             fillObject.GetComponent<Image>();
 
-        fill.type = Image.Type.Filled;
-        fill.fillMethod =
-            Image.FillMethod.Horizontal;
+        fill.type = Image.Type.Simple;
+        fill.raycastTarget = false;
 
-        fill.fillOrigin = 0;
-        fill.fillAmount = 0f;
+        RectTransform fillRect =
+            fill.rectTransform;
 
-        StretchFullScreen(
-            fill.rectTransform
-        );
+        fillRect.anchorMin =
+            new Vector2(0f, 0f);
+
+        fillRect.anchorMax =
+            new Vector2(0f, 1f);
+
+        fillRect.pivot =
+            new Vector2(0f, 0.5f);
+
+        fillRect.offsetMin =
+            Vector2.zero;
+
+        fillRect.offsetMax =
+            Vector2.zero;
+    }
+
+    private static void SetBarWidth(
+        RectTransform rect,
+        float amount)
+    {
+        Vector2 min =
+            rect.anchorMin;
+
+        Vector2 max =
+            rect.anchorMax;
+
+        min.x = 0f;
+        max.x = Mathf.Clamp01(amount);
+
+        rect.anchorMin = min;
+        rect.anchorMax = max;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 
     private void BuildInventory()
