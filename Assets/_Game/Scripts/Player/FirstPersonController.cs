@@ -162,8 +162,10 @@ public class FirstPersonController : MonoBehaviour
         bool wantsSprint =
             WantsToSprint(input);
 
+        // Sprint represents the player's held input intent, not whether
+        // CharacterController happens to report grounded this frame.
+        // This keeps sprint stable over bumps and while jumping.
         IsSprinting =
-            grounded &&
             wantsSprint &&
             input.y > 0.15f &&
             inputMagnitude > 0.15f;
