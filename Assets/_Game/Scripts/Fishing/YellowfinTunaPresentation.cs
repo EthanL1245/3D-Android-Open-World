@@ -10,35 +10,42 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.17f;
+    private float swimStrength = 0.085f;
 
     [SerializeField]
-    private float swimSpeed = 8.0f;
+    private float swimSpeed = 7.2f;
 
     [SerializeField]
-    private float bodyYawDegrees = 2.4f;
+    private float bodyYawDegrees = 3.1f;
 
     [SerializeField]
-    private float bodyRollDegrees = 0.55f;
+    private float bodyRollDegrees = 0.65f;
+
+    [SerializeField]
+    private float turnStrength = 0.12f;
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.085f;
+    private float heldStrength = 0.050f;
 
     [SerializeField]
-    private float heldSpeed = 5.5f;
+    private float heldSpeed = 5.0f;
 
     [SerializeField]
-    private float heldYawDegrees = 3.2f;
+    private float heldYawDegrees = 2.7f;
 
     [SerializeField]
-    private float heldRollDegrees = 1.2f;
+    private float heldRollDegrees = 0.9f;
 
     private bool held;
     private float phase;
 
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
+
+    private bool hasPreviousForward;
+    private Vector3 previousForward;
+    private float smoothedTurn;
 
     private static readonly int SwimStrengthId =
         Shader.PropertyToID(
@@ -55,6 +62,16 @@ public class YellowfinTunaPresentation : MonoBehaviour
             "_SwimPhase"
         );
 
+    private static readonly int TurnBendId =
+        Shader.PropertyToID(
+            "_TurnBend"
+        );
+
+    private static readonly int TurnStrengthId =
+        Shader.PropertyToID(
+            "_TurnStrength"
+        );
+
     private void Awake()
     {
         ResolveReferences();
@@ -68,7 +85,14 @@ public class YellowfinTunaPresentation : MonoBehaviour
         block =
             new MaterialPropertyBlock();
 
-        ApplyAnimationSettings();
+        previousForward =
+            GetHorizontalForward();
+
+        hasPreviousForward =
+            previousForward.sqrMagnitude >
+            0.0001f;
+
+        ApplyMaterialSettings();
     }
 
     public void Configure(
@@ -85,22 +109,38 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 new MaterialPropertyBlock();
         }
 
-        ApplyAnimationSettings();
+        ApplyMaterialSettings();
     }
 
     public void SetHeld(bool value)
     {
         held = value;
-        ApplyAnimationSettings();
+
+        if (held)
+        {
+            smoothedTurn = 0f;
+        }
+
+        ApplyMaterialSettings();
     }
 
     private void OnEnable()
     {
         ResolveReferences();
-        ApplyAnimationSettings();
+
+        previousForward =
+            GetHorizontalForward();
+
+        hasPreviousForward =
+            previousForward.sqrMagnitude >
+            0.0001f;
+
+        smoothedTurn = 0f;
+
+        ApplyMaterialSettings();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (visualRoot == null)
             return;
@@ -116,6 +156,8 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 speed +
                 phase
             );
+
+        UpdateTurnBend();
 
         float yaw =
             beat *
@@ -139,6 +181,13 @@ public class YellowfinTunaPresentation : MonoBehaviour
                     : bodyRollDegrees
             );
 
+        if (!held)
+        {
+            roll +=
+                -smoothedTurn *
+                1.4f;
+        }
+
         visualRoot.localRotation =
             visualBaseRotation *
             Quaternion.Euler(
@@ -146,6 +195,102 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 yaw,
                 roll
             );
+
+        ApplyMaterialSettings();
+    }
+
+    private void UpdateTurnBend()
+    {
+        if (held)
+        {
+            smoothedTurn =
+                Mathf.Lerp(
+                    smoothedTurn,
+                    0f,
+                    1f -
+                    Mathf.Exp(
+                        -8f *
+                        Time.deltaTime
+                    )
+                );
+
+            return;
+        }
+
+        Vector3 currentForward =
+            GetHorizontalForward();
+
+        if (currentForward.sqrMagnitude <
+            0.0001f)
+        {
+            return;
+        }
+
+        if (!hasPreviousForward)
+        {
+            previousForward =
+                currentForward;
+
+            hasPreviousForward =
+                true;
+
+            return;
+        }
+
+        float signedAngle =
+            Vector3.SignedAngle(
+                previousForward,
+                currentForward,
+                Vector3.up
+            );
+
+        float degreesPerSecond =
+            Time.deltaTime > 0.0001f
+                ? signedAngle /
+                  Time.deltaTime
+                : 0f;
+
+        float targetTurn =
+            Mathf.Clamp(
+                degreesPerSecond /
+                95f,
+                -1f,
+                1f
+            );
+
+        smoothedTurn =
+            Mathf.Lerp(
+                smoothedTurn,
+                targetTurn,
+                1f -
+                Mathf.Exp(
+                    -6.5f *
+                    Time.deltaTime
+                )
+            );
+
+        previousForward =
+            currentForward;
+    }
+
+    private Vector3 GetHorizontalForward()
+    {
+        Vector3 forward =
+            transform.forward;
+
+        forward =
+            Vector3.ProjectOnPlane(
+                forward,
+                Vector3.up
+            );
+
+        if (forward.sqrMagnitude >
+            0.0001f)
+        {
+            forward.Normalize();
+        }
+
+        return forward;
     }
 
     private void ResolveReferences()
@@ -174,7 +319,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         }
     }
 
-    private void ApplyAnimationSettings()
+    private void ApplyMaterialSettings()
     {
         if (renderers == null ||
             renderers.Length == 0)
@@ -197,6 +342,11 @@ public class YellowfinTunaPresentation : MonoBehaviour
             held
                 ? heldSpeed
                 : swimSpeed;
+
+        float turn =
+            held
+                ? 0f
+                : smoothedTurn;
 
         foreach (Renderer renderer
                  in renderers)
@@ -221,6 +371,16 @@ public class YellowfinTunaPresentation : MonoBehaviour
             block.SetFloat(
                 SwimPhaseId,
                 phase
+            );
+
+            block.SetFloat(
+                TurnBendId,
+                turn
+            );
+
+            block.SetFloat(
+                TurnStrengthId,
+                turnStrength
             );
 
             renderer.SetPropertyBlock(

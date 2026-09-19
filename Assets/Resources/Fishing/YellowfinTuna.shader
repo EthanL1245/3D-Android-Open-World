@@ -13,9 +13,11 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Rear Bend Strength", Float) = 0.17
-        _SwimSpeed ("Tail Beat Speed", Float) = 8.0
+        _SwimStrength ("Body Flex Strength", Float) = 0.085
+        _SwimSpeed ("Tail Beat Speed", Float) = 7.2
         _SwimPhase ("Swim Phase", Float) = 0
+        _TurnBend ("Turn Bend", Range(-1,1)) = 0
+        _TurnStrength ("Turn Flex Strength", Float) = 0.12
     }
 
     SubShader
@@ -58,6 +60,8 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
+                float _TurnBend;
+                float _TurnStrength;
             CBUFFER_END
 
             struct Attributes
@@ -104,42 +108,50 @@ Shader "OpenWorld/YellowfinTuna"
                         1.0 - normalizedBody;
                 }
 
-                // 0 through the front 68% of the fish.
-                // The deformation then rises smoothly toward the tail.
-                float rearAmount =
+                // One coherent fish beat: no traveling wave.
+                // The body begins flexing gently after the front quarter,
+                // increases through the rear half, and is strongest at the tail.
+                float bodyFlex =
+                    saturate(
+                        (tailPosition - 0.24) /
+                        0.76
+                    );
+
+                bodyFlex =
+                    bodyFlex *
+                    bodyFlex *
+                    (
+                        3.0 -
+                        2.0 * bodyFlex
+                    );
+
+                float rearFlex =
                     saturate(
                         (tailPosition - 0.52) /
                         0.48
                     );
 
-                rearAmount =
-                    rearAmount *
-                    rearAmount *
+                rearFlex =
+                    rearFlex *
+                    rearFlex *
                     (
                         3.0 -
-                        2.0 * rearAmount
+                        2.0 * rearFlex
                     );
 
-                float tailAmount =
+                float tailFlex =
                     saturate(
                         (tailPosition - 0.80) /
                         0.20
                     );
 
-                tailAmount =
-                    tailAmount *
-                    tailAmount *
+                tailFlex =
+                    tailFlex *
+                    tailFlex *
                     (
                         3.0 -
-                        2.0 * tailAmount
+                        2.0 * tailFlex
                     );
-
-                float tailDistance =
-                    max(
-                        0.0,
-                        tailPosition - 0.52
-                    ) *
-                    bodyRange;
 
                 float beat =
                     sin(
@@ -148,16 +160,27 @@ Shader "OpenWorld/YellowfinTuna"
                         _SwimPhase
                     );
 
+                float swimProfile =
+                    bodyFlex * 0.18 +
+                    rearFlex * 0.34 +
+                    tailFlex * 0.48;
+
+                float turnProfile =
+                    bodyFlex * 0.22 +
+                    rearFlex * 0.40 +
+                    tailFlex * 0.38;
+
                 float sideOffset =
                     beat *
                     _SwimStrength *
-                    tailDistance *
-                    rearAmount *
-                    (
-                        0.34 +
-                        rearAmount * 0.30 +
-                        tailAmount * 0.56
-                    );
+                    bodyRange *
+                    swimProfile;
+
+                sideOffset +=
+                    _TurnBend *
+                    _TurnStrength *
+                    bodyRange *
+                    turnProfile;
 
                 positionOS +=
                     normalize(
