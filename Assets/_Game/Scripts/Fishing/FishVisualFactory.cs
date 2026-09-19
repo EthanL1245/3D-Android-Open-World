@@ -10,6 +10,9 @@ public static class FishVisualFactory
         new Dictionary<int, Material>();
 
     private static Mesh tailMesh;
+    private static GameObject heroYellowtailPrefab;
+
+    private const int HeroYellowtailSpeciesId = 3;
 
     public static GameObject CreateFish(
         string name,
@@ -19,6 +22,20 @@ public static class FishVisualFactory
     {
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
+
+        if (speciesId ==
+            HeroYellowtailSpeciesId)
+        {
+            GameObject hero =
+                CreateHeroYellowtail(
+                    name,
+                    parent,
+                    scale
+                );
+
+            if (hero != null)
+                return hero;
+        }
 
         GameObject root =
             new GameObject(name);
@@ -131,6 +148,43 @@ public static class FishVisualFactory
             GetAccentMaterial(speciesId);
 
         return root;
+    }
+
+    private static GameObject CreateHeroYellowtail(
+        string name,
+        Transform parent,
+        float scale)
+    {
+        if (heroYellowtailPrefab == null)
+        {
+            heroYellowtailPrefab =
+                Resources.Load<GameObject>(
+                    "Fishing/HeroYellowtail"
+                );
+        }
+
+        if (heroYellowtailPrefab == null)
+            return null;
+
+        GameObject instance =
+            Object.Instantiate(
+                heroYellowtailPrefab
+            );
+
+        instance.name = name;
+
+        if (parent != null)
+        {
+            instance.transform.SetParent(
+                parent,
+                false
+            );
+        }
+
+        instance.transform.localScale =
+            Vector3.one * scale;
+
+        return instance;
     }
 
     private static Material GetBodyMaterial(int speciesId)

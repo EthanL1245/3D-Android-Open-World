@@ -221,6 +221,14 @@ public class FishingSystem : MonoBehaviour
                 )
             );
 
+        HeroFishAnimator heroAnimator =
+            heldFishVisual.GetComponent<HeroFishAnimator>();
+
+        if (heroAnimator != null)
+        {
+            heroAnimator.SetHeld(true);
+        }
+
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
