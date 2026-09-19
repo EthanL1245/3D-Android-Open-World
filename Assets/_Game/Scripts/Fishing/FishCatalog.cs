@@ -9,6 +9,7 @@ public struct FishSpeciesDefinition
     public float MaxWeightKg;
     public float Difficulty;
     public float RelativeChance;
+    public int BaseSellCoins;
 
     public FishSpeciesDefinition(
         string name,
@@ -17,7 +18,8 @@ public struct FishSpeciesDefinition
         float minWeightKg,
         float maxWeightKg,
         float difficulty,
-        float relativeChance)
+        float relativeChance,
+        int baseSellCoins)
     {
         Name = name;
         BodyColor = bodyColor;
@@ -26,6 +28,7 @@ public struct FishSpeciesDefinition
         MaxWeightKg = maxWeightKg;
         Difficulty = difficulty;
         RelativeChance = relativeChance;
+        BaseSellCoins = baseSellCoins;
     }
 }
 
@@ -40,7 +43,8 @@ public static class FishCatalog
             0.25f,
             1.10f,
             0.25f,
-            42f
+            42f,
+            16
         ),
         new FishSpeciesDefinition(
             "Red Snapper",
@@ -49,7 +53,8 @@ public static class FishCatalog
             0.70f,
             3.20f,
             0.42f,
-            26f
+            26f,
+            34
         ),
         new FishSpeciesDefinition(
             "Sea Bass",
@@ -58,7 +63,8 @@ public static class FishCatalog
             0.90f,
             4.80f,
             0.52f,
-            18f
+            18f,
+            52
         ),
         new FishSpeciesDefinition(
             "Yellowtail",
@@ -67,7 +73,8 @@ public static class FishCatalog
             1.40f,
             6.50f,
             0.68f,
-            10f
+            10f,
+            92
         ),
         new FishSpeciesDefinition(
             "Young Tuna",
@@ -76,7 +83,8 @@ public static class FishCatalog
             2.50f,
             10.00f,
             0.82f,
-            4f
+            4f,
+            175
         )
     };
 
@@ -112,17 +120,71 @@ public static class FishCatalog
 
     public static float RollWeight(int speciesId)
     {
-        FishSpeciesDefinition definition = Get(speciesId);
+        FishSpeciesDefinition definition =
+            Get(speciesId);
 
         float t = Random.value;
 
-        // Bias toward ordinary-sized catches while still allowing trophies.
         t = t * t;
 
         return Mathf.Lerp(
             definition.MinWeightKg,
             definition.MaxWeightKg,
             t
+        );
+    }
+
+    public static int GetSellValue(
+        int speciesId,
+        float weightKg)
+    {
+        FishSpeciesDefinition species =
+            Get(speciesId);
+
+        float weightPercent =
+            Mathf.InverseLerp(
+                species.MinWeightKg,
+                species.MaxWeightKg,
+                weightKg
+            );
+
+        float weightMultiplier =
+            Mathf.Lerp(
+                0.70f,
+                1.90f,
+                weightPercent
+            );
+
+        return Mathf.Max(
+            1,
+            Mathf.RoundToInt(
+                species.BaseSellCoins *
+                weightMultiplier
+            )
+        );
+    }
+
+    public static float GetVisualScale(
+        int speciesId,
+        float weightKg)
+    {
+        FishSpeciesDefinition species =
+            Get(speciesId);
+
+        float weightPercent =
+            Mathf.InverseLerp(
+                species.MinWeightKg,
+                species.MaxWeightKg,
+                weightKg
+            );
+
+        return Mathf.Lerp(
+            0.68f,
+            1.42f,
+            Mathf.Pow(
+                weightPercent,
+                0.72f
+            )
         );
     }
 }

@@ -215,14 +215,9 @@ public class FishingSystem : MonoBehaviour
                     .Name,
                 heldFishAnchor,
                 record.speciesId,
-                Mathf.Lerp(
-                    0.72f,
-                    1.20f,
-                    Mathf.InverseLerp(
-                        0.2f,
-                        8f,
-                        record.weightKg
-                    )
+                FishCatalog.GetVisualScale(
+                    record.speciesId,
+                    record.weightKg
                 )
             );
 

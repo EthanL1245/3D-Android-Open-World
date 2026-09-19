@@ -51,9 +51,37 @@ public class FishingInventory : MonoBehaviour
         fish.Add(record);
         Save();
 
-        Changed?.Invoke();
+        return fish.Count - 1;
+    }
+
+    public int AddExistingFish(
+        CaughtFishRecord record)
+    {
+        if (record == null)
+            return -1;
+
+        fish.Add(record);
+        Save();
 
         return fish.Count - 1;
+    }
+
+    public CaughtFishRecord RemoveFishAt(
+        int index)
+    {
+        if (index < 0 ||
+            index >= fish.Count)
+        {
+            return null;
+        }
+
+        CaughtFishRecord record =
+            fish[index];
+
+        fish.RemoveAt(index);
+        Save();
+
+        return record;
     }
 
     private void Load()
@@ -107,5 +135,7 @@ public class FishingInventory : MonoBehaviour
         );
 
         PlayerPrefs.Save();
+
+        Changed?.Invoke();
     }
 }
