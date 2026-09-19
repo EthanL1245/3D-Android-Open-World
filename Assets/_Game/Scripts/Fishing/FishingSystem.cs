@@ -457,8 +457,8 @@ public class FishingSystem : MonoBehaviour
     {
         state = FishingState.Fighting;
 
-        fightTension = 0.36f;
-        fightProgress = 0.04f;
+        fightTension = 0.30f;
+        fightProgress = 0.08f;
         lineBreakTimer = 0f;
         fightTime = 0f;
         surgeAmount = 0f;
@@ -534,9 +534,9 @@ public class FishingSystem : MonoBehaviour
             fightTension +=
                 Time.deltaTime *
                 (
-                    0.34f +
+                    0.24f +
                     naturalResistance *
-                    0.48f
+                    0.34f
                 );
 
             float safeFactor =
@@ -550,12 +550,12 @@ public class FishingSystem : MonoBehaviour
             fightProgress +=
                 Time.deltaTime *
                 Mathf.Lerp(
+                    0.19f,
                     0.12f,
-                    0.075f,
                     species.Difficulty
                 ) *
                 Mathf.Lerp(
-                    0.28f,
+                    0.40f,
                     1f,
                     safeFactor
                 );
@@ -565,17 +565,17 @@ public class FishingSystem : MonoBehaviour
             fightTension -=
                 Time.deltaTime *
                 Mathf.Lerp(
-                    0.42f,
-                    0.28f,
+                    0.50f,
+                    0.36f,
                     species.Difficulty
                 );
 
             fightProgress -=
                 Time.deltaTime *
                 (
-                    0.012f +
+                    0.005f +
                     naturalResistance *
-                    0.018f
+                    0.008f
                 );
         }
 
@@ -641,7 +641,13 @@ public class FishingSystem : MonoBehaviour
             fightProgress
         );
 
-        if (lineBreakTimer >= 0.30f)
+        hud.SetStatus(
+            reeling
+                ? "REELING - watch tension!"
+                : "RESTING LINE - tension falling..."
+        );
+
+        if (lineBreakTimer >= 0.55f)
         {
             FailFishing(
                 "SNAP! Too much tension."
