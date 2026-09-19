@@ -301,8 +301,7 @@ public static class VisualWorldSetup
 
         if (created)
         {
-            layer =
-                ScriptableObject.CreateInstance<TerrainLayer>();
+            layer = new TerrainLayer();
 
             layer.name =
                 System.IO.Path.GetFileNameWithoutExtension(path);
