@@ -949,6 +949,7 @@ public class TankFishAgent : MonoBehaviour
     private float speed;
     private float phase;
     private float retargetTimer;
+    private YellowfinTunaPresentation tunaPresentation;
 
     public void Configure(float offset)
     {
@@ -962,6 +963,9 @@ public class TankFishAgent : MonoBehaviour
 
         tail =
             transform.Find("Tail");
+
+        tunaPresentation =
+            GetComponent<YellowfinTunaPresentation>();
 
         PickTarget(true);
     }
@@ -992,13 +996,37 @@ public class TankFishAgent : MonoBehaviour
                     Vector3.up
                 );
 
+            if (tunaPresentation != null)
+            {
+                float signedTurn =
+                    Vector3.SignedAngle(
+                        transform.forward,
+                        direction.normalized,
+                        Vector3.up
+                    );
+
+                tunaPresentation.SetAquariumTurn(
+                    Mathf.Clamp(
+                        signedTurn /
+                        38f,
+                        -1f,
+                        1f
+                    )
+                );
+            }
+
+            float turnResponsiveness =
+                tunaPresentation != null
+                    ? 1.55f
+                    : 2.5f;
+
             transform.localRotation =
                 Quaternion.Slerp(
                     transform.localRotation,
                     desired,
                     1f -
                     Mathf.Exp(
-                        -2.5f *
+                        -turnResponsiveness *
                         Time.deltaTime
                     )
                 );

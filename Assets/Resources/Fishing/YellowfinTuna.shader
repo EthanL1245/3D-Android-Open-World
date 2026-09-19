@@ -13,11 +13,11 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Body Flex Strength", Float) = 0.085
-        _SwimSpeed ("Tail Beat Speed", Float) = 7.2
+        _SwimStrength ("Body Flex Strength", Float) = 0.18
+        _SwimSpeed ("Tail Beat Speed", Float) = 6.8
         _SwimPhase ("Swim Phase", Float) = 0
         _TurnBend ("Turn Bend", Range(-1,1)) = 0
-        _TurnStrength ("Turn Flex Strength", Float) = 0.12
+        _TurnStrength ("Turn Flex Strength", Float) = 0.34
     }
 
     SubShader
@@ -108,13 +108,13 @@ Shader "OpenWorld/YellowfinTuna"
                         1.0 - normalizedBody;
                 }
 
-                // One coherent fish beat: no traveling wave.
-                // The body begins flexing gently after the front quarter,
-                // increases through the rear half, and is strongest at the tail.
+                // One coherent beat across the body.
+                // The head stays stable, the mid-body participates visibly,
+                // and the tail receives the largest displacement.
                 float bodyFlex =
                     saturate(
-                        (tailPosition - 0.24) /
-                        0.76
+                        (tailPosition - 0.12) /
+                        0.88
                     );
 
                 bodyFlex =
@@ -127,8 +127,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float rearFlex =
                     saturate(
-                        (tailPosition - 0.52) /
-                        0.48
+                        (tailPosition - 0.42) /
+                        0.58
                     );
 
                 rearFlex =
@@ -141,8 +141,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float tailFlex =
                     saturate(
-                        (tailPosition - 0.80) /
-                        0.20
+                        (tailPosition - 0.74) /
+                        0.26
                     );
 
                 tailFlex =
@@ -160,15 +160,11 @@ Shader "OpenWorld/YellowfinTuna"
                         _SwimPhase
                     );
 
+                // Same phase everywhere: stronger tuna flex, not an eel wave.
                 float swimProfile =
-                    bodyFlex * 0.18 +
-                    rearFlex * 0.34 +
-                    tailFlex * 0.48;
-
-                float turnProfile =
-                    bodyFlex * 0.22 +
-                    rearFlex * 0.40 +
-                    tailFlex * 0.38;
+                    bodyFlex * 0.30 +
+                    rearFlex * 0.38 +
+                    tailFlex * 0.32;
 
                 float sideOffset =
                     beat *
@@ -176,11 +172,17 @@ Shader "OpenWorld/YellowfinTuna"
                     bodyRange *
                     swimProfile;
 
+                // Turning is a single C-shaped curve:
+                // almost no displacement at the head, progressively more toward the tail.
+                float turnCurve =
+                    bodyFlex *
+                    bodyFlex;
+
                 sideOffset +=
                     _TurnBend *
                     _TurnStrength *
                     bodyRange *
-                    turnProfile;
+                    turnCurve;
 
                 positionOS +=
                     normalize(

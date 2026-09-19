@@ -10,29 +10,29 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.085f;
+    private float swimStrength = 0.18f;
 
     [SerializeField]
-    private float swimSpeed = 7.2f;
+    private float swimSpeed = 6.8f;
 
     [SerializeField]
-    private float bodyYawDegrees = 3.1f;
+    private float bodyYawDegrees = 4.8f;
 
     [SerializeField]
-    private float bodyRollDegrees = 0.65f;
+    private float bodyRollDegrees = 0.9f;
 
     [SerializeField]
-    private float turnStrength = 0.12f;
+    private float turnStrength = 0.34f;
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.050f;
+    private float heldStrength = 0.095f;
 
     [SerializeField]
     private float heldSpeed = 5.0f;
 
     [SerializeField]
-    private float heldYawDegrees = 2.7f;
+    private float heldYawDegrees = 4.0f;
 
     [SerializeField]
     private float heldRollDegrees = 0.9f;
@@ -46,6 +46,8 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private bool hasPreviousForward;
     private Vector3 previousForward;
     private float smoothedTurn;
+    private float externalTurnTarget;
+    private bool hasExternalTurnTarget;
 
     private static readonly int SwimStrengthId =
         Shader.PropertyToID(
@@ -119,9 +121,26 @@ public class YellowfinTunaPresentation : MonoBehaviour
         if (held)
         {
             smoothedTurn = 0f;
+            externalTurnTarget = 0f;
+            hasExternalTurnTarget = false;
         }
 
         ApplyMaterialSettings();
+    }
+
+    public void SetAquariumTurn(float normalizedTurn)
+    {
+        if (held)
+            return;
+
+        externalTurnTarget =
+            Mathf.Clamp(
+                normalizedTurn,
+                -1f,
+                1f
+            );
+
+        hasExternalTurnTarget = true;
     }
 
     private void OnEnable()
@@ -250,13 +269,18 @@ public class YellowfinTunaPresentation : MonoBehaviour
                   Time.deltaTime
                 : 0f;
 
-        float targetTurn =
+        float measuredTurn =
             Mathf.Clamp(
                 degreesPerSecond /
-                95f,
+                70f,
                 -1f,
                 1f
             );
+
+        float targetTurn =
+            hasExternalTurnTarget
+                ? externalTurnTarget
+                : measuredTurn;
 
         smoothedTurn =
             Mathf.Lerp(
@@ -264,10 +288,29 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 targetTurn,
                 1f -
                 Mathf.Exp(
-                    -6.5f *
+                    -9.0f *
                     Time.deltaTime
                 )
             );
+
+        externalTurnTarget =
+            Mathf.Lerp(
+                externalTurnTarget,
+                0f,
+                1f -
+                Mathf.Exp(
+                    -4.0f *
+                    Time.deltaTime
+                )
+            );
+
+        if (Mathf.Abs(
+                externalTurnTarget) <
+            0.01f)
+        {
+            hasExternalTurnTarget =
+                false;
+        }
 
         previousForward =
             currentForward;

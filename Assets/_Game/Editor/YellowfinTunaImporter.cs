@@ -155,7 +155,7 @@ public static class YellowfinTunaImporter
 
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna Movement Fixed",
-                "Rebuilt the existing Tuna without re-selecting the ZIP. The front quarter stays stable, the middle body flexes gently, the rear body flexes more, and the tail moves most. Aquarium turns now also bend the body into the corner instead of rotating the fish like a rigid object.",
+                "Rebuilt the existing Tuna without re-selecting the ZIP. This version has visibly stronger mid-body and rear-body flex, plus explicit aquarium turn bending. During corners the tank AI now tells the Tuna how hard it is turning so the mesh forms a noticeable C-curve instead of rotating like a rigid plank.",
                 "OK"
             );
         }
