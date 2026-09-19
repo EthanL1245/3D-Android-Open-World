@@ -21,6 +21,10 @@ public static class MovementPolishSetup
         GeneratedFolder +
         "/JumpButton.png";
 
+    private const string SprintSpritePath =
+        GeneratedFolder +
+        "/SprintIndicator.png";
+
     [MenuItem("Tools/Open World/Setup Movement Polish")]
     public static void SetupMovementPolish()
     {
@@ -81,9 +85,15 @@ public static class MovementPolishSetup
         Sprite jumpSprite =
             CreateOrUpdateJumpSprite();
 
-        StyleJoystick(
-            circleSprite
-        );
+        Sprite sprintSprite =
+            CreateOrUpdateSprintSprite();
+
+        GameObject sprintIndicator =
+            StyleJoystick(
+                canvas,
+                circleSprite,
+                sprintSprite
+            );
 
         MobileActionButton jumpButton =
             CreateOrUpdateJumpButton(
@@ -94,6 +104,31 @@ public static class MovementPolishSetup
         controller.SetJumpButton(
             jumpButton
         );
+
+        SerializedObject controllerSettings =
+            new SerializedObject(controller);
+
+        controllerSettings
+            .FindProperty("mobileSprintMagnitude")
+            .floatValue = 0.98f;
+
+        controllerSettings
+            .FindProperty("mobileSprintForward")
+            .floatValue = 0.88f;
+
+        controllerSettings
+            .FindProperty("mobileSprintHoldTime")
+            .floatValue = 0.18f;
+
+        controllerSettings
+            .FindProperty("mobileSprintReleaseMagnitude")
+            .floatValue = 0.82f;
+
+        controllerSettings
+            .FindProperty("mobileSprintReleaseForward")
+            .floatValue = 0.68f;
+
+        controllerSettings.ApplyModifiedProperties();
 
         EditorUtility.SetDirty(
             controller
@@ -184,12 +219,19 @@ public static class MovementPolishSetup
                         center
                     );
 
-                float alpha =
-                    1f -
-                    Mathf.SmoothStep(
+                float edge =
+                    Mathf.InverseLerp(
                         radius - 2.5f,
                         radius + 0.5f,
                         distance
+                    );
+
+                float alpha =
+                    1f -
+                    Mathf.SmoothStep(
+                        0f,
+                        1f,
+                        edge
                     );
 
                 pixels[y * size + x] =
@@ -276,12 +318,19 @@ public static class MovementPolishSetup
                         center
                     );
 
-                float edgeAlpha =
-                    1f -
-                    Mathf.SmoothStep(
+                float edge =
+                    Mathf.InverseLerp(
                         radius - 3f,
                         radius + 0.5f,
                         distance
+                    );
+
+                float edgeAlpha =
+                    1f -
+                    Mathf.SmoothStep(
+                        0f,
+                        1f,
+                        edge
                     );
 
                 Color color =
@@ -345,6 +394,81 @@ public static class MovementPolishSetup
             );
     }
 
+    private static Sprite CreateOrUpdateSprintSprite()
+    {
+        const int width = 160;
+        const int height = 100;
+
+        Texture2D texture =
+            new Texture2D(
+                width,
+                height,
+                TextureFormat.RGBA32,
+                false
+            );
+
+        Color[] pixels =
+            new Color[width * height];
+
+        Color arrow =
+            new Color(
+                0.70f,
+                0.96f,
+                1f,
+                1f
+            );
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float nx =
+                    (x - width * 0.5f) /
+                    (width * 0.5f);
+
+                float ny =
+                    (y - height * 0.5f) /
+                    (height * 0.5f);
+
+                bool lowerChevron =
+                    ny > -0.55f &&
+                    ny < 0.05f &&
+                    Mathf.Abs(
+                        Mathf.Abs(nx) -
+                        (ny + 0.55f) * 0.58f
+                    ) < 0.10f;
+
+                bool upperChevron =
+                    ny > -0.05f &&
+                    ny < 0.55f &&
+                    Mathf.Abs(
+                        Mathf.Abs(nx) -
+                        (ny + 0.05f) * 0.58f
+                    ) < 0.10f;
+
+                pixels[y * width + x] =
+                    (lowerChevron || upperChevron)
+                        ? arrow
+                        : Color.clear;
+            }
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        WriteSpritePng(
+            texture,
+            SprintSpritePath
+        );
+
+        Object.DestroyImmediate(texture);
+
+        return AssetDatabase
+            .LoadAssetAtPath<Sprite>(
+                SprintSpritePath
+            );
+    }
+
     private static void WriteSpritePng(
         Texture2D texture,
         string assetPath)
@@ -397,8 +521,10 @@ public static class MovementPolishSetup
         importer.SaveAndReimport();
     }
 
-    private static void StyleJoystick(
-        Sprite circleSprite)
+    private static GameObject StyleJoystick(
+        Canvas canvas,
+        Sprite circleSprite,
+        Sprite sprintSprite)
     {
         MobileJoystick joystick =
             Object.FindFirstObjectByType<MobileJoystick>();
@@ -406,7 +532,29 @@ public static class MovementPolishSetup
         if (joystick == null ||
             circleSprite == null)
         {
-            return;
+            return null;
+        }
+
+        RectTransform backgroundRect =
+            joystick.transform
+                as RectTransform;
+
+        if (backgroundRect != null)
+        {
+            backgroundRect.anchorMin =
+                new Vector2(0f, 0f);
+
+            backgroundRect.anchorMax =
+                new Vector2(0f, 0f);
+
+            backgroundRect.pivot =
+                new Vector2(0.5f, 0.5f);
+
+            backgroundRect.sizeDelta =
+                new Vector2(350f, 350f);
+
+            backgroundRect.anchoredPosition =
+                new Vector2(250f, 250f);
         }
 
         Image background =
@@ -454,14 +602,26 @@ public static class MovementPolishSetup
         }
 
         if (handleTransform == null)
-            return;
+            return null;
 
         Image handle =
             handleTransform
                 .GetComponent<Image>();
 
         if (handle == null)
-            return;
+            return null;
+
+        RectTransform handleRect =
+            handleTransform as RectTransform;
+
+        if (handleRect != null)
+        {
+            handleRect.sizeDelta =
+                new Vector2(120f, 120f);
+
+            handleRect.anchoredPosition =
+                Vector2.zero;
+        }
 
         Undo.RecordObject(
             handle,
@@ -486,6 +646,98 @@ public static class MovementPolishSetup
             false;
 
         EditorUtility.SetDirty(handle);
+
+        GameObject sprintIndicator =
+            CreateOrUpdateSprintIndicator(
+                canvas,
+                sprintSprite
+            );
+
+        joystick.ConfigureVisuals(
+            background,
+            handle,
+            sprintIndicator
+        );
+
+        EditorUtility.SetDirty(
+            joystick
+        );
+
+        return sprintIndicator;
+    }
+
+    private static GameObject CreateOrUpdateSprintIndicator(
+        Canvas canvas,
+        Sprite sprintSprite)
+    {
+        Transform existing =
+            canvas.transform.Find(
+                "SprintIndicator"
+            );
+
+        GameObject indicator;
+
+        if (existing == null)
+        {
+            indicator =
+                new GameObject(
+                    "SprintIndicator",
+                    typeof(RectTransform),
+                    typeof(CanvasRenderer),
+                    typeof(Image)
+                );
+
+            Undo.RegisterCreatedObjectUndo(
+                indicator,
+                "Create Sprint Indicator"
+            );
+
+            indicator.transform.SetParent(
+                canvas.transform,
+                false
+            );
+        }
+        else
+        {
+            indicator = existing.gameObject;
+
+            if (indicator.GetComponent<Image>() == null)
+            {
+                Undo.AddComponent<Image>(
+                    indicator
+                );
+            }
+        }
+
+        RectTransform rect =
+            indicator.GetComponent<RectTransform>();
+
+        rect.anchorMin =
+            new Vector2(0f, 0f);
+
+        rect.anchorMax =
+            new Vector2(0f, 0f);
+
+        rect.pivot =
+            new Vector2(0.5f, 0.5f);
+
+        rect.sizeDelta =
+            new Vector2(120f, 80f);
+
+        rect.anchoredPosition =
+            new Vector2(250f, 465f);
+
+        Image image =
+            indicator.GetComponent<Image>();
+
+        image.sprite = sprintSprite;
+        image.color = Color.white;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+
+        indicator.SetActive(false);
+
+        return indicator;
     }
 
     private static MobileActionButton CreateOrUpdateJumpButton(
