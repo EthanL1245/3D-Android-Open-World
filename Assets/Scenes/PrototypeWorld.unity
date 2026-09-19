@@ -1934,6 +1934,8 @@ GameObject:
   - component: {fileID: 563612115}
   - component: {fileID: 563612114}
   - component: {fileID: 563612116}
+  - component: {fileID: 563612118}
+  - component: {fileID: 563612117}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2022,6 +2024,42 @@ MonoBehaviour:
   maxLookAngle: 80
   sprintFovBoost: 4
   fovLerpSpeed: 7
+--- !u!114 &563612117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563612113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dd1848a1d688514ea23bc312750f9c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingSystem
+  playerCamera: {fileID: 1981048264}
+  oceanWater: {fileID: 1680097373}
+  inventory: {fileID: 563612118}
+  gameplayCanvas: {fileID: 787409816}
+  preferredCastDistance: 16
+  minimumCastDistance: 5
+  maximumCastDistance: 28
+  castDuration: 0.72
+  minimumBiteDelay: 2.5
+  maximumBiteDelay: 6
+  hookWindow: 1.35
+--- !u!114 &563612118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 563612113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: baa82ae37e9069e4e9f990e1e2df3788, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingInventory
+  fish: []
 --- !u!1001 &570998556
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5387,6 +5425,57 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5598485611185294350, guid: e36e30bf86a2c3a4d945b335a9f6ee54, type: 3}
   m_PrefabInstance: {fileID: 1590133968}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1599781408
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1599781410}
+  - component: {fileID: 1599781409}
+  m_Layer: 0
+  m_Name: FishingWorld
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1599781409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599781408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4b87646190d7c84b9c1d80cf68b0c01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AmbientFishManager
+  oceanWater: {fileID: 1680097373}
+  player: {fileID: 563612115}
+  fishCount: 18
+  minRadius: 8
+  maxRadius: 36
+  minDepth: 1.2
+  maxDepth: 5.5
+--- !u!4 &1599781410
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599781408}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1624845068
 GameObject:
   m_ObjectHideFlags: 0
@@ -7479,3 +7568,4 @@ SceneRoots:
   - {fileID: 1637494230}
   - {fileID: 1680097376}
   - {fileID: 820977146}
+  - {fileID: 1599781410}
