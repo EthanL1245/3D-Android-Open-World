@@ -126,7 +126,8 @@ public static class YellowfinTunaImporter
 
             MeshAnalysis analysis =
                 AnalyzeMesh(
-                    sourceFilter.sharedMesh
+                    sourceFilter.sharedMesh,
+                    sourceFilter.transform
                 );
 
             Material material =
@@ -154,7 +155,7 @@ public static class YellowfinTunaImporter
 
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna Movement Fixed",
-                "Rebuilt the existing Tuna without re-selecting the ZIP. It now preserves upright orientation, faces the correct swimming direction, and only bends through the rear body/tail instead of moving like a snake.",
+                "Rebuilt the existing Tuna without re-selecting the ZIP. The importer now uses the FBX's authored object scale to resolve anatomy correctly, so Y stays up, Z is side-to-side, the head faces forward, and only the rear body/tail bends.",
                 "OK"
             );
         }
@@ -269,7 +270,8 @@ public static class YellowfinTunaImporter
 
             MeshAnalysis analysis =
                 AnalyzeMesh(
-                    mesh
+                    mesh,
+                    sourceFilter.transform
                 );
 
             EditorUtility.DisplayProgressBar(
@@ -652,22 +654,55 @@ public static class YellowfinTunaImporter
     }
 
     private static MeshAnalysis AnalyzeMesh(
-        Mesh mesh)
+        Mesh mesh,
+        Transform meshTransform)
     {
         Bounds bounds =
             mesh.bounds;
 
-        Vector3 size =
-            bounds.size;
+        // The source FBX has intentionally non-uniform object scaling.
+        // Raw mesh bounds alone therefore misidentify Y/Z.
+        // Determine anatomical axes after accounting for the authored scale.
+        Matrix4x4 matrix =
+            meshTransform.localToWorldMatrix;
+
+        Vector3 authoredScale =
+            new Vector3(
+                matrix.GetColumn(0).magnitude,
+                matrix.GetColumn(1).magnitude,
+                matrix.GetColumn(2).magnitude
+            );
+
+        authoredScale =
+            new Vector3(
+                Mathf.Max(
+                    authoredScale.x,
+                    0.0001f
+                ),
+                Mathf.Max(
+                    authoredScale.y,
+                    0.0001f
+                ),
+                Mathf.Max(
+                    authoredScale.z,
+                    0.0001f
+                )
+            );
+
+        Vector3 authoredSize =
+            Vector3.Scale(
+                bounds.size,
+                authoredScale
+            );
 
         int lengthIndex =
             LargestAxisIndex(
-                size
+                authoredSize
             );
 
         int sideIndex =
             SmallestAxisIndex(
-                size
+                authoredSize
             );
 
         int upIndex =
@@ -711,6 +746,23 @@ public static class YellowfinTunaImporter
                 bodyMax
             );
 
+        Debug.Log(
+            "Yellowfin Tuna anatomy: body=" +
+            AxisName(lengthIndex) +
+            ", up=" +
+            AxisName(upIndex) +
+            ", side=" +
+            AxisName(sideIndex) +
+            ", tail=" +
+            (
+                tailAtMin
+                    ? "negative body end"
+                    : "positive body end"
+            ) +
+            ", authored size=" +
+            authoredSize
+        );
+
         return new MeshAnalysis
         {
             bodyAxis = bodyAxis,
@@ -720,6 +772,22 @@ public static class YellowfinTunaImporter
             bodyMax = bodyMax,
             tailAtMin = tailAtMin
         };
+    }
+
+    private static string AxisName(
+        int index)
+    {
+        switch (index)
+        {
+            case 0:
+                return "X";
+
+            case 1:
+                return "Y";
+
+            default:
+                return "Z";
+        }
     }
 
     private static int LargestAxisIndex(
@@ -1221,8 +1289,8 @@ public static class YellowfinTunaImporter
         // Never infer or overwrite roll/pitch from mesh bounds.
         Vector3 headAxisLocal =
             analysis.tailAtMin
-                ? -analysis.bodyAxis
-                : analysis.bodyAxis;
+                ? analysis.bodyAxis
+                : -analysis.bodyAxis;
 
         Vector3 headWorld =
             meshFilter.transform
