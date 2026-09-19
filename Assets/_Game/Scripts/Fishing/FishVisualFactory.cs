@@ -11,6 +11,7 @@ public static class FishVisualFactory
 
     private static Mesh tailMesh;
     private static GameObject heroYellowtailPrefab;
+    private static GameObject yellowfinTunaPrefab;
 
     private const int HeroYellowtailSpeciesId = 3;
 
@@ -67,6 +68,21 @@ public static class FishVisualFactory
 
             if (hero != null)
                 return hero;
+        }
+
+        if (allowHero &&
+            speciesId ==
+            FishCatalog.YellowfinTunaId)
+        {
+            GameObject tuna =
+                CreateYellowfinTuna(
+                    name,
+                    parent,
+                    scale
+                );
+
+            if (tuna != null)
+                return tuna;
         }
 
         GameObject root =
@@ -202,6 +218,43 @@ public static class FishVisualFactory
         GameObject instance =
             Object.Instantiate(
                 heroYellowtailPrefab
+            );
+
+        instance.name = name;
+
+        if (parent != null)
+        {
+            instance.transform.SetParent(
+                parent,
+                false
+            );
+        }
+
+        instance.transform.localScale =
+            Vector3.one * scale;
+
+        return instance;
+    }
+
+    private static GameObject CreateYellowfinTuna(
+        string name,
+        Transform parent,
+        float scale)
+    {
+        if (yellowfinTunaPrefab == null)
+        {
+            yellowfinTunaPrefab =
+                Resources.Load<GameObject>(
+                    "Fishing/YellowfinTuna"
+                );
+        }
+
+        if (yellowfinTunaPrefab == null)
+            return null;
+
+        GameObject instance =
+            Object.Instantiate(
+                yellowfinTunaPrefab
             );
 
         instance.name = name;

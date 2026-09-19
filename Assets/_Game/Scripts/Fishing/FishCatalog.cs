@@ -34,6 +34,7 @@ public struct FishSpeciesDefinition
 
 public static class FishCatalog
 {
+    public const int YellowfinTunaId = 5;
     private static readonly FishSpeciesDefinition[] Species =
     {
         new FishSpeciesDefinition(
@@ -85,6 +86,16 @@ public static class FishCatalog
             0.82f,
             4f,
             175
+        ),
+        new FishSpeciesDefinition(
+            "Yellowfin Tuna",
+            new Color(0.07f, 0.18f, 0.30f),
+            new Color(0.96f, 0.72f, 0.08f),
+            4.00f,
+            28.00f,
+            0.90f,
+            2.0f,
+            280
         )
     };
 

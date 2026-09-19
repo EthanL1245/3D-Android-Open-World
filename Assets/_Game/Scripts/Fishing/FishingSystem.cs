@@ -58,6 +58,9 @@ public class FishingSystem : MonoBehaviour
 
     private Terrain terrain;
 
+    private const string YellowfinPreviewGrantKey =
+        "OpenWorld.YellowfinTunaPreviewGrant.v1";
+
     public FishingInventory Inventory => inventory;
 
     private void Start()
@@ -77,6 +80,8 @@ public class FishingSystem : MonoBehaviour
         }
 
         terrain = Terrain.activeTerrain;
+
+        GrantYellowfinPreviewOnce();
 
         CreateRodAndLine();
         CreateHeldFishAnchor();
@@ -229,6 +234,14 @@ public class FishingSystem : MonoBehaviour
             heroAnimator.SetHeld(true);
         }
 
+        YellowfinTunaPresentation tunaPresentation =
+            heldFishVisual.GetComponent<YellowfinTunaPresentation>();
+
+        if (tunaPresentation != null)
+        {
+            tunaPresentation.SetHeld(true);
+        }
+
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
@@ -261,6 +274,35 @@ public class FishingSystem : MonoBehaviour
             hud.ShowFightMeters(false);
             hud.SetInventoryOpen(false);
         }
+    }
+
+    private void GrantYellowfinPreviewOnce()
+    {
+        if (inventory == null)
+            return;
+
+        if (PlayerPrefs.GetInt(
+                YellowfinPreviewGrantKey,
+                0) != 0)
+        {
+            return;
+        }
+
+        inventory.AddFish(
+            FishCatalog.YellowfinTunaId,
+            14.50f
+        );
+
+        PlayerPrefs.SetInt(
+            YellowfinPreviewGrantKey,
+            1
+        );
+
+        PlayerPrefs.Save();
+
+        Debug.Log(
+            "Granted one temporary 14.50 kg Yellowfin Tuna preview catch. This one-time development grant will be removed after the imported fish is approved."
+        );
     }
 
     private void ResolveReferences()
