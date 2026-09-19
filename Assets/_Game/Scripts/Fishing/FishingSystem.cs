@@ -61,6 +61,9 @@ public class FishingSystem : MonoBehaviour
     private const string YellowfinPreviewGrantKey =
         "OpenWorld.YellowfinTunaPreviewGrant.v2";
 
+    private const string GoatfishPreviewGrantKey =
+        "OpenWorld.GoatfishPreviewGrant.v1";
+
     public FishingInventory Inventory => inventory;
 
     private void Start()
@@ -82,6 +85,7 @@ public class FishingSystem : MonoBehaviour
         terrain = Terrain.activeTerrain;
 
         GrantYellowfinPreviewOnce();
+        GrantGoatfishPreviewOnce();
 
         CreateRodAndLine();
         CreateHeldFishAnchor();
@@ -242,6 +246,14 @@ public class FishingSystem : MonoBehaviour
             tunaPresentation.SetHeld(true);
         }
 
+        GoatfishPresentation goatfishPresentation =
+            heldFishVisual.GetComponent<GoatfishPresentation>();
+
+        if (goatfishPresentation != null)
+        {
+            goatfishPresentation.SetHeld(true);
+        }
+
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
@@ -302,6 +314,40 @@ public class FishingSystem : MonoBehaviour
 
         Debug.Log(
             "Granted one temporary 14.50 kg Yellowfin Tuna preview catch. This one-time development grant will be removed after the imported fish is approved."
+        );
+    }
+
+    private void GrantGoatfishPreviewOnce()
+    {
+        if (inventory == null)
+            return;
+
+        if (PlayerPrefs.GetInt(
+                GoatfishPreviewGrantKey,
+                0) != 0)
+        {
+            return;
+        }
+
+        inventory.AddFish(
+            FishCatalog.YellowGoatfishId,
+            1.25f
+        );
+
+        inventory.AddFish(
+            FishCatalog.BlackSpotGoatfishId,
+            1.10f
+        );
+
+        PlayerPrefs.SetInt(
+            GoatfishPreviewGrantKey,
+            1
+        );
+
+        PlayerPrefs.Save();
+
+        Debug.Log(
+            "Granted one temporary Yellow Goatfish and one temporary Black Spot Goatfish for animation testing."
         );
     }
 

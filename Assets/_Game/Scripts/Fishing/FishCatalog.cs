@@ -35,6 +35,8 @@ public struct FishSpeciesDefinition
 public static class FishCatalog
 {
     public const int YellowfinTunaId = 5;
+    public const int YellowGoatfishId = 6;
+    public const int BlackSpotGoatfishId = 7;
     private static readonly FishSpeciesDefinition[] Species =
     {
         new FishSpeciesDefinition(
@@ -96,6 +98,26 @@ public static class FishCatalog
             0.90f,
             2.0f,
             280
+        ),
+        new FishSpeciesDefinition(
+            "Yellow Goatfish",
+            new Color(0.78f, 0.76f, 0.62f),
+            new Color(0.96f, 0.78f, 0.08f),
+            0.35f,
+            2.40f,
+            0.46f,
+            13.0f,
+            48
+        ),
+        new FishSpeciesDefinition(
+            "Black Spot Goatfish",
+            new Color(0.72f, 0.73f, 0.70f),
+            new Color(0.22f, 0.18f, 0.15f),
+            0.30f,
+            2.10f,
+            0.43f,
+            14.0f,
+            44
         )
     };
 

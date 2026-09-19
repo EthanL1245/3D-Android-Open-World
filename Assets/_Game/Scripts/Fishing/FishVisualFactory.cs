@@ -12,6 +12,8 @@ public static class FishVisualFactory
     private static Mesh tailMesh;
     private static GameObject heroYellowtailPrefab;
     private static GameObject yellowfinTunaPrefab;
+    private static GameObject yellowGoatfishPrefab;
+    private static GameObject blackSpotGoatfishPrefab;
 
     private const int HeroYellowtailSpeciesId = 3;
 
@@ -83,6 +85,26 @@ public static class FishVisualFactory
 
             if (tuna != null)
                 return tuna;
+        }
+
+        if (allowHero &&
+            (
+                speciesId ==
+                FishCatalog.YellowGoatfishId ||
+                speciesId ==
+                FishCatalog.BlackSpotGoatfishId
+            ))
+        {
+            GameObject goatfish =
+                CreateGoatfish(
+                    name,
+                    parent,
+                    speciesId,
+                    scale
+                );
+
+            if (goatfish != null)
+                return goatfish;
         }
 
         GameObject root =
@@ -255,6 +277,67 @@ public static class FishVisualFactory
         GameObject instance =
             Object.Instantiate(
                 yellowfinTunaPrefab
+            );
+
+        instance.name = name;
+
+        if (parent != null)
+        {
+            instance.transform.SetParent(
+                parent,
+                false
+            );
+        }
+
+        instance.transform.localScale =
+            Vector3.one * scale;
+
+        return instance;
+    }
+
+    private static GameObject CreateGoatfish(
+        string name,
+        Transform parent,
+        int speciesId,
+        float scale)
+    {
+        GameObject prefab = null;
+
+        if (speciesId ==
+            FishCatalog.YellowGoatfishId)
+        {
+            if (yellowGoatfishPrefab == null)
+            {
+                yellowGoatfishPrefab =
+                    Resources.Load<GameObject>(
+                        "Fishing/YellowGoatfish"
+                    );
+            }
+
+            prefab =
+                yellowGoatfishPrefab;
+        }
+        else if (speciesId ==
+                 FishCatalog.BlackSpotGoatfishId)
+        {
+            if (blackSpotGoatfishPrefab == null)
+            {
+                blackSpotGoatfishPrefab =
+                    Resources.Load<GameObject>(
+                        "Fishing/BlackSpotGoatfish"
+                    );
+            }
+
+            prefab =
+                blackSpotGoatfishPrefab;
+        }
+
+        if (prefab == null)
+            return null;
+
+        GameObject instance =
+            Object.Instantiate(
+                prefab
             );
 
         instance.name = name;
