@@ -107,3 +107,6 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Unity Android IL2CPP backup output generated next to development APK builds
+/*_BackUpThisFolder_ButDontShipItWithYourGame/

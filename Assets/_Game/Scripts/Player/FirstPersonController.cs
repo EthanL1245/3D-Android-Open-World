@@ -8,10 +8,17 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private MobileJoystick moveJoystick;
     [SerializeField] private TouchLookArea touchLookArea;
+    [SerializeField] private OceanWater oceanWater;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float gravity = -20f;
+
+    [Header("Swimming")]
+    [SerializeField] private float swimSpeed = 3.8f;
+    [SerializeField] private float swimEnterDepth = 0.45f;
+    [SerializeField] private float floatingBodyDepth = 0.55f;
+    [SerializeField] private float buoyancyStrength = 1.6f;
 
     [Header("Look")]
     [SerializeField] private float mouseSensitivity = 0.15f;
@@ -22,9 +29,16 @@ public class FirstPersonController : MonoBehaviour
     private float verticalVelocity;
     private float cameraPitch;
 
+    public bool IsSwimming { get; private set; }
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+
+        if (oceanWater == null)
+        {
+            oceanWater = FindFirstObjectByType<OceanWater>();
+        }
     }
 
     private void Start()
@@ -42,11 +56,29 @@ public class FirstPersonController : MonoBehaviour
         HandleLook();
     }
 
+    public void SetOceanWater(OceanWater water)
+    {
+        oceanWater = water;
+    }
+
     private void HandleMovement()
     {
-        Vector2 input = ReadMovementInput();
-        input = Vector2.ClampMagnitude(input, 1f);
+        Vector2 input = Vector2.ClampMagnitude(ReadMovementInput(), 1f);
 
+        UpdateSwimmingState();
+
+        if (IsSwimming)
+        {
+            HandleSwimming(input);
+        }
+        else
+        {
+            HandleWalking(input);
+        }
+    }
+
+    private void HandleWalking(Vector2 input)
+    {
         Vector3 movement =
             transform.right * input.x +
             transform.forward * input.y;
@@ -63,6 +95,73 @@ public class FirstPersonController : MonoBehaviour
         }
 
         controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+    }
+
+    private void HandleSwimming(Vector2 input)
+    {
+        verticalVelocity = 0f;
+
+        Transform lookTransform =
+            cameraTransform != null ? cameraTransform : transform;
+
+        Vector3 swimDirection =
+            lookTransform.forward * input.y +
+            lookTransform.right * input.x;
+
+        float verticalInput = ReadKeyboardSwimVerticalInput();
+        swimDirection += Vector3.up * verticalInput;
+
+        swimDirection = Vector3.ClampMagnitude(swimDirection, 1f);
+
+        float waterHeight = oceanWater.GetSurfaceHeight(transform.position);
+        float bodyHeight = transform.position.y + controller.center.y;
+        float targetBodyHeight = waterHeight - floatingBodyDepth;
+
+        float surfaceAssist = Mathf.Clamp(
+            (targetBodyHeight - bodyHeight) * buoyancyStrength,
+            -1.2f,
+            1.4f
+        );
+
+        // Let intentional movement overpower buoyancy so looking down and
+        // swimming forward naturally dives beneath the surface.
+        float assistMultiplier =
+            input.sqrMagnitude > 0.04f || Mathf.Abs(verticalInput) > 0.01f
+                ? 0.45f
+                : 1f;
+
+        Vector3 velocity =
+            swimDirection * swimSpeed +
+            Vector3.up * surfaceAssist * assistMultiplier;
+
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void UpdateSwimmingState()
+    {
+        if (oceanWater == null)
+        {
+            oceanWater = FindFirstObjectByType<OceanWater>();
+
+            if (oceanWater == null)
+            {
+                IsSwimming = false;
+                return;
+            }
+        }
+
+        float waterHeight = oceanWater.GetSurfaceHeight(transform.position);
+        float bodyHeight = transform.position.y + controller.center.y;
+
+        if (IsSwimming)
+        {
+            // Small hysteresis prevents rapid switching while bobbing at the surface.
+            IsSwimming = bodyHeight < waterHeight + 0.30f;
+        }
+        else
+        {
+            IsSwimming = bodyHeight < waterHeight - swimEnterDepth;
+        }
     }
 
     private Vector2 ReadMovementInput()
@@ -90,6 +189,22 @@ public class FirstPersonController : MonoBehaviour
         return mobileInput.sqrMagnitude > keyboardInput.sqrMagnitude
             ? mobileInput
             : keyboardInput;
+    }
+
+    private float ReadKeyboardSwimVerticalInput()
+    {
+        if (Keyboard.current == null)
+            return 0f;
+
+        float value = 0f;
+
+        if (Keyboard.current.spaceKey.isPressed)
+            value += 1f;
+
+        if (Keyboard.current.leftCtrlKey.isPressed)
+            value -= 1f;
+
+        return value;
     }
 
     private void HandleLook()
@@ -120,7 +235,10 @@ public class FirstPersonController : MonoBehaviour
             maxLookAngle
         );
 
-        cameraTransform.localRotation =
-            Quaternion.Euler(cameraPitch, 0f, 0f);
+        if (cameraTransform != null)
+        {
+            cameraTransform.localRotation =
+                Quaternion.Euler(cameraPitch, 0f, 0f);
+        }
     }
 }
