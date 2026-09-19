@@ -1023,12 +1023,19 @@ public class FishingSystem : MonoBehaviour
         fishingLine.endWidth = 0.004f;
 
         Shader lineShader =
-            Shader.Find(
-                "Universal Render Pipeline/Unlit"
+            Resources.Load<Shader>(
+                "Fishing/FishingUnlit"
             );
 
         if (lineShader == null)
-            lineShader = Shader.Find("Unlit/Color");
+        {
+            Debug.LogError(
+                "Missing Resources/Fishing/FishingUnlit shader."
+            );
+
+            enabled = false;
+            return;
+        }
 
         Material lineMaterial =
             new Material(lineShader);
@@ -1176,12 +1183,18 @@ public class FishingSystem : MonoBehaviour
         float smoothness)
     {
         Shader shader =
-            Shader.Find(
-                "Universal Render Pipeline/Lit"
+            Resources.Load<Shader>(
+                "Fishing/FishingLit"
             );
 
         if (shader == null)
-            shader = Shader.Find("Standard");
+        {
+            Debug.LogError(
+                "Missing Resources/Fishing/FishingLit shader."
+            );
+
+            return null;
+        }
 
         Material material =
             new Material(shader);
