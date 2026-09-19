@@ -1007,7 +1007,7 @@ public class TankFishAgent : MonoBehaviour
 
                 tunaPresentation.SetAquariumTurn(
                     Mathf.Clamp(
-                        signedTurn /
+                        -signedTurn /
                         38f,
                         -1f,
                         1f

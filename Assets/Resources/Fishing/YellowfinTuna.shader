@@ -17,7 +17,7 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimSpeed ("Tail Beat Speed", Float) = 6.8
         _SwimPhase ("Swim Phase", Float) = 0
         _TurnBend ("Turn Bend", Range(-1,1)) = 0
-        _TurnStrength ("Turn Flex Strength", Float) = 0.34
+        _TurnStrength ("Turn Flex Strength", Float) = 0.40
     }
 
     SubShader
@@ -162,9 +162,9 @@ Shader "OpenWorld/YellowfinTuna"
 
                 // Same phase everywhere: stronger tuna flex, not an eel wave.
                 float swimProfile =
-                    bodyFlex * 0.30 +
+                    bodyFlex * 0.36 +
                     rearFlex * 0.38 +
-                    tailFlex * 0.32;
+                    tailFlex * 0.26;
 
                 float sideOffset =
                     beat *

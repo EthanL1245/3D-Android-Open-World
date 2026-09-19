@@ -26,16 +26,16 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.095f;
+    private float heldStrength = 0.145f;
 
     [SerializeField]
-    private float heldSpeed = 5.0f;
+    private float heldSpeed = 5.8f;
 
     [SerializeField]
-    private float heldYawDegrees = 4.0f;
+    private float heldYawDegrees = 2.2f;
 
     [SerializeField]
-    private float heldRollDegrees = 0.9f;
+    private float heldRollDegrees = 1.6f;
 
     private bool held;
     private float phase;
@@ -48,6 +48,13 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float smoothedTurn;
     private float externalTurnTarget;
     private bool hasExternalTurnTarget;
+
+    [Header("Held Escape Motion")]
+    [SerializeField]
+    private float heldEscapeBend = 0.62f;
+
+    [SerializeField]
+    private float heldEscapeSpeed = 4.6f;
 
     private static readonly int SwimStrengthId =
         Shader.PropertyToID(
@@ -388,7 +395,13 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
         float turn =
             held
-                ? 0f
+                ? Mathf.Sin(
+                    Time.time *
+                    heldEscapeSpeed +
+                    phase +
+                    0.45f
+                  ) *
+                  heldEscapeBend
                 : smoothedTurn;
 
         foreach (Renderer renderer
@@ -423,7 +436,9 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
             block.SetFloat(
                 TurnStrengthId,
-                turnStrength
+                held
+                    ? turnStrength * 1.35f
+                    : turnStrength
             );
 
             renderer.SetPropertyBlock(
