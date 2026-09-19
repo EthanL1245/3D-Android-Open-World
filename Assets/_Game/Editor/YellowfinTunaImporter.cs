@@ -37,7 +37,7 @@ public static class YellowfinTunaImporter
         "OpenWorld.YellowfinTunaPreviewGrant.v2";
 
     private const float TargetBodyLength =
-        0.78f;
+        0.82f;
 
     [Serializable]
     private class PreviewFishRecord
@@ -152,7 +152,7 @@ public static class YellowfinTunaImporter
 
             EditorUtility.DisplayProgressBar(
                 "Yellowfin Tuna",
-                "Creating the wet-skin material and attached body animation...",
+                "Creating the natural fish material and subtle attached swim...",
                 0.51f
             );
 
@@ -195,7 +195,7 @@ public static class YellowfinTunaImporter
 
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna Replaced",
-                "Done. The old rig/animation pipeline was removed.\n\nThis version uses your clean authored fish as ONE intact mesh, your supplied texture, and a lightweight GPU body/tail swim so fins cannot separate from the body.\n\nMesh: " +
+                "Done. The old rig/animation pipeline was removed.\n\nThis version preserves the FBX's original upright orientation and only applies yaw if needed for gameplay forward. It uses your clean authored fish as ONE intact mesh, your supplied texture, and a very subtle GPU body/tail swim so fins stay attached. The material has also been made much less glossy/plastic.\n\nMesh: " +
                 mesh.vertexCount +
                 " vertices, about " +
                 triangles +
@@ -817,12 +817,12 @@ public static class YellowfinTunaImporter
 
         material.SetFloat(
             "_Smoothness",
-            0.62f
+            0.34f
         );
 
         material.SetFloat(
             "_FresnelStrength",
-            0.22f
+            0.055f
         );
 
         material.SetVector(
@@ -854,12 +854,12 @@ public static class YellowfinTunaImporter
 
         material.SetFloat(
             "_SwimStrength",
-            0.012f
+            0.0065f
         );
 
         material.SetFloat(
             "_SwimSpeed",
-            3.4f
+            3.15f
         );
 
         material.enableInstancing = true;
@@ -1094,6 +1094,9 @@ public static class YellowfinTunaImporter
         if (meshFilter == null)
             return;
 
+        // Preserve the FBX's authored upright orientation.
+        // Only rotate around world Y so the head faces gameplay +Z.
+        // Never infer or overwrite roll/pitch from mesh bounds.
         Vector3 headAxisLocal =
             analysis.tailAtMin
                 ? analysis.bodyAxis
@@ -1105,36 +1108,37 @@ public static class YellowfinTunaImporter
                     headAxisLocal
                 );
 
-        Vector3 upWorld =
-            meshFilter.transform
-                .TransformDirection(
-                    analysis.upAxis
-                );
-
-        Vector3 headInVisual =
-            visual
-                .InverseTransformDirection(
-                    headWorld
-                )
-                .normalized;
-
-        Vector3 upInVisual =
-            visual
-                .InverseTransformDirection(
-                    upWorld
-                )
-                .normalized;
-
-        Quaternion sourceBasis =
-            Quaternion.LookRotation(
-                headInVisual,
-                upInVisual
+        Vector3 horizontalHead =
+            Vector3.ProjectOnPlane(
+                headWorld,
+                Vector3.up
             );
 
-        visual.localRotation =
-            Quaternion.Inverse(
-                sourceBasis
+        if (horizontalHead.sqrMagnitude <
+            0.0001f)
+        {
+            Debug.LogWarning(
+                "Yellowfin Tuna forward axis could not be resolved horizontally. Keeping the FBX's original orientation unchanged."
             );
+
+            return;
+        }
+
+        horizontalHead.Normalize();
+
+        float yaw =
+            Vector3.SignedAngle(
+                horizontalHead,
+                Vector3.forward,
+                Vector3.up
+            );
+
+        visual.rotation =
+            Quaternion.AngleAxis(
+                yaw,
+                Vector3.up
+            ) *
+            visual.rotation;
     }
 
     private static void NormalizeAndCenter(

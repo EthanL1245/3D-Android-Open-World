@@ -4,8 +4,8 @@ Shader "OpenWorld/YellowfinTuna"
     {
         _BaseMap ("Yellowfin Texture", 2D) = "white" {}
         _BaseColor ("Tint", Color) = (1,1,1,1)
-        _Smoothness ("Skin Smoothness", Range(0,1)) = 0.62
-        _FresnelStrength ("Wet Edge Highlight", Range(0,1)) = 0.22
+        _Smoothness ("Skin Smoothness", Range(0,1)) = 0.34
+        _FresnelStrength ("Wet Edge Highlight", Range(0,1)) = 0.055
 
         _BodyAxis ("Body Axis", Vector) = (1,0,0,0)
         _SideAxis ("Side Axis", Vector) = (0,1,0,0)
@@ -13,8 +13,8 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Swim Strength", Float) = 0.012
-        _SwimSpeed ("Swim Speed", Float) = 3.4
+        _SwimStrength ("Swim Strength", Float) = 0.0065
+        _SwimSpeed ("Swim Speed", Float) = 3.15
         _SwimPhase ("Swim Phase", Float) = 0
     }
 
@@ -258,11 +258,11 @@ Shader "OpenWorld/YellowfinTuna"
                 float3 color =
                     baseColor *
                     (
-                        ambient * 0.72 +
+                        ambient * 0.82 +
                         mainLight.color *
                         (
-                            0.24 +
-                            ndotl * 0.76
+                            0.20 +
+                            ndotl * 0.80
                         )
                     );
 
@@ -270,8 +270,8 @@ Shader "OpenWorld/YellowfinTuna"
                     mainLight.color *
                     specular *
                     lerp(
-                        0.18,
-                        0.48,
+                        0.06,
+                        0.20,
                         _Smoothness
                     );
 
@@ -279,9 +279,9 @@ Shader "OpenWorld/YellowfinTuna"
                     fresnel *
                     _FresnelStrength *
                     float3(
+                        0.08,
                         0.12,
-                        0.20,
-                        0.22
+                        0.13
                     );
 
                 return half4(
