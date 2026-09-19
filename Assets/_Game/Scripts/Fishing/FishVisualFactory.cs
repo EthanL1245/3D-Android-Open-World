@@ -182,12 +182,18 @@ public static class FishVisualFactory
     private static Material CreateLitMaterial(Color color)
     {
         Shader shader =
-            Shader.Find(
-                "Universal Render Pipeline/Lit"
+            Resources.Load<Shader>(
+                "Fishing/FishingLit"
             );
 
         if (shader == null)
-            shader = Shader.Find("Standard");
+        {
+            Debug.LogError(
+                "Missing Resources/Fishing/FishingLit shader."
+            );
+
+            return null;
+        }
 
         Material material =
             new Material(shader);
