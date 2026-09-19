@@ -13,8 +13,8 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Tail Angle", Float) = 0.045
-        _SwimSpeed ("Tail Speed", Float) = 3.25
+        _SwimStrength ("Rear Bend Strength", Float) = 0.18
+        _SwimSpeed ("Tail Beat Speed", Float) = 7.0
         _SwimPhase ("Swim Phase", Float) = 0
     }
 
@@ -75,122 +75,71 @@ Shader "OpenWorld/YellowfinTuna"
                 float2 uv : TEXCOORD2;
             };
 
-            float3 RotateAroundAxis(
-                float3 point,
-                float3 pivot,
-                float3 axis,
-                float angle)
+            float3 DeformFish(float3 positionOS)
             {
-                float3 relative =
-                    point - pivot;
-
-                float sine =
-                    sin(angle);
-
-                float cosine =
-                    cos(angle);
-
-                return
-                    pivot +
-                    relative * cosine +
-                    cross(
-                        axis,
-                        relative
-                    ) * sine +
-                    axis *
-                    dot(
-                        axis,
-                        relative
-                    ) *
-                    (1.0 - cosine);
-            }
-
-            float3 DeformPosition(float3 positionOS)
-            {
-                float range =
+                float bodyRange =
                     max(
                         0.0001,
                         _BodyMax - _BodyMin
                     );
 
-                float along =
+                float alongBody =
                     dot(
                         positionOS,
                         _BodyAxis.xyz
                     );
 
-                float normalized =
+                float normalizedBody =
                     saturate(
-                        (along - _BodyMin) /
-                        range
+                        (alongBody - _BodyMin) /
+                        bodyRange
                     );
 
-                // 0 at the head, 1 at the tail.
                 float tailPosition =
-                    _TailAtMin > 0.5
-                        ? 1.0 - normalized
-                        : normalized;
+                    normalizedBody;
 
-                // Tuna keep the front of the body comparatively rigid.
-                // Only the rear third participates, with the tail doing most of the work.
-                float rearWeight =
-                    smoothstep(
-                        0.66,
-                        0.88,
-                        tailPosition
-                    );
-
-                float tailWeight =
-                    smoothstep(
-                        0.84,
-                        1.0,
-                        tailPosition
-                    );
-
-                if (rearWeight <= 0.0001)
+                if (_TailAtMin > 0.5)
                 {
-                    return positionOS;
+                    tailPosition =
+                        1.0 - normalizedBody;
                 }
 
-                float3 headToTailAxis =
-                    _TailAtMin > 0.5
-                        ? -normalize(
-                            _BodyAxis.xyz
-                        )
-                        : normalize(
-                            _BodyAxis.xyz
-                        );
-
-                float3 sideAxis =
-                    normalize(
-                        _SideAxis.xyz
+                // 0 through the front 68% of the fish.
+                // The deformation then rises smoothly toward the tail.
+                float rearAmount =
+                    saturate(
+                        (tailPosition - 0.68) /
+                        0.32
                     );
 
-                float3 upAxis =
-                    normalize(
-                        cross(
-                            headToTailAxis,
-                            sideAxis
-                        )
+                rearAmount =
+                    rearAmount *
+                    rearAmount *
+                    (
+                        3.0 -
+                        2.0 * rearAmount
                     );
 
-                float pivotNormalized =
-                    _TailAtMin > 0.5
-                        ? 1.0 - 0.66
-                        : 0.66;
-
-                float pivotAlong =
-                    lerp(
-                        _BodyMin,
-                        _BodyMax,
-                        pivotNormalized
+                float tailAmount =
+                    saturate(
+                        (tailPosition - 0.88) /
+                        0.12
                     );
 
-                float3 pivot =
-                    normalize(
-                        _BodyAxis.xyz
+                tailAmount =
+                    tailAmount *
+                    tailAmount *
+                    (
+                        3.0 -
+                        2.0 * tailAmount
+                    );
+
+                float tailDistance =
+                    max(
+                        0.0,
+                        tailPosition - 0.68
                     ) *
-                    pivotAlong;
+                    bodyRange;
 
                 float beat =
                     sin(
@@ -199,86 +148,52 @@ Shader "OpenWorld/YellowfinTuna"
                         _SwimPhase
                     );
 
-                // Rear body bends a few degrees.
-                float rearAngle =
+                float sideOffset =
                     beat *
                     _SwimStrength *
-                    rearWeight;
-
-                // The caudal fin adds a little extra snap without creating a body wave.
-                float tailAngle =
-                    beat *
-                    _SwimStrength *
-                    0.85 *
-                    tailWeight;
-
-                float3 bent =
-                    RotateAroundAxis(
-                        positionOS,
-                        pivot,
-                        upAxis,
-                        rearAngle
+                    tailDistance *
+                    rearAmount *
+                    (
+                        0.78 +
+                        tailAmount * 0.42
                     );
 
-                if (tailWeight > 0.0001)
-                {
-                    float tailPivotNormalized =
-                        _TailAtMin > 0.5
-                            ? 1.0 - 0.84
-                            : 0.84;
+                positionOS +=
+                    normalize(
+                        _SideAxis.xyz
+                    ) *
+                    sideOffset;
 
-                    float tailPivotAlong =
-                        lerp(
-                            _BodyMin,
-                            _BodyMax,
-                            tailPivotNormalized
-                        );
-
-                    float3 tailPivot =
-                        normalize(
-                            _BodyAxis.xyz
-                        ) *
-                        tailPivotAlong;
-
-                    bent =
-                        RotateAroundAxis(
-                            bent,
-                            tailPivot,
-                            upAxis,
-                            tailAngle
-                        );
-                }
-
-                return bent;
+                return positionOS;
             }
 
             Varyings Vert(Attributes input)
             {
                 Varyings output;
 
-                float3 positionOS =
-                    DeformPosition(
+                float3 deformedPosition =
+                    DeformFish(
                         input.positionOS.xyz
                     );
 
-                VertexPositionInputs pos =
+                VertexPositionInputs positionInputs =
                     GetVertexPositionInputs(
-                        positionOS
+                        deformedPosition
                     );
 
-                VertexNormalInputs normal =
+                VertexNormalInputs normalInputs =
                     GetVertexNormalInputs(
                         input.normalOS
                     );
 
                 output.positionCS =
-                    pos.positionCS;
+                    positionInputs.positionCS;
 
                 output.positionWS =
-                    pos.positionWS;
+                    positionInputs.positionWS;
 
                 output.normalWS =
-                    normal.normalWS;
+                    normalInputs.normalWS;
 
                 output.uv =
                     TRANSFORM_TEX(
@@ -291,7 +206,7 @@ Shader "OpenWorld/YellowfinTuna"
 
             half4 Frag(Varyings input) : SV_Target
             {
-                float4 tex =
+                float4 textureSample =
                     SAMPLE_TEXTURE2D(
                         _BaseMap,
                         sampler_BaseMap,
@@ -303,7 +218,7 @@ Shader "OpenWorld/YellowfinTuna"
                         input.normalWS
                     );
 
-                float3 viewDir =
+                float3 viewDirection =
                     SafeNormalize(
                         GetWorldSpaceViewDir(
                             input.positionWS
@@ -313,7 +228,7 @@ Shader "OpenWorld/YellowfinTuna"
                 Light mainLight =
                     GetMainLight();
 
-                float ndotl =
+                float diffuseAmount =
                     saturate(
                         dot(
                             normalWS,
@@ -321,70 +236,70 @@ Shader "OpenWorld/YellowfinTuna"
                         )
                     );
 
-                float3 halfDir =
+                float3 halfDirection =
                     SafeNormalize(
                         mainLight.direction +
-                        viewDir
+                        viewDirection
                     );
 
-                float specular =
+                float specularAmount =
                     pow(
                         saturate(
                             dot(
                                 normalWS,
-                                halfDir
+                                halfDirection
                             )
                         ),
                         lerp(
-                            22.0,
-                            150.0,
+                            18.0,
+                            95.0,
                             _Smoothness
                         )
                     );
 
-                float fresnel =
+                float fresnelAmount =
                     pow(
                         1.0 -
                         saturate(
                             dot(
                                 normalWS,
-                                viewDir
+                                viewDirection
                             )
                         ),
                         3.0
                     );
 
-                float3 ambient =
+                float3 ambientLight =
                     SampleSH(
                         normalWS
                     );
 
                 float3 baseColor =
-                    tex.rgb *
+                    textureSample.rgb *
                     _BaseColor.rgb;
 
-                float3 color =
+                float3 finalColor =
                     baseColor *
                     (
-                        ambient * 0.82 +
+                        ambientLight * 0.82 +
                         mainLight.color *
                         (
                             0.20 +
-                            ndotl * 0.80
+                            diffuseAmount * 0.80
                         )
                     );
 
-                color +=
+                finalColor +=
                     mainLight.color *
-                    specular *
+                    specularAmount *
                     lerp(
-                        0.06,
-                        0.20,
+                        0.045,
+                        0.15,
                         _Smoothness
                     );
 
-                color +=
-                    fresnel *
+                finalColor +=
+                    fresnelAmount *
                     _FresnelStrength *
                     float3(
                         0.08,
@@ -393,7 +308,7 @@ Shader "OpenWorld/YellowfinTuna"
                     );
 
                 return half4(
-                    color,
+                    finalColor,
                     1.0
                 );
             }

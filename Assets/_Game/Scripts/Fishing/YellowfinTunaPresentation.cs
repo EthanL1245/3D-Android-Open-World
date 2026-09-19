@@ -7,17 +7,17 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.045f;
+    private float swimStrength = 0.18f;
 
     [SerializeField]
-    private float swimSpeed = 3.25f;
+    private float swimSpeed = 7.0f;
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.022f;
+    private float heldStrength = 0.10f;
 
     [SerializeField]
-    private float heldSpeed = 4.1f;
+    private float heldSpeed = 5.0f;
 
     private bool held;
     private float phase;
