@@ -3,9 +3,11 @@ Shader "OpenWorld/HeroFish"
     Properties
     {
         _BaseMap ("Base Map", 2D) = "white" {}
+        _NormalMap ("Normal Map", 2D) = "bump" {}
         _BaseColor ("Base Color", Color) = (1,1,1,1)
-        _Smoothness ("Smoothness", Range(0,1)) = 0.72
-        _FresnelStrength ("Fresnel", Range(0,1)) = 0.32
+        _Smoothness ("Smoothness", Range(0,1)) = 0.78
+        _NormalStrength ("Scale Relief", Range(0,2)) = 0.72
+        _FresnelStrength ("Iridescence", Range(0,1)) = 0.30
     }
 
     SubShader
@@ -33,10 +35,14 @@ Shader "OpenWorld/HeroFish"
             TEXTURE2D(_BaseMap);
             SAMPLER(sampler_BaseMap);
 
+            TEXTURE2D(_NormalMap);
+            SAMPLER(sampler_NormalMap);
+
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseMap_ST;
                 float4 _BaseColor;
                 float _Smoothness;
+                float _NormalStrength;
                 float _FresnelStrength;
             CBUFFER_END
 
@@ -44,6 +50,7 @@ Shader "OpenWorld/HeroFish"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float4 tangentOS : TANGENT;
                 float2 uv : TEXCOORD0;
             };
 
@@ -52,26 +59,41 @@ Shader "OpenWorld/HeroFish"
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
-                float2 uv : TEXCOORD2;
+                float3 tangentWS : TEXCOORD2;
+                float3 bitangentWS : TEXCOORD3;
+                float2 uv : TEXCOORD4;
             };
 
             Varyings Vert(Attributes input)
             {
                 Varyings output;
 
-                VertexPositionInputs pos =
+                VertexPositionInputs positionInputs =
                     GetVertexPositionInputs(
                         input.positionOS.xyz
                     );
 
-                VertexNormalInputs normal =
+                VertexNormalInputs normalInputs =
                     GetVertexNormalInputs(
-                        input.normalOS
+                        input.normalOS,
+                        input.tangentOS
                     );
 
-                output.positionCS = pos.positionCS;
-                output.positionWS = pos.positionWS;
-                output.normalWS = normal.normalWS;
+                output.positionCS =
+                    positionInputs.positionCS;
+
+                output.positionWS =
+                    positionInputs.positionWS;
+
+                output.normalWS =
+                    normalInputs.normalWS;
+
+                output.tangentWS =
+                    normalInputs.tangentWS;
+
+                output.bitangentWS =
+                    normalInputs.bitangentWS;
+
                 output.uv =
                     TRANSFORM_TEX(
                         input.uv,
@@ -83,8 +105,37 @@ Shader "OpenWorld/HeroFish"
 
             half4 Frag(Varyings input) : SV_Target
             {
+                float4 tex =
+                    SAMPLE_TEXTURE2D(
+                        _BaseMap,
+                        sampler_BaseMap,
+                        input.uv
+                    );
+
+                float3 normalTS =
+                    UnpackNormalScale(
+                        SAMPLE_TEXTURE2D(
+                            _NormalMap,
+                            sampler_NormalMap,
+                            input.uv
+                        ),
+                        _NormalStrength
+                    );
+
+                float3x3 tbn =
+                    float3x3(
+                        normalize(input.tangentWS),
+                        normalize(input.bitangentWS),
+                        normalize(input.normalWS)
+                    );
+
                 float3 normalWS =
-                    normalize(input.normalWS);
+                    normalize(
+                        mul(
+                            normalTS,
+                            tbn
+                        )
+                    );
 
                 float3 viewDir =
                     SafeNormalize(
@@ -110,6 +161,16 @@ Shader "OpenWorld/HeroFish"
                         viewDir
                     );
 
+                float smoothness =
+                    saturate(
+                        _Smoothness *
+                        lerp(
+                            0.76,
+                            1.08,
+                            tex.a
+                        )
+                    );
+
                 float specular =
                     pow(
                         saturate(
@@ -119,9 +180,9 @@ Shader "OpenWorld/HeroFish"
                             )
                         ),
                         lerp(
-                            18.0,
-                            140.0,
-                            _Smoothness
+                            20.0,
+                            180.0,
+                            smoothness
                         )
                     );
 
@@ -134,37 +195,43 @@ Shader "OpenWorld/HeroFish"
                                 viewDir
                             )
                         ),
-                        3.0
-                    );
-
-                float4 tex =
-                    SAMPLE_TEXTURE2D(
-                        _BaseMap,
-                        sampler_BaseMap,
-                        input.uv
+                        3.2
                     );
 
                 float3 ambient =
                     SampleSH(normalWS);
 
-                float3 color =
+                float3 baseColor =
                     tex.rgb *
-                    _BaseColor.rgb *
+                    _BaseColor.rgb;
+
+                float3 color =
+                    baseColor *
                     (
-                        ambient * 0.72 +
+                        ambient * 0.68 +
                         mainLight.color *
                         (
-                            0.24 +
-                            ndotl * 0.76
+                            0.22 +
+                            ndotl * 0.78
                         )
                     );
 
                 float3 iridescence =
                     lerp(
-                        float3(0.05, 0.16, 0.22),
-                        float3(0.12, 0.28, 0.20),
+                        float3(
+                            0.04,
+                            0.12,
+                            0.20
+                        ),
+                        float3(
+                            0.10,
+                            0.24,
+                            0.16
+                        ),
                         saturate(
-                            normalWS.y * 0.5 + 0.5
+                            normalWS.y *
+                            0.5 +
+                            0.5
                         )
                     );
 
@@ -177,9 +244,9 @@ Shader "OpenWorld/HeroFish"
                     mainLight.color *
                     specular *
                     lerp(
-                        0.18,
-                        0.55,
-                        _Smoothness
+                        0.20,
+                        0.62,
+                        smoothness
                     );
 
                 return half4(

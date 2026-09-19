@@ -20,10 +20,42 @@ public static class FishVisualFactory
         int speciesId,
         float scale)
     {
+        return CreateFishInternal(
+            name,
+            parent,
+            speciesId,
+            scale,
+            true
+        );
+    }
+
+    public static GameObject CreateAmbientFish(
+        string name,
+        Transform parent,
+        int speciesId,
+        float scale)
+    {
+        return CreateFishInternal(
+            name,
+            parent,
+            speciesId,
+            scale,
+            false
+        );
+    }
+
+    private static GameObject CreateFishInternal(
+        string name,
+        Transform parent,
+        int speciesId,
+        float scale,
+        bool allowHero)
+    {
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
 
-        if (speciesId ==
+        if (allowHero &&
+            speciesId ==
             HeroYellowtailSpeciesId)
         {
             GameObject hero =
@@ -57,6 +89,7 @@ public static class FishVisualFactory
             );
 
         body.name = "Body";
+
         body.transform.SetParent(
             root.transform,
             false
@@ -259,13 +292,6 @@ public static class FishVisualFactory
                 color
             );
         }
-        else if (material.HasProperty("_Color"))
-        {
-            material.SetColor(
-                "_Color",
-                color
-            );
-        }
 
         if (material.HasProperty("_Smoothness"))
         {
@@ -310,6 +336,7 @@ public static class FishVisualFactory
 
         tailMesh.vertices = vertices;
         tailMesh.triangles = triangles;
+
         tailMesh.RecalculateNormals();
         tailMesh.RecalculateBounds();
 

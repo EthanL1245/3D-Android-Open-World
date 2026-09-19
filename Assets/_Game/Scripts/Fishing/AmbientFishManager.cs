@@ -149,7 +149,7 @@ public class AmbientFishManager : MonoBehaviour
                 );
 
             GameObject visual =
-                FishVisualFactory.CreateFish(
+                FishVisualFactory.CreateAmbientFish(
                     "AmbientFish_" + i,
                     transform,
                     speciesId,

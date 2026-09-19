@@ -8,231 +8,318 @@ public static class HeroYellowtailSetup
     private const string RootFolder =
         "Assets/_Game/Fishing/HeroFish";
 
-    private const string TexturePath =
+    private const string BodyTexturePath =
         RootFolder + "/YellowtailBody.png";
 
+    private const string NormalTexturePath =
+        RootFolder + "/YellowtailNormal.png";
+
     private const string BodyMeshPath =
-        RootFolder + "/YellowtailBody.asset";
+        RootFolder + "/YellowtailBodyV2.asset";
 
-    private const string TailMeshPath =
-        RootFolder + "/YellowtailTail.asset";
+    private const string PectoralMeshPath =
+        RootFolder + "/YellowtailPectoralV2.asset";
 
-    private const string FinMeshPath =
-        RootFolder + "/YellowtailFin.asset";
+    private const string GillMeshPath =
+        RootFolder + "/YellowtailGillV2.asset";
 
     private const string EyeMeshPath =
-        RootFolder + "/YellowtailEye.asset";
+        RootFolder + "/YellowtailEyeV2.asset";
+
+    private const string DiscMeshPath =
+        RootFolder + "/YellowtailEyeDiscV2.asset";
+
+    private const string MouthMeshPath =
+        RootFolder + "/YellowtailMouthV2.asset";
 
     private const string BodyMaterialPath =
-        RootFolder + "/YellowtailBody.mat";
+        RootFolder + "/YellowtailBodyV2.mat";
 
     private const string FinMaterialPath =
-        RootFolder + "/YellowtailFins.mat";
+        RootFolder + "/YellowtailFinsV2.mat";
+
+    private const string DetailMaterialPath =
+        RootFolder + "/YellowtailDetailsV2.mat";
 
     private const string EyeMaterialPath =
-        RootFolder + "/YellowtailEye.mat";
+        RootFolder + "/YellowtailEyeV2.mat";
+
+    private const string PupilMaterialPath =
+        RootFolder + "/YellowtailPupilV2.mat";
 
     private const string PrefabPath =
         "Assets/Resources/Fishing/HeroYellowtail.prefab";
 
-    [MenuItem("Tools/Open World/Build Hero Yellowtail")]
-    public static void BuildHeroYellowtail()
+    private const int Rings = 26;
+    private const int Segments = 20;
+
+    [MenuItem("Tools/Open World/Rebuild Hero Yellowtail V2")]
+    public static void BuildHeroYellowtailV2()
     {
         if (EditorApplication.isPlaying)
         {
             EditorUtility.DisplayDialog(
-                "Hero Yellowtail",
-                "Exit Play Mode before building the hero fish.",
+                "Hero Yellowtail V2",
+                "Exit Play Mode before rebuilding the hero fish.",
                 "OK"
             );
+
             return;
         }
 
         EnsureFolders();
 
-        EditorUtility.DisplayProgressBar(
-            "Hero Yellowtail",
-            "Generating skin texture...",
-            0.08f
-        );
-
-        Texture2D bodyTexture =
-            CreateBodyTexture();
-
-        EditorUtility.DisplayProgressBar(
-            "Hero Yellowtail",
-            "Building optimized fish mesh...",
-            0.24f
-        );
-
-        Mesh bodyMesh =
-            CreateBodyMesh();
-
-        Mesh tailMesh =
-            CreateTailMesh();
-
-        Mesh finMesh =
-            CreateFinMesh();
-
-        Mesh eyeMesh =
-            CreateEyeMesh();
-
-        Shader heroShader =
-            Shader.Find("OpenWorld/HeroFish");
-
-        Shader simpleShader =
-            Shader.Find(
-                "OpenWorld/FishingLit"
+        try
+        {
+            EditorUtility.DisplayProgressBar(
+                "Hero Yellowtail V2",
+                "Painting realistic skin and scale relief...",
+                0.08f
             );
 
-        if (heroShader == null ||
-            simpleShader == null)
-        {
-            EditorUtility.ClearProgressBar();
+            Texture2D bodyTexture =
+                CreateBodyTexture();
+
+            Texture2D normalTexture =
+                CreateNormalTexture();
+
+            EditorUtility.DisplayProgressBar(
+                "Hero Yellowtail V2",
+                "Sculpting anatomical body and attached fins...",
+                0.24f
+            );
+
+            Mesh bodyMesh =
+                CreateBodyAndIntegratedFinMesh();
+
+            Mesh pectoralMesh =
+                CreatePectoralMesh();
+
+            Mesh gillMesh =
+                CreateGillMesh();
+
+            Mesh eyeMesh =
+                CreateEyeMesh();
+
+            Mesh eyeDiscMesh =
+                CreateDiscMesh();
+
+            Mesh mouthMesh =
+                CreateMouthMesh();
+
+            Shader heroShader =
+                Shader.Find(
+                    "OpenWorld/HeroFish"
+                );
+
+            Shader finShader =
+                Shader.Find(
+                    "OpenWorld/HeroFishFin"
+                );
+
+            Shader simpleShader =
+                Shader.Find(
+                    "OpenWorld/FishingLit"
+                );
+
+            if (heroShader == null ||
+                finShader == null ||
+                simpleShader == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Hero Yellowtail V2",
+                    "One or more fish shaders have not imported yet. Wait for Unity's import/compile spinner to finish, then run this command again.",
+                    "OK"
+                );
+
+                return;
+            }
+
+            EditorUtility.DisplayProgressBar(
+                "Hero Yellowtail V2",
+                "Creating fish materials...",
+                0.48f
+            );
+
+            Material bodyMaterial =
+                CreateMaterial(
+                    BodyMaterialPath,
+                    heroShader
+                );
+
+            bodyMaterial.SetTexture(
+                "_BaseMap",
+                bodyTexture
+            );
+
+            bodyMaterial.SetTexture(
+                "_NormalMap",
+                normalTexture
+            );
+
+            bodyMaterial.SetColor(
+                "_BaseColor",
+                Color.white
+            );
+
+            bodyMaterial.SetFloat(
+                "_Smoothness",
+                0.80f
+            );
+
+            bodyMaterial.SetFloat(
+                "_NormalStrength",
+                0.68f
+            );
+
+            bodyMaterial.SetFloat(
+                "_FresnelStrength",
+                0.30f
+            );
+
+            Material finMaterial =
+                CreateMaterial(
+                    FinMaterialPath,
+                    finShader
+                );
+
+            finMaterial.SetColor(
+                "_BaseColor",
+                new Color(
+                    0.98f,
+                    0.72f,
+                    0.06f,
+                    0.90f
+                )
+            );
+
+            finMaterial.SetFloat(
+                "_Smoothness",
+                0.44f
+            );
+
+            Material detailMaterial =
+                CreateMaterial(
+                    DetailMaterialPath,
+                    finShader
+                );
+
+            detailMaterial.SetColor(
+                "_BaseColor",
+                new Color(
+                    0.055f,
+                    0.095f,
+                    0.105f,
+                    0.74f
+                )
+            );
+
+            Material eyeMaterial =
+                CreateMaterial(
+                    EyeMaterialPath,
+                    simpleShader
+                );
+
+            eyeMaterial.SetColor(
+                "_BaseColor",
+                new Color(
+                    0.56f,
+                    0.43f,
+                    0.14f,
+                    1f
+                )
+            );
+
+            eyeMaterial.SetFloat(
+                "_Smoothness",
+                0.94f
+            );
+
+            Material pupilMaterial =
+                CreateMaterial(
+                    PupilMaterialPath,
+                    simpleShader
+                );
+
+            pupilMaterial.SetColor(
+                "_BaseColor",
+                new Color(
+                    0.005f,
+                    0.007f,
+                    0.007f,
+                    1f
+                )
+            );
+
+            pupilMaterial.SetFloat(
+                "_Smoothness",
+                0.96f
+            );
+
+            EditorUtility.DisplayProgressBar(
+                "Hero Yellowtail V2",
+                "Rigging and assembling hero prefab...",
+                0.72f
+            );
+
+            GameObject root =
+                BuildPrefabObject(
+                    bodyMesh,
+                    pectoralMesh,
+                    gillMesh,
+                    eyeMesh,
+                    eyeDiscMesh,
+                    mouthMesh,
+                    bodyMaterial,
+                    finMaterial,
+                    detailMaterial,
+                    eyeMaterial,
+                    pupilMaterial
+                );
+
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(
+                    PrefabPath) != null)
+            {
+                AssetDatabase.DeleteAsset(
+                    PrefabPath
+                );
+            }
+
+            PrefabUtility.SaveAsPrefabAsset(
+                root,
+                PrefabPath
+            );
+
+            Object.DestroyImmediate(root);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            GameObject prefab =
+                AssetDatabase.LoadAssetAtPath<GameObject>(
+                    PrefabPath
+                );
+
+            Selection.activeObject =
+                prefab;
+
+            int bodyTriangles =
+                bodyMesh != null
+                    ? bodyMesh.triangles.Length / 3
+                    : 0;
 
             EditorUtility.DisplayDialog(
-                "Hero Yellowtail",
-                "The hero fish shaders have not imported yet. Wait for Unity compilation/import to finish, then run this menu command again.",
+                "Hero Yellowtail V2 Ready",
+                "Rebuilt the Yellowtail with a sculpted head/body profile, narrow tail stem, integrated dorsal/anal/tail fins, embedded pectoral fin roots, gill plates, mouth, proper eyes, scale normal mapping, and a five-bone swim rig.\n\nMain skinned mesh: about " +
+                bodyTriangles +
+                " triangles. Ambient ocean fish still use the lightweight model for mobile performance.",
                 "OK"
             );
-            return;
         }
-
-        EditorUtility.DisplayProgressBar(
-            "Hero Yellowtail",
-            "Creating materials...",
-            0.48f
-        );
-
-        Material bodyMaterial =
-            CreateOrReplaceMaterial(
-                BodyMaterialPath,
-                heroShader
-            );
-
-        bodyMaterial.SetTexture(
-            "_BaseMap",
-            bodyTexture
-        );
-
-        bodyMaterial.SetColor(
-            "_BaseColor",
-            Color.white
-        );
-
-        bodyMaterial.SetFloat(
-            "_Smoothness",
-            0.78f
-        );
-
-        bodyMaterial.SetFloat(
-            "_FresnelStrength",
-            0.38f
-        );
-
-        Material finMaterial =
-            CreateOrReplaceMaterial(
-                FinMaterialPath,
-                simpleShader
-            );
-
-        finMaterial.SetColor(
-            "_BaseColor",
-            new Color(
-                0.94f,
-                0.72f,
-                0.07f,
-                1f
-            )
-        );
-
-        finMaterial.SetFloat(
-            "_Smoothness",
-            0.48f
-        );
-
-        Material eyeMaterial =
-            CreateOrReplaceMaterial(
-                EyeMaterialPath,
-                simpleShader
-            );
-
-        eyeMaterial.SetColor(
-            "_BaseColor",
-            new Color(
-                0.012f,
-                0.014f,
-                0.012f,
-                1f
-            )
-        );
-
-        eyeMaterial.SetFloat(
-            "_Smoothness",
-            0.92f
-        );
-
-        EditorUtility.DisplayProgressBar(
-            "Hero Yellowtail",
-            "Building animated prefab...",
-            0.68f
-        );
-
-        GameObject root =
-            BuildPrefabObject(
-                bodyMesh,
-                tailMesh,
-                finMesh,
-                eyeMesh,
-                bodyMaterial,
-                finMaterial,
-                eyeMaterial
-            );
-
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(
-                PrefabPath) != null)
+        finally
         {
-            AssetDatabase.DeleteAsset(
-                PrefabPath
-            );
+            EditorUtility.ClearProgressBar();
         }
-
-        PrefabUtility.SaveAsPrefabAsset(
-            root,
-            PrefabPath
-        );
-
-        Object.DestroyImmediate(root);
-
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        EditorUtility.ClearProgressBar();
-
-        GameObject prefab =
-            AssetDatabase.LoadAssetAtPath<GameObject>(
-                PrefabPath
-            );
-
-        Selection.activeObject = prefab;
-
-        Mesh generated =
-            AssetDatabase.LoadAssetAtPath<Mesh>(
-                BodyMeshPath
-            );
-
-        int triangles =
-            generated != null
-                ? generated.triangles.Length / 3
-                : 0;
-
-        EditorUtility.DisplayDialog(
-            "Hero Yellowtail Ready",
-            "Built the realistic mobile-safe Yellowtail prefab.\n\nBody mesh: about " +
-            triangles +
-            " triangles, plus lightweight fins/eyes.\n\nYellowtail catches will now use this model automatically.",
-            "OK"
-        );
     }
 
     [MenuItem("Tools/Open World/Give Trophy Yellowtail (Play Mode)")]
@@ -245,6 +332,7 @@ public static class HeroYellowtailSetup
                 "Enter Play Mode first, then run this command.",
                 "OK"
             );
+
             return;
         }
 
@@ -258,6 +346,7 @@ public static class HeroYellowtailSetup
                 "FishingInventory was not found.",
                 "OK"
             );
+
             return;
         }
 
@@ -268,7 +357,7 @@ public static class HeroYellowtailSetup
 
         EditorUtility.DisplayDialog(
             "Trophy Yellowtail",
-            "Added a 6.25 kg Yellowtail to your caught-fish inventory. Open FISH and tap it to hold it.",
+            "Added a 6.25 kg Yellowtail. Open FISH and tap it to hold the V2 model.",
             "OK"
         );
     }
@@ -299,7 +388,8 @@ public static class HeroYellowtailSetup
         string[] pieces =
             parent.Split('/');
 
-        string current = pieces[0];
+        string current =
+            pieces[0];
 
         for (int i = 1;
              i < pieces.Length;
@@ -330,8 +420,8 @@ public static class HeroYellowtailSetup
 
     private static Texture2D CreateBodyTexture()
     {
-        const int width = 512;
-        const int height = 256;
+        const int width = 1024;
+        const int height = 512;
 
         Texture2D texture =
             new Texture2D(
@@ -343,151 +433,156 @@ public static class HeroYellowtailSetup
             );
 
         Color[] pixels =
-            new Color[width * height];
+            new Color[
+                width * height
+            ];
 
-        for (int y = 0; y < height; y++)
+        for (int y = 0;
+             y < height;
+             y++)
         {
             float v =
                 (float)y /
                 (height - 1);
 
-            for (int x = 0; x < width; x++)
+            for (int x = 0;
+                 x < width;
+                 x++)
             {
                 float u =
                     (float)x /
                     (width - 1);
 
                 float angle =
-                    u * Mathf.PI * 2f;
+                    u *
+                    Mathf.PI *
+                    2f;
 
                 float vertical =
                     Mathf.Sin(angle);
 
-                float top =
+                float topMask =
                     Mathf.Clamp01(
-                        vertical * 0.92f +
-                        0.18f
+                        vertical * 1.1f
                     );
 
-                float belly =
+                float bellyMask =
                     Mathf.Clamp01(
-                        -vertical * 1.08f
+                        -vertical * 1.15f
                     );
 
                 Color silver =
                     new Color(
-                        0.50f,
-                        0.63f,
-                        0.68f,
-                        1f
+                        0.48f,
+                        0.61f,
+                        0.65f,
+                        0.84f
                     );
 
-                Color blueTop =
+                Color dorsal =
                     new Color(
-                        0.045f,
-                        0.16f,
-                        0.25f,
-                        1f
+                        0.035f,
+                        0.115f,
+                        0.19f,
+                        0.92f
                     );
 
-                Color pearl =
+                Color belly =
                     new Color(
+                        0.82f,
+                        0.86f,
                         0.80f,
-                        0.85f,
-                        0.80f,
-                        1f
+                        0.74f
                     );
 
                 Color color =
                     Color.Lerp(
                         silver,
-                        blueTop,
-                        top
+                        dorsal,
+                        Mathf.Pow(
+                            topMask,
+                            0.72f
+                        )
                     );
 
                 color =
                     Color.Lerp(
                         color,
-                        pearl,
-                        belly * 0.82f
+                        belly,
+                        bellyMask * 0.90f
                     );
 
-                float sideDistance =
-                    Mathf.Min(
+                float sideBand =
+                    1f -
+                    Mathf.SmoothStep(
+                        0.02f,
+                        0.22f,
                         Mathf.Abs(
-                            Mathf.DeltaAngle(
-                                angle *
-                                Mathf.Rad2Deg,
-                                0f
-                            )
-                        ),
-                        Mathf.Abs(
-                            Mathf.DeltaAngle(
-                                angle *
-                                Mathf.Rad2Deg,
-                                180f
-                            )
+                            Mathf.Sin(angle)
                         )
                     );
 
-                float stripe =
-                    1f -
+                float lengthMask =
                     Mathf.SmoothStep(
-                        0f,
-                        18f,
-                        sideDistance
-                    );
-
-                stripe *=
-                    Mathf.SmoothStep(
-                        0.06f,
-                        0.18f,
+                        0.10f,
+                        0.19f,
                         v
                     ) *
                     (
                         1f -
                         Mathf.SmoothStep(
-                            0.82f,
-                            0.98f,
+                            0.84f,
+                            0.96f,
                             v
                         )
                     );
+
+                float stripe =
+                    sideBand *
+                    lengthMask;
 
                 color =
                     Color.Lerp(
                         color,
                         new Color(
-                            0.93f,
-                            0.71f,
-                            0.08f,
-                            1f
+                            0.96f,
+                            0.72f,
+                            0.075f,
+                            0.90f
                         ),
                         stripe * 0.82f
                     );
 
                 float scalePattern =
-                    Mathf.Sin(
-                        u * 190f +
-                        Mathf.Sin(
-                            v * 90f
-                        ) * 0.9f
-                    ) *
-                    Mathf.Sin(
-                        v * 155f
+                    ScaleHeight(
+                        u,
+                        v
                     );
 
-                float scaleLight =
-                    scalePattern * 0.035f;
+                float sideScales =
+                    Mathf.Pow(
+                        1f -
+                        Mathf.Abs(vertical),
+                        0.55f
+                    );
 
-                color.r += scaleLight;
-                color.g += scaleLight;
-                color.b += scaleLight;
+                float shimmer =
+                    (
+                        scalePattern -
+                        0.5f
+                    ) *
+                    0.085f *
+                    sideScales;
 
-                float headMask =
+                color.r += shimmer;
+                color.g += shimmer;
+                color.b += shimmer;
+
+                float headDarkening =
                     1f -
                     Mathf.SmoothStep(
-                        0.06f,
-                        0.23f,
+                        0.04f,
+                        0.24f,
                         v
                     );
 
@@ -496,25 +591,197 @@ public static class HeroYellowtailSetup
                         color,
                         color *
                         new Color(
-                            0.72f,
-                            0.82f,
+                            0.78f,
                             0.86f,
+                            0.90f,
                             1f
                         ),
-                        headMask * 0.20f
+                        headDarkening *
+                        0.22f
                     );
 
-                pixels[y * width + x] =
-                    color;
+                color.a =
+                    Mathf.Clamp01(
+                        color.a +
+                        scalePattern *
+                        0.12f
+                    );
+
+                pixels[
+                    y * width + x
+                ] = color;
             }
         }
 
         texture.SetPixels(pixels);
         texture.Apply(true, false);
 
+        WriteTexture(
+            texture,
+            BodyTexturePath,
+            false
+        );
+
+        Object.DestroyImmediate(
+            texture
+        );
+
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(
+            BodyTexturePath
+        );
+    }
+
+    private static Texture2D CreateNormalTexture()
+    {
+        const int width = 1024;
+        const int height = 512;
+
+        Texture2D texture =
+            new Texture2D(
+                width,
+                height,
+                TextureFormat.RGBA32,
+                true,
+                true
+            );
+
+        Color[] pixels =
+            new Color[
+                width * height
+            ];
+
+        float du =
+            1f / width;
+
+        float dv =
+            1f / height;
+
+        for (int y = 0;
+             y < height;
+             y++)
+        {
+            float v =
+                (float)y /
+                (height - 1);
+
+            for (int x = 0;
+                 x < width;
+                 x++)
+            {
+                float u =
+                    (float)x /
+                    (width - 1);
+
+                float left =
+                    ScaleHeight(
+                        u - du,
+                        v
+                    );
+
+                float right =
+                    ScaleHeight(
+                        u + du,
+                        v
+                    );
+
+                float down =
+                    ScaleHeight(
+                        u,
+                        v - dv
+                    );
+
+                float up =
+                    ScaleHeight(
+                        u,
+                        v + dv
+                    );
+
+                Vector3 normal =
+                    new Vector3(
+                        (left - right) * 2.2f,
+                        (down - up) * 2.2f,
+                        1f
+                    ).normalized;
+
+                pixels[
+                    y * width + x
+                ] =
+                    new Color(
+                        normal.x * 0.5f + 0.5f,
+                        normal.y * 0.5f + 0.5f,
+                        normal.z * 0.5f + 0.5f,
+                        1f
+                    );
+            }
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply(true, false);
+
+        WriteTexture(
+            texture,
+            NormalTexturePath,
+            true
+        );
+
+        Object.DestroyImmediate(
+            texture
+        );
+
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(
+            NormalTexturePath
+        );
+    }
+
+    private static float ScaleHeight(
+        float u,
+        float v)
+    {
+        u = Mathf.Repeat(u, 1f);
+        v = Mathf.Clamp01(v);
+
+        float row =
+            Mathf.Sin(
+                v *
+                Mathf.PI *
+                2f *
+                48f
+            );
+
+        float stagger =
+            Mathf.Sin(
+                u *
+                Mathf.PI *
+                2f *
+                28f +
+                row * 0.78f
+            );
+
+        float vertical =
+            Mathf.Sin(
+                v *
+                Mathf.PI *
+                2f *
+                50f
+            );
+
+        return
+            Mathf.Clamp01(
+                0.5f +
+                stagger *
+                vertical *
+                0.5f
+            );
+    }
+
+    private static void WriteTexture(
+        Texture2D texture,
+        string assetPath,
+        bool normalMap)
+    {
         string absolute =
             Path.GetFullPath(
-                TexturePath
+                assetPath
             );
 
         File.WriteAllBytes(
@@ -522,111 +789,124 @@ public static class HeroYellowtailSetup
             texture.EncodeToPNG()
         );
 
-        Object.DestroyImmediate(texture);
-
         AssetDatabase.ImportAsset(
-            TexturePath,
+            assetPath,
             ImportAssetOptions.ForceUpdate
         );
 
         TextureImporter importer =
             AssetImporter.GetAtPath(
-                TexturePath
+                assetPath
             ) as TextureImporter;
 
-        if (importer != null)
-        {
-            importer.textureType =
-                TextureImporterType.Default;
+        if (importer == null)
+            return;
 
-            importer.sRGBTexture = true;
-            importer.mipmapEnabled = true;
-            importer.wrapMode =
-                TextureWrapMode.Repeat;
+        importer.textureType =
+            normalMap
+                ? TextureImporterType.NormalMap
+                : TextureImporterType.Default;
 
-            importer.filterMode =
-                FilterMode.Bilinear;
+        importer.sRGBTexture =
+            !normalMap;
 
-            importer.anisoLevel = 2;
-            importer.maxTextureSize = 512;
-            importer.textureCompression =
-                TextureImporterCompression
-                    .Compressed;
+        importer.mipmapEnabled = true;
 
-            importer.SaveAndReimport();
-        }
+        importer.wrapMode =
+            TextureWrapMode.Repeat;
 
-        return AssetDatabase.LoadAssetAtPath<Texture2D>(
-            TexturePath
-        );
+        importer.filterMode =
+            FilterMode.Bilinear;
+
+        importer.anisoLevel = 2;
+        importer.maxTextureSize = 1024;
+
+        importer.textureCompression =
+            TextureImporterCompression
+                .CompressedHQ;
+
+        importer.SaveAndReimport();
     }
 
-    private static Mesh CreateBodyMesh()
+    private static Mesh CreateBodyAndIntegratedFinMesh()
     {
-        const int rings = 16;
-        const int segments = 16;
-
         List<Vector3> vertices =
             new List<Vector3>();
 
         List<Vector2> uvs =
             new List<Vector2>();
 
-        List<int> triangles =
-            new List<int>();
-
         List<BoneWeight> weights =
             new List<BoneWeight>();
 
+        List<int> bodyTriangles =
+            new List<int>();
+
+        List<int> finTriangles =
+            new List<int>();
+
         for (int ring = 0;
-             ring < rings;
+             ring < Rings;
              ring++)
         {
             float t =
                 (float)ring /
-                (rings - 1);
+                (Rings - 1);
 
             float z =
-                Mathf.Lerp(
-                    0.78f,
-                    -0.67f,
-                    t
-                );
+                ZFromT(t);
 
             float width =
                 BodyWidth(t);
 
-            float height =
-                width *
-                Mathf.Lerp(
-                    0.72f,
-                    0.60f,
-                    t
-                );
+            float top =
+                BodyTop(t);
+
+            float bottom =
+                BodyBottom(t);
+
+            float center =
+                BodyCenterY(t);
 
             for (int segment = 0;
-                 segment <= segments;
+                 segment <= Segments;
                  segment++)
             {
                 float u =
                     (float)segment /
-                    segments;
+                    Segments;
 
                 float angle =
                     u *
                     Mathf.PI *
                     2f;
 
+                float sin =
+                    Mathf.Sin(angle);
+
+                float radiusY =
+                    sin >= 0f
+                        ? top
+                        : bottom;
+
                 float x =
                     Mathf.Cos(angle) *
                     width;
 
                 float y =
-                    Mathf.Sin(angle) *
-                    height;
+                    center +
+                    sin * radiusY;
 
-                if (y < 0f)
-                    y *= 0.92f;
+                float sideFlatten =
+                    Mathf.Lerp(
+                        0.94f,
+                        1f,
+                        Mathf.Abs(
+                            Mathf.Sin(angle)
+                        )
+                    );
+
+                x *= sideFlatten;
 
                 vertices.Add(
                     new Vector3(
@@ -643,57 +923,559 @@ public static class HeroYellowtailSetup
                     )
                 );
 
-                float bonePosition =
-                    t * 3f;
-
-                int bone0 =
-                    Mathf.Clamp(
-                        Mathf.FloorToInt(
-                            bonePosition
-                        ),
-                        0,
-                        3
-                    );
-
-                int bone1 =
-                    Mathf.Min(
-                        bone0 + 1,
-                        3
-                    );
-
-                float blend =
-                    Mathf.Clamp01(
-                        bonePosition -
-                        bone0
-                    );
-
-                BoneWeight weight =
-                    new BoneWeight
-                    {
-                        boneIndex0 = bone0,
-                        weight0 = 1f - blend,
-                        boneIndex1 = bone1,
-                        weight1 = blend
-                    };
-
-                weights.Add(weight);
+                weights.Add(
+                    WeightForT(t)
+                );
             }
         }
 
         int row =
-            segments + 1;
+            Segments + 1;
 
         for (int ring = 0;
-             ring < rings - 1;
+             ring < Rings - 1;
              ring++)
         {
             for (int segment = 0;
-                 segment < segments;
+                 segment < Segments;
                  segment++)
             {
                 int a =
                     ring * row +
                     segment;
+
+                int b = a + 1;
+                int c = a + row;
+                int d = c + 1;
+
+                bodyTriangles.Add(a);
+                bodyTriangles.Add(c);
+                bodyTriangles.Add(b);
+
+                bodyTriangles.Add(b);
+                bodyTriangles.Add(c);
+                bodyTriangles.Add(d);
+            }
+        }
+
+        AddNoseCap(
+            vertices,
+            uvs,
+            weights,
+            bodyTriangles
+        );
+
+        AddDorsalFin(
+            vertices,
+            uvs,
+            weights,
+            finTriangles
+        );
+
+        AddSecondDorsalFin(
+            vertices,
+            uvs,
+            weights,
+            finTriangles
+        );
+
+        AddAnalFin(
+            vertices,
+            uvs,
+            weights,
+            finTriangles
+        );
+
+        AddCaudalFin(
+            vertices,
+            uvs,
+            weights,
+            finTriangles
+        );
+
+        Mesh mesh =
+            new Mesh
+            {
+                name =
+                    "HeroYellowtailBodyV2"
+            };
+
+        mesh.SetVertices(vertices);
+        mesh.SetUVs(0, uvs);
+        mesh.boneWeights =
+            weights.ToArray();
+
+        mesh.subMeshCount = 2;
+
+        mesh.SetTriangles(
+            bodyTriangles,
+            0
+        );
+
+        mesh.SetTriangles(
+            finTriangles,
+            1
+        );
+
+        mesh.RecalculateNormals();
+        mesh.RecalculateTangents();
+        mesh.RecalculateBounds();
+
+        ReplaceMeshAsset(
+            BodyMeshPath,
+            mesh
+        );
+
+        return AssetDatabase
+            .LoadAssetAtPath<Mesh>(
+                BodyMeshPath
+            );
+    }
+
+    private static void AddNoseCap(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles)
+    {
+        int centerIndex =
+            vertices.Count;
+
+        vertices.Add(
+            new Vector3(
+                0f,
+                -0.018f,
+                0.715f
+            )
+        );
+
+        uvs.Add(
+            new Vector2(
+                0.5f,
+                0f
+            )
+        );
+
+        weights.Add(
+            FullBoneWeight(0)
+        );
+
+        for (int segment = 0;
+             segment < Segments;
+             segment++)
+        {
+            triangles.Add(
+                centerIndex
+            );
+
+            triangles.Add(
+                segment + 1
+            );
+
+            triangles.Add(
+                segment
+            );
+        }
+    }
+
+    private static void AddDorsalFin(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles)
+    {
+        float[] t =
+        {
+            0.30f,
+            0.35f,
+            0.40f,
+            0.45f,
+            0.50f
+        };
+
+        float[] height =
+        {
+            0.035f,
+            0.16f,
+            0.19f,
+            0.135f,
+            0.025f
+        };
+
+        AddFinRibbon(
+            vertices,
+            uvs,
+            weights,
+            triangles,
+            t,
+            height,
+            true
+        );
+    }
+
+    private static void AddSecondDorsalFin(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles)
+    {
+        float[] t =
+        {
+            0.51f,
+            0.57f,
+            0.64f,
+            0.71f,
+            0.78f,
+            0.84f
+        };
+
+        float[] height =
+        {
+            0.03f,
+            0.12f,
+            0.13f,
+            0.11f,
+            0.075f,
+            0.018f
+        };
+
+        AddFinRibbon(
+            vertices,
+            uvs,
+            weights,
+            triangles,
+            t,
+            height,
+            true
+        );
+    }
+
+    private static void AddAnalFin(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles)
+    {
+        float[] t =
+        {
+            0.57f,
+            0.63f,
+            0.70f,
+            0.77f,
+            0.83f
+        };
+
+        float[] height =
+        {
+            0.02f,
+            0.105f,
+            0.11f,
+            0.075f,
+            0.015f
+        };
+
+        AddFinRibbon(
+            vertices,
+            uvs,
+            weights,
+            triangles,
+            t,
+            height,
+            false
+        );
+    }
+
+    private static void AddFinRibbon(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles,
+        float[] tValues,
+        float[] heights,
+        bool top)
+    {
+        int start =
+            vertices.Count;
+
+        for (int i = 0;
+             i < tValues.Length;
+             i++)
+        {
+            float t =
+                tValues[i];
+
+            float z =
+                ZFromT(t);
+
+            float rootY =
+                BodyCenterY(t) +
+                (
+                    top
+                        ? BodyTop(t)
+                        : -BodyBottom(t)
+                );
+
+            float tipY =
+                rootY +
+                (
+                    top
+                        ? heights[i]
+                        : -heights[i]
+                );
+
+            vertices.Add(
+                new Vector3(
+                    0f,
+                    rootY - (
+                        top ? 0.008f : -0.008f
+                    ),
+                    z
+                )
+            );
+
+            vertices.Add(
+                new Vector3(
+                    0f,
+                    tipY,
+                    z -
+                    heights[i] *
+                    0.12f
+                )
+            );
+
+            uvs.Add(
+                new Vector2(
+                    0f,
+                    (float)i /
+                    (tValues.Length - 1)
+                )
+            );
+
+            uvs.Add(
+                new Vector2(
+                    1f,
+                    (float)i /
+                    (tValues.Length - 1)
+                )
+            );
+
+            BoneWeight weight =
+                WeightForT(t);
+
+            weights.Add(weight);
+            weights.Add(weight);
+        }
+
+        for (int i = 0;
+             i < tValues.Length - 1;
+             i++)
+        {
+            int a =
+                start + i * 2;
+
+            int b = a + 1;
+            int c = a + 2;
+            int d = a + 3;
+
+            triangles.Add(a);
+            triangles.Add(b);
+            triangles.Add(c);
+
+            triangles.Add(b);
+            triangles.Add(d);
+            triangles.Add(c);
+        }
+    }
+
+    private static void AddCaudalFin(
+        List<Vector3> vertices,
+        List<Vector2> uvs,
+        List<BoneWeight> weights,
+        List<int> triangles)
+    {
+        int start =
+            vertices.Count;
+
+        Vector3[] points =
+        {
+            new Vector3(0f, 0.055f, -0.565f),
+            new Vector3(0f, 0.22f, -0.72f),
+            new Vector3(0f, 0.38f, -0.95f),
+            new Vector3(0f, 0.10f, -0.86f),
+            new Vector3(0f, 0f, -0.73f),
+            new Vector3(0f, -0.10f, -0.86f),
+            new Vector3(0f, -0.38f, -0.95f),
+            new Vector3(0f, -0.22f, -0.72f),
+            new Vector3(0f, -0.055f, -0.565f)
+        };
+
+        Vector2[] tailUv =
+        {
+            new Vector2(0.50f, 0.56f),
+            new Vector2(0.62f, 0.70f),
+            new Vector2(0.78f, 1.00f),
+            new Vector2(0.68f, 0.52f),
+            new Vector2(0.50f, 0.40f),
+            new Vector2(0.32f, 0.52f),
+            new Vector2(0.22f, 1.00f),
+            new Vector2(0.38f, 0.70f),
+            new Vector2(0.50f, 0.56f)
+        };
+
+        for (int i = 0;
+             i < points.Length;
+             i++)
+        {
+            vertices.Add(points[i]);
+            uvs.Add(tailUv[i]);
+            weights.Add(
+                FullBoneWeight(4)
+            );
+        }
+
+        int[] indices =
+        {
+            0, 1, 4,
+            1, 3, 4,
+            1, 2, 3,
+            4, 5, 8,
+            5, 7, 8,
+            5, 6, 7
+        };
+
+        for (int i = 0;
+             i < indices.Length;
+             i++)
+        {
+            triangles.Add(
+                start +
+                indices[i]
+            );
+        }
+    }
+
+    private static Mesh CreatePectoralMesh()
+    {
+        Vector3[] vertices =
+        {
+            new Vector3(-0.025f, 0f, 0.10f),
+            new Vector3(0.025f, 0f, 0.08f),
+            new Vector3(0.16f, -0.015f, -0.12f),
+            new Vector3(0.27f, -0.035f, -0.31f),
+            new Vector3(0.08f, -0.012f, -0.23f)
+        };
+
+        int[] triangles =
+        {
+            0, 1, 2,
+            0, 2, 4,
+            4, 2, 3
+        };
+
+        return CreateStaticMesh(
+            "HeroYellowtailPectoralV2",
+            vertices,
+            triangles,
+            PectoralMeshPath
+        );
+    }
+
+    private static Mesh CreateGillMesh()
+    {
+        Vector3[] vertices =
+        {
+            new Vector3(0f, 0.13f, 0.055f),
+            new Vector3(0f, 0.145f, 0.025f),
+            new Vector3(0f, 0.07f, -0.055f),
+            new Vector3(0f, -0.105f, -0.075f),
+            new Vector3(0f, -0.115f, -0.045f),
+            new Vector3(0f, 0.055f, -0.018f)
+        };
+
+        int[] triangles =
+        {
+            0, 1, 5,
+            1, 2, 5,
+            5, 2, 4,
+            2, 3, 4
+        };
+
+        return CreateStaticMesh(
+            "HeroYellowtailGillV2",
+            vertices,
+            triangles,
+            GillMeshPath
+        );
+    }
+
+    private static Mesh CreateEyeMesh()
+    {
+        const int latitude = 5;
+        const int longitude = 10;
+
+        List<Vector3> vertices =
+            new List<Vector3>();
+
+        List<int> triangles =
+            new List<int>();
+
+        for (int lat = 0;
+             lat <= latitude;
+             lat++)
+        {
+            float v =
+                (float)lat /
+                latitude;
+
+            float phi =
+                v * Mathf.PI;
+
+            float y =
+                Mathf.Cos(phi) *
+                0.038f;
+
+            float ring =
+                Mathf.Sin(phi) *
+                0.038f;
+
+            for (int lon = 0;
+                 lon <= longitude;
+                 lon++)
+            {
+                float u =
+                    (float)lon /
+                    longitude;
+
+                float theta =
+                    u *
+                    Mathf.PI *
+                    2f;
+
+                vertices.Add(
+                    new Vector3(
+                        Mathf.Cos(theta) *
+                        ring,
+                        y,
+                        Mathf.Sin(theta) *
+                        ring
+                    )
+                );
+            }
+        }
+
+        int row =
+            longitude + 1;
+
+        for (int lat = 0;
+             lat < latitude;
+             lat++)
+        {
+            for (int lon = 0;
+                 lon < longitude;
+                 lon++)
+            {
+                int a =
+                    lat * row + lon;
 
                 int b = a + 1;
                 int c = a + row;
@@ -709,120 +1491,15 @@ public static class HeroYellowtailSetup
             }
         }
 
-        Mesh mesh =
-            new Mesh
-            {
-                name =
-                    "HeroYellowtailBody"
-            };
-
-        mesh.SetVertices(vertices);
-        mesh.SetUVs(0, uvs);
-        mesh.SetTriangles(
-            triangles,
-            0
-        );
-
-        mesh.boneWeights =
-            weights.ToArray();
-
-        mesh.RecalculateNormals();
-        mesh.RecalculateTangents();
-        mesh.RecalculateBounds();
-
-        ReplaceMeshAsset(
-            BodyMeshPath,
-            mesh
-        );
-
-        return AssetDatabase.LoadAssetAtPath<Mesh>(
-            BodyMeshPath
-        );
-    }
-
-    private static float BodyWidth(float t)
-    {
-        if (t < 0.10f)
-            return Mathf.Lerp(0.07f, 0.24f, t / 0.10f);
-
-        if (t < 0.36f)
-            return Mathf.Lerp(0.24f, 0.34f, (t - 0.10f) / 0.26f);
-
-        if (t < 0.62f)
-            return Mathf.Lerp(0.34f, 0.30f, (t - 0.36f) / 0.26f);
-
-        if (t < 0.88f)
-            return Mathf.Lerp(0.30f, 0.14f, (t - 0.62f) / 0.26f);
-
-        return Mathf.Lerp(0.14f, 0.055f, (t - 0.88f) / 0.12f);
-    }
-
-    private static Mesh CreateTailMesh()
-    {
-        Vector3[] vertices =
-        {
-            new Vector3(0f, 0f, 0.02f),
-            new Vector3(0f, 0.16f, -0.12f),
-            new Vector3(0f, 0.42f, -0.48f),
-            new Vector3(0f, 0.12f, -0.37f),
-            new Vector3(0f, 0f, -0.25f),
-            new Vector3(0f, -0.12f, -0.37f),
-            new Vector3(0f, -0.42f, -0.48f),
-            new Vector3(0f, -0.16f, -0.12f)
-        };
-
-        int[] triangles =
-        {
-            0, 1, 3,
-            0, 3, 4,
-            4, 5, 7,
-            4, 7, 0,
-            1, 2, 3,
-            5, 6, 7,
-
-            3, 1, 0,
-            4, 3, 0,
-            7, 5, 4,
-            0, 7, 4,
-            3, 2, 1,
-            7, 6, 5
-        };
-
         return CreateStaticMesh(
-            "HeroYellowtailTail",
-            vertices,
-            triangles,
-            TailMeshPath
+            "HeroYellowtailEyeV2",
+            vertices.ToArray(),
+            triangles.ToArray(),
+            EyeMeshPath
         );
     }
 
-    private static Mesh CreateFinMesh()
-    {
-        Vector3[] vertices =
-        {
-            new Vector3(0f, 0f, 0.24f),
-            new Vector3(0f, 0.20f, 0.02f),
-            new Vector3(0f, 0.14f, -0.22f),
-            new Vector3(0f, 0f, -0.30f)
-        };
-
-        int[] triangles =
-        {
-            0, 1, 2,
-            0, 2, 3,
-            2, 1, 0,
-            3, 2, 0
-        };
-
-        return CreateStaticMesh(
-            "HeroYellowtailFin",
-            vertices,
-            triangles,
-            FinMeshPath
-        );
-    }
-
-    private static Mesh CreateEyeMesh()
+    private static Mesh CreateDiscMesh()
     {
         const int segments = 12;
 
@@ -846,9 +1523,11 @@ public static class HeroYellowtailSetup
 
             vertices.Add(
                 new Vector3(
-                    Mathf.Cos(angle) * 0.055f,
-                    Mathf.Sin(angle) * 0.055f,
-                    0f
+                    0f,
+                    Mathf.Cos(angle) *
+                    0.021f,
+                    Mathf.Sin(angle) *
+                    0.021f
                 )
             );
         }
@@ -863,10 +1542,34 @@ public static class HeroYellowtailSetup
         }
 
         return CreateStaticMesh(
-            "HeroYellowtailEye",
+            "HeroYellowtailEyeDiscV2",
             vertices.ToArray(),
             triangles.ToArray(),
-            EyeMeshPath
+            DiscMeshPath
+        );
+    }
+
+    private static Mesh CreateMouthMesh()
+    {
+        Vector3[] vertices =
+        {
+            new Vector3(-0.060f, -0.010f, 0f),
+            new Vector3(0.060f, -0.010f, 0f),
+            new Vector3(0.052f, 0.010f, 0f),
+            new Vector3(-0.052f, 0.010f, 0f)
+        };
+
+        int[] triangles =
+        {
+            0, 1, 2,
+            0, 2, 3
+        };
+
+        return CreateStaticMesh(
+            "HeroYellowtailMouthV2",
+            vertices,
+            triangles,
+            MouthMeshPath
         );
     }
 
@@ -892,17 +1595,23 @@ public static class HeroYellowtailSetup
             mesh
         );
 
-        return AssetDatabase.LoadAssetAtPath<Mesh>(
-            path
-        );
+        return AssetDatabase
+            .LoadAssetAtPath<Mesh>(
+                path
+            );
     }
 
     private static void ReplaceMeshAsset(
         string path,
         Mesh mesh)
     {
-        if (AssetDatabase.LoadAssetAtPath<Mesh>(
-                path) != null)
+        Object existing =
+            AssetDatabase
+                .LoadAssetAtPath<Object>(
+                    path
+                );
+
+        if (existing != null)
         {
             AssetDatabase.DeleteAsset(
                 path
@@ -915,14 +1624,15 @@ public static class HeroYellowtailSetup
         );
     }
 
-    private static Material CreateOrReplaceMaterial(
+    private static Material CreateMaterial(
         string path,
         Shader shader)
     {
         Material existing =
-            AssetDatabase.LoadAssetAtPath<Material>(
-                path
-            );
+            AssetDatabase
+                .LoadAssetAtPath<Material>(
+                    path
+                );
 
         if (existing != null)
         {
@@ -944,12 +1654,16 @@ public static class HeroYellowtailSetup
 
     private static GameObject BuildPrefabObject(
         Mesh bodyMesh,
-        Mesh tailMesh,
-        Mesh finMesh,
+        Mesh pectoralMesh,
+        Mesh gillMesh,
         Mesh eyeMesh,
+        Mesh eyeDiscMesh,
+        Mesh mouthMesh,
         Material bodyMaterial,
         Material finMaterial,
-        Material eyeMaterial)
+        Material detailMaterial,
+        Material eyeMaterial,
+        Material pupilMaterial)
     {
         GameObject root =
             new GameObject(
@@ -968,20 +1682,23 @@ public static class HeroYellowtailSetup
         );
 
         Transform[] bones =
-            new Transform[4];
+            new Transform[5];
 
         float[] boneZ =
         {
-            0.52f,
-            0.12f,
-            -0.28f,
-            -0.64f
+            0.51f,
+            0.18f,
+            -0.10f,
+            -0.34f,
+            -0.56f
         };
 
         Transform parent =
             rig.transform;
 
-        for (int i = 0; i < bones.Length; i++)
+        for (int i = 0;
+             i < bones.Length;
+             i++)
         {
             GameObject bone =
                 new GameObject(
@@ -993,28 +1710,25 @@ public static class HeroYellowtailSetup
                 false
             );
 
-            if (i == 0)
-            {
-                bone.transform.localPosition =
-                    new Vector3(
+            bone.transform.localPosition =
+                i == 0
+                    ? new Vector3(
                         0f,
                         0f,
                         boneZ[i]
-                    );
-            }
-            else
-            {
-                bone.transform.localPosition =
-                    new Vector3(
+                    )
+                    : new Vector3(
                         0f,
                         0f,
                         boneZ[i] -
                         boneZ[i - 1]
                     );
-            }
 
-            bones[i] = bone.transform;
-            parent = bone.transform;
+            bones[i] =
+                bone.transform;
+
+            parent =
+                bone.transform;
         }
 
         GameObject body =
@@ -1034,200 +1748,252 @@ public static class HeroYellowtailSetup
         renderer.sharedMesh =
             bodyMesh;
 
-        renderer.sharedMaterial =
-            bodyMaterial;
+        renderer.sharedMaterials =
+            new Material[]
+            {
+                bodyMaterial,
+                finMaterial
+            };
 
         renderer.rootBone =
             bones[0];
 
-        renderer.bones = bones;
+        renderer.bones =
+            bones;
+
+        renderer.localBounds =
+            new Bounds(
+                new Vector3(
+                    0f,
+                    0f,
+                    -0.12f
+                ),
+                new Vector3(
+                    0.75f,
+                    0.95f,
+                    1.95f
+                )
+            );
 
         Matrix4x4[] bindposes =
-            new Matrix4x4[bones.Length];
+            new Matrix4x4[
+                bones.Length
+            ];
 
         for (int i = 0;
              i < bones.Length;
              i++)
         {
             bindposes[i] =
-                bones[i].worldToLocalMatrix *
-                body.transform.localToWorldMatrix;
+                bones[i]
+                    .worldToLocalMatrix *
+                body.transform
+                    .localToWorldMatrix;
         }
 
-        bodyMesh.bindposes = bindposes;
-        EditorUtility.SetDirty(bodyMesh);
+        bodyMesh.bindposes =
+            bindposes;
 
-        GameObject tail =
-            CreateMeshObject(
-                "Tail",
-                bones[3],
-                tailMesh,
-                finMaterial
-            );
-
-        tail.transform.localPosition =
-            new Vector3(
-                0f,
-                0f,
-                -0.05f
-            );
-
-        GameObject dorsal =
-            CreateMeshObject(
-                "DorsalFin",
-                bones[1],
-                finMesh,
-                finMaterial
-            );
-
-        dorsal.transform.localPosition =
-            new Vector3(
-                0f,
-                0.24f,
-                -0.10f
-            );
-
-        dorsal.transform.localScale =
-            new Vector3(
-                0.82f,
-                0.82f,
-                1.3f
-            );
-
-        GameObject anal =
-            CreateMeshObject(
-                "AnalFin",
-                bones[2],
-                finMesh,
-                finMaterial
-            );
-
-        anal.transform.localPosition =
-            new Vector3(
-                0f,
-                -0.18f,
-                -0.04f
-            );
-
-        anal.transform.localRotation =
-            Quaternion.Euler(
-                0f,
-                0f,
-                180f
-            );
-
-        anal.transform.localScale =
-            new Vector3(
-                0.58f,
-                0.58f,
-                0.72f
-            );
+        EditorUtility.SetDirty(
+            bodyMesh
+        );
 
         GameObject leftPectoral =
             CreateMeshObject(
                 "LeftPectoral",
                 bones[0],
-                finMesh,
+                pectoralMesh,
                 finMaterial
             );
 
         leftPectoral.transform.localPosition =
             new Vector3(
-                0.20f,
-                -0.02f,
-                -0.03f
+                0.205f,
+                -0.015f,
+                -0.11f
             );
 
         leftPectoral.transform.localRotation =
             Quaternion.Euler(
-                12f,
-                -18f,
-                -28f
-            );
-
-        leftPectoral.transform.localScale =
-            new Vector3(
-                0.62f,
-                0.62f,
-                0.80f
+                2f,
+                -8f,
+                -12f
             );
 
         GameObject rightPectoral =
             CreateMeshObject(
                 "RightPectoral",
                 bones[0],
-                finMesh,
+                pectoralMesh,
                 finMaterial
             );
 
         rightPectoral.transform.localPosition =
             new Vector3(
-                -0.20f,
-                -0.02f,
-                -0.03f
-            );
-
-        rightPectoral.transform.localRotation =
-            Quaternion.Euler(
-                12f,
-                18f,
-                28f
+                -0.205f,
+                -0.015f,
+                -0.11f
             );
 
         rightPectoral.transform.localScale =
             new Vector3(
-                0.62f,
-                0.62f,
-                0.80f
+                -1f,
+                1f,
+                1f
             );
 
-        CreateEye(
-            "LeftEye",
-            root.transform,
-            eyeMesh,
-            eyeMaterial,
-            new Vector3(
-                0.205f,
-                0.055f,
-                0.58f
-            ),
+        rightPectoral.transform.localRotation =
             Quaternion.Euler(
-                0f,
-                90f,
-                0f
+                2f,
+                8f,
+                12f
+            );
+
+        CreateGillDetail(
+            "LeftGill",
+            bones[0],
+            gillMesh,
+            detailMaterial,
+            new Vector3(
+                0.238f,
+                0.008f,
+                -0.10f
+            ),
+            Vector3.one
+        );
+
+        CreateGillDetail(
+            "RightGill",
+            bones[0],
+            gillMesh,
+            detailMaterial,
+            new Vector3(
+                -0.238f,
+                0.008f,
+                -0.10f
+            ),
+            new Vector3(
+                -1f,
+                1f,
+                1f
             )
         );
 
-        CreateEye(
-            "RightEye",
-            root.transform,
+        CreateEyeAssembly(
+            "LeftEye",
+            bones[0],
             eyeMesh,
+            eyeDiscMesh,
             eyeMaterial,
+            pupilMaterial,
             new Vector3(
-                -0.205f,
-                0.055f,
-                0.58f
+                0.224f,
+                0.067f,
+                0.015f
             ),
-            Quaternion.Euler(
-                0f,
-                -90f,
-                0f
-            )
+            1f
         );
+
+        CreateEyeAssembly(
+            "RightEye",
+            bones[0],
+            eyeMesh,
+            eyeDiscMesh,
+            eyeMaterial,
+            pupilMaterial,
+            new Vector3(
+                -0.224f,
+                0.067f,
+                0.015f
+            ),
+            -1f
+        );
+
+        GameObject mouth =
+            CreateMeshObject(
+                "Mouth",
+                bones[0],
+                mouthMesh,
+                detailMaterial
+            );
+
+        mouth.transform.localPosition =
+            new Vector3(
+                0f,
+                -0.055f,
+                0.201f
+            );
 
         animator.Configure(
             bones[1],
             bones[2],
             bones[3],
-            tail.transform,
+            bones[4],
             leftPectoral.transform,
             rightPectoral.transform
         );
 
-        root.transform.localScale =
-            Vector3.one;
-
         return root;
+    }
+
+    private static void CreateGillDetail(
+        string name,
+        Transform parent,
+        Mesh mesh,
+        Material material,
+        Vector3 localPosition,
+        Vector3 localScale)
+    {
+        GameObject gill =
+            CreateMeshObject(
+                name,
+                parent,
+                mesh,
+                material
+            );
+
+        gill.transform.localPosition =
+            localPosition;
+
+        gill.transform.localScale =
+            localScale;
+    }
+
+    private static void CreateEyeAssembly(
+        string name,
+        Transform parent,
+        Mesh eyeMesh,
+        Mesh discMesh,
+        Material eyeMaterial,
+        Material pupilMaterial,
+        Vector3 localPosition,
+        float side)
+    {
+        GameObject eye =
+            CreateMeshObject(
+                name,
+                parent,
+                eyeMesh,
+                eyeMaterial
+            );
+
+        eye.transform.localPosition =
+            localPosition;
+
+        GameObject pupil =
+            CreateMeshObject(
+                "Pupil",
+                eye.transform,
+                discMesh,
+                pupilMaterial
+            );
+
+        pupil.transform.localPosition =
+            new Vector3(
+                0.039f * side,
+                0f,
+                0f
+            );
     }
 
     private static GameObject CreateMeshObject(
@@ -1249,34 +2015,239 @@ public static class HeroYellowtailSetup
         );
 
         gameObject.GetComponent<MeshFilter>()
-            .sharedMesh = mesh;
+            .sharedMesh =
+            mesh;
 
         gameObject.GetComponent<MeshRenderer>()
-            .sharedMaterial = material;
+            .sharedMaterial =
+            material;
 
         return gameObject;
     }
 
-    private static void CreateEye(
-        string name,
-        Transform parent,
-        Mesh mesh,
-        Material material,
-        Vector3 position,
-        Quaternion rotation)
+    private static float ZFromT(float t)
     {
-        GameObject eye =
-            CreateMeshObject(
-                name,
-                parent,
-                mesh,
-                material
+        return Mathf.Lerp(
+            0.70f,
+            -0.58f,
+            t
+        );
+    }
+
+    private static float BodyWidth(float t)
+    {
+        if (t < 0.05f)
+        {
+            return Mathf.Lerp(
+                0.060f,
+                0.155f,
+                t / 0.05f
+            );
+        }
+
+        if (t < 0.18f)
+        {
+            return Mathf.Lerp(
+                0.155f,
+                0.235f,
+                (t - 0.05f) /
+                0.13f
+            );
+        }
+
+        if (t < 0.40f)
+        {
+            return Mathf.Lerp(
+                0.235f,
+                0.265f,
+                (t - 0.18f) /
+                0.22f
+            );
+        }
+
+        if (t < 0.62f)
+        {
+            return Mathf.Lerp(
+                0.265f,
+                0.238f,
+                (t - 0.40f) /
+                0.22f
+            );
+        }
+
+        if (t < 0.82f)
+        {
+            return Mathf.Lerp(
+                0.238f,
+                0.125f,
+                (t - 0.62f) /
+                0.20f
+            );
+        }
+
+        return Mathf.Lerp(
+            0.125f,
+            0.052f,
+            (t - 0.82f) /
+            0.18f
+        );
+    }
+
+    private static float BodyTop(float t)
+    {
+        if (t < 0.08f)
+        {
+            return Mathf.Lerp(
+                0.060f,
+                0.180f,
+                t / 0.08f
+            );
+        }
+
+        if (t < 0.30f)
+        {
+            return Mathf.Lerp(
+                0.180f,
+                0.285f,
+                (t - 0.08f) /
+                0.22f
+            );
+        }
+
+        if (t < 0.56f)
+        {
+            return Mathf.Lerp(
+                0.285f,
+                0.265f,
+                (t - 0.30f) /
+                0.26f
+            );
+        }
+
+        if (t < 0.82f)
+        {
+            return Mathf.Lerp(
+                0.265f,
+                0.125f,
+                (t - 0.56f) /
+                0.26f
+            );
+        }
+
+        return Mathf.Lerp(
+            0.125f,
+            0.060f,
+            (t - 0.82f) /
+            0.18f
+        );
+    }
+
+    private static float BodyBottom(float t)
+    {
+        if (t < 0.08f)
+        {
+            return Mathf.Lerp(
+                0.045f,
+                0.145f,
+                t / 0.08f
+            );
+        }
+
+        if (t < 0.34f)
+        {
+            return Mathf.Lerp(
+                0.145f,
+                0.245f,
+                (t - 0.08f) /
+                0.26f
+            );
+        }
+
+        if (t < 0.58f)
+        {
+            return Mathf.Lerp(
+                0.245f,
+                0.230f,
+                (t - 0.34f) /
+                0.24f
+            );
+        }
+
+        if (t < 0.82f)
+        {
+            return Mathf.Lerp(
+                0.230f,
+                0.110f,
+                (t - 0.58f) /
+                0.24f
+            );
+        }
+
+        return Mathf.Lerp(
+            0.110f,
+            0.050f,
+            (t - 0.82f) /
+            0.18f
+        );
+    }
+
+    private static float BodyCenterY(float t)
+    {
+        return
+            Mathf.Lerp(
+                -0.012f,
+                0.006f,
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    t
+                )
+            );
+    }
+
+    private static BoneWeight WeightForT(float t)
+    {
+        float position =
+            Mathf.Clamp01(t) *
+            4f;
+
+        int first =
+            Mathf.Clamp(
+                Mathf.FloorToInt(
+                    position
+                ),
+                0,
+                4
             );
 
-        eye.transform.localPosition =
-            position;
+        int second =
+            Mathf.Min(
+                first + 1,
+                4
+            );
 
-        eye.transform.localRotation =
-            rotation;
+        float blend =
+            Mathf.Clamp01(
+                position -
+                first
+            );
+
+        return new BoneWeight
+        {
+            boneIndex0 = first,
+            weight0 = 1f - blend,
+            boneIndex1 = second,
+            weight1 = blend
+        };
+    }
+
+    private static BoneWeight FullBoneWeight(
+        int bone)
+    {
+        return new BoneWeight
+        {
+            boneIndex0 = bone,
+            weight0 = 1f
+        };
     }
 }
