@@ -5,24 +5,40 @@ public class YellowfinTunaPresentation : MonoBehaviour
     [SerializeField]
     private Renderer[] renderers;
 
+    [SerializeField]
+    private Transform visualRoot;
+
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.12f;
+    private float swimStrength = 0.17f;
 
     [SerializeField]
-    private float swimSpeed = 7.0f;
+    private float swimSpeed = 8.0f;
+
+    [SerializeField]
+    private float bodyYawDegrees = 2.4f;
+
+    [SerializeField]
+    private float bodyRollDegrees = 0.55f;
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.055f;
+    private float heldStrength = 0.085f;
 
     [SerializeField]
-    private float heldSpeed = 5.0f;
+    private float heldSpeed = 5.5f;
+
+    [SerializeField]
+    private float heldYawDegrees = 3.2f;
+
+    [SerializeField]
+    private float heldRollDegrees = 1.2f;
 
     private bool held;
     private float phase;
 
     private MaterialPropertyBlock block;
+    private Quaternion visualBaseRotation;
 
     private static readonly int SwimStrengthId =
         Shader.PropertyToID(
@@ -41,14 +57,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     private void Awake()
     {
-        if (renderers == null ||
-            renderers.Length == 0)
-        {
-            renderers =
-                GetComponentsInChildren<Renderer>(
-                    true
-                );
-        }
+        ResolveReferences();
 
         phase =
             Random.Range(
@@ -68,6 +77,8 @@ public class YellowfinTunaPresentation : MonoBehaviour
         renderers =
             targetRenderers;
 
+        ResolveReferences();
+
         if (block == null)
         {
             block =
@@ -85,7 +96,82 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     private void OnEnable()
     {
+        ResolveReferences();
         ApplyAnimationSettings();
+    }
+
+    private void Update()
+    {
+        if (visualRoot == null)
+            return;
+
+        float speed =
+            held
+                ? heldSpeed
+                : swimSpeed;
+
+        float beat =
+            Mathf.Sin(
+                Time.time *
+                speed +
+                phase
+            );
+
+        float yaw =
+            beat *
+            (
+                held
+                    ? heldYawDegrees
+                    : bodyYawDegrees
+            );
+
+        float roll =
+            Mathf.Sin(
+                Time.time *
+                speed *
+                0.5f +
+                phase +
+                0.8f
+            ) *
+            (
+                held
+                    ? heldRollDegrees
+                    : bodyRollDegrees
+            );
+
+        visualRoot.localRotation =
+            visualBaseRotation *
+            Quaternion.Euler(
+                0f,
+                yaw,
+                roll
+            );
+    }
+
+    private void ResolveReferences()
+    {
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
+            renderers =
+                GetComponentsInChildren<Renderer>(
+                    true
+                );
+        }
+
+        if (visualRoot == null)
+        {
+            visualRoot =
+                transform.Find(
+                    "Visual"
+                );
+        }
+
+        if (visualRoot != null)
+        {
+            visualBaseRotation =
+                visualRoot.localRotation;
+        }
     }
 
     private void ApplyAnimationSettings()

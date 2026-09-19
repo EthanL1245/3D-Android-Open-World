@@ -155,7 +155,7 @@ public static class YellowfinTunaImporter
 
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna Movement Fixed",
-                "Rebuilt the existing Tuna without re-selecting the ZIP. The importer now uses the FBX's authored object scale to resolve anatomy correctly, so Y stays up, Z is side-to-side, the head faces forward, and only the rear body/tail bends.",
+                "Rebuilt the existing Tuna without re-selecting the ZIP. The fish now uses a subtle whole-body yaw plus a single-phase rear-body/tail bend: the front stays stable, the back half flexes gently, and the tail does most of the work without any eel-like traveling wave.",
                 "OK"
             );
         }

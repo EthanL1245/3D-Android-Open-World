@@ -13,8 +13,8 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Rear Bend Strength", Float) = 0.12
-        _SwimSpeed ("Tail Beat Speed", Float) = 7.0
+        _SwimStrength ("Rear Bend Strength", Float) = 0.17
+        _SwimSpeed ("Tail Beat Speed", Float) = 8.0
         _SwimPhase ("Swim Phase", Float) = 0
     }
 
@@ -108,8 +108,8 @@ Shader "OpenWorld/YellowfinTuna"
                 // The deformation then rises smoothly toward the tail.
                 float rearAmount =
                     saturate(
-                        (tailPosition - 0.72) /
-                        0.28
+                        (tailPosition - 0.52) /
+                        0.48
                     );
 
                 rearAmount =
@@ -122,8 +122,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float tailAmount =
                     saturate(
-                        (tailPosition - 0.90) /
-                        0.10
+                        (tailPosition - 0.80) /
+                        0.20
                     );
 
                 tailAmount =
@@ -137,7 +137,7 @@ Shader "OpenWorld/YellowfinTuna"
                 float tailDistance =
                     max(
                         0.0,
-                        tailPosition - 0.72
+                        tailPosition - 0.52
                     ) *
                     bodyRange;
 
@@ -154,8 +154,9 @@ Shader "OpenWorld/YellowfinTuna"
                     tailDistance *
                     rearAmount *
                     (
-                        0.78 +
-                        tailAmount * 0.42
+                        0.34 +
+                        rearAmount * 0.30 +
+                        tailAmount * 0.56
                     );
 
                 positionOS +=
