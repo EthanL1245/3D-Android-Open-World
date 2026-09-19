@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -25,22 +24,44 @@ public static class YellowfinTunaImporter
     private const string MaterialPath =
         RootFolder + "/YellowfinTuna.mat";
 
-    private const string ControllerPath =
-        RootFolder + "/YellowfinTuna.controller";
-
     private const string PrefabPath =
         "Assets/Resources/Fishing/YellowfinTuna.prefab";
 
-    private const float TargetBodyLength = 1.35f;
+    private const string InventorySaveKey =
+        "OpenWorld.FishingInventory.v1";
 
-    [MenuItem("Tools/Open World/Import Yellowfin Tuna Model...")]
-    public static void ImportYellowfinTuna()
+    private const string PreviewGrantKeyV1 =
+        "OpenWorld.YellowfinTunaPreviewGrant.v1";
+
+    private const string PreviewGrantKeyV2 =
+        "OpenWorld.YellowfinTunaPreviewGrant.v2";
+
+    private const float TargetBodyLength =
+        0.78f;
+
+    [Serializable]
+    private class PreviewFishRecord
+    {
+        public int speciesId;
+        public float weightKg;
+        public long caughtUtcTicks;
+    }
+
+    [Serializable]
+    private class PreviewInventoryData
+    {
+        public List<PreviewFishRecord> fish =
+            new List<PreviewFishRecord>();
+    }
+
+    [MenuItem("Tools/Open World/Replace Yellowfin Tuna (One Click)...")]
+    public static void ReplaceYellowfinTuna()
     {
         if (EditorApplication.isPlaying)
         {
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna",
-                "Exit Play Mode before importing the model.",
+                "Exit Play Mode first.",
                 "OK"
             );
 
@@ -49,79 +70,114 @@ public static class YellowfinTunaImporter
 
         string zipPath =
             EditorUtility.OpenFilePanel(
-                "Select Yellowfin Tuna.zip",
+                "Select Unanimated Untextured Yellowfin Tuna.zip",
                 string.Empty,
                 "zip"
             );
 
-        if (string.IsNullOrWhiteSpace(zipPath))
+        if (string.IsNullOrWhiteSpace(
+                zipPath))
+        {
             return;
+        }
 
         try
         {
             EditorUtility.DisplayProgressBar(
                 "Yellowfin Tuna",
-                "Extracting your FBX and texture...",
-                0.10f
+                "Cleaning the old imported tuna...",
+                0.05f
             );
 
+            CleanOldImportedTuna();
             EnsureFolders();
-            ExtractSourceFiles(zipPath);
 
             EditorUtility.DisplayProgressBar(
                 "Yellowfin Tuna",
-                "Configuring the texture...",
-                0.24f
+                "Extracting the clean mesh and texture...",
+                0.16f
+            );
+
+            ExtractSourceFiles(
+                zipPath
+            );
+
+            EditorUtility.DisplayProgressBar(
+                "Yellowfin Tuna",
+                "Importing the authored mesh without old animation data...",
+                0.31f
             );
 
             ConfigureTexture();
-
-            EditorUtility.DisplayProgressBar(
-                "Yellowfin Tuna",
-                "Importing rig and animation...",
-                0.40f
+            ConfigureModelImporter(
+                true
             );
 
-            ConfigureModelImporter();
-
-            AnimationClip swimClip =
-                FindSwimAnimation();
-
-            if (swimClip == null)
-            {
-                EditorUtility.DisplayDialog(
-                    "Yellowfin Tuna",
-                    "The FBX imported, but I could not find its Armature animation clip. The source package contains an ArmatureAction, so send me the Unity Console/import details if this happens.",
-                    "OK"
+            GameObject sourceAsset =
+                AssetDatabase.LoadAssetAtPath<GameObject>(
+                    FbxPath
                 );
 
-                return;
+            if (sourceAsset == null)
+            {
+                throw new InvalidOperationException(
+                    "Unity could not load the imported Yellowfin Tuna FBX."
+                );
             }
+
+            MeshFilter sourceFilter =
+                sourceAsset
+                    .GetComponentsInChildren<MeshFilter>(
+                        true
+                    )
+                    .FirstOrDefault(
+                        filter =>
+                            filter.sharedMesh != null
+                    );
+
+            if (sourceFilter == null)
+            {
+                throw new InvalidOperationException(
+                    "The FBX does not contain a usable mesh."
+                );
+            }
+
+            Mesh mesh =
+                sourceFilter.sharedMesh;
+
+            MeshAnalysis analysis =
+                AnalyzeMesh(
+                    mesh
+                );
 
             EditorUtility.DisplayProgressBar(
                 "Yellowfin Tuna",
-                "Creating mobile material and animation controller...",
-                0.58f
+                "Creating the wet-skin material and attached body animation...",
+                0.51f
             );
 
             Material material =
-                BuildMaterial();
-
-            AnimatorController controller =
-                BuildAnimatorController(
-                    swimClip
+                BuildMaterial(
+                    analysis
                 );
 
             EditorUtility.DisplayProgressBar(
                 "Yellowfin Tuna",
-                "Building normalized gameplay prefab...",
-                0.76f
+                "Building the gameplay prefab...",
+                0.70f
             );
 
             BuildGameplayPrefab(
+                sourceAsset,
                 material,
-                controller
+                analysis
             );
+
+            ConfigureModelImporter(
+                false
+            );
+
+            ResetPreviewFish();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -134,20 +190,29 @@ public static class YellowfinTunaImporter
             Selection.activeObject =
                 prefab;
 
+            int triangles =
+                CountTriangles(mesh);
+
             EditorUtility.DisplayDialog(
-                "Yellowfin Tuna Imported",
-                "Your original FBX, photo texture, armature, and ArmatureAction animation are now wired into the game.\n\nThe model is normalized to gameplay size, cameras/lights from the Blender scene are excluded, root motion is disabled, and the animation loops automatically.\n\nA temporary one-time preview Yellowfin Tuna will appear in your caught-fish inventory the next time you enter Play Mode.",
+                "Yellowfin Tuna Replaced",
+                "Done. The old rig/animation pipeline was removed.\n\nThis version uses your clean authored fish as ONE intact mesh, your supplied texture, and a lightweight GPU body/tail swim so fins cannot separate from the body.\n\nMesh: " +
+                mesh.vertexCount +
+                " vertices, about " +
+                triangles +
+                " triangles.\n\nI also reset the temporary preview catch, so the next Play Mode starts with exactly one fresh 14.50 kg Yellowfin Tuna for inspection.",
                 "OK"
             );
         }
         catch (Exception exception)
         {
-            Debug.LogException(exception);
+            Debug.LogException(
+                exception
+            );
 
             EditorUtility.DisplayDialog(
                 "Yellowfin Tuna Import Failed",
                 exception.Message +
-                "\n\nThe full exception is in the Unity Console.",
+                "\n\nThe complete exception is in the Unity Console.",
                 "OK"
             );
         }
@@ -157,86 +222,25 @@ public static class YellowfinTunaImporter
         }
     }
 
-    [MenuItem("Tools/Open World/Rebuild Yellowfin Tuna From Imported Source")]
-    public static void RebuildFromImportedSource()
+    private static void CleanOldImportedTuna()
     {
-        if (EditorApplication.isPlaying)
+        if (AssetDatabase.IsValidFolder(
+                RootFolder))
         {
-            EditorUtility.DisplayDialog(
-                "Yellowfin Tuna",
-                "Exit Play Mode before rebuilding.",
-                "OK"
+            AssetDatabase.DeleteAsset(
+                RootFolder
             );
-
-            return;
         }
 
-        if (!File.Exists(
-                Path.GetFullPath(FbxPath)) ||
-            !File.Exists(
-                Path.GetFullPath(TexturePath)))
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(
+                PrefabPath) != null)
         {
-            EditorUtility.DisplayDialog(
-                "Yellowfin Tuna",
-                "Imported source files are missing. Run Tools > Open World > Import Yellowfin Tuna Model... first.",
-                "OK"
+            AssetDatabase.DeleteAsset(
+                PrefabPath
             );
-
-            return;
         }
 
-        try
-        {
-            ConfigureTexture();
-            ConfigureModelImporter();
-
-            AnimationClip swimClip =
-                FindSwimAnimation();
-
-            if (swimClip == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not find the Yellowfin Tuna swim animation."
-                );
-            }
-
-            Material material =
-                BuildMaterial();
-
-            AnimatorController controller =
-                BuildAnimatorController(
-                    swimClip
-                );
-
-            BuildGameplayPrefab(
-                material,
-                controller
-            );
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-
-            Selection.activeObject =
-                AssetDatabase.LoadAssetAtPath<GameObject>(
-                    PrefabPath
-                );
-
-            EditorUtility.DisplayDialog(
-                "Yellowfin Tuna Rebuilt",
-                "Rebuilt the gameplay prefab from the imported FBX and texture.",
-                "OK"
-            );
-        }
-        catch (Exception exception)
-        {
-            Debug.LogException(exception);
-
-            EditorUtility.DisplayDialog(
-                "Yellowfin Tuna Rebuild Failed",
-                exception.Message,
-                "OK"
-            );
-        }
+        AssetDatabase.Refresh();
     }
 
     private static void EnsureFolders()
@@ -264,8 +268,11 @@ public static class YellowfinTunaImporter
         string path =
             parent + "/" + child;
 
-        if (AssetDatabase.IsValidFolder(path))
+        if (AssetDatabase.IsValidFolder(
+                path))
+        {
             return;
+        }
 
         string[] pieces =
             parent.Split('/');
@@ -278,9 +285,11 @@ public static class YellowfinTunaImporter
              i++)
         {
             string next =
-                current + "/" + pieces[i];
+                current + "/" +
+                pieces[i];
 
-            if (!AssetDatabase.IsValidFolder(next))
+            if (!AssetDatabase.IsValidFolder(
+                    next))
             {
                 AssetDatabase.CreateFolder(
                     current,
@@ -291,7 +300,8 @@ public static class YellowfinTunaImporter
             current = next;
         }
 
-        if (!AssetDatabase.IsValidFolder(path))
+        if (!AssetDatabase.IsValidFolder(
+                path))
         {
             AssetDatabase.CreateFolder(
                 parent,
@@ -304,7 +314,9 @@ public static class YellowfinTunaImporter
         string zipPath)
     {
         using FileStream stream =
-            File.OpenRead(zipPath);
+            File.OpenRead(
+                zipPath
+            );
 
         using ZipArchive archive =
             new ZipArchive(
@@ -330,33 +342,20 @@ public static class YellowfinTunaImporter
                     entry =>
                         IsImageFile(
                             entry.FullName
-                        ) &&
-                        entry.FullName
-                            .IndexOf(
-                                "texture",
-                                StringComparison
-                                    .OrdinalIgnoreCase
-                            ) >= 0
-                ) ??
-            archive.Entries
-                .FirstOrDefault(
-                    entry =>
-                        IsImageFile(
-                            entry.FullName
                         )
                 );
 
         if (fbxEntry == null)
         {
             throw new InvalidDataException(
-                "No .fbx file was found inside the selected ZIP."
+                "No FBX file was found inside the ZIP."
             );
         }
 
         if (textureEntry == null)
         {
             throw new InvalidDataException(
-                "No JPG/PNG texture was found inside the selected ZIP."
+                "No JPG/PNG texture was found inside the ZIP."
             );
         }
 
@@ -370,21 +369,7 @@ public static class YellowfinTunaImporter
             TexturePath
         );
 
-        AssetDatabase.ImportAsset(
-            TexturePath,
-            ImportAssetOptions
-                .ForceSynchronousImport |
-            ImportAssetOptions
-                .ForceUpdate
-        );
-
-        AssetDatabase.ImportAsset(
-            FbxPath,
-            ImportAssetOptions
-                .ForceSynchronousImport |
-            ImportAssetOptions
-                .ForceUpdate
-        );
+        AssetDatabase.Refresh();
     }
 
     private static bool IsImageFile(
@@ -404,17 +389,18 @@ public static class YellowfinTunaImporter
         ZipArchiveEntry entry,
         string assetPath)
     {
-        string absolutePath =
+        string absolute =
             Path.GetFullPath(
                 assetPath
             );
 
         string directory =
             Path.GetDirectoryName(
-                absolutePath
+                absolute
             );
 
-        if (!Directory.Exists(directory))
+        if (!Directory.Exists(
+                directory))
         {
             Directory.CreateDirectory(
                 directory
@@ -426,10 +412,12 @@ public static class YellowfinTunaImporter
 
         using FileStream output =
             File.Create(
-                absolutePath
+                absolute
             );
 
-        input.CopyTo(output);
+        input.CopyTo(
+            output
+        );
     }
 
     private static void ConfigureTexture()
@@ -450,7 +438,7 @@ public static class YellowfinTunaImporter
         if (importer == null)
         {
             throw new InvalidOperationException(
-                "Unity could not create a TextureImporter for the Yellowfin Tuna texture."
+                "Unity could not create the texture importer."
             );
         }
 
@@ -459,6 +447,7 @@ public static class YellowfinTunaImporter
 
         importer.sRGBTexture = true;
         importer.mipmapEnabled = true;
+
         importer.wrapMode =
             TextureWrapMode.Clamp;
 
@@ -467,6 +456,7 @@ public static class YellowfinTunaImporter
 
         importer.anisoLevel = 4;
         importer.maxTextureSize = 2048;
+
         importer.textureCompression =
             TextureImporterCompression
                 .CompressedHQ;
@@ -476,7 +466,8 @@ public static class YellowfinTunaImporter
         importer.SaveAndReimport();
     }
 
-    private static void ConfigureModelImporter()
+    private static void ConfigureModelImporter(
+        bool readable)
     {
         AssetDatabase.ImportAsset(
             FbxPath,
@@ -494,183 +485,305 @@ public static class YellowfinTunaImporter
         if (importer == null)
         {
             throw new InvalidOperationException(
-                "Unity could not create a ModelImporter for the Yellowfin Tuna FBX."
+                "Unity could not create the FBX model importer."
             );
         }
 
-        importer.importAnimation = true;
+        importer.importAnimation = false;
+
         importer.animationType =
-            ModelImporterAnimationType.Generic;
+            ModelImporterAnimationType.None;
 
         importer.importCameras = false;
         importer.importLights = false;
-        importer.importBlendShapes = true;
+
+        importer.importBlendShapes = false;
 
         importer.materialImportMode =
             ModelImporterMaterialImportMode.None;
 
         importer.meshCompression =
-            ModelImporterMeshCompression.Low;
+            ModelImporterMeshCompression.Off;
 
-        importer.isReadable = false;
+        importer.importNormals =
+            ModelImporterNormals.Import;
+
+        importer.importTangents =
+            ModelImporterTangents.CalculateMikk;
+
+        importer.isReadable =
+            readable;
 
         importer.SaveAndReimport();
+    }
 
-        ModelImporterClipAnimation[] defaults =
-            importer.defaultClipAnimations;
+    private struct MeshAnalysis
+    {
+        public Vector3 bodyAxis;
+        public Vector3 sideAxis;
+        public Vector3 upAxis;
 
-        if (defaults == null ||
-            defaults.Length == 0)
-        {
-            return;
-        }
+        public float bodyMin;
+        public float bodyMax;
 
-        ModelImporterClipAnimation selected =
-            defaults.FirstOrDefault(
-                clip =>
-                    ContainsArmatureAction(
-                        clip.name
-                    ) ||
-                    ContainsArmatureAction(
-                        clip.takeName
-                    )
+        public bool tailAtMin;
+    }
+
+    private static MeshAnalysis AnalyzeMesh(
+        Mesh mesh)
+    {
+        Bounds bounds =
+            mesh.bounds;
+
+        Vector3 size =
+            bounds.size;
+
+        int lengthIndex =
+            LargestAxisIndex(
+                size
             );
 
-        if (selected == null)
+        int sideIndex =
+            SmallestAxisIndex(
+                size
+            );
+
+        int upIndex =
+            3 -
+            lengthIndex -
+            sideIndex;
+
+        Vector3 bodyAxis =
+            AxisForIndex(
+                lengthIndex
+            );
+
+        Vector3 sideAxis =
+            AxisForIndex(
+                sideIndex
+            );
+
+        Vector3 upAxis =
+            AxisForIndex(
+                upIndex
+            );
+
+        float bodyMin =
+            Component(
+                bounds.min,
+                lengthIndex
+            );
+
+        float bodyMax =
+            Component(
+                bounds.max,
+                lengthIndex
+            );
+
+        bool tailAtMin =
+            InferTailAtMin(
+                mesh.vertices,
+                lengthIndex,
+                upIndex,
+                bodyMin,
+                bodyMax
+            );
+
+        return new MeshAnalysis
         {
-            selected =
-                defaults.FirstOrDefault(
-                    clip =>
-                        ContainsArmature(
-                            clip.name
-                        ) ||
-                        ContainsArmature(
-                            clip.takeName
-                        )
+            bodyAxis = bodyAxis,
+            sideAxis = sideAxis,
+            upAxis = upAxis,
+            bodyMin = bodyMin,
+            bodyMax = bodyMax,
+            tailAtMin = tailAtMin
+        };
+    }
+
+    private static int LargestAxisIndex(
+        Vector3 value)
+    {
+        if (value.x >= value.y &&
+            value.x >= value.z)
+        {
+            return 0;
+        }
+
+        if (value.y >= value.x &&
+            value.y >= value.z)
+        {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    private static int SmallestAxisIndex(
+        Vector3 value)
+    {
+        if (value.x <= value.y &&
+            value.x <= value.z)
+        {
+            return 0;
+        }
+
+        if (value.y <= value.x &&
+            value.y <= value.z)
+        {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    private static Vector3 AxisForIndex(
+        int index)
+    {
+        switch (index)
+        {
+            case 0:
+                return Vector3.right;
+
+            case 1:
+                return Vector3.up;
+
+            default:
+                return Vector3.forward;
+        }
+    }
+
+    private static float Component(
+        Vector3 value,
+        int index)
+    {
+        switch (index)
+        {
+            case 0:
+                return value.x;
+
+            case 1:
+                return value.y;
+
+            default:
+                return value.z;
+        }
+    }
+
+    private static bool InferTailAtMin(
+        Vector3[] vertices,
+        int lengthIndex,
+        int upIndex,
+        float min,
+        float max)
+    {
+        float range =
+            Mathf.Max(
+                0.0001f,
+                max - min
+            );
+
+        float band =
+            range * 0.13f;
+
+        float minLow =
+            float.PositiveInfinity;
+
+        float minHigh =
+            float.NegativeInfinity;
+
+        float maxLow =
+            float.PositiveInfinity;
+
+        float maxHigh =
+            float.NegativeInfinity;
+
+        foreach (Vector3 vertex
+                 in vertices)
+        {
+            float along =
+                Component(
+                    vertex,
+                    lengthIndex
                 );
+
+            float height =
+                Component(
+                    vertex,
+                    upIndex
+                );
+
+            if (along <=
+                min + band)
+            {
+                minLow =
+                    Mathf.Min(
+                        minLow,
+                        height
+                    );
+
+                minHigh =
+                    Mathf.Max(
+                        minHigh,
+                        height
+                    );
+            }
+
+            if (along >=
+                max - band)
+            {
+                maxLow =
+                    Mathf.Min(
+                        maxLow,
+                        height
+                    );
+
+                maxHigh =
+                    Mathf.Max(
+                        maxHigh,
+                        height
+                    );
+            }
         }
 
-        if (selected == null)
-            return;
+        float minSpan =
+            minHigh - minLow;
 
-        selected.name = "Swim";
-        selected.loopTime = true;
+        float maxSpan =
+            maxHigh - maxLow;
 
-        importer.clipAnimations =
-            new[]
-            {
-                selected
-            };
+        if (!float.IsFinite(
+                minSpan) ||
+            !float.IsFinite(
+                maxSpan))
+        {
+            return true;
+        }
 
-        importer.SaveAndReimport();
+        // A tuna tail is much taller at its extreme than the pointed snout.
+        return minSpan >
+               maxSpan;
     }
 
-    private static bool ContainsArmatureAction(
-        string value)
-    {
-        return
-            !string.IsNullOrEmpty(value) &&
-            value.IndexOf(
-                "ArmatureAction",
-                StringComparison
-                    .OrdinalIgnoreCase
-            ) >= 0;
-    }
-
-    private static bool ContainsArmature(
-        string value)
-    {
-        return
-            !string.IsNullOrEmpty(value) &&
-            value.IndexOf(
-                "Armature",
-                StringComparison
-                    .OrdinalIgnoreCase
-            ) >= 0 &&
-            value.IndexOf(
-                "Camera",
-                StringComparison
-                    .OrdinalIgnoreCase
-            ) < 0 &&
-            value.IndexOf(
-                "Lamp",
-                StringComparison
-                    .OrdinalIgnoreCase
-            ) < 0;
-    }
-
-    private static AnimationClip FindSwimAnimation()
-    {
-        UnityEngine.Object[] assets =
-            AssetDatabase.LoadAllAssetsAtPath(
-                FbxPath
-            );
-
-        AnimationClip[] clips =
-            assets
-                .OfType<AnimationClip>()
-                .Where(
-                    clip =>
-                        !clip.name.StartsWith(
-                            "__preview__",
-                            StringComparison
-                                .OrdinalIgnoreCase
-                        )
-                )
-                .ToArray();
-
-        AnimationClip swim =
-            clips.FirstOrDefault(
-                clip =>
-                    string.Equals(
-                        clip.name,
-                        "Swim",
-                        StringComparison
-                            .OrdinalIgnoreCase
-                    )
-            );
-
-        if (swim != null)
-            return swim;
-
-        swim =
-            clips.FirstOrDefault(
-                clip =>
-                    ContainsArmatureAction(
-                        clip.name
-                    )
-            );
-
-        if (swim != null)
-            return swim;
-
-        return
-            clips.FirstOrDefault(
-                clip =>
-                    ContainsArmature(
-                        clip.name
-                    )
-            );
-    }
-
-    private static Material BuildMaterial()
+    private static Material BuildMaterial(
+        MeshAnalysis analysis)
     {
         Shader shader =
             Shader.Find(
-                "Universal Render Pipeline/Lit"
+                "OpenWorld/YellowfinTuna"
             );
 
         if (shader == null)
         {
             throw new InvalidOperationException(
-                "URP/Lit shader was not found."
+                "OpenWorld/YellowfinTuna shader has not imported yet. Wait for Unity to finish compiling and run the command again."
             );
         }
 
         Material existing =
-            AssetDatabase.LoadAssetAtPath<Material>(
-                MaterialPath
-            );
+            AssetDatabase
+                .LoadAssetAtPath<Material>(
+                    MaterialPath
+                );
 
         if (existing != null)
         {
@@ -687,9 +800,10 @@ public static class YellowfinTunaImporter
             };
 
         Texture2D texture =
-            AssetDatabase.LoadAssetAtPath<Texture2D>(
-                TexturePath
-            );
+            AssetDatabase
+                .LoadAssetAtPath<Texture2D>(
+                    TexturePath
+                );
 
         material.SetTexture(
             "_BaseMap",
@@ -701,23 +815,52 @@ public static class YellowfinTunaImporter
             Color.white
         );
 
-        if (material.HasProperty(
-                "_Smoothness"))
-        {
-            material.SetFloat(
-                "_Smoothness",
-                0.58f
-            );
-        }
+        material.SetFloat(
+            "_Smoothness",
+            0.62f
+        );
 
-        if (material.HasProperty(
-                "_Metallic"))
-        {
-            material.SetFloat(
-                "_Metallic",
-                0.02f
-            );
-        }
+        material.SetFloat(
+            "_FresnelStrength",
+            0.22f
+        );
+
+        material.SetVector(
+            "_BodyAxis",
+            analysis.bodyAxis
+        );
+
+        material.SetVector(
+            "_SideAxis",
+            analysis.sideAxis
+        );
+
+        material.SetFloat(
+            "_BodyMin",
+            analysis.bodyMin
+        );
+
+        material.SetFloat(
+            "_BodyMax",
+            analysis.bodyMax
+        );
+
+        material.SetFloat(
+            "_TailAtMin",
+            analysis.tailAtMin
+                ? 1f
+                : 0f
+        );
+
+        material.SetFloat(
+            "_SwimStrength",
+            0.012f
+        );
+
+        material.SetFloat(
+            "_SwimSpeed",
+            3.4f
+        );
 
         material.enableInstancing = true;
 
@@ -729,64 +872,11 @@ public static class YellowfinTunaImporter
         return material;
     }
 
-    private static AnimatorController BuildAnimatorController(
-        AnimationClip swimClip)
-    {
-        AnimatorController existing =
-            AssetDatabase.LoadAssetAtPath<AnimatorController>(
-                ControllerPath
-            );
-
-        if (existing != null)
-        {
-            AssetDatabase.DeleteAsset(
-                ControllerPath
-            );
-        }
-
-        AnimatorController controller =
-            AnimatorController
-                .CreateAnimatorControllerAtPath(
-                    ControllerPath
-                );
-
-        AnimatorStateMachine machine =
-            controller.layers[0]
-                .stateMachine;
-
-        AnimatorState state =
-            machine.AddState(
-                "Swim"
-            );
-
-        state.motion = swimClip;
-        state.speed = 1f;
-
-        machine.defaultState = state;
-
-        EditorUtility.SetDirty(
-            controller
-        );
-
-        return controller;
-    }
-
     private static void BuildGameplayPrefab(
+        GameObject sourceAsset,
         Material material,
-        AnimatorController controller)
+        MeshAnalysis analysis)
     {
-        GameObject sourceAsset =
-            AssetDatabase.LoadAssetAtPath<GameObject>(
-                FbxPath
-            );
-
-        if (sourceAsset == null)
-        {
-            throw new InvalidOperationException(
-                "The imported Yellowfin Tuna FBX could not be loaded."
-            );
-        }
-
         GameObject root =
             new GameObject(
                 "YellowfinTuna"
@@ -820,44 +910,74 @@ public static class YellowfinTunaImporter
             }
 
             model.name =
-                "ImportedModel";
+                "AuthoredYellowfinModel";
 
             model.transform.SetParent(
                 visual.transform,
                 false
             );
 
-            RemoveSceneOnlyComponents(
+            StripNonFishComponents(
                 model
             );
 
-            ApplyMaterial(
-                model,
-                material
-            );
+            Renderer[] renderers =
+                model
+                    .GetComponentsInChildren<Renderer>(
+                        true
+                    )
+                    .Where(
+                        renderer =>
+                            !(renderer
+                                is ParticleSystemRenderer)
+                    )
+                    .ToArray();
 
-            Animator animator =
-                model.GetComponent<Animator>();
-
-            if (animator == null)
+            if (renderers.Length == 0)
             {
-                animator =
-                    model.AddComponent<Animator>();
+                throw new InvalidOperationException(
+                    "No fish renderer was found in the FBX."
+                );
             }
 
-            animator.runtimeAnimatorController =
-                controller;
+            foreach (Renderer renderer
+                     in renderers)
+            {
+                Material[] assigned =
+                    new Material[
+                        Mathf.Max(
+                            1,
+                            renderer
+                                .sharedMaterials
+                                .Length
+                        )
+                    ];
 
-            animator.applyRootMotion = false;
-            animator.updateMode =
-                AnimatorUpdateMode.Normal;
+                for (int i = 0;
+                     i < assigned.Length;
+                     i++)
+                {
+                    assigned[i] =
+                        material;
+                }
 
-            OrientFromArmature(
-                model,
-                visual.transform
+                renderer.sharedMaterials =
+                    assigned;
+
+                renderer.shadowCastingMode =
+                    ShadowCastingMode.On;
+
+                renderer.receiveShadows =
+                    true;
+            }
+
+            OrientFish(
+                visual.transform,
+                model.transform,
+                analysis
             );
 
-            NormalizeSizeAndCenter(
+            NormalizeAndCenter(
                 root.transform,
                 visual.transform
             );
@@ -866,10 +986,11 @@ public static class YellowfinTunaImporter
                 root.AddComponent<YellowfinTunaPresentation>();
 
             presentation.Configure(
-                animator
+                renderers
             );
 
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(
+            if (AssetDatabase
+                .LoadAssetAtPath<GameObject>(
                     PrefabPath) != null)
             {
                 AssetDatabase.DeleteAsset(
@@ -891,12 +1012,14 @@ public static class YellowfinTunaImporter
         }
     }
 
-    private static void RemoveSceneOnlyComponents(
+    private static void StripNonFishComponents(
         GameObject model)
     {
         foreach (Camera camera
-                 in model.GetComponentsInChildren<Camera>(
-                     true))
+                 in model
+                     .GetComponentsInChildren<Camera>(
+                         true
+                     ))
         {
             UnityEngine.Object
                 .DestroyImmediate(
@@ -905,8 +1028,10 @@ public static class YellowfinTunaImporter
         }
 
         foreach (Light light
-                 in model.GetComponentsInChildren<Light>(
-                     true))
+                 in model
+                     .GetComponentsInChildren<Light>(
+                         true
+                     ))
         {
             UnityEngine.Object
                 .DestroyImmediate(
@@ -915,165 +1040,143 @@ public static class YellowfinTunaImporter
         }
 
         foreach (AudioListener listener
-                 in model.GetComponentsInChildren<AudioListener>(
-                     true))
+                 in model
+                     .GetComponentsInChildren<AudioListener>(
+                         true
+                     ))
         {
             UnityEngine.Object
                 .DestroyImmediate(
                     listener
                 );
         }
+
+        foreach (Animator animator
+                 in model
+                     .GetComponentsInChildren<Animator>(
+                         true
+                     ))
+        {
+            UnityEngine.Object
+                .DestroyImmediate(
+                    animator
+                );
+        }
+
+        foreach (Animation animation
+                 in model
+                     .GetComponentsInChildren<Animation>(
+                         true
+                     ))
+        {
+            UnityEngine.Object
+                .DestroyImmediate(
+                    animation
+                );
+        }
     }
 
-    private static void ApplyMaterial(
-        GameObject model,
-        Material material)
+    private static void OrientFish(
+        Transform visual,
+        Transform model,
+        MeshAnalysis analysis)
     {
-        Renderer[] renderers =
-            model.GetComponentsInChildren<Renderer>(
-                true
-            );
-
-        foreach (Renderer renderer
-                 in renderers)
-        {
-            if (renderer is ParticleSystemRenderer)
-                continue;
-
-            int slotCount =
-                Mathf.Max(
-                    1,
-                    renderer.sharedMaterials.Length
+        MeshFilter meshFilter =
+            model
+                .GetComponentsInChildren<MeshFilter>(
+                    true
+                )
+                .FirstOrDefault(
+                    filter =>
+                        filter.sharedMesh != null
                 );
 
-            Material[] materials =
-                new Material[slotCount];
+        if (meshFilter == null)
+            return;
 
-            for (int i = 0;
-                 i < slotCount;
-                 i++)
-            {
-                materials[i] =
-                    material;
-            }
+        Vector3 headAxisLocal =
+            analysis.tailAtMin
+                ? analysis.bodyAxis
+                : -analysis.bodyAxis;
 
-            renderer.sharedMaterials =
-                materials;
+        Vector3 headWorld =
+            meshFilter.transform
+                .TransformDirection(
+                    headAxisLocal
+                );
 
-            renderer.shadowCastingMode =
-                ShadowCastingMode.On;
+        Vector3 upWorld =
+            meshFilter.transform
+                .TransformDirection(
+                    analysis.upAxis
+                );
 
-            renderer.receiveShadows = true;
-        }
+        Vector3 headInVisual =
+            visual
+                .InverseTransformDirection(
+                    headWorld
+                )
+                .normalized;
+
+        Vector3 upInVisual =
+            visual
+                .InverseTransformDirection(
+                    upWorld
+                )
+                .normalized;
+
+        Quaternion sourceBasis =
+            Quaternion.LookRotation(
+                headInVisual,
+                upInVisual
+            );
+
+        visual.localRotation =
+            Quaternion.Inverse(
+                sourceBasis
+            );
     }
 
-    private static void OrientFromArmature(
-        GameObject model,
-        Transform visual)
-    {
-        Transform[] transforms =
-            model.GetComponentsInChildren<Transform>(
-                true
-            );
-
-        Transform first =
-            transforms.FirstOrDefault(
-                transform =>
-                    string.Equals(
-                        transform.name,
-                        "Bone",
-                        StringComparison
-                            .OrdinalIgnoreCase
-                    )
-            );
-
-        Transform last =
-            transforms.FirstOrDefault(
-                transform =>
-                    string.Equals(
-                        transform.name,
-                        "Bone.003",
-                        StringComparison
-                            .OrdinalIgnoreCase
-                    )
-            );
-
-        if (first == null ||
-            last == null)
-        {
-            return;
-        }
-
-        Vector3 tailDirection =
-            last.position -
-            first.position;
-
-        if (tailDirection.sqrMagnitude <
-            0.000001f)
-        {
-            return;
-        }
-
-        Vector3 headDirection =
-            -tailDirection.normalized;
-
-        visual.rotation =
-            Quaternion.FromToRotation(
-                headDirection,
-                Vector3.forward
-            ) *
-            visual.rotation;
-    }
-
-    private static void NormalizeSizeAndCenter(
+    private static void NormalizeAndCenter(
         Transform root,
         Transform visual)
     {
         Bounds bounds =
-            CalculateBounds(root);
+            CalculateBounds(
+                root
+            );
 
         float length =
             bounds.size.z;
 
-        if (length < 0.001f)
+        if (length > 0.0001f)
         {
-            length =
-                Mathf.Max(
-                    bounds.size.x,
-                    bounds.size.y,
-                    bounds.size.z
-                );
-        }
-
-        if (length > 0.001f)
-        {
-            float scale =
+            visual.localScale *=
                 TargetBodyLength /
                 length;
-
-            visual.localScale *=
-                scale;
         }
 
         bounds =
-            CalculateBounds(root);
-
-        Vector3 offset =
-            -bounds.center;
+            CalculateBounds(
+                root
+            );
 
         visual.position +=
-            offset;
+            root.position -
+            bounds.center;
     }
 
     private static Bounds CalculateBounds(
         Transform root)
     {
         Renderer[] renderers =
-            root.GetComponentsInChildren<Renderer>(
-                true
-            );
+            root
+                .GetComponentsInChildren<Renderer>(
+                    true
+                );
 
-        bool hasBounds = false;
+        bool found = false;
+
         Bounds bounds =
             new Bounds(
                 root.position,
@@ -1086,12 +1189,12 @@ public static class YellowfinTunaImporter
             if (!renderer.enabled)
                 continue;
 
-            if (!hasBounds)
+            if (!found)
             {
                 bounds =
                     renderer.bounds;
 
-                hasBounds = true;
+                found = true;
             }
             else
             {
@@ -1101,7 +1204,7 @@ public static class YellowfinTunaImporter
             }
         }
 
-        if (!hasBounds)
+        if (!found)
         {
             bounds =
                 new Bounds(
@@ -1111,5 +1214,83 @@ public static class YellowfinTunaImporter
         }
 
         return bounds;
+    }
+
+    private static int CountTriangles(
+        Mesh mesh)
+    {
+        int count = 0;
+
+        for (int subMesh = 0;
+             subMesh < mesh.subMeshCount;
+             subMesh++)
+        {
+            count +=
+                (int)mesh
+                    .GetIndexCount(
+                        subMesh
+                    ) /
+                3;
+        }
+
+        return count;
+    }
+
+    private static void ResetPreviewFish()
+    {
+        if (PlayerPrefs.HasKey(
+                InventorySaveKey))
+        {
+            string json =
+                PlayerPrefs.GetString(
+                    InventorySaveKey,
+                    string.Empty
+                );
+
+            if (!string.IsNullOrWhiteSpace(
+                    json))
+            {
+                try
+                {
+                    PreviewInventoryData data =
+                        JsonUtility
+                            .FromJson<PreviewInventoryData>(
+                                json
+                            );
+
+                    if (data != null &&
+                        data.fish != null)
+                    {
+                        data.fish.RemoveAll(
+                            record =>
+                                record.speciesId ==
+                                FishCatalog
+                                    .YellowfinTunaId
+                        );
+
+                        PlayerPrefs.SetString(
+                            InventorySaveKey,
+                            JsonUtility.ToJson(
+                                data
+                            )
+                        );
+                    }
+                }
+                catch
+                {
+                    // Keep unrelated inventory untouched if an old save cannot be parsed.
+                }
+            }
+        }
+
+        PlayerPrefs.DeleteKey(
+            PreviewGrantKeyV1
+        );
+
+        PlayerPrefs.DeleteKey(
+            PreviewGrantKeyV2
+        );
+
+        PlayerPrefs.Save();
     }
 }

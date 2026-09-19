@@ -2,38 +2,144 @@ using UnityEngine;
 
 public class YellowfinTunaPresentation : MonoBehaviour
 {
-    [SerializeField] private Animator animator;
-    [SerializeField] private float swimAnimationSpeed = 1.0f;
-    [SerializeField] private float heldAnimationSpeed = 1.35f;
+    [SerializeField]
+    private Renderer[] renderers;
+
+    [Header("Aquarium Swim")]
+    [SerializeField]
+    private float swimStrength = 0.012f;
+
+    [SerializeField]
+    private float swimSpeed = 3.4f;
+
+    [Header("Held Fish")]
+    [SerializeField]
+    private float heldStrength = 0.020f;
+
+    [SerializeField]
+    private float heldSpeed = 5.0f;
 
     private bool held;
+    private float phase;
 
-    public void Configure(Animator targetAnimator)
+    private MaterialPropertyBlock block;
+
+    private static readonly int SwimStrengthId =
+        Shader.PropertyToID(
+            "_SwimStrength"
+        );
+
+    private static readonly int SwimSpeedId =
+        Shader.PropertyToID(
+            "_SwimSpeed"
+        );
+
+    private static readonly int SwimPhaseId =
+        Shader.PropertyToID(
+            "_SwimPhase"
+        );
+
+    private void Awake()
     {
-        animator = targetAnimator;
-        ApplySpeed();
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
+            renderers =
+                GetComponentsInChildren<Renderer>(
+                    true
+                );
+        }
+
+        phase =
+            Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        block =
+            new MaterialPropertyBlock();
+
+        ApplyAnimationSettings();
+    }
+
+    public void Configure(
+        Renderer[] targetRenderers)
+    {
+        renderers =
+            targetRenderers;
+
+        if (block == null)
+        {
+            block =
+                new MaterialPropertyBlock();
+        }
+
+        ApplyAnimationSettings();
     }
 
     public void SetHeld(bool value)
     {
         held = value;
-        ApplySpeed();
+        ApplyAnimationSettings();
     }
 
     private void OnEnable()
     {
-        ApplySpeed();
+        ApplyAnimationSettings();
     }
 
-    private void ApplySpeed()
+    private void ApplyAnimationSettings()
     {
-        if (animator == null)
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
             return;
+        }
 
-        animator.applyRootMotion = false;
-        animator.speed =
+        if (block == null)
+        {
+            block =
+                new MaterialPropertyBlock();
+        }
+
+        float strength =
             held
-                ? heldAnimationSpeed
-                : swimAnimationSpeed;
+                ? heldStrength
+                : swimStrength;
+
+        float speed =
+            held
+                ? heldSpeed
+                : swimSpeed;
+
+        foreach (Renderer renderer
+                 in renderers)
+        {
+            if (renderer == null)
+                continue;
+
+            renderer.GetPropertyBlock(
+                block
+            );
+
+            block.SetFloat(
+                SwimStrengthId,
+                strength
+            );
+
+            block.SetFloat(
+                SwimSpeedId,
+                speed
+            );
+
+            block.SetFloat(
+                SwimPhaseId,
+                phase
+            );
+
+            renderer.SetPropertyBlock(
+                block
+            );
+        }
     }
 }

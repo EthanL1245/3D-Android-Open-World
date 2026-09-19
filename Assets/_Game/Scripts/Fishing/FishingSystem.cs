@@ -59,7 +59,7 @@ public class FishingSystem : MonoBehaviour
     private Terrain terrain;
 
     private const string YellowfinPreviewGrantKey =
-        "OpenWorld.YellowfinTunaPreviewGrant.v1";
+        "OpenWorld.YellowfinTunaPreviewGrant.v2";
 
     public FishingInventory Inventory => inventory;
 
