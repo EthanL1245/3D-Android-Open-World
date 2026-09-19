@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class MobileJoystick :
     MonoBehaviour,
@@ -10,9 +11,28 @@ public class MobileJoystick :
     [SerializeField] private RectTransform background;
     [SerializeField] private RectTransform handle;
 
+    [Header("Visuals")]
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Image handleImage;
+    [SerializeField] private GameObject sprintIndicator;
+
+    [SerializeField] private Color normalBackgroundColor =
+        new Color(0.05f, 0.10f, 0.14f, 0.48f);
+
+    [SerializeField] private Color sprintBackgroundColor =
+        new Color(0.05f, 0.42f, 0.62f, 0.68f);
+
+    [SerializeField] private Color normalHandleColor =
+        new Color(0.76f, 0.91f, 1f, 0.94f);
+
+    [SerializeField] private Color sprintHandleColor =
+        new Color(0.74f, 0.98f, 1f, 1f);
+
     public Vector2 Value { get; private set; }
 
     private int activePointerId = int.MinValue;
+    private bool isSprinting;
+    private float sprintVisualBlend;
 
     private void Awake()
     {
@@ -21,7 +41,76 @@ public class MobileJoystick :
             background = transform as RectTransform;
         }
 
+        if (backgroundImage == null)
+        {
+            backgroundImage = GetComponent<Image>();
+        }
+
+        if (handleImage == null &&
+            handle != null)
+        {
+            handleImage =
+                handle.GetComponent<Image>();
+        }
+
+        if (sprintIndicator != null)
+        {
+            sprintIndicator.SetActive(false);
+        }
+
+        ApplySprintVisuals(0f);
         ResetJoystick();
+    }
+
+    private void Update()
+    {
+        float target =
+            isSprinting ? 1f : 0f;
+
+        sprintVisualBlend =
+            Mathf.MoveTowards(
+                sprintVisualBlend,
+                target,
+                Time.deltaTime * 8f
+            );
+
+        ApplySprintVisuals(
+            sprintVisualBlend
+        );
+    }
+
+    public void ConfigureVisuals(
+        Image backgroundVisual,
+        Image handleVisual,
+        GameObject sprintVisual)
+    {
+        backgroundImage =
+            backgroundVisual;
+
+        handleImage =
+            handleVisual;
+
+        sprintIndicator =
+            sprintVisual;
+
+        ApplySprintVisuals(
+            sprintVisualBlend
+        );
+    }
+
+    public void SetSprinting(bool sprinting)
+    {
+        if (isSprinting == sprinting)
+            return;
+
+        isSprinting = sprinting;
+
+        if (sprintIndicator != null)
+        {
+            sprintIndicator.SetActive(
+                sprinting
+            );
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -47,6 +136,15 @@ public class MobileJoystick :
             return;
 
         activePointerId = int.MinValue;
+        isSprinting = false;
+        sprintVisualBlend = 0f;
+
+        if (sprintIndicator != null)
+        {
+            sprintIndicator.SetActive(false);
+        }
+
+        ApplySprintVisuals(0f);
         ResetJoystick();
     }
 
@@ -98,6 +196,43 @@ public class MobileJoystick :
         if (handle != null)
         {
             handle.anchoredPosition = Vector2.zero;
+        }
+    }
+
+    private void ApplySprintVisuals(
+        float blend)
+    {
+        if (backgroundImage != null)
+        {
+            backgroundImage.color =
+                Color.Lerp(
+                    normalBackgroundColor,
+                    sprintBackgroundColor,
+                    blend
+                );
+        }
+
+        if (handleImage != null)
+        {
+            handleImage.color =
+                Color.Lerp(
+                    normalHandleColor,
+                    sprintHandleColor,
+                    blend
+                );
+        }
+
+        if (handle != null)
+        {
+            float scale =
+                Mathf.Lerp(
+                    1f,
+                    1.10f,
+                    blend
+                );
+
+            handle.localScale =
+                Vector3.one * scale;
         }
     }
 
