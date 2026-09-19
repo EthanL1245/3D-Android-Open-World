@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Diagnostics;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -18,6 +19,11 @@ public static class GoatfishPairImporter
 
     private const string PreviewGrantKey =
         "OpenWorld.GoatfishPreviewGrant.v1";
+
+    private const string BlenderEditorPrefsKey =
+        "OpenWorld.Goatfish.BlenderExecutable";
+
+    private static string sessionBlenderExecutable;
 
     private const float TargetLength =
         0.92f;
@@ -162,7 +168,7 @@ public static class GoatfishPairImporter
 
             EditorUtility.DisplayDialog(
                 "Goatfish Pair Imported",
-                "Done. Both fish now use their Blend armature and authored swimming action, while their material uses the game's URP lighting. Cameras/lights from the source are ignored/removed.\n\nThe next Play Mode will grant one Yellow Goatfish and one Black Spot Goatfish to your inventory for immediate testing.",
+                "Done. Both fish were exported from their Blend armature into clean animated FBXs and use their authored swimming action, while their material uses the game's URP lighting. Cameras/lights from the source are excluded.\n\nThe next Play Mode will grant one Yellow Goatfish and one Black Spot Goatfish to your inventory for immediate testing.",
                 "OK"
             );
         }
@@ -175,7 +181,7 @@ public static class GoatfishPairImporter
             EditorUtility.DisplayDialog(
                 "Goatfish Import Failed",
                 exception.Message +
-                "\n\nIf Unity reports that it cannot import the .blend file, make sure Blender is installed on this PC. The animation and bones are stored in the Blend source.",
+                "\n\nThe importer now exports the Blend source through blender.exe into an animated FBX before Unity imports it.",
                 "OK"
             );
         }
@@ -303,11 +309,28 @@ public static class GoatfishPairImporter
             "/Source"
         );
 
+        string libraryRoot =
+            Path.GetFullPath(
+                "Library/GoatfishImport/" +
+                definition.folderName
+            );
+
+        Directory.CreateDirectory(
+            libraryRoot
+        );
+
         string blendPath =
+            Path.Combine(
+                libraryRoot,
+                definition.sourceBaseName +
+                ".blend"
+            );
+
+        string fbxPath =
             variantRoot +
             "/Source/" +
             definition.sourceBaseName +
-            ".blend";
+            ".fbx";
 
         string texturePath =
             variantRoot +
@@ -346,23 +369,48 @@ public static class GoatfishPairImporter
 
         EditorUtility.DisplayProgressBar(
             "Goatfish Pair",
-            "Importing bones + swim animation for " +
+            "Exporting bones + authored swim animation from Blender for " +
             definition.displayName +
             "...",
             Mathf.Lerp(
                 progressStart,
                 progressEnd,
-                0.30f
+                0.24f
             )
         );
 
-        ConfigureBlendImporter(
-            blendPath
+        string blenderExecutable =
+            ResolveBlenderExecutable();
+
+        ExportBlendToFbx(
+            blenderExecutable,
+            blendPath,
+            Path.GetFullPath(
+                fbxPath
+            )
+        );
+
+        AssetDatabase.Refresh();
+
+        EditorUtility.DisplayProgressBar(
+            "Goatfish Pair",
+            "Importing animated FBX for " +
+            definition.displayName +
+            "...",
+            Mathf.Lerp(
+                progressStart,
+                progressEnd,
+                0.46f
+            )
+        );
+
+        ConfigureFbxImporter(
+            fbxPath
         );
 
         BuildVariant(
             definition,
-            blendPath,
+            fbxPath,
             texturePath
         );
     }
@@ -377,11 +425,11 @@ public static class GoatfishPairImporter
             "/" +
             definition.folderName;
 
-        string blendPath =
+        string fbxPath =
             variantRoot +
             "/Source/" +
             definition.sourceBaseName +
-            ".blend";
+            ".fbx";
 
         string texturePath =
             variantRoot +
@@ -391,7 +439,7 @@ public static class GoatfishPairImporter
 
         if (!File.Exists(
                 Path.GetFullPath(
-                    blendPath
+                    fbxPath
                 )) ||
             !File.Exists(
                 Path.GetFullPath(
@@ -400,7 +448,7 @@ public static class GoatfishPairImporter
         {
             throw new FileNotFoundException(
                 definition.displayName +
-                " imported source is missing. Run Import Goatfish Pair (One Folder)... first."
+                " imported FBX source is missing. Run Import Goatfish Pair (One Folder)... first."
             );
         }
 
@@ -420,13 +468,13 @@ public static class GoatfishPairImporter
             texturePath
         );
 
-        ConfigureBlendImporter(
-            blendPath
+        ConfigureFbxImporter(
+            fbxPath
         );
 
         BuildVariant(
             definition,
-            blendPath,
+            fbxPath,
             texturePath
         );
     }
@@ -602,28 +650,388 @@ public static class GoatfishPairImporter
         importer.SaveAndReimport();
     }
 
-    private static void ConfigureBlendImporter(
-        string blendPath)
+    private static string ResolveBlenderExecutable()
+    {
+        if (!string.IsNullOrWhiteSpace(
+                sessionBlenderExecutable) &&
+            File.Exists(
+                sessionBlenderExecutable))
+        {
+            return sessionBlenderExecutable;
+        }
+
+        string saved =
+            EditorPrefs.GetString(
+                BlenderEditorPrefsKey,
+                string.Empty
+            );
+
+        if (!string.IsNullOrWhiteSpace(
+                saved) &&
+            File.Exists(saved))
+        {
+            sessionBlenderExecutable =
+                saved;
+
+            return saved;
+        }
+
+        List<string> candidates =
+            new List<string>();
+
+        string programFiles =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ProgramFiles
+            );
+
+        string programFilesX86 =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ProgramFilesX86
+            );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFiles,
+                "Blender Foundation"
+            )
+        );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFilesX86,
+                "Blender Foundation"
+            )
+        );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFilesX86,
+                "Steam",
+                "steamapps",
+                "common",
+                "Blender"
+            )
+        );
+
+        string localAppData =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                localAppData,
+                "Programs",
+                "Blender Foundation"
+            )
+        );
+
+        string found =
+            candidates
+                .Where(
+                    File.Exists
+                )
+                .OrderByDescending(
+                    path =>
+                        File.GetLastWriteTimeUtc(
+                            path
+                        )
+                )
+                .FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(
+                found))
+        {
+            sessionBlenderExecutable =
+                found;
+
+            EditorPrefs.SetString(
+                BlenderEditorPrefsKey,
+                found
+            );
+
+            return found;
+        }
+
+        string picked =
+            EditorUtility.OpenFilePanel(
+                "Locate Blender.exe (one time)",
+                programFiles,
+                "exe"
+            );
+
+        if (string.IsNullOrWhiteSpace(
+                picked))
+        {
+            throw new InvalidOperationException(
+                "The Goatfish ZIPs are correct, but the Blender application could not be found. Install Blender or select blender.exe when prompted, then run the importer again."
+            );
+        }
+
+        if (!File.Exists(picked) ||
+            !string.Equals(
+                Path.GetFileName(picked),
+                "blender.exe",
+                StringComparison.OrdinalIgnoreCase
+            ))
+        {
+            throw new InvalidOperationException(
+                "Please select Blender's blender.exe executable, not a .blend project file."
+            );
+        }
+
+        sessionBlenderExecutable =
+            picked;
+
+        EditorPrefs.SetString(
+            BlenderEditorPrefsKey,
+            picked
+        );
+
+        return picked;
+    }
+
+    private static void AddBlenderCandidates(
+        List<string> candidates,
+        string root)
+    {
+        if (string.IsNullOrWhiteSpace(
+                root) ||
+            !Directory.Exists(root))
+        {
+            return;
+        }
+
+        try
+        {
+            candidates.AddRange(
+                Directory.GetFiles(
+                    root,
+                    "blender.exe",
+                    SearchOption.AllDirectories
+                )
+            );
+        }
+        catch
+        {
+            // Ignore protected/unreadable folders.
+        }
+    }
+
+    private static void ExportBlendToFbx(
+        string blenderExecutable,
+        string blendPath,
+        string fbxPath)
+    {
+        if (!File.Exists(
+                blendPath))
+        {
+            throw new FileNotFoundException(
+                "The extracted Blend source is missing.",
+                blendPath
+            );
+        }
+
+        string scriptFolder =
+            Path.GetFullPath(
+                "Library/GoatfishImport"
+            );
+
+        Directory.CreateDirectory(
+            scriptFolder
+        );
+
+        string scriptPath =
+            Path.Combine(
+                scriptFolder,
+                "ExportGoatfish.py"
+            );
+
+        string python =
+@"import bpy
+import os
+import sys
+
+args = sys.argv
+out_path = args[args.index('--') + 1]
+
+swim = None
+for action in bpy.data.actions:
+    if 'swim' in action.name.lower():
+        swim = action
+        break
+
+armatures = [
+    obj for obj in bpy.context.scene.objects
+    if obj.type == 'ARMATURE'
+]
+meshes = [
+    obj for obj in bpy.context.scene.objects
+    if obj.type == 'MESH'
+]
+
+if not armatures:
+    raise RuntimeError('No armature was found in the Blend file.')
+
+if not meshes:
+    raise RuntimeError('No mesh was found in the Blend file.')
+
+armature = armatures[0]
+
+if armature.animation_data is None:
+    armature.animation_data_create()
+
+if swim is not None:
+    armature.animation_data.action = swim
+    bpy.context.scene.frame_start = int(swim.frame_range[0])
+    bpy.context.scene.frame_end = int(swim.frame_range[1])
+
+bpy.ops.object.select_all(action='DESELECT')
+
+for obj in meshes + [armature]:
+    obj.hide_set(False)
+    obj.hide_viewport = False
+    obj.hide_render = False
+    obj.select_set(True)
+
+bpy.context.view_layer.objects.active = armature
+
+os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+bpy.ops.export_scene.fbx(
+    filepath=out_path,
+    use_selection=True,
+    object_types={'MESH', 'ARMATURE'},
+    apply_unit_scale=True,
+    add_leaf_bones=False,
+    bake_anim=True,
+    bake_anim_use_all_bones=True,
+    bake_anim_use_nla_strips=False,
+    bake_anim_use_all_actions=False,
+    bake_anim_force_startend_keying=True,
+    axis_forward='-Z',
+    axis_up='Y',
+    path_mode='AUTO'
+)
+
+if not os.path.exists(out_path):
+    raise RuntimeError('FBX export did not produce an output file.')
+";
+
+        File.WriteAllText(
+            scriptPath,
+            python
+        );
+
+        ProcessStartInfo startInfo =
+            new ProcessStartInfo();
+
+        startInfo.FileName =
+            blenderExecutable;
+
+        startInfo.Arguments =
+            "--background " +
+            QuoteArgument(
+                blendPath
+            ) +
+            " --python " +
+            QuoteArgument(
+                scriptPath
+            ) +
+            " -- " +
+            QuoteArgument(
+                fbxPath
+            );
+
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+
+        using Process process =
+            Process.Start(
+                startInfo
+            );
+
+        if (process == null)
+        {
+            throw new InvalidOperationException(
+                "Blender could not be started."
+            );
+        }
+
+        string standardOutput =
+            process.StandardOutput.ReadToEnd();
+
+        string standardError =
+            process.StandardError.ReadToEnd();
+
+        if (!process.WaitForExit(
+                120000))
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch
+            {
+            }
+
+            throw new TimeoutException(
+                "Blender took more than 2 minutes to export the Goatfish."
+            );
+        }
+
+        if (process.ExitCode != 0 ||
+            !File.Exists(
+                fbxPath))
+        {
+            throw new InvalidOperationException(
+                "Blender could not export the animated Goatfish FBX.\n\nBlender output:\n" +
+                standardOutput +
+                "\n\nBlender errors:\n" +
+                standardError
+            );
+        }
+    }
+
+    private static string QuoteArgument(
+        string value)
+    {
+        return
+            "\"" +
+            value.Replace(
+                "\"",
+                "\\\""
+            ) +
+            "\"";
+    }
+
+    private static void ConfigureFbxImporter(
+        string fbxPath)
     {
         AssetDatabase.ImportAsset(
-            blendPath,
+            fbxPath,
             ImportAssetOptions.ForceSynchronousImport |
             ImportAssetOptions.ForceUpdate
         );
 
         ModelImporter importer =
             AssetImporter.GetAtPath(
-                blendPath
+                fbxPath
             ) as ModelImporter;
 
         if (importer == null)
         {
             throw new InvalidOperationException(
-                "Unity could not import " +
+                "Unity could not create an FBX importer for " +
                 Path.GetFileName(
-                    blendPath
-                ) +
-                " as a model. Unity needs a local Blender installation to convert .blend assets."
+                    fbxPath
+                )
             );
         }
 
@@ -675,11 +1083,10 @@ public static class GoatfishPairImporter
         if (swim == null)
         {
             throw new InvalidOperationException(
-                "No animation clip was imported from " +
+                "The FBX exported successfully, but Unity did not import an animation clip from " +
                 Path.GetFileName(
-                    blendPath
-                ) +
-                ". The Blend source should contain the YellowGoatfish Swimming action."
+                    fbxPath
+                )
             );
         }
 
