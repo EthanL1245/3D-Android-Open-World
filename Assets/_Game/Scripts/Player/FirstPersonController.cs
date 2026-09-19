@@ -22,8 +22,11 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float jumpHeight = 1.25f;
 
     [Header("Mobile Sprint")]
-    [SerializeField] private float mobileSprintMagnitude = 0.92f;
-    [SerializeField] private float mobileSprintForward = 0.72f;
+    [SerializeField] private float mobileSprintMagnitude = 0.98f;
+    [SerializeField] private float mobileSprintForward = 0.88f;
+    [SerializeField] private float mobileSprintHoldTime = 0.18f;
+    [SerializeField] private float mobileSprintReleaseMagnitude = 0.82f;
+    [SerializeField] private float mobileSprintReleaseForward = 0.68f;
 
     [Header("Swimming")]
     [SerializeField] private float swimSpeed = 3.8f;
@@ -50,6 +53,8 @@ public class FirstPersonController : MonoBehaviour
     private float baseFov = 72f;
 
     private bool previousSwimming;
+    private float mobileSprintHoldTimer;
+    private bool mobileSprintLatched;
 
     public bool IsSwimming { get; private set; }
     public bool IsSprinting { get; private set; }
@@ -86,6 +91,12 @@ public class FirstPersonController : MonoBehaviour
     private void Update()
     {
         HandleMovement();
+
+        if (moveJoystick != null)
+        {
+            moveJoystick.SetSprinting(IsSprinting);
+        }
+
         HandleLook();
         UpdateCameraFov();
     }
@@ -495,15 +506,52 @@ public class FirstPersonController : MonoBehaviour
             Keyboard.current.leftShiftKey
                 .isPressed;
 
-        bool mobileSprint =
-            moveJoystick != null &&
-            moveJoystick.Value.magnitude >=
-                mobileSprintMagnitude &&
-            moveJoystick.Value.y >=
-                mobileSprintForward;
+        if (keyboardSprint)
+            return true;
 
-        return keyboardSprint ||
-               mobileSprint;
+        if (moveJoystick == null)
+        {
+            mobileSprintHoldTimer = 0f;
+            mobileSprintLatched = false;
+            return false;
+        }
+
+        Vector2 joystickValue =
+            moveJoystick.Value;
+
+        float magnitude =
+            joystickValue.magnitude;
+
+        if (mobileSprintLatched)
+        {
+            if (magnitude <
+                    mobileSprintReleaseMagnitude ||
+                joystickValue.y <
+                    mobileSprintReleaseForward)
+            {
+                mobileSprintLatched = false;
+                mobileSprintHoldTimer = 0f;
+            }
+        }
+        else if (
+            magnitude >= mobileSprintMagnitude &&
+            joystickValue.y >= mobileSprintForward)
+        {
+            mobileSprintHoldTimer +=
+                Time.deltaTime;
+
+            if (mobileSprintHoldTimer >=
+                mobileSprintHoldTime)
+            {
+                mobileSprintLatched = true;
+            }
+        }
+        else
+        {
+            mobileSprintHoldTimer = 0f;
+        }
+
+        return mobileSprintLatched;
     }
 
     private bool TryGetGroundNormal(
