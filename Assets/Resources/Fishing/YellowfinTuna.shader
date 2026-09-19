@@ -13,8 +13,8 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Swim Strength", Float) = 0.0065
-        _SwimSpeed ("Swim Speed", Float) = 3.15
+        _SwimStrength ("Tail Angle", Float) = 0.045
+        _SwimSpeed ("Tail Speed", Float) = 3.25
         _SwimPhase ("Swim Phase", Float) = 0
     }
 
@@ -75,6 +75,36 @@ Shader "OpenWorld/YellowfinTuna"
                 float2 uv : TEXCOORD2;
             };
 
+            float3 RotateAroundAxis(
+                float3 point,
+                float3 pivot,
+                float3 axis,
+                float angle)
+            {
+                float3 relative =
+                    point - pivot;
+
+                float sine =
+                    sin(angle);
+
+                float cosine =
+                    cos(angle);
+
+                return
+                    pivot +
+                    relative * cosine +
+                    cross(
+                        axis,
+                        relative
+                    ) * sine +
+                    axis *
+                    dot(
+                        axis,
+                        relative
+                    ) *
+                    (1.0 - cosine);
+            }
+
             float3 DeformPosition(float3 positionOS)
             {
                 float range =
@@ -95,53 +125,131 @@ Shader "OpenWorld/YellowfinTuna"
                         range
                     );
 
-                float tailWeight =
+                // 0 at the head, 1 at the tail.
+                float tailPosition =
                     _TailAtMin > 0.5
                         ? 1.0 - normalized
                         : normalized;
 
-                tailWeight =
+                // Tuna keep the front of the body comparatively rigid.
+                // Only the rear third participates, with the tail doing most of the work.
+                float rearWeight =
                     smoothstep(
-                        0.12,
-                        1.0,
-                        tailWeight
+                        0.66,
+                        0.88,
+                        tailPosition
                     );
 
-                float wave =
+                float tailWeight =
+                    smoothstep(
+                        0.84,
+                        1.0,
+                        tailPosition
+                    );
+
+                if (rearWeight <= 0.0001)
+                {
+                    return positionOS;
+                }
+
+                float3 headToTailAxis =
+                    _TailAtMin > 0.5
+                        ? -normalize(
+                            _BodyAxis.xyz
+                        )
+                        : normalize(
+                            _BodyAxis.xyz
+                        );
+
+                float3 sideAxis =
+                    normalize(
+                        _SideAxis.xyz
+                    );
+
+                float3 upAxis =
+                    normalize(
+                        cross(
+                            headToTailAxis,
+                            sideAxis
+                        )
+                    );
+
+                float pivotNormalized =
+                    _TailAtMin > 0.5
+                        ? 1.0 - 0.66
+                        : 0.66;
+
+                float pivotAlong =
+                    lerp(
+                        _BodyMin,
+                        _BodyMax,
+                        pivotNormalized
+                    );
+
+                float3 pivot =
+                    normalize(
+                        _BodyAxis.xyz
+                    ) *
+                    pivotAlong;
+
+                float beat =
                     sin(
                         _Time.y *
                         _SwimSpeed +
-                        _SwimPhase +
-                        tailWeight *
-                        2.6
+                        _SwimPhase
                     );
 
-                float secondary =
-                    sin(
-                        _Time.y *
-                        _SwimSpeed *
-                        1.85 +
-                        _SwimPhase *
-                        0.73 +
-                        tailWeight *
-                        5.2
-                    );
-
-                float offset =
-                    (
-                        wave +
-                        secondary * 0.18
-                    ) *
+                // Rear body bends a few degrees.
+                float rearAngle =
+                    beat *
                     _SwimStrength *
-                    range *
-                    tailWeight *
+                    rearWeight;
+
+                // The caudal fin adds a little extra snap without creating a body wave.
+                float tailAngle =
+                    beat *
+                    _SwimStrength *
+                    0.85 *
                     tailWeight;
 
-                positionOS +=
-                    _SideAxis.xyz *
-                    offset;
+                float3 bent =
+                    RotateAroundAxis(
+                        positionOS,
+                        pivot,
+                        upAxis,
+                        rearAngle
+                    );
 
-                return positionOS;
+                if (tailWeight > 0.0001)
+                {
+                    float tailPivotNormalized =
+                        _TailAtMin > 0.5
+                            ? 1.0 - 0.84
+                            : 0.84;
+
+                    float tailPivotAlong =
+                        lerp(
+                            _BodyMin,
+                            _BodyMax,
+                            tailPivotNormalized
+                        );
+
+                    float3 tailPivot =
+                        normalize(
+                            _BodyAxis.xyz
+                        ) *
+                        tailPivotAlong;
+
+                    bent =
+                        RotateAroundAxis(
+                            bent,
+                            tailPivot,
+                            upAxis,
+                            tailAngle
+                        );
+                }
+
+                return bent;
             }
 
             Varyings Vert(Attributes input)

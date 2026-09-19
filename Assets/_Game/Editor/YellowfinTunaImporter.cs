@@ -54,6 +54,128 @@ public static class YellowfinTunaImporter
             new List<PreviewFishRecord>();
     }
 
+    [MenuItem("Tools/Open World/Rebuild Yellowfin Tuna Movement")]
+    public static void RebuildYellowfinTunaMovement()
+    {
+        if (EditorApplication.isPlaying)
+        {
+            EditorUtility.DisplayDialog(
+                "Yellowfin Tuna",
+                "Exit Play Mode first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (!File.Exists(
+                Path.GetFullPath(
+                    FbxPath
+                )) ||
+            !File.Exists(
+                Path.GetFullPath(
+                    TexturePath
+                )))
+        {
+            EditorUtility.DisplayDialog(
+                "Yellowfin Tuna",
+                "The imported Yellowfin Tuna source is missing. Run Replace Yellowfin Tuna (One Click)... once first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        try
+        {
+            EditorUtility.DisplayProgressBar(
+                "Yellowfin Tuna",
+                "Rebuilding natural tuna movement...",
+                0.20f
+            );
+
+            ConfigureTexture();
+            ConfigureModelImporter(
+                true
+            );
+
+            GameObject sourceAsset =
+                AssetDatabase.LoadAssetAtPath<GameObject>(
+                    FbxPath
+                );
+
+            MeshFilter sourceFilter =
+                sourceAsset != null
+                    ? sourceAsset
+                        .GetComponentsInChildren<MeshFilter>(
+                            true
+                        )
+                        .FirstOrDefault(
+                            filter =>
+                                filter.sharedMesh != null
+                        )
+                    : null;
+
+            if (sourceAsset == null ||
+                sourceFilter == null)
+            {
+                throw new InvalidOperationException(
+                    "The imported Yellowfin Tuna mesh could not be loaded."
+                );
+            }
+
+            MeshAnalysis analysis =
+                AnalyzeMesh(
+                    sourceFilter.sharedMesh
+                );
+
+            Material material =
+                BuildMaterial(
+                    analysis
+                );
+
+            BuildGameplayPrefab(
+                sourceAsset,
+                material,
+                analysis
+            );
+
+            ConfigureModelImporter(
+                false
+            );
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            Selection.activeObject =
+                AssetDatabase.LoadAssetAtPath<GameObject>(
+                    PrefabPath
+                );
+
+            EditorUtility.DisplayDialog(
+                "Yellowfin Tuna Movement Fixed",
+                "Rebuilt the existing Tuna without re-selecting the ZIP. It now preserves upright orientation, faces the correct swimming direction, and only bends through the rear body/tail instead of moving like a snake.",
+                "OK"
+            );
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(
+                exception
+            );
+
+            EditorUtility.DisplayDialog(
+                "Yellowfin Tuna Rebuild Failed",
+                exception.Message,
+                "OK"
+            );
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+        }
+    }
+
     [MenuItem("Tools/Open World/Replace Yellowfin Tuna (One Click)...")]
     public static void ReplaceYellowfinTuna()
     {
@@ -854,12 +976,12 @@ public static class YellowfinTunaImporter
 
         material.SetFloat(
             "_SwimStrength",
-            0.0065f
+            0.045f
         );
 
         material.SetFloat(
             "_SwimSpeed",
-            3.15f
+            3.25f
         );
 
         material.enableInstancing = true;
@@ -1099,8 +1221,8 @@ public static class YellowfinTunaImporter
         // Never infer or overwrite roll/pitch from mesh bounds.
         Vector3 headAxisLocal =
             analysis.tailAtMin
-                ? analysis.bodyAxis
-                : -analysis.bodyAxis;
+                ? -analysis.bodyAxis
+                : analysis.bodyAxis;
 
         Vector3 headWorld =
             meshFilter.transform
