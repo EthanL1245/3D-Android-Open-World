@@ -9,7 +9,7 @@ public sealed class FishingRodView : MonoBehaviour
     [SerializeField] private AnimationClip reelClip;
     [SerializeField, Min(0f)] private float reelSpeed = 2f;
     [SerializeField] private Transform rodBendRoot;
-    [SerializeField, Range(0f, 35f)] private float maximumBendDegrees = 22f;
+    [SerializeField, Range(0f, 75f)] private float maximumBendDegrees = 60f;
 
     private Quaternion restingRotation;
     private Quaternion rodBendRestingRotation;
@@ -48,6 +48,12 @@ public sealed class FishingRodView : MonoBehaviour
             Mathf.Max(
                 2f,
                 reelSpeed
+            );
+
+        maximumBendDegrees =
+            Mathf.Max(
+                60f,
+                maximumBendDegrees
             );
 
         initialized = true;
@@ -105,7 +111,7 @@ public sealed class FishingRodView : MonoBehaviour
 
         float bendAmount =
             Mathf.Lerp(
-                0.28f,
+                0.72f,
                 1f,
                 Mathf.Clamp01(tension)
             );
@@ -125,7 +131,7 @@ public sealed class FishingRodView : MonoBehaviour
         float smoothing =
             1f -
             Mathf.Exp(
-                -12f *
+                -18f *
                 Mathf.Max(
                     0f,
                     deltaTime
