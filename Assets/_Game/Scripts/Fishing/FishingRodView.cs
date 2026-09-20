@@ -28,8 +28,8 @@ public sealed class FishingRodView : MonoBehaviour
     [SerializeField, Range(0.05f, 0.45f)]
     private float bendStartHeight = 0.16f;
 
-    [SerializeField, Range(20f, 85f)]
-    private float maximumBendDegrees = 74f;
+    [SerializeField, Range(20f, 89f)]
+    private float maximumBendDegrees = 86f;
 
     private Quaternion restingRotation;
     private float reelTime;
@@ -119,7 +119,7 @@ public sealed class FishingRodView : MonoBehaviour
 
         maximumBendDegrees =
             Mathf.Max(
-                74f,
+                86f,
                 maximumBendDegrees
             );
 
@@ -159,6 +159,7 @@ public sealed class FishingRodView : MonoBehaviour
     public void SetLinePull(
         Vector3 bobberWorldPosition,
         float tension,
+        bool reeling,
         float deltaTime)
     {
         if (!initialized ||
@@ -207,28 +208,67 @@ public sealed class FishingRodView : MonoBehaviour
 
         targetPullRod.Normalize();
 
-        float targetAngle =
+        float pullDirectionAngle =
             Mathf.Clamp(
                 Vector3.Angle(
                     Vector3.up,
                     targetPullRod
                 ),
-                18f,
-                maximumBendDegrees
+                0f,
+                88f
             );
 
-        // Even moderate tension should visibly load the rod. High tension
-        // approaches the full curved-blank range.
-        float load =
+        float tension01 =
+            Mathf.Clamp01(
+                tension
+            );
+
+        // Three independent inputs shape the rod:
+        // 1) line direction decides which way it curves,
+        // 2) pressing REEL adds a strong load immediately,
+        // 3) high tension adds an even larger load on top.
+        float baseLoadDegrees =
             Mathf.Lerp(
-                0.62f,
-                1f,
-                Mathf.Clamp01(
-                    tension
+                14f,
+                24f,
+                Mathf.InverseLerp(
+                    0f,
+                    50f,
+                    pullDirectionAngle
                 )
             );
 
-        targetAngle *= load;
+        float reelLoadDegrees =
+            reeling
+                ? 26f
+                : 0f;
+
+        float tensionLoadDegrees =
+            Mathf.Lerp(
+                0f,
+                38f,
+                tension01 *
+                tension01
+            );
+
+        float reelTensionBoost =
+            reeling
+                ? Mathf.Lerp(
+                    0f,
+                    16f,
+                    tension01
+                )
+                : 0f;
+
+        float targetAngle =
+            Mathf.Clamp(
+                baseLoadDegrees +
+                reelLoadDegrees +
+                tensionLoadDegrees +
+                reelTensionBoost,
+                0f,
+                maximumBendDegrees
+            );
 
         float directionSmoothing =
             1f -
