@@ -412,7 +412,9 @@ public static class FishingGaffImporter
                 );
 
             Bounds bounds =
-                CalculateBounds(root);
+                CalculateBounds(
+                    root.transform
+                );
 
             float length =
                 Mathf.Max(
@@ -431,7 +433,9 @@ public static class FishingGaffImporter
             }
 
             bounds =
-                CalculateBounds(root);
+                CalculateBounds(
+                    root.transform
+                );
 
             Vector3 correction =
                 new Vector3(
