@@ -133,13 +133,13 @@ public class FishingHUD : MonoBehaviour
 
     public void SetFightMeters(
         float tension,
-        float progress)
+        float health)
     {
         tension =
             Mathf.Clamp01(tension);
 
-        progress =
-            Mathf.Clamp01(progress);
+        health =
+            Mathf.Clamp01(health);
 
         if (tensionFill != null)
         {
@@ -172,7 +172,7 @@ public class FishingHUD : MonoBehaviour
         {
             SetBarWidth(
                 progressFill.rectTransform,
-                progress
+                health
             );
         }
 
@@ -189,16 +189,17 @@ public class FishingHUD : MonoBehaviour
         if (progressLabel != null)
         {
             progressLabel.text =
-                "CATCH " +
+                "HEALTH " +
                 Mathf.RoundToInt(
-                    progress * 100f
+                    health * 100f
                 ) +
                 "%";
         }
     }
 
     public void ShowCatch(
-        CaughtFishRecord record)
+        CaughtFishRecord record,
+        string heading = "CAUGHT!")
     {
         if (catchPanel == null ||
             catchText == null)
@@ -210,7 +211,8 @@ public class FishingHUD : MonoBehaviour
             FishCatalog.Get(record.speciesId);
 
         catchText.text =
-            "CAUGHT!\n" +
+            heading +
+            "\n" +
             species.Name +
             "\n" +
             record.weightKg.ToString("0.00") +
@@ -737,7 +739,7 @@ public class FishingHUD : MonoBehaviour
 
         CreateBar(
             fightPanel.transform,
-            "CATCH",
+            "HEALTH",
             new Vector2(0f, -74f),
             new Color(
                 0.22f,
