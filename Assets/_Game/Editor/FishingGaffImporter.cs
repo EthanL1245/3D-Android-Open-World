@@ -170,54 +170,129 @@ public static class FishingGaffImporter
         string blendPath,
         string destinationFbx)
     {
-        string normalized =
-            destinationFbx
-                .Replace(
-                    "\\",
-                    "/"
-                )
-                .Replace(
-                    "'",
-                    "\\'"
-                );
+        if (!File.Exists(
+                blendPath))
+        {
+            throw new FileNotFoundException(
+                "The extracted Gaf Blend source is missing.",
+                blendPath
+            );
+        }
 
-        string script =
-            "import bpy;" +
-            "bpy.ops.object.select_all(action='DESELECT');" +
-            "objs=[o for o in bpy.context.scene.objects if o.type=='MESH'];" +
-            "[o.select_set(True) for o in objs];" +
-            "bpy.context.view_layer.objects.active=objs[0] if objs else None;" +
-            "bpy.ops.export_scene.fbx(" +
-            "filepath='" + normalized + "'," +
-            "use_selection=True," +
-            "object_types={'MESH'}," +
-            "axis_forward='-Z'," +
-            "axis_up='Y'," +
-            "bake_anim=False," +
-            "add_leaf_bones=False" +
-            ")";
+        string scriptFolder =
+            Path.GetFullPath(
+                "Library/FishingGaffImport"
+            );
+
+        Directory.CreateDirectory(
+            scriptFolder
+        );
+
+        string scriptPath =
+            Path.Combine(
+                scriptFolder,
+                "ExportFishingGaff.py"
+            );
+
+        string python =
+@"import bpy
+import os
+import sys
+
+args = sys.argv
+out_path = args[args.index('--') + 1]
+
+meshes = [
+    obj for obj in bpy.context.scene.objects
+    if obj.type == 'MESH'
+]
+
+if not meshes:
+    raise RuntimeError('No mesh objects were found in the Gaf Blend file.')
+
+# Background Blender has no normal 3D-view selection context. Avoid
+# bpy.ops.object.select_all(), which can fail depending on active context.
+for obj in bpy.context.view_layer.objects:
+    try:
+        obj.select_set(False)
+    except Exception:
+        pass
+
+for obj in meshes:
+    obj.hide_viewport = False
+    obj.hide_render = False
+
+    try:
+        obj.hide_set(False)
+    except Exception:
+        pass
+
+    try:
+        obj.select_set(True)
+    except Exception:
+        pass
+
+try:
+    bpy.context.view_layer.objects.active = meshes[0]
+except Exception:
+    pass
+
+os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+# Remove any stale file so a prior partial export can never look successful.
+if os.path.exists(out_path):
+    os.remove(out_path)
+
+bpy.ops.export_scene.fbx(
+    filepath=out_path,
+    use_selection=True,
+    object_types={'MESH'},
+    apply_unit_scale=True,
+    add_leaf_bones=False,
+    bake_anim=False,
+    axis_forward='-Z',
+    axis_up='Y',
+    path_mode='AUTO'
+)
+
+if not os.path.exists(out_path):
+    raise RuntimeError('FBX export did not produce an output file.')
+";
+
+        File.WriteAllText(
+            scriptPath,
+            python
+        );
 
         ProcessStartInfo info =
-            new ProcessStartInfo
-            {
-                FileName = blender,
-                Arguments =
-                    "-b \"" +
-                    blendPath +
-                    "\" --python-expr \"" +
-                    script.Replace(
-                        "\"",
-                        "\\\""
-                    ) +
-                    "\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+            new ProcessStartInfo();
+
+        info.FileName =
+            blender;
+
+        info.Arguments =
+            "--background " +
+            QuoteArgument(
+                blendPath
+            ) +
+            " --python " +
+            QuoteArgument(
+                scriptPath
+            ) +
+            " -- " +
+            QuoteArgument(
+                destinationFbx
+            );
+
+        info.UseShellExecute = false;
+        info.CreateNoWindow = true;
+        info.RedirectStandardOutput = true;
+        info.RedirectStandardError = true;
 
         using Process process =
-            Process.Start(info);
+            Process.Start(
+                info
+            );
 
         if (process == null)
         {
@@ -232,21 +307,49 @@ public static class FishingGaffImporter
         string error =
             process.StandardError.ReadToEnd();
 
-        process.WaitForExit();
+        if (!process.WaitForExit(
+                120000))
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch
+            {
+            }
+
+            throw new TimeoutException(
+                "Blender took more than 2 minutes to export the Gaf model."
+            );
+        }
 
         if (process.ExitCode != 0 ||
-            !File.Exists(destinationFbx))
+            !File.Exists(
+                destinationFbx))
         {
             Debug.LogError(
+                "Full Blender Gaf export output:\n" +
                 output +
-                "\n" +
+                "\n\nFull Blender errors:\n" +
                 error
             );
 
             throw new InvalidOperationException(
-                "Blender failed to export the Gaf model."
+                "Blender opened the Gaf source but could not finish the FBX export. The full Blender traceback was written to the Unity Console."
             );
         }
+    }
+
+    private static string QuoteArgument(
+        string value)
+    {
+        return
+            "\"" +
+            value.Replace(
+                "\"",
+                "\\\""
+            ) +
+            "\"";
     }
 
     private static void ConfigureTexture()
