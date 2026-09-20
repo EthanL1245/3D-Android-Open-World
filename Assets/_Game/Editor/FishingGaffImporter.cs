@@ -576,7 +576,7 @@ if not os.path.exists(out_path):
             if (length > 0.0001f)
             {
                 visual.transform.localScale *=
-                    1.15f /
+                    0.72f /
                     length;
             }
 
@@ -609,8 +609,8 @@ if not os.path.exists(out_path):
             point.transform.localPosition =
                 new Vector3(
                     0f,
-                    0.145f,
-                    -0.005f
+                    0.090f,
+                    -0.004f
                 );
 
             if (AssetDatabase.LoadAssetAtPath<GameObject>(
