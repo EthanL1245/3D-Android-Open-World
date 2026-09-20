@@ -63,6 +63,10 @@ public class RedSnapperPresentation : MonoBehaviour
     private bool hasTrail;
     private float animatorSpeedCurrent = 1f;
 
+    // 0 = untouched authored swim, 1 = train-track turn override.
+    private float trackBlend;
+    private float trackBlendVelocity;
+
     public void Configure(
         Animator targetAnimator)
     {
@@ -260,27 +264,62 @@ public class RedSnapperPresentation : MonoBehaviour
                 )
             );
 
-        float turnWeight =
+        // Straight swimming is the authored animation, untouched.
+        // Train-track control only fades in once a real curve develops.
+        float targetTrackBlend =
             Mathf.InverseLerp(
-                3f,
-                34f,
+                6f,
+                24f,
                 trailAngle
             );
 
-        turnWeight =
+        targetTrackBlend =
             Mathf.SmoothStep(
                 0f,
                 1f,
-                turnWeight
+                targetTrackBlend
             );
 
-        // During a real curve the track owns the rear body. Slow the authored
-        // clip so a random tail-wag phase cannot fling against momentum.
+        trackBlend =
+            Mathf.SmoothDamp(
+                trackBlend,
+                targetTrackBlend,
+                ref trackBlendVelocity,
+                targetTrackBlend >
+                    trackBlend
+                    ? 0.10f
+                    : 0.16f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        // When essentially straight, do not touch ANY animated bones.
+        // Let the supplied Red Snapper clip play exactly as authored.
+        if (trackBlend < 0.015f)
+        {
+            animatorSpeedCurrent =
+                Mathf.MoveTowards(
+                    animatorSpeedCurrent,
+                    1f,
+                    Time.deltaTime * 5f
+                );
+
+            if (animator != null)
+            {
+                animator.speed =
+                    animatorSpeedCurrent;
+            }
+
+            return;
+        }
+
+        // As a turn develops, progressively reduce the free-running authored
+        // wag so it cannot throw the tail against the actual head trail.
         float targetAnimatorSpeed =
             Mathf.Lerp(
                 1f,
                 0.18f,
-                turnWeight
+                trackBlend
             );
 
         animatorSpeedCurrent =
@@ -296,21 +335,30 @@ public class RedSnapperPresentation : MonoBehaviour
                 animatorSpeedCurrent;
         }
 
-        // Head is always the locomotive.
+        // The head/front only get stabilized while the turn system is active.
+        // Straight-line swimming above remains entirely authored.
         if (headBone != null)
         {
             headBone.localPosition =
-                headRestLocalPosition;
+                Vector3.Lerp(
+                    headBone.localPosition,
+                    headRestLocalPosition,
+                    trackBlend
+                );
 
             headBone.localRotation =
-                headRestLocalRotation;
+                Quaternion.Slerp(
+                    headBone.localRotation,
+                    headRestLocalRotation,
+                    trackBlend
+                );
         }
 
         float authoredWeight =
             Mathf.Lerp(
                 1f,
                 0.08f,
-                turnWeight
+                trackBlend
             );
 
         // Put the chain lengths back at their authored rest distances, then
@@ -348,19 +396,22 @@ public class RedSnapperPresentation : MonoBehaviour
         AlignSegmentToTrack(
             frontBodyBone,
             midBodyBone,
-            trail25
+            trail25,
+            trackBlend
         );
 
         AlignSegmentToTrack(
             midBodyBone,
             rearBodyBone,
-            trail50
+            trail50,
+            trackBlend
         );
 
         AlignSegmentToTrack(
             rearBodyBone,
             tailBone,
-            trail75
+            trail75,
+            trackBlend
         );
 
         if (tailBone != null)
@@ -378,8 +429,12 @@ public class RedSnapperPresentation : MonoBehaviour
                 );
 
             tailBone.rotation =
-                tailCorrection *
-                tailBone.rotation;
+                Quaternion.Slerp(
+                    tailBone.rotation,
+                    tailCorrection *
+                    tailBone.rotation,
+                    trackBlend
+                );
         }
     }
 
@@ -416,7 +471,8 @@ public class RedSnapperPresentation : MonoBehaviour
     private static void AlignSegmentToTrack(
         Transform bone,
         Transform child,
-        Vector3 desiredForwardWorld)
+        Vector3 desiredForwardWorld,
+        float blend)
     {
         if (bone == null ||
             child == null)
@@ -446,9 +502,16 @@ public class RedSnapperPresentation : MonoBehaviour
                 desiredTailDirection
             );
 
-        bone.rotation =
+        Quaternion targetRotation =
             correction *
             bone.rotation;
+
+        bone.rotation =
+            Quaternion.Slerp(
+                bone.rotation,
+                targetRotation,
+                Mathf.Clamp01(blend)
+            );
     }
 
     private static Vector3 SafeDirection(
@@ -665,6 +728,9 @@ public class RedSnapperPresentation : MonoBehaviour
             held
                 ? 1.08f
                 : 1f;
+
+        trackBlend = 0f;
+        trackBlendVelocity = 0f;
 
         animator.speed =
             animatorSpeedCurrent;
