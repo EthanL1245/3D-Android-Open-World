@@ -979,11 +979,14 @@ public class TankFishAgent : MonoBehaviour
 
         if (goatfishPresentation != null)
         {
-            // About 2x the previous Goatfish travel speed.
+            // Use the supplied animation at 1.0x and move far enough per
+            // animation cycle that the stroke and travel speed agree.
             cruiseSpeed =
+                goatfishPresentation
+                    .GetRecommendedCruiseSpeed() *
                 UnityEngine.Random.Range(
-                    0.82f,
-                    0.98f
+                    0.96f,
+                    1.04f
                 );
 
             turnSpeedDeg =
@@ -1188,18 +1191,6 @@ public class TankFishAgent : MonoBehaviour
                 Mathf.Abs(
                     signedTurn
                 );
-
-            if (tunaPresentation != null)
-            {
-                tunaPresentation.SetAquariumTurn(
-                    Mathf.Clamp(
-                        -signedTurn /
-                        34f,
-                        -1f,
-                        1f
-                    )
-                );
-            }
 
             float minimumCornerFactor =
                 goatfishPresentation != null

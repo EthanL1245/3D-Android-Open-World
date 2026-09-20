@@ -1095,6 +1095,12 @@ if not os.path.exists(out_path):
         swim.loopTime = true;
         swim.loopPose = true;
 
+        Debug.Log(
+            "Using authored Goatfish swim take: " +
+            swim.takeName +
+            " at its imported timing."
+        );
+
         importer.clipAnimations =
             new[]
             {

@@ -10,13 +10,10 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.18f;
+    private float swimStrength = 0.115f;
 
     [SerializeField]
-    private float swimSpeed = 6.8f;
-
-    [SerializeField]
-    private float turnStrength = 0.34f;
+    private float swimSpeed = 5.6f;
 
     [Header("Held Fish")]
     [SerializeField]
@@ -33,23 +30,10 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     private bool held;
     private float phase;
+    private float aquariumLocomotionSpeed = 0.45f;
 
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
-
-    private bool hasPreviousForward;
-    private Vector3 previousForward;
-    private float smoothedTurn;
-    private float externalTurnTarget;
-    private bool hasExternalTurnTarget;
-    private float aquariumLocomotionSpeed = 0.52f;
-
-    [Header("Held Escape Motion")]
-    [SerializeField]
-    private float heldEscapeBend = 0.62f;
-
-    [SerializeField]
-    private float heldEscapeSpeed = 4.6f;
 
     private static readonly int SwimStrengthId =
         Shader.PropertyToID(
@@ -66,16 +50,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
             "_SwimPhase"
         );
 
-    private static readonly int TurnBendId =
-        Shader.PropertyToID(
-            "_TurnBend"
-        );
-
-    private static readonly int TurnStrengthId =
-        Shader.PropertyToID(
-            "_TurnStrength"
-        );
-
     private void Awake()
     {
         ResolveReferences();
@@ -88,13 +62,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
         block =
             new MaterialPropertyBlock();
-
-        previousForward =
-            GetHorizontalForward();
-
-        hasPreviousForward =
-            previousForward.sqrMagnitude >
-            0.0001f;
 
         ApplyMaterialSettings();
     }
@@ -119,30 +86,15 @@ public class YellowfinTunaPresentation : MonoBehaviour
     public void SetHeld(bool value)
     {
         held = value;
-
-        if (held)
-        {
-            smoothedTurn = 0f;
-            externalTurnTarget = 0f;
-            hasExternalTurnTarget = false;
-        }
-
         ApplyMaterialSettings();
     }
 
-    public void SetAquariumTurn(float normalizedTurn)
+    public void SetAquariumTurn(
+        float normalizedTurn)
     {
-        if (held)
-            return;
-
-        externalTurnTarget =
-            Mathf.Clamp(
-                normalizedTurn,
-                -1f,
-                1f
-            );
-
-        hasExternalTurnTarget = true;
+        // Intentionally ignored.
+        // The aquarium root/head steering controls direction.
+        // No turn correction is layered onto the mesh anymore.
     }
 
     public void SetAquariumLocomotion(
@@ -158,16 +110,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
-
-        previousForward =
-            GetHorizontalForward();
-
-        hasPreviousForward =
-            previousForward.sqrMagnitude >
-            0.0001f;
-
-        smoothedTurn = 0f;
-
         ApplyMaterialSettings();
     }
 
@@ -179,15 +121,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         float speed =
             held
                 ? heldSpeed
-                : Mathf.Lerp(
-                    swimSpeed * 0.78f,
-                    swimSpeed * 1.08f,
-                    Mathf.InverseLerp(
-                        0.34f,
-                        0.66f,
-                        aquariumLocomotionSpeed
-                    )
-                );
+                : GetAquariumSwimSpeed();
 
         float beat =
             Mathf.Sin(
@@ -196,165 +130,46 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 phase
             );
 
-        UpdateTurnBend();
-
-        // In the aquarium the fish's HEAD must define its travel direction.
-        // Do not yaw the whole visual independently of the locomotion root.
-        float yaw =
-            held
-                ? beat *
-                  heldYawDegrees
-                : 0f;
-
-        float roll;
-
         if (held)
         {
-            roll =
-                Mathf.Sin(
-                    Time.time *
-                    speed *
-                    0.5f +
-                    phase +
-                    0.8f
-                ) *
-                heldRollDegrees;
+            visualRoot.localRotation =
+                visualBaseRotation *
+                Quaternion.Euler(
+                    0f,
+                    beat *
+                    heldYawDegrees,
+                    Mathf.Sin(
+                        Time.time *
+                        speed *
+                        0.5f +
+                        phase +
+                        0.8f
+                    ) *
+                    heldRollDegrees
+                );
         }
         else
         {
-            // Small turn bank only; body curvature is handled by the shader.
-            roll =
-                -smoothedTurn *
-                1.8f;
+            // Keep the head/visual aligned exactly to the locomotion root.
+            visualRoot.localRotation =
+                visualBaseRotation;
         }
-
-        visualRoot.localRotation =
-            visualBaseRotation *
-            Quaternion.Euler(
-                0f,
-                yaw,
-                roll
-            );
 
         ApplyMaterialSettings();
     }
 
-    private void UpdateTurnBend()
+    private float GetAquariumSwimSpeed()
     {
-        if (held)
-        {
-            smoothedTurn =
-                Mathf.Lerp(
-                    smoothedTurn,
-                    0f,
-                    1f -
-                    Mathf.Exp(
-                        -8f *
-                        Time.deltaTime
-                    )
-                );
-
-            return;
-        }
-
-        Vector3 currentForward =
-            GetHorizontalForward();
-
-        if (currentForward.sqrMagnitude <
-            0.0001f)
-        {
-            return;
-        }
-
-        if (!hasPreviousForward)
-        {
-            previousForward =
-                currentForward;
-
-            hasPreviousForward =
-                true;
-
-            return;
-        }
-
-        float signedAngle =
-            Vector3.SignedAngle(
-                previousForward,
-                currentForward,
-                Vector3.up
-            );
-
-        float degreesPerSecond =
-            Time.deltaTime > 0.0001f
-                ? signedAngle /
-                  Time.deltaTime
-                : 0f;
-
-        float measuredTurn =
-            Mathf.Clamp(
-                degreesPerSecond /
-                70f,
-                -1f,
-                1f
-            );
-
-        float targetTurn =
-            hasExternalTurnTarget
-                ? externalTurnTarget
-                : measuredTurn;
-
-        smoothedTurn =
+        return
             Mathf.Lerp(
-                smoothedTurn,
-                targetTurn,
-                1f -
-                Mathf.Exp(
-                    -9.0f *
-                    Time.deltaTime
+                swimSpeed * 0.90f,
+                swimSpeed * 1.08f,
+                Mathf.InverseLerp(
+                    0.32f,
+                    0.58f,
+                    aquariumLocomotionSpeed
                 )
             );
-
-        externalTurnTarget =
-            Mathf.Lerp(
-                externalTurnTarget,
-                0f,
-                1f -
-                Mathf.Exp(
-                    -4.0f *
-                    Time.deltaTime
-                )
-            );
-
-        if (Mathf.Abs(
-                externalTurnTarget) <
-            0.01f)
-        {
-            hasExternalTurnTarget =
-                false;
-        }
-
-        previousForward =
-            currentForward;
-    }
-
-    private Vector3 GetHorizontalForward()
-    {
-        Vector3 forward =
-            transform.forward;
-
-        forward =
-            Vector3.ProjectOnPlane(
-                forward,
-                Vector3.up
-            );
-
-        if (forward.sqrMagnitude >
-            0.0001f)
-        {
-            forward.Normalize();
-        }
-
-        return forward;
     }
 
     private void ResolveReferences()
@@ -405,26 +220,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         float speed =
             held
                 ? heldSpeed
-                : Mathf.Lerp(
-                    swimSpeed * 0.78f,
-                    swimSpeed * 1.08f,
-                    Mathf.InverseLerp(
-                        0.34f,
-                        0.66f,
-                        aquariumLocomotionSpeed
-                    )
-                );
-
-        float turn =
-            held
-                ? Mathf.Sin(
-                    Time.time *
-                    heldEscapeSpeed +
-                    phase +
-                    0.45f
-                  ) *
-                  heldEscapeBend
-                : smoothedTurn;
+                : GetAquariumSwimSpeed();
 
         foreach (Renderer renderer
                  in renderers)
@@ -449,18 +245,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
             block.SetFloat(
                 SwimPhaseId,
                 phase
-            );
-
-            block.SetFloat(
-                TurnBendId,
-                turn
-            );
-
-            block.SetFloat(
-                TurnStrengthId,
-                held
-                    ? turnStrength * 1.35f
-                    : turnStrength
             );
 
             renderer.SetPropertyBlock(

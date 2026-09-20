@@ -13,11 +13,9 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Body Flex Strength", Float) = 0.18
-        _SwimSpeed ("Tail Beat Speed", Float) = 6.8
+        _SwimStrength ("Body Flex Strength", Float) = 0.115
+        _SwimSpeed ("Tail Beat Speed", Float) = 5.6
         _SwimPhase ("Swim Phase", Float) = 0
-        _TurnBend ("Turn Bend", Range(-1,1)) = 0
-        _TurnStrength ("Turn Flex Strength", Float) = 0.40
     }
 
     SubShader
@@ -60,8 +58,6 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
-                float _TurnBend;
-                float _TurnStrength;
             CBUFFER_END
 
             struct Attributes
@@ -171,18 +167,6 @@ Shader "OpenWorld/YellowfinTuna"
                     _SwimStrength *
                     bodyRange *
                     swimProfile;
-
-                // Turning is a single C-shaped curve:
-                // almost no displacement at the head, progressively more toward the tail.
-                float turnCurve =
-                    bodyFlex *
-                    bodyFlex;
-
-                sideOffset +=
-                    _TurnBend *
-                    _TurnStrength *
-                    bodyRange *
-                    turnCurve;
 
                 positionOS +=
                     normalize(

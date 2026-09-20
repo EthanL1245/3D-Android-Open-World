@@ -5,8 +5,17 @@ public class GoatfishPresentation : MonoBehaviour
     [SerializeField]
     private Animator animator;
 
+    [Header("Authored Swim")]
+    [SerializeField]
+    private float bodyLengthsPerCycle = 1.0f;
+
+    [SerializeField]
+    private float minimumCruiseSpeed = 0.82f;
+
+    [SerializeField]
+    private float maximumCruiseSpeed = 1.18f;
+
     private bool held;
-    private float aquariumLocomotionSpeed = 0.48f;
 
     public void Configure(
         Animator targetAnimator)
@@ -24,19 +33,49 @@ public class GoatfishPresentation : MonoBehaviour
     public void SetAquariumLocomotion(
         float worldSpeed)
     {
-        aquariumLocomotionSpeed =
+        // Locomotion no longer changes animation playback.
+        // The authored clip always runs at its intended 1.0x speed.
+    }
+
+    public float GetRecommendedCruiseSpeed()
+    {
+        ResolveAnimator();
+
+        float clipLength =
+            GetSwimClipLength();
+
+        float fishBodyLength =
+            0.92f;
+
+        float desired =
+            fishBodyLength *
+            bodyLengthsPerCycle /
             Mathf.Max(
-                0f,
-                worldSpeed
+                0.10f,
+                clipLength
             );
 
-        if (!held)
-        {
-            ApplyState();
-        }
+        return
+            Mathf.Clamp(
+                desired,
+                minimumCruiseSpeed,
+                maximumCruiseSpeed
+            );
     }
 
     private void Awake()
+    {
+        ResolveAnimator();
+        ApplyState();
+    }
+
+    private void OnEnable()
+    {
+        ResolveAnimator();
+        ApplyState();
+    }
+
+    private void ResolveAnimator()
     {
         if (animator == null)
         {
@@ -45,13 +84,33 @@ public class GoatfishPresentation : MonoBehaviour
                     true
                 );
         }
-
-        ApplyState();
     }
 
-    private void OnEnable()
+    private float GetSwimClipLength()
     {
-        ApplyState();
+        if (animator == null ||
+            animator.runtimeAnimatorController == null)
+        {
+            return 1f;
+        }
+
+        AnimationClip[] clips =
+            animator
+                .runtimeAnimatorController
+                .animationClips;
+
+        if (clips == null ||
+            clips.Length == 0 ||
+            clips[0] == null)
+        {
+            return 1f;
+        }
+
+        return
+            Mathf.Max(
+                0.10f,
+                clips[0].length
+            );
     }
 
     private void ApplyState()
@@ -61,25 +120,7 @@ public class GoatfishPresentation : MonoBehaviour
 
         animator.applyRootMotion = false;
 
-        if (held)
-        {
-            // Alive and active in the player's hands,
-            // but not the very fast cycle used previously.
-            animator.speed = 1.02f;
-            return;
-        }
-
-        // The authored cycle looked too frantic. Keep it slower even
-        // though the fish now travels about twice as fast through the tank.
-        animator.speed =
-            Mathf.Lerp(
-                0.62f,
-                0.78f,
-                Mathf.InverseLerp(
-                    0.70f,
-                    1.05f,
-                    aquariumLocomotionSpeed
-                )
-            );
+        // Use the supplied animation exactly at authored timing.
+        animator.speed = 1.0f;
     }
 }
