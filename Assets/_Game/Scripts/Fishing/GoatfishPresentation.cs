@@ -69,15 +69,15 @@ public class GoatfishPresentation : MonoBehaviour
             return;
         }
 
-        // Match stroke cadence to actual tank travel.
-        // At our normal 0.43-0.53 m/s cruise this is roughly 0.68-0.82x.
+        // The authored cycle looked too frantic. Keep it slower even
+        // though the fish now travels about twice as fast through the tank.
         animator.speed =
             Mathf.Lerp(
-                0.60f,
-                0.88f,
+                0.62f,
+                0.78f,
                 Mathf.InverseLerp(
-                    0.28f,
-                    0.62f,
+                    0.70f,
+                    1.05f,
                     aquariumLocomotionSpeed
                 )
             );

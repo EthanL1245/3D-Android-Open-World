@@ -16,12 +16,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float swimSpeed = 6.8f;
 
     [SerializeField]
-    private float bodyYawDegrees = 4.8f;
-
-    [SerializeField]
-    private float bodyRollDegrees = 0.9f;
-
-    [SerializeField]
     private float turnStrength = 0.34f;
 
     [Header("Held Fish")]
