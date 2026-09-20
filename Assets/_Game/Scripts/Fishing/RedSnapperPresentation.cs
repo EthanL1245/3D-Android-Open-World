@@ -384,11 +384,18 @@ public class RedSnapperPresentation : MonoBehaviour
             authoredWeight
         );
 
+        float tailAuthoredWeight =
+            Mathf.Lerp(
+                1f,
+                0f,
+                trackBlend
+            );
+
         PrepareBone(
             tailBone,
             tailRestLocalPosition,
             tailRestLocalRotation,
-            authoredWeight
+            tailAuthoredWeight
         );
 
         // Bone.001 controls where Bone.002 goes, Bone.002 controls Bone.003,
@@ -416,25 +423,47 @@ public class RedSnapperPresentation : MonoBehaviour
 
         if (tailBone != null)
         {
-            Quaternion tailCorrection =
-                Quaternion.FromToRotation(
+            Vector3 up =
+                transform.up;
+
+            Vector3 rearForward =
+                Vector3.ProjectOnPlane(
                     SafeDirection(
                         trail75,
                         headForward
                     ),
+                    up
+                );
+
+            Vector3 tailForward =
+                Vector3.ProjectOnPlane(
                     SafeDirection(
                         trail100,
                         trail75
-                    )
+                    ),
+                    up
                 );
 
-            tailBone.rotation =
-                Quaternion.Slerp(
-                    tailBone.rotation,
-                    tailCorrection *
-                    tailBone.rotation,
-                    trackBlend
-                );
+            if (rearForward.sqrMagnitude >
+                    0.0001f &&
+                tailForward.sqrMagnitude >
+                    0.0001f)
+            {
+                float tailYaw =
+                    Vector3.SignedAngle(
+                        rearForward.normalized,
+                        tailForward.normalized,
+                        up
+                    );
+
+                tailBone.rotation =
+                    Quaternion.AngleAxis(
+                        tailYaw *
+                        trackBlend,
+                        up
+                    ) *
+                    tailBone.rotation;
+            }
         }
     }
 
@@ -468,7 +497,7 @@ public class RedSnapperPresentation : MonoBehaviour
             );
     }
 
-    private static void AlignSegmentToTrack(
+    private void AlignSegmentToTrack(
         Transform bone,
         Transform child,
         Vector3 desiredForwardWorld,
@@ -480,6 +509,9 @@ public class RedSnapperPresentation : MonoBehaviour
             return;
         }
 
+        Vector3 up =
+            transform.up;
+
         Vector3 currentTailDirection =
             child.position -
             bone.position;
@@ -487,31 +519,45 @@ public class RedSnapperPresentation : MonoBehaviour
         Vector3 desiredTailDirection =
             -SafeDirection(
                 desiredForwardWorld,
-                bone.forward
+                currentTailDirection
             );
 
-        if (currentTailDirection.sqrMagnitude <
-            0.000001f)
+        Vector3 currentFlat =
+            Vector3.ProjectOnPlane(
+                currentTailDirection,
+                up
+            );
+
+        Vector3 desiredFlat =
+            Vector3.ProjectOnPlane(
+                desiredTailDirection,
+                up
+            );
+
+        if (currentFlat.sqrMagnitude <
+                0.0001f ||
+            desiredFlat.sqrMagnitude <
+                0.0001f)
         {
             return;
         }
 
-        Quaternion correction =
-            Quaternion.FromToRotation(
-                currentTailDirection.normalized,
-                desiredTailDirection
+        // Signed yaw makes CW and CCW exact mirrors. The previous full 3D
+        // FromToRotation could choose a different axis on the mirrored turn.
+        float yaw =
+            Vector3.SignedAngle(
+                currentFlat.normalized,
+                desiredFlat.normalized,
+                up
             );
-
-        Quaternion targetRotation =
-            correction *
-            bone.rotation;
 
         bone.rotation =
-            Quaternion.Slerp(
-                bone.rotation,
-                targetRotation,
-                Mathf.Clamp01(blend)
-            );
+            Quaternion.AngleAxis(
+                yaw *
+                Mathf.Clamp01(blend),
+                up
+            ) *
+            bone.rotation;
     }
 
     private static Vector3 SafeDirection(
