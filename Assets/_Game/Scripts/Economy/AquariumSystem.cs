@@ -1069,16 +1069,16 @@ public class TankFishAgent : MonoBehaviour
                     0.50f
                 );
 
-            // Tuna are stiff thunniform swimmers. Let the head describe a
-            // smoother, wider turn instead of snapping around like a flexible
-            // reef fish.
+            // The head enters the curve first. The body now follows the
+            // actual stored head-path behind it, so the root can remain
+            // responsive without making the whole mesh rotate rigidly.
             turnSpeedDeg =
                 UnityEngine.Random.Range(
-                    82f,
-                    102f
+                    108f,
+                    126f
                 );
 
-            pitchSpeedDeg = 50f;
+            pitchSpeedDeg = 55f;
 
             pathRadiusX =
                 UnityEngine.Random.Range(
@@ -1244,7 +1244,7 @@ public class TankFishAgent : MonoBehaviour
         }
         else if (tunaPresentation != null)
         {
-            lookAhead = 0.42f;
+            lookAhead = 0.36f;
         }
         else
         {
