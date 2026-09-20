@@ -977,6 +977,12 @@ public class TankFishAgent : MonoBehaviour
     private float speedDriftPhase;
     private float speedDriftFrequency;
     private float speedDriftAmount;
+    private float pathRotation;
+    private float pathCenterX;
+    private float pathCenterZ;
+    private float verticalDriftPhase;
+    private float verticalDriftFrequency;
+    private float verticalDriftAmount;
 
     private struct BodyTrailSample
     {
@@ -1022,8 +1028,8 @@ public class TankFishAgent : MonoBehaviour
                 // the same aquarium travel-speed range.
                 cruiseSpeed =
                     UnityEngine.Random.Range(
-                        0.92f,
-                        1.02f
+                        0.68f,
+                        1.32f
                     );
             }
             else
@@ -1034,8 +1040,8 @@ public class TankFishAgent : MonoBehaviour
                     goatfishPresentation
                         .GetRecommendedCruiseSpeed() *
                     UnityEngine.Random.Range(
-                        0.78f,
-                        0.84f
+                        0.68f,
+                        1.08f
                     );
             }
 
@@ -1049,14 +1055,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.78f,
-                    0.90f
+                    3.20f,
+                    6.70f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.24f,
-                    0.32f
+                    1.35f,
+                    3.15f
                 );
         }
         else if (redSnapperPresentation != null)
@@ -1064,8 +1070,8 @@ public class TankFishAgent : MonoBehaviour
             // Exactly the same aquarium speed band as Black Spot Goatfish.
             cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.92f,
-                    1.02f
+                    0.68f,
+                    1.32f
                 );
 
             turnSpeedDeg =
@@ -1078,22 +1084,22 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.92f,
-                    1.06f
+                    3.60f,
+                    6.90f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.25f,
-                    0.34f
+                    1.45f,
+                    3.25f
                 );
         }
         else if (tunaPresentation != null)
         {
             cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.40f,
-                    0.50f
+                    0.42f,
+                    0.88f
                 );
 
             turnSpeedDeg =
@@ -1106,14 +1112,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.82f,
-                    0.94f
+                    3.80f,
+                    7.00f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.32f,
-                    0.42f
+                    1.55f,
+                    3.30f
                 );
         }
         else
@@ -1121,8 +1127,8 @@ public class TankFishAgent : MonoBehaviour
             // Preserve the Yellowtail/generic behavior that already looked good.
             cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.26f,
-                    0.38f
+                    0.30f,
+                    0.72f
                 );
 
             turnSpeedDeg =
@@ -1135,14 +1141,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.88f,
-                    1.06f
+                    3.10f,
+                    6.80f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.30f,
-                    0.42f
+                    1.30f,
+                    3.20f
                 );
         }
 
@@ -1162,19 +1168,19 @@ public class TankFishAgent : MonoBehaviour
 
         baseHeight =
             UnityEngine.Random.Range(
-                0.76f,
-                1.24f
+                2.0f,
+                7.0f
             );
 
         heightAmplitude =
             goatfishPresentation != null
                 ? UnityEngine.Random.Range(
-                    0.055f,
-                    0.11f
+                    0.35f,
+                    1.15f
                 )
                 : UnityEngine.Random.Range(
-                    0.075f,
-                    0.16f
+                    0.50f,
+                    1.55f
                 );
 
         heightPhase =
@@ -1186,7 +1192,7 @@ public class TankFishAgent : MonoBehaviour
         pathVariant =
             UnityEngine.Random.Range(
                 0,
-                4
+                8
             );
 
         pathShapePhase =
@@ -1197,25 +1203,62 @@ public class TankFishAgent : MonoBehaviour
 
         pathWobbleX =
             UnityEngine.Random.Range(
-                0.06f,
-                0.14f
+                0.08f,
+                0.30f
             );
 
         pathWobbleZ =
             UnityEngine.Random.Range(
-                0.06f,
-                0.16f
+                0.08f,
+                0.34f
+            );
+
+        pathRotation =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        pathCenterX =
+            UnityEngine.Random.Range(
+                -0.80f,
+                0.80f
+            );
+
+        pathCenterZ =
+            UnityEngine.Random.Range(
+                -0.35f,
+                0.35f
             );
 
         heightHarmonic =
-            UnityEngine.Random.value < 0.5f
-                ? 1
-                : 2;
+            UnityEngine.Random.Range(
+                1,
+                4
+            );
 
         secondaryHeightPhase =
             UnityEngine.Random.Range(
                 0f,
                 Mathf.PI * 2f
+            );
+
+        verticalDriftPhase =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        verticalDriftFrequency =
+            UnityEngine.Random.Range(
+                0.05f,
+                0.14f
+            );
+
+        verticalDriftAmount =
+            UnityEngine.Random.Range(
+                0.20f,
+                0.75f
             );
 
         speedDriftPhase =
@@ -1226,14 +1269,14 @@ public class TankFishAgent : MonoBehaviour
 
         speedDriftFrequency =
             UnityEngine.Random.Range(
-                0.16f,
-                0.34f
+                0.08f,
+                0.28f
             );
 
         speedDriftAmount =
             UnityEngine.Random.Range(
-                0.05f,
-                0.13f
+                0.12f,
+                0.32f
             );
 
         tail =
