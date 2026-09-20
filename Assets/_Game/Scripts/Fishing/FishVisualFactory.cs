@@ -15,6 +15,7 @@ public static class FishVisualFactory
     private static GameObject yellowfinTunaPrefab;
     private static GameObject yellowGoatfishPrefab;
     private static GameObject blackSpotGoatfishPrefab;
+    private static GameObject mackerelPrefab;
 
     private const int HeroYellowtailSpeciesId = 3;
 
@@ -57,6 +58,20 @@ public static class FishVisualFactory
     {
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
+
+        if (allowHero &&
+            speciesId == 0)
+        {
+            GameObject mackerel =
+                CreateMackerel(
+                    name,
+                    parent,
+                    scale
+                );
+
+            if (mackerel != null)
+                return mackerel;
+        }
 
         if (allowHero &&
             speciesId ==
@@ -235,6 +250,43 @@ public static class FishVisualFactory
             GetAccentMaterial(speciesId);
 
         return root;
+    }
+
+    private static GameObject CreateMackerel(
+        string name,
+        Transform parent,
+        float scale)
+    {
+        if (mackerelPrefab == null)
+        {
+            mackerelPrefab =
+                Resources.Load<GameObject>(
+                    "Fishing/Mackerel"
+                );
+        }
+
+        if (mackerelPrefab == null)
+            return null;
+
+        GameObject instance =
+            Object.Instantiate(
+                mackerelPrefab
+            );
+
+        instance.name = name;
+
+        if (parent != null)
+        {
+            instance.transform.SetParent(
+                parent,
+                false
+            );
+        }
+
+        instance.transform.localScale =
+            Vector3.one * scale;
+
+        return instance;
     }
 
     private static GameObject CreateHeroYellowtail(
