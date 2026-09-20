@@ -1556,10 +1556,252 @@ public class FishingSystem : MonoBehaviour
             bobber == null ||
             !bobber.activeSelf)
         {
+            if (bobberIndicatorRoot != null)
+            {
+                bobberIndicatorRoot.SetActive(
+                    false
+                );
+            }
+
             return;
         }
 
         SetLinePositions();
+        UpdateBobberIndicator();
+    }
+
+    private void CreateBobberIndicator()
+    {
+        if (bobberIndicatorRoot != null)
+        {
+            Destroy(
+                bobberIndicatorRoot
+            );
+        }
+
+        bobberIndicatorRoot =
+            new GameObject(
+                "BobberStatusIndicator",
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(CanvasScaler)
+            );
+
+        Canvas canvas =
+            bobberIndicatorRoot
+                .GetComponent<Canvas>();
+
+        canvas.renderMode =
+            RenderMode.WorldSpace;
+
+        canvas.worldCamera =
+            playerCamera;
+
+        canvas.sortingOrder = 60;
+
+        RectTransform rootRect =
+            bobberIndicatorRoot
+                .GetComponent<RectTransform>();
+
+        rootRect.sizeDelta =
+            new Vector2(
+                240f,
+                86f
+            );
+
+        rootRect.localScale =
+            Vector3.one *
+            0.004f;
+
+        GameObject background =
+            new GameObject(
+                "Background",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image)
+            );
+
+        background.transform.SetParent(
+            bobberIndicatorRoot.transform,
+            false
+        );
+
+        bobberIndicatorBackground =
+            background.GetComponent<Image>();
+
+        bobberIndicatorBackground.color =
+            new Color(
+                0.08f,
+                0.13f,
+                0.16f,
+                0.92f
+            );
+
+        RectTransform bgRect =
+            background
+                .GetComponent<RectTransform>();
+
+        bgRect.anchorMin =
+            Vector2.zero;
+
+        bgRect.anchorMax =
+            Vector2.one;
+
+        bgRect.offsetMin =
+            Vector2.zero;
+
+        bgRect.offsetMax =
+            Vector2.zero;
+
+        GameObject textObject =
+            new GameObject(
+                "Label",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Text)
+            );
+
+        textObject.transform.SetParent(
+            background.transform,
+            false
+        );
+
+        bobberIndicatorText =
+            textObject.GetComponent<Text>();
+
+        bobberIndicatorText.font =
+            Resources.GetBuiltinResource<Font>(
+                "LegacyRuntime.ttf"
+            );
+
+        bobberIndicatorText.fontSize = 25;
+        bobberIndicatorText.alignment =
+            TextAnchor.MiddleCenter;
+
+        bobberIndicatorText.color =
+            Color.white;
+
+        bobberIndicatorText.raycastTarget =
+            false;
+
+        bobberIndicatorText.text =
+            string.Empty;
+
+        RectTransform textRect =
+            bobberIndicatorText
+                .rectTransform;
+
+        textRect.anchorMin =
+            Vector2.zero;
+
+        textRect.anchorMax =
+            Vector2.one;
+
+        textRect.offsetMin =
+            new Vector2(
+                8f,
+                5f
+            );
+
+        textRect.offsetMax =
+            new Vector2(
+                -8f,
+                -5f
+            );
+
+        bobberIndicatorRoot.SetActive(
+            false
+        );
+    }
+
+    private void UpdateBobberIndicator()
+    {
+        if (bobberIndicatorRoot == null ||
+            bobberIndicatorText == null ||
+            bobberIndicatorBackground == null ||
+            bobber == null ||
+            !bobber.activeSelf ||
+            state ==
+                FishingState.Casting ||
+            state ==
+                FishingState.Idle)
+        {
+            if (bobberIndicatorRoot != null)
+            {
+                bobberIndicatorRoot.SetActive(
+                    false
+                );
+            }
+
+            return;
+        }
+
+        bobberIndicatorRoot.SetActive(
+            true
+        );
+
+        bobberIndicatorRoot.transform.position =
+            bobber.transform.position +
+            Vector3.up *
+            0.58f;
+
+        if (playerCamera != null)
+        {
+            Vector3 facing =
+                bobberIndicatorRoot
+                    .transform.position -
+                playerCamera
+                    .transform.position;
+
+            if (facing.sqrMagnitude >
+                0.0001f)
+            {
+                bobberIndicatorRoot
+                    .transform.rotation =
+                    Quaternion.LookRotation(
+                        facing.normalized,
+                        Vector3.up
+                    );
+            }
+        }
+
+        float distance =
+            GetCurrentLineDistance();
+
+        string lineText =
+            "LINE " +
+            distance.ToString("0.0") +
+            " / " +
+            maximumLineDistance
+                .ToString("0") +
+            " m";
+
+        if (state ==
+                FishingState.Bite ||
+            state ==
+                FishingState.Fighting)
+        {
+            bobberIndicatorBackground.color =
+                GetTemperamentColor();
+
+            bobberIndicatorText.text =
+                GetTemperamentName() +
+                "\n" +
+                lineText;
+        }
+        else
+        {
+            bobberIndicatorBackground.color =
+                new Color(
+                    0.08f,
+                    0.16f,
+                    0.20f,
+                    0.92f
+                );
+
+            bobberIndicatorText.text =
+                lineText;
+        }
     }
 
     private void SetLinePositions()
