@@ -951,6 +951,7 @@ public class TankFishAgent : MonoBehaviour
     private YellowfinTunaPresentation tunaPresentation;
     private GoatfishPresentation goatfishPresentation;
     private RedSnapperPresentation redSnapperPresentation;
+    private MackerelPresentation mackerelPresentation;
 
     private float cruiseSpeed;
     private float currentSpeed;
@@ -1018,6 +1019,9 @@ public class TankFishAgent : MonoBehaviour
 
         redSnapperPresentation =
             GetComponent<RedSnapperPresentation>();
+
+        mackerelPresentation =
+            GetComponent<MackerelPresentation>();
 
         if (goatfishPresentation != null)
         {
@@ -1092,6 +1096,34 @@ public class TankFishAgent : MonoBehaviour
                 UnityEngine.Random.Range(
                     0.45f,
                     0.86f
+                );
+        }
+        else if (mackerelPresentation != null)
+        {
+            cruiseSpeed =
+                UnityEngine.Random.Range(
+                    0.58f,
+                    0.98f
+                );
+
+            turnSpeedDeg =
+                UnityEngine.Random.Range(
+                    140f,
+                    170f
+                );
+
+            pitchSpeedDeg = 66f;
+
+            pathRadiusX =
+                UnityEngine.Random.Range(
+                    1.25f,
+                    2.05f
+                );
+
+            pathRadiusZ =
+                UnityEngine.Random.Range(
+                    0.45f,
+                    0.80f
                 );
         }
         else if (tunaPresentation != null)
@@ -1943,6 +1975,13 @@ public class TankFishAgent : MonoBehaviour
         if (tunaPresentation != null)
         {
             tunaPresentation.SetAquariumLocomotion(
+                currentSpeed
+            );
+        }
+
+        if (mackerelPresentation != null)
+        {
+            mackerelPresentation.SetAquariumLocomotion(
                 currentSpeed
             );
         }
