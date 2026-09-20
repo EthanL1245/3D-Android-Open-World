@@ -58,6 +58,36 @@ public class RedSnapperPresentation : MonoBehaviour
         // gameplay root owns heading and translation.
     }
 
+    public bool TryGetHeadPosition(
+        Transform referenceSpace,
+        out Vector3 position)
+    {
+        ResolveBones();
+        CaptureFrontPose();
+
+        if (headBone == null)
+        {
+            position = Vector3.zero;
+            return false;
+        }
+
+        if (referenceSpace != null)
+        {
+            position =
+                referenceSpace
+                    .InverseTransformPoint(
+                        headBone.position
+                    );
+        }
+        else
+        {
+            position =
+                headBone.position;
+        }
+
+        return true;
+    }
+
     public float GetRecommendedCruiseSpeed()
     {
         ResolveAnimator();

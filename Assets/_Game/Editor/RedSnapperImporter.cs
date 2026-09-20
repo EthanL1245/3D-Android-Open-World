@@ -206,7 +206,7 @@ public static class RedSnapperImporter
 
             EditorUtility.DisplayDialog(
                 "Red Snapper Imported",
-                "Done. The Red Snapper uses the new authored Blend animation with its head/front locked to gameplay forward. Aquarium propulsion is root-forward only, so lateral movement is disabled. The next Play Mode will grant a fresh test Red Snapper.",
+                "Done. The Red Snapper uses the selected authored animation. Its front/head is locked, the path is guided from the head position, turns pivot around the head, and aquarium movement advances the head only along forward. Import validation rejects sideways or rolled orientation. The next Play Mode will grant a fresh test Red Snapper.",
                 "OK"
             );
         }
@@ -711,6 +711,15 @@ if armature.animation_data is None:
 
 swim = armature.animation_data.action
 
+# The user's latest Red Snapper file names the authored armature animation
+# ArmatureAction. Prefer it explicitly over mesh/object actions such as
+# PlaneAction whenever the active action is not set.
+if swim is None:
+    for action in bpy.data.actions:
+        if action.name.lower() == 'armatureaction':
+            swim = action
+            break
+
 if swim is None:
     for action in bpy.data.actions:
         name = action.name.lower()
@@ -778,6 +787,7 @@ if not os.path.exists(out_path):
     raise RuntimeError('FBX export did not produce an output file.')
 
 print('RED_SNAPPER_ACTION=' + swim.name)
+print('RED_SNAPPER_FRAMES=' + str(int(swim.frame_range[0])) + ':' + str(int(swim.frame_range[1])))
 ";
 
         File.WriteAllText(
@@ -1512,6 +1522,13 @@ print('RED_SNAPPER_ACTION=' + swim.name)
         {
             throw new InvalidOperationException(
                 "Red Snapper head axis did not align to gameplay forward. Import stopped instead of allowing lateral swimming."
+            );
+        }
+
+        if (upDot < 0.90f)
+        {
+            throw new InvalidOperationException(
+                "Red Snapper imported rolled onto its side. Import stopped instead of accepting an unrealistic swimming orientation."
             );
         }
     }

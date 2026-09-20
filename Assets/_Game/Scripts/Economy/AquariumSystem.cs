@@ -1172,6 +1172,16 @@ public class TankFishAgent : MonoBehaviour
         if (deltaTime <= 0f)
             return;
 
+        Vector3 snapperHeadBefore =
+            Vector3.zero;
+
+        bool snapperHasHead =
+            redSnapperPresentation != null &&
+            redSnapperPresentation.TryGetHeadPosition(
+                transform.parent,
+                out snapperHeadBefore
+            );
+
         float effectiveRadius =
             Mathf.Sqrt(
                 (
@@ -1190,7 +1200,18 @@ public class TankFishAgent : MonoBehaviour
                 effectiveRadius
             );
 
-        if (goatfishPresentation != null)
+        if (redSnapperPresentation != null &&
+            snapperHasHead)
+        {
+            // The RED SNAPPER PATH IS GUIDED BY THE HEAD, not its body
+            // center. This prevents the body pivot from dragging the head
+            // sideways around turns.
+            pathAngle =
+                EstimatePathAngle(
+                    snapperHeadBefore
+                );
+        }
+        else if (goatfishPresentation != null)
         {
             // Goatfish use a current-position-anchored guide.
             pathAngle =
@@ -1234,9 +1255,15 @@ public class TankFishAgent : MonoBehaviour
                 lookAhead
             );
 
+        Vector3 steeringOrigin =
+            redSnapperPresentation != null &&
+            snapperHasHead
+                ? snapperHeadBefore
+                : transform.localPosition;
+
         Vector3 toTarget =
             target -
-            transform.localPosition;
+            steeringOrigin;
 
         if (toTarget.sqrMagnitude >
             0.0001f)
@@ -1353,21 +1380,50 @@ public class TankFishAgent : MonoBehaviour
                     );
             }
 
-            // Head-led propulsion, identical in principle to Yellowtail/Tuna:
-            // rotate the gameplay root first, then translate ONLY along that
-            // root's forward vector. There is no sideways/lateral component.
-            // For Red Snapper this is the live animated front-bone vector,
-            // not transform.forward, eliminating lateral skating.
+            // Head-led propulsion.
             Vector3 forward =
                 transform.localRotation *
                 Vector3.forward;
 
             forward.Normalize();
 
-            transform.localPosition +=
-                forward *
-                currentSpeed *
-                deltaTime;
+            if (redSnapperPresentation != null &&
+                snapperHasHead)
+            {
+                // Rotation above happens on the GameObject root, whose pivot
+                // is near the fish body. Counter that pivot sweep first, then
+                // move the HEAD exactly forward. This makes the head the
+                // locomotion anchor: it cannot strafe sideways during a turn.
+                if (redSnapperPresentation.TryGetHeadPosition(
+                        transform.parent,
+                        out Vector3 headAfterRotation
+                    ))
+                {
+                    Vector3 desiredHeadPosition =
+                        snapperHeadBefore +
+                        forward *
+                        currentSpeed *
+                        deltaTime;
+
+                    transform.localPosition +=
+                        desiredHeadPosition -
+                        headAfterRotation;
+                }
+                else
+                {
+                    transform.localPosition +=
+                        forward *
+                        currentSpeed *
+                        deltaTime;
+                }
+            }
+            else
+            {
+                transform.localPosition +=
+                    forward *
+                    currentSpeed *
+                    deltaTime;
+            }
 
             if (goatfishPresentation == null &&
                 redSnapperPresentation == null)
