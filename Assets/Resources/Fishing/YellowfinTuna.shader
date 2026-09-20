@@ -207,7 +207,7 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float totalTurnAngle =
                     turnMagnitude *
-                    2.75;
+                    2.10;
 
                 if (totalTurnAngle > 0.001)
                 {

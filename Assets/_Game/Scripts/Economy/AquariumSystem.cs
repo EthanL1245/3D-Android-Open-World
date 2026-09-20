@@ -1286,13 +1286,14 @@ public class TankFishAgent : MonoBehaviour
                     signedTurn
                 );
 
-            // Body curvature follows the same signed turn request as the
-            // head/root. The root still owns movement; these values only make
-            // the body trail the curve instead of remaining rigid.
+            // The body must TRAIL the head through a turn.
+            // SignedHorizontalAngle describes where the HEAD is turning.
+            // The body/tail bend is therefore the opposite sign so the rear
+            // stays on the previous path instead of whipping into the turn.
             float normalizedBodyTurn =
                 Mathf.Clamp(
-                    signedTurn /
-                    72f,
+                    -signedTurn /
+                    80f,
                     -1f,
                     1f
                 );

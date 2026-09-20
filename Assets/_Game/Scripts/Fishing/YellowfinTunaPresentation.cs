@@ -153,7 +153,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
             Mathf.MoveTowards(
                 aquariumTurnCurrent,
                 aquariumTurnTarget,
-                Time.deltaTime * 4.2f
+                Time.deltaTime * 5.5f
             );
 
         float beat =

@@ -172,7 +172,7 @@ public class RedSnapperPresentation : MonoBehaviour
             Mathf.MoveTowards(
                 aquariumTurnCurrent,
                 aquariumTurnTarget,
-                Time.deltaTime * 4.5f
+                Time.deltaTime * 6.0f
             );
 
         // Animator has evaluated already. The actual head/front section is
@@ -210,7 +210,7 @@ public class RedSnapperPresentation : MonoBehaviour
         float authoredSwimWeight =
             Mathf.Lerp(
                 1f,
-                0.30f,
+                0.45f,
                 turnMagnitude
             );
 
@@ -219,7 +219,7 @@ public class RedSnapperPresentation : MonoBehaviour
             midRestLocalPosition,
             midRestLocalRotation,
             authoredSwimWeight,
-            turn * 10f
+            turn * 7f
         );
 
         ApplyTurnFollower(
@@ -227,7 +227,7 @@ public class RedSnapperPresentation : MonoBehaviour
             rearRestLocalPosition,
             rearRestLocalRotation,
             authoredSwimWeight,
-            turn * 20f
+            turn * 14f
         );
 
         ApplyTurnFollower(
@@ -235,7 +235,7 @@ public class RedSnapperPresentation : MonoBehaviour
             tailRestLocalPosition,
             tailRestLocalRotation,
             authoredSwimWeight,
-            turn * 34f
+            turn * 22f
         );
     }
 
