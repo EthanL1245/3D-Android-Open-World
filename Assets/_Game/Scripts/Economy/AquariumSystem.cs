@@ -945,91 +945,114 @@ public class PlacedFishTank : MonoBehaviour
 public class TankFishAgent : MonoBehaviour
 {
     private Transform tail;
+
+    private HeroFishAnimator heroAnimator;
     private YellowfinTunaPresentation tunaPresentation;
+    private GoatfishPresentation goatfishPresentation;
 
     private float cruiseSpeed;
-    private float currentSpeed;
-    private float turnSpeedDeg;
-    private float pitchSpeedDeg;
-
     private float phase;
 
-    // Smooth aquarium lane. Each fish keeps one direction rather than
-    // repeatedly choosing unrelated random destinations.
+    // Smooth closed swimming lane.
     private float pathAngle;
     private float pathDirection;
     private float pathRadiusX;
     private float pathRadiusZ;
+    private float pathWarp;
+    private float pathWarpPhase;
+
     private float baseHeight;
     private float heightAmplitude;
     private float heightPhase;
+
+    private Vector3 previousForward;
 
     public void Configure(float offset)
     {
         phase = offset;
 
+        heroAnimator =
+            GetComponent<HeroFishAnimator>();
+
         tunaPresentation =
             GetComponent<YellowfinTunaPresentation>();
+
+        goatfishPresentation =
+            GetComponent<GoatfishPresentation>();
+
+        bool isDetailedFish =
+            heroAnimator != null ||
+            tunaPresentation != null ||
+            goatfishPresentation != null;
 
         if (tunaPresentation != null)
         {
             cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.34f,
-                    0.44f
+                    0.48f,
+                    0.58f
                 );
-
-            turnSpeedDeg =
+        }
+        else if (goatfishPresentation != null)
+        {
+            // Goatfish were previously animating too quickly
+            // relative to their actual forward travel.
+            cruiseSpeed =
                 UnityEngine.Random.Range(
-                    105f,
-                    130f
+                    0.43f,
+                    0.53f
                 );
-
-            pitchSpeedDeg = 55f;
-
-            pathRadiusX =
+        }
+        else if (heroAnimator != null)
+        {
+            cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.82f,
-                    0.94f
-                );
-
-            pathRadiusZ =
-                UnityEngine.Random.Range(
-                    0.26f,
-                    0.34f
+                    0.42f,
+                    0.51f
                 );
         }
         else
         {
             cruiseSpeed =
                 UnityEngine.Random.Range(
-                    0.26f,
-                    0.38f
-                );
-
-            turnSpeedDeg =
-                UnityEngine.Random.Range(
-                    90f,
-                    120f
-                );
-
-            pitchSpeedDeg = 48f;
-
-            pathRadiusX =
-                UnityEngine.Random.Range(
-                    0.78f,
-                    0.94f
-                );
-
-            pathRadiusZ =
-                UnityEngine.Random.Range(
-                    0.24f,
-                    0.34f
+                    0.30f,
+                    0.42f
                 );
         }
 
-        currentSpeed =
-            cruiseSpeed * 0.92f;
+        pathRadiusX =
+            isDetailedFish
+                ? UnityEngine.Random.Range(
+                    0.82f,
+                    0.94f
+                )
+                : UnityEngine.Random.Range(
+                    0.76f,
+                    0.92f
+                );
+
+        pathRadiusZ =
+            isDetailedFish
+                ? UnityEngine.Random.Range(
+                    0.27f,
+                    0.35f
+                )
+                : UnityEngine.Random.Range(
+                    0.24f,
+                    0.34f
+                );
+
+        pathWarp =
+            UnityEngine.Random.Range(
+                0.018f,
+                0.050f
+            );
+
+        pathWarpPhase =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
 
         pathDirection =
             UnityEngine.Random.value < 0.5f
@@ -1044,14 +1067,14 @@ public class TankFishAgent : MonoBehaviour
 
         baseHeight =
             UnityEngine.Random.Range(
-                0.72f,
+                0.70f,
                 1.08f
             );
 
         heightAmplitude =
             UnityEngine.Random.Range(
-                0.045f,
-                0.10f
+                0.035f,
+                0.085f
             );
 
         heightPhase =
@@ -1064,6 +1087,20 @@ public class TankFishAgent : MonoBehaviour
             transform.Find("Tail");
 
         PlaceOnPath();
+
+        if (goatfishPresentation != null)
+        {
+            goatfishPresentation.SetAquariumLocomotion(
+                cruiseSpeed
+            );
+        }
+
+        if (tunaPresentation != null)
+        {
+            tunaPresentation.SetAquariumLocomotion(
+                cruiseSpeed
+            );
+        }
     }
 
     private void Update()
@@ -1074,193 +1111,138 @@ public class TankFishAgent : MonoBehaviour
         if (deltaTime <= 0f)
             return;
 
-        float effectiveRadius =
-            Mathf.Sqrt(
-                (
-                    pathRadiusX *
-                    pathRadiusX +
-                    pathRadiusZ *
-                    pathRadiusZ
-                ) *
-                0.5f
+        // Advance by physical distance, not an arbitrary angular rate.
+        // This keeps speed approximately constant around the whole oval.
+        Vector3 derivative =
+            EvaluatePathDerivative(
+                pathAngle
             );
 
-        float angularSpeed =
-            currentSpeed /
+        float distancePerRadian =
             Mathf.Max(
-                0.42f,
-                effectiveRadius
+                0.08f,
+                derivative.magnitude
             );
+
+        float angularDelta =
+            cruiseSpeed /
+            distancePerRadian *
+            deltaTime *
+            pathDirection;
 
         pathAngle +=
-            pathDirection *
-            angularSpeed *
-            deltaTime;
+            angularDelta;
 
-        if (pathAngle >
-            Mathf.PI * 2f)
-        {
-            pathAngle -=
-                Mathf.PI * 2f;
-        }
-        else if (pathAngle < 0f)
-        {
-            pathAngle +=
-                Mathf.PI * 2f;
-        }
+        WrapPathAngle();
 
-        float lookAhead =
-            tunaPresentation != null
-                ? 0.34f
-                : 0.30f;
-
-        Vector3 target =
-            EvaluatePath(
-                pathAngle +
-                pathDirection *
-                lookAhead
-            );
-
-        Vector3 toTarget =
-            target -
+        Vector3 oldPosition =
             transform.localPosition;
 
-        if (toTarget.sqrMagnitude >
-            0.0001f)
+        Vector3 newPosition =
+            EvaluatePath(
+                pathAngle
+            );
+
+        Vector3 velocity =
+            newPosition -
+            oldPosition;
+
+        Vector3 forward;
+
+        if (velocity.sqrMagnitude >
+            0.0000001f)
         {
-            Vector3 desiredDirection =
-                toTarget.normalized;
+            forward =
+                velocity.normalized;
+        }
+        else
+        {
+            forward =
+                EvaluatePathDerivative(
+                    pathAngle
+                ) *
+                pathDirection;
 
-            Vector3 currentForward =
-                transform.localRotation *
-                Vector3.forward;
-
-            float signedTurn =
-                SignedHorizontalAngle(
-                    currentForward,
-                    desiredDirection
-                );
-
-            float absoluteTurn =
-                Mathf.Abs(
-                    signedTurn
-                );
-
-            if (tunaPresentation != null)
+            if (forward.sqrMagnitude <
+                0.0001f)
             {
-                tunaPresentation.SetAquariumTurn(
-                    Mathf.Clamp(
-                        -signedTurn /
-                        34f,
-                        -1f,
-                        1f
-                    )
-                );
+                forward =
+                    previousForward.sqrMagnitude >
+                    0.0001f
+                        ? previousForward
+                        : Vector3.forward;
             }
 
-            // Fish keep most of their momentum through corners.
-            // A tuna should arc through a turn, not nearly stop.
-            float cornerSpeedFactor =
-                Mathf.Lerp(
-                    1f,
-                    0.78f,
-                    Mathf.InverseLerp(
-                        18f,
-                        85f,
-                        absoluteTurn
-                    )
-                );
+            forward.Normalize();
+        }
 
-            float desiredSpeed =
-                cruiseSpeed *
-                cornerSpeedFactor;
+        // This is the key rule for every detailed fish:
+        // the head/root points along the same vector the fish actually travels.
+        float signedTurn =
+            previousForward.sqrMagnitude >
+                0.0001f
+                ? SignedHorizontalAngle(
+                    previousForward,
+                    forward
+                )
+                : 0f;
 
-            currentSpeed =
-                Mathf.MoveTowards(
-                    currentSpeed,
-                    desiredSpeed,
-                    deltaTime *
-                    cruiseSpeed *
-                    2.8f
-                );
+        float turnRate =
+            deltaTime > 0.0001f
+                ? signedTurn /
+                  deltaTime
+                : 0f;
 
-            Vector3 flatDesired =
-                Vector3.ProjectOnPlane(
-                    desiredDirection,
-                    Vector3.up
-                );
+        float bank =
+            Mathf.Clamp(
+                -turnRate / 110f,
+                -1f,
+                1f
+            ) *
+            3.5f;
 
-            Vector3 flatForward =
-                Vector3.ProjectOnPlane(
-                    currentForward,
-                    Vector3.up
-                );
+        Quaternion heading =
+            Quaternion.LookRotation(
+                forward,
+                Vector3.up
+            );
 
-            if (flatDesired.sqrMagnitude >
-                    0.0001f &&
-                flatForward.sqrMagnitude >
-                    0.0001f)
-            {
-                flatDesired.Normalize();
-                flatForward.Normalize();
+        transform.localPosition =
+            newPosition;
 
-                Vector3 newFlatForward =
-                    Vector3.RotateTowards(
-                        flatForward,
-                        flatDesired,
-                        turnSpeedDeg *
-                        Mathf.Deg2Rad *
-                        deltaTime,
-                        0f
-                    );
+        transform.localRotation =
+            heading *
+            Quaternion.Euler(
+                0f,
+                0f,
+                bank
+            );
 
-                float desiredPitch =
-                    Mathf.Asin(
-                        Mathf.Clamp(
-                            desiredDirection.y,
-                            -0.30f,
-                            0.30f
-                        )
-                    ) *
-                    Mathf.Rad2Deg;
+        previousForward =
+            forward;
 
-                float currentPitch =
-                    NormalizeAngle(
-                        transform.localEulerAngles.x
-                    );
+        if (tunaPresentation != null)
+        {
+            // Tail should lag outside the turn while the head stays on tangent.
+            tunaPresentation.SetAquariumTurn(
+                Mathf.Clamp(
+                    -turnRate /
+                    100f,
+                    -1f,
+                    1f
+                )
+            );
 
-                float newPitch =
-                    Mathf.MoveTowardsAngle(
-                        currentPitch,
-                        -desiredPitch,
-                        pitchSpeedDeg *
-                        deltaTime
-                    );
+            tunaPresentation.SetAquariumLocomotion(
+                cruiseSpeed
+            );
+        }
 
-                transform.localRotation =
-                    Quaternion.LookRotation(
-                        newFlatForward,
-                        Vector3.up
-                    ) *
-                    Quaternion.Euler(
-                        newPitch,
-                        0f,
-                        0f
-                    );
-            }
-
-            // Forward propulsion only. The moving look-ahead point bends the
-            // trajectory smoothly around the oval instead of dragging sideways.
-            Vector3 forward =
-                transform.localRotation *
-                Vector3.forward;
-
-            transform.localPosition +=
-                forward *
-                currentSpeed *
-                deltaTime;
-
-            SoftContainInsideTank();
+        if (goatfishPresentation != null)
+        {
+            goatfishPresentation.SetAquariumLocomotion(
+                cruiseSpeed
+            );
         }
 
         if (tail != null)
@@ -1271,10 +1253,10 @@ public class TankFishAgent : MonoBehaviour
                     Mathf.Sin(
                         Time.time *
                         cruiseSpeed *
-                        22f +
+                        18f +
                         phase
                     ) *
-                    30f,
+                    27f,
                     0f
                 );
         }
@@ -1282,41 +1264,55 @@ public class TankFishAgent : MonoBehaviour
 
     private void PlaceOnPath()
     {
-        transform.localPosition =
+        Vector3 position =
             EvaluatePath(
                 pathAngle
             );
 
         Vector3 tangent =
-            EvaluatePath(
-                pathAngle +
-                pathDirection *
-                0.035f
-            ) -
-            transform.localPosition;
-
-        tangent =
-            Vector3.ProjectOnPlane(
-                tangent,
-                Vector3.up
-            );
+            EvaluatePathDerivative(
+                pathAngle
+            ) *
+            pathDirection;
 
         if (tangent.sqrMagnitude <
             0.0001f)
         {
-            tangent = Vector3.forward;
+            tangent =
+                Vector3.forward;
         }
+
+        tangent.Normalize();
+
+        transform.localPosition =
+            position;
 
         transform.localRotation =
             Quaternion.LookRotation(
-                tangent.normalized,
+                tangent,
                 Vector3.up
             );
+
+        previousForward =
+            tangent;
     }
 
     private Vector3 EvaluatePath(
         float angle)
     {
+        float x =
+            Mathf.Cos(angle) *
+            pathRadiusX;
+
+        float z =
+            Mathf.Sin(angle) *
+            pathRadiusZ +
+            Mathf.Sin(
+                angle * 2f +
+                pathWarpPhase
+            ) *
+            pathWarp;
+
         float y =
             baseHeight +
             Mathf.Sin(
@@ -1327,42 +1323,56 @@ public class TankFishAgent : MonoBehaviour
 
         return
             new Vector3(
-                Mathf.Cos(angle) *
-                pathRadiusX,
+                x,
                 y,
-                Mathf.Sin(angle) *
-                pathRadiusZ
+                z
             );
     }
 
-    private void SoftContainInsideTank()
+    private Vector3 EvaluatePathDerivative(
+        float angle)
     {
-        Vector3 position =
-            transform.localPosition;
+        // Analytic derivative of EvaluatePath with respect to angle.
+        float dx =
+            -Mathf.Sin(angle) *
+            pathRadiusX;
 
-        position.x =
-            Mathf.Clamp(
-                position.x,
-                -1.03f,
-                1.03f
+        float dz =
+            Mathf.Cos(angle) *
+            pathRadiusZ +
+            Mathf.Cos(
+                angle * 2f +
+                pathWarpPhase
+            ) *
+            pathWarp *
+            2f;
+
+        float dy =
+            Mathf.Cos(
+                angle * 0.72f +
+                heightPhase
+            ) *
+            heightAmplitude *
+            0.72f;
+
+        return
+            new Vector3(
+                dx,
+                dy,
+                dz
             );
+    }
 
-        position.y =
-            Mathf.Clamp(
-                position.y,
-                0.43f,
-                1.33f
-            );
+    private void WrapPathAngle()
+    {
+        float full =
+            Mathf.PI * 2f;
 
-        position.z =
-            Mathf.Clamp(
-                position.z,
-                -0.41f,
-                0.41f
-            );
+        while (pathAngle >= full)
+            pathAngle -= full;
 
-        transform.localPosition =
-            position;
+        while (pathAngle < 0f)
+            pathAngle += full;
     }
 
     private static float SignedHorizontalAngle(
@@ -1394,14 +1404,5 @@ public class TankFishAgent : MonoBehaviour
             flatTo,
             Vector3.up
         );
-    }
-
-    private static float NormalizeAngle(
-        float angle)
-    {
-        if (angle > 180f)
-            angle -= 360f;
-
-        return angle;
     }
 }

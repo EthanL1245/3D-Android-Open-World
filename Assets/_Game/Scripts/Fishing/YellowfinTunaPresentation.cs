@@ -48,6 +48,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float smoothedTurn;
     private float externalTurnTarget;
     private bool hasExternalTurnTarget;
+    private float aquariumLocomotionSpeed = 0.52f;
 
     [Header("Held Escape Motion")]
     [SerializeField]
@@ -150,6 +151,16 @@ public class YellowfinTunaPresentation : MonoBehaviour
         hasExternalTurnTarget = true;
     }
 
+    public void SetAquariumLocomotion(
+        float worldSpeed)
+    {
+        aquariumLocomotionSpeed =
+            Mathf.Max(
+                0f,
+                worldSpeed
+            );
+    }
+
     private void OnEnable()
     {
         ResolveReferences();
@@ -174,7 +185,15 @@ public class YellowfinTunaPresentation : MonoBehaviour
         float speed =
             held
                 ? heldSpeed
-                : swimSpeed;
+                : Mathf.Lerp(
+                    swimSpeed * 0.78f,
+                    swimSpeed * 1.08f,
+                    Mathf.InverseLerp(
+                        0.34f,
+                        0.66f,
+                        aquariumLocomotionSpeed
+                    )
+                );
 
         float beat =
             Mathf.Sin(
@@ -185,33 +204,34 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
         UpdateTurnBend();
 
+        // In the aquarium the fish's HEAD must define its travel direction.
+        // Do not yaw the whole visual independently of the locomotion root.
         float yaw =
-            beat *
-            (
-                held
-                    ? heldYawDegrees
-                    : bodyYawDegrees
-            );
+            held
+                ? beat *
+                  heldYawDegrees
+                : 0f;
 
-        float roll =
-            Mathf.Sin(
-                Time.time *
-                speed *
-                0.5f +
-                phase +
-                0.8f
-            ) *
-            (
-                held
-                    ? heldRollDegrees
-                    : bodyRollDegrees
-            );
+        float roll;
 
-        if (!held)
+        if (held)
         {
-            roll +=
+            roll =
+                Mathf.Sin(
+                    Time.time *
+                    speed *
+                    0.5f +
+                    phase +
+                    0.8f
+                ) *
+                heldRollDegrees;
+        }
+        else
+        {
+            // Small turn bank only; body curvature is handled by the shader.
+            roll =
                 -smoothedTurn *
-                1.4f;
+                1.8f;
         }
 
         visualRoot.localRotation =
@@ -391,7 +411,15 @@ public class YellowfinTunaPresentation : MonoBehaviour
         float speed =
             held
                 ? heldSpeed
-                : swimSpeed;
+                : Mathf.Lerp(
+                    swimSpeed * 0.78f,
+                    swimSpeed * 1.08f,
+                    Mathf.InverseLerp(
+                        0.34f,
+                        0.66f,
+                        aquariumLocomotionSpeed
+                    )
+                );
 
         float turn =
             held
