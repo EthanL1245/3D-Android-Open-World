@@ -17,10 +17,12 @@ public class RedSnapperPresentation : MonoBehaviour
 
     private bool held;
 
-    // This rig is ordered front-to-back:
+    // Front-to-back rig:
     // Bone = head/front anchor
     // Bone.001 = front body
-    // Bone.002+ = animated mid/rear body and tail
+    // Bone.002 = mid
+    // Bone.003 = rear
+    // Bone.004 = tail
     private Transform headBone;
     private Transform frontBodyBone;
     private Transform midBodyBone;
@@ -47,10 +49,20 @@ public class RedSnapperPresentation : MonoBehaviour
     private Quaternion tailRestLocalRotation =
         Quaternion.identity;
 
-    private bool frontPoseCaptured;
+    private bool restPoseCaptured;
 
-    private float aquariumTurnTarget;
-    private float aquariumTurnCurrent;
+    // TankFishAgent supplies the BODY-TRAIL direction, opposite the head turn.
+    private float turnTarget;
+
+    private float midTurn;
+    private float rearTurn;
+    private float tailTurn;
+
+    private float midTurnVelocity;
+    private float rearTurnVelocity;
+    private float tailTurnVelocity;
+
+    private float animatorSpeedCurrent = 1f;
 
     public void Configure(
         Animator targetAnimator)
@@ -58,7 +70,7 @@ public class RedSnapperPresentation : MonoBehaviour
         animator = targetAnimator;
 
         ResolveBones();
-        CaptureFrontPose();
+        CaptureRestPose();
         ApplyState();
     }
 
@@ -71,14 +83,13 @@ public class RedSnapperPresentation : MonoBehaviour
     public void SetAquariumLocomotion(
         float worldSpeed)
     {
-        // The head/root owns locomotion. Rear bones only shape themselves
-        // to match the current path curvature.
+        // Locomotion belongs to the gameplay root/head.
     }
 
     public void SetAquariumTurn(
         float normalizedTurn)
     {
-        aquariumTurnTarget =
+        turnTarget =
             held
                 ? 0f
                 : Mathf.Clamp(
@@ -93,7 +104,7 @@ public class RedSnapperPresentation : MonoBehaviour
         out Vector3 position)
     {
         ResolveBones();
-        CaptureFrontPose();
+        CaptureRestPose();
 
         if (headBone == null)
         {
@@ -148,7 +159,7 @@ public class RedSnapperPresentation : MonoBehaviour
     {
         ResolveAnimator();
         ResolveBones();
-        CaptureFrontPose();
+        CaptureRestPose();
         ApplyState();
     }
 
@@ -156,7 +167,7 @@ public class RedSnapperPresentation : MonoBehaviour
     {
         ResolveAnimator();
         ResolveBones();
-        CaptureFrontPose();
+        CaptureRestPose();
         ApplyState();
     }
 
@@ -166,18 +177,80 @@ public class RedSnapperPresentation : MonoBehaviour
             return;
 
         ResolveBones();
-        CaptureFrontPose();
+        CaptureRestPose();
 
-        aquariumTurnCurrent =
-            Mathf.MoveTowards(
-                aquariumTurnCurrent,
-                aquariumTurnTarget,
-                Time.deltaTime * 6.0f
+        // The gameplay root/head has already entered the curve in Update().
+        // The rest of the body follows in sequence rather than turning at once.
+        midTurn =
+            Mathf.SmoothDamp(
+                midTurn,
+                turnTarget,
+                ref midTurnVelocity,
+                0.10f,
+                Mathf.Infinity,
+                Time.deltaTime
             );
 
-        // Animator has evaluated already. The actual head/front section is
-        // restored to its authored rest pose so locomotion can never inherit
-        // lateral head wag from the clip.
+        rearTurn =
+            Mathf.SmoothDamp(
+                rearTurn,
+                midTurn,
+                ref rearTurnVelocity,
+                0.13f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        tailTurn =
+            Mathf.SmoothDamp(
+                tailTurn,
+                rearTurn,
+                ref tailTurnVelocity,
+                0.17f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        float turnMagnitude =
+            Mathf.Clamp01(
+                Mathf.Max(
+                    Mathf.Abs(midTurn),
+                    Mathf.Max(
+                        Mathf.Abs(rearTurn),
+                        Mathf.Abs(tailTurn)
+                    )
+                )
+            );
+
+        // If the authored wag is on the wrong half-cycle, do not let it fight
+        // the turn. Slow the clip and blend its rear-bone influence toward the
+        // rest pose while the turn-follow curve takes over.
+        float targetAnimatorSpeed =
+            Mathf.Lerp(
+                1f,
+                0.16f,
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    turnMagnitude
+                )
+            );
+
+        animatorSpeedCurrent =
+            Mathf.MoveTowards(
+                animatorSpeedCurrent,
+                targetAnimatorSpeed,
+                Time.deltaTime * 3.5f
+            );
+
+        if (animator != null)
+        {
+            animator.speed =
+                animatorSpeedCurrent;
+        }
+
+        // Head and immediate front stay locked to the root. This is what makes
+        // the head enter the path first; body curvature begins behind it.
         if (headBone != null)
         {
             headBone.localPosition =
@@ -196,46 +269,39 @@ public class RedSnapperPresentation : MonoBehaviour
                 frontBodyRestLocalRotation;
         }
 
-        float turn =
-            aquariumTurnCurrent;
-
-        float turnMagnitude =
-            Mathf.Abs(
-                turn
-            );
-
-        // During a hard turn, reduce the clip's independent tail wag so the
-        // authored animation cannot point the tail against the actual curve.
-        // The turn-follow bend then becomes the dominant motion.
-        float authoredSwimWeight =
+        float authoredWeight =
             Mathf.Lerp(
                 1f,
-                0.45f,
-                turnMagnitude
+                0.10f,
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    turnMagnitude
+                )
             );
 
         ApplyTurnFollower(
             midBodyBone,
             midRestLocalPosition,
             midRestLocalRotation,
-            authoredSwimWeight,
-            turn * 7f
+            authoredWeight,
+            midTurn * 6f
         );
 
         ApplyTurnFollower(
             rearBodyBone,
             rearRestLocalPosition,
             rearRestLocalRotation,
-            authoredSwimWeight,
-            turn * 14f
+            authoredWeight,
+            rearTurn * 12f
         );
 
         ApplyTurnFollower(
             tailBone,
             tailRestLocalPosition,
             tailRestLocalRotation,
-            authoredSwimWeight,
-            turn * 22f
+            authoredWeight,
+            tailTurn * 19f
         );
     }
 
@@ -249,11 +315,11 @@ public class RedSnapperPresentation : MonoBehaviour
         if (bone == null)
             return;
 
-        Quaternion authoredRotation =
-            bone.localRotation;
-
         Vector3 authoredPosition =
             bone.localPosition;
+
+        Quaternion authoredRotation =
+            bone.localRotation;
 
         bone.localPosition =
             Vector3.Lerp(
@@ -269,9 +335,8 @@ public class RedSnapperPresentation : MonoBehaviour
                 authoredWeight
             );
 
-        // Apply turning in world-up yaw after the authored clip. Because the
-        // bones are hierarchical, each farther-back segment accumulates the
-        // curve and the tail naturally trails the head through the turn.
+        // turnTarget already points toward the trailing/outside side of the
+        // head turn. Hierarchical application makes the rear and tail lag.
         bone.rotation =
             Quaternion.AngleAxis(
                 turnDegrees,
@@ -334,8 +399,6 @@ public class RedSnapperPresentation : MonoBehaviour
                 "Bone.004"
             );
 
-        // Defensive fallback if a future exporter renames/removes the root
-        // Bone but retains the numbered chain.
         if (headBone == null)
         {
             headBone =
@@ -366,9 +429,9 @@ public class RedSnapperPresentation : MonoBehaviour
         }
     }
 
-    private void CaptureFrontPose()
+    private void CaptureRestPose()
     {
-        if (frontPoseCaptured ||
+        if (restPoseCaptured ||
             headBone == null ||
             frontBodyBone == null)
         {
@@ -414,7 +477,7 @@ public class RedSnapperPresentation : MonoBehaviour
                 tailBone.localRotation;
         }
 
-        frontPoseCaptured = true;
+        restPoseCaptured = true;
     }
 
     private static Transform FindBone(
@@ -473,9 +536,12 @@ public class RedSnapperPresentation : MonoBehaviour
 
         animator.applyRootMotion = false;
 
-        animator.speed =
+        animatorSpeedCurrent =
             held
                 ? 1.08f
-                : 1.0f;
+                : 1f;
+
+        animator.speed =
+            animatorSpeedCurrent;
     }
 }

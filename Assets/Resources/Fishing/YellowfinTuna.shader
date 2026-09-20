@@ -16,12 +16,7 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimStrength ("Body Flex Strength", Float) = 0.17
         _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
-
-        _PathYaw25 ("Path Yaw 25%", Float) = 0
-        _PathYaw50 ("Path Yaw 50%", Float) = 0
-        _PathYaw75 ("Path Yaw 75%", Float) = 0
-        _PathYaw100 ("Path Yaw 100%", Float) = 0
-        _PathSideSign ("Path Side Sign", Float) = 1
+        _TurnBend ("Subtle Turn Bend", Range(-1,1)) = 0
     }
 
     SubShader
@@ -64,12 +59,7 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
-
-                float _PathYaw25;
-                float _PathYaw50;
-                float _PathYaw75;
-                float _PathYaw100;
-                float _PathSideSign;
+                float _TurnBend;
             CBUFFER_END
 
             struct Attributes
@@ -86,79 +76,6 @@ Shader "OpenWorld/YellowfinTuna"
                 float3 normalWS : TEXCOORD1;
                 float2 uv : TEXCOORD2;
             };
-
-            float SamplePathYaw(float t)
-            {
-                t =
-                    saturate(
-                        t
-                    );
-
-                if (t <= 0.25)
-                {
-                    float u =
-                        smoothstep(
-                            0.0,
-                            1.0,
-                            t / 0.25
-                        );
-
-                    return
-                        lerp(
-                            0.0,
-                            _PathYaw25,
-                            u
-                        );
-                }
-
-                if (t <= 0.50)
-                {
-                    float u =
-                        smoothstep(
-                            0.0,
-                            1.0,
-                            (t - 0.25) / 0.25
-                        );
-
-                    return
-                        lerp(
-                            _PathYaw25,
-                            _PathYaw50,
-                            u
-                        );
-                }
-
-                if (t <= 0.75)
-                {
-                    float u =
-                        smoothstep(
-                            0.0,
-                            1.0,
-                            (t - 0.50) / 0.25
-                        );
-
-                    return
-                        lerp(
-                            _PathYaw50,
-                            _PathYaw75,
-                            u
-                        );
-                }
-
-                float u =
-                    smoothstep(
-                        0.0,
-                        1.0,
-                        (t - 0.75) / 0.25
-                    );
-
-                return
-                    lerp(
-                        _PathYaw75,
-                        _PathYaw100,
-                        u
-                    );
-            }
 
             float3 DeformFish(float3 positionOS)
             {
@@ -189,12 +106,13 @@ Shader "OpenWorld/YellowfinTuna"
                         1.0 - normalizedBody;
                 }
 
-                // Keep the head quiet while allowing progressively more
-                // swimming motion toward the rear and caudal fin.
+                // One coherent beat across the body.
+                // The head stays stable, the mid-body participates visibly,
+                // and the tail receives the largest displacement.
                 float bodyFlex =
                     saturate(
-                        (tailPosition - 0.24) /
-                        0.76
+                        (tailPosition - 0.12) /
+                        0.88
                     );
 
                 bodyFlex =
@@ -207,8 +125,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float rearFlex =
                     saturate(
-                        (tailPosition - 0.56) /
-                        0.44
+                        (tailPosition - 0.42) /
+                        0.58
                     );
 
                 rearFlex =
@@ -221,8 +139,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float tailFlex =
                     saturate(
-                        (tailPosition - 0.80) /
-                        0.20
+                        (tailPosition - 0.74) /
+                        0.26
                     );
 
                 tailFlex =
@@ -233,6 +151,11 @@ Shader "OpenWorld/YellowfinTuna"
                         2.0 * tailFlex
                     );
 
+                // Yellowtail-style progressive flex:
+                // the mid-body begins the stroke, the rear follows slightly
+                // later, and the tail has the largest delayed kick.
+                // The phase offsets are deliberately modest so this stays
+                // tuna-like rather than becoming an eel wave.
                 float bodyBeat =
                     sin(
                         _SwimPhase
@@ -250,9 +173,19 @@ Shader "OpenWorld/YellowfinTuna"
                         0.58
                     );
 
-                float3 bodyAxis =
-                    normalize(
-                        _BodyAxis.xyz
+                float sideOffset =
+                    _SwimStrength *
+                    bodyRange *
+                    (
+                        bodyFlex *
+                        0.24 *
+                        bodyBeat +
+                        rearFlex *
+                        0.34 *
+                        rearBeat +
+                        tailFlex *
+                        0.42 *
+                        tailBeat
                     );
 
                 float3 sideAxis =
@@ -260,119 +193,36 @@ Shader "OpenWorld/YellowfinTuna"
                         _SideAxis.xyz
                     );
 
-                float3 tailAxis =
-                    _TailAtMin > 0.5
-                        ? -bodyAxis
-                        : bodyAxis;
-
-                float3 gameRightAxis =
-                    sideAxis *
-                    _PathSideSign;
-
-                // Reconstruct the centerline from the ACTUAL heading history
-                // of the head/root. A point farther toward the tail samples
-                // farther back in that history, so the curve propagates down
-                // the fish naturally instead of appearing instantly.
-                float3 curvedCenter =
-                    float3(
-                        0.0,
-                        0.0,
-                        0.0
-                    );
-
-                const int PATH_STEPS = 8;
-
-                float stepT =
-                    tailPosition /
-                    PATH_STEPS;
-
-                [unroll]
-                for (int step = 0;
-                     step < PATH_STEPS;
-                     step++)
-                {
-                    float sampleT =
-                        (
-                            step +
-                            0.5
-                        ) *
-                        stepT;
-
-                    float angle =
-                        SamplePathYaw(
-                            sampleT
-                        );
-
-                    // tailAxis points from head toward tail. Historical yaw is
-                    // measured from the current head heading toward an older
-                    // heading, so this tangent reproduces the path the head
-                    // has already traveled through.
-                    float3 tangent =
-                        tailAxis *
-                        cos(
-                            angle
-                        ) -
-                        gameRightAxis *
-                        sin(
-                            angle
-                        );
-
-                    curvedCenter +=
-                        tangent *
-                        (
-                            stepT *
-                            bodyRange
-                        );
-                }
-
-                float3 straightCenter =
-                    tailAxis *
-                    (
-                        tailPosition *
-                        bodyRange
-                    );
-
-                positionOS +=
-                    curvedCenter -
-                    straightCenter;
-
-                float turnMagnitude =
-                    saturate(
-                        abs(
-                            _PathYaw100
-                        ) /
-                        2.2
-                    );
-
-                // Preserve the normal tail beat, but soften it during a large
-                // turn so the caudal motion does not fight the path-following
-                // shape.
-                float swimDuringTurn =
-                    lerp(
-                        1.0,
-                        0.72,
-                        turnMagnitude
-                    );
-
-                float sideOffset =
-                    _SwimStrength *
-                    bodyRange *
-                    swimDuringTurn *
-                    (
-                        bodyFlex *
-                        0.16 *
-                        bodyBeat +
-                        rearFlex *
-                        0.30 *
-                        rearBeat +
-                        tailFlex *
-                        0.54 *
-                        tailBeat
-                    );
-
                 positionOS +=
                     sideAxis *
                     sideOffset;
+
+                // Safe turn flex: preserve the known-good tuna animation and
+                // add only a modest posterior curve. The head/front half is
+                // untouched; the rear eases into the trail instead of moving
+                // as a rigid board.
+                float turnFlex =
+                    saturate(
+                        (tailPosition - 0.46) /
+                        0.54
+                    );
+
+                turnFlex =
+                    turnFlex *
+                    turnFlex *
+                    (
+                        3.0 -
+                        2.0 * turnFlex
+                    );
+
+                positionOS +=
+                    sideAxis *
+                    (
+                        _TurnBend *
+                        bodyRange *
+                        0.075 *
+                        turnFlex
+                    );
 
                 return positionOS;
             }

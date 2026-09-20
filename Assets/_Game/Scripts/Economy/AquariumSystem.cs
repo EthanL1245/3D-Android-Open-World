@@ -497,9 +497,9 @@ public class AquariumSystem : MonoBehaviour
                 0f
             ),
             new Vector3(
-                3.0f,
+                3.45f,
                 0.24f,
-                1.65f
+                1.90f
             ),
             baseMaterial
         );
@@ -509,13 +509,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                0.92f,
+                0.99f,
                 0f
             ),
             new Vector3(
-                2.72f,
-                1.30f,
-                1.35f
+                3.13f,
+                1.50f,
+                1.55f
             ),
             preview
                 ? glassMaterial
@@ -527,12 +527,12 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                0.93f,
-                -0.72f
+                1.00f,
+                -0.82f
             ),
             new Vector3(
-                2.86f,
-                1.52f,
+                3.29f,
+                1.72f,
                 0.05f
             ),
             glassMaterial
@@ -543,12 +543,12 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                0.93f,
-                0.72f
+                1.00f,
+                0.82f
             ),
             new Vector3(
-                2.86f,
-                1.52f,
+                3.29f,
+                1.72f,
                 0.05f
             ),
             glassMaterial
@@ -558,14 +558,14 @@ public class AquariumSystem : MonoBehaviour
             "LeftGlass",
             root.transform,
             new Vector3(
-                -1.43f,
-                0.93f,
+                -1.645f,
+                1.00f,
                 0f
             ),
             new Vector3(
                 0.05f,
-                1.52f,
-                1.42f
+                1.72f,
+                1.64f
             ),
             glassMaterial
         );
@@ -574,14 +574,14 @@ public class AquariumSystem : MonoBehaviour
             "RightGlass",
             root.transform,
             new Vector3(
-                1.43f,
-                0.93f,
+                1.645f,
+                1.00f,
                 0f
             ),
             new Vector3(
                 0.05f,
-                1.52f,
-                1.42f
+                1.72f,
+                1.64f
             ),
             glassMaterial
         );
@@ -589,36 +589,36 @@ public class AquariumSystem : MonoBehaviour
         CreateFrame(
             root.transform,
             new Vector3(
-                1.43f,
-                0.93f,
-                0.72f
+                1.645f,
+                1.00f,
+                0.82f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -1.43f,
-                0.93f,
-                0.72f
+                -1.645f,
+                1.00f,
+                0.82f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                1.43f,
-                0.93f,
-                -0.72f
+                1.645f,
+                1.00f,
+                -0.82f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -1.43f,
-                0.93f,
-                -0.72f
+                -1.645f,
+                1.00f,
+                -0.82f
             )
         );
 
@@ -630,15 +630,15 @@ public class AquariumSystem : MonoBehaviour
             collider.center =
                 new Vector3(
                     0f,
-                    0.88f,
+                    0.98f,
                     0f
                 );
 
             collider.size =
                 new Vector3(
-                    3.05f,
-                    1.75f,
-                    1.70f
+                    3.50f,
+                    1.95f,
+                    1.95f
                 );
         }
 
@@ -655,7 +655,7 @@ public class AquariumSystem : MonoBehaviour
             localPosition,
             new Vector3(
                 0.07f,
-                1.74f,
+                1.94f,
                 0.07f
             ),
             frameMaterial
@@ -967,6 +967,17 @@ public class TankFishAgent : MonoBehaviour
     private float heightAmplitude;
     private float heightPhase;
 
+    private int pathVariant;
+    private float pathShapePhase;
+    private float pathWobbleX;
+    private float pathWobbleZ;
+    private int heightHarmonic;
+    private float secondaryHeightPhase;
+
+    private float speedDriftPhase;
+    private float speedDriftFrequency;
+    private float speedDriftAmount;
+
     public void Configure(
         float offset,
         int configuredSpeciesId)
@@ -1022,14 +1033,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.68f,
-                    0.77f
+                    0.78f,
+                    0.90f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.19f,
-                    0.26f
+                    0.24f,
+                    0.32f
                 );
         }
         else if (redSnapperPresentation != null)
@@ -1051,14 +1062,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.70f,
-                    0.80f
+                    0.92f,
+                    1.06f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.20f,
-                    0.27f
+                    0.25f,
+                    0.34f
                 );
         }
         else if (tunaPresentation != null)
@@ -1069,13 +1080,10 @@ public class TankFishAgent : MonoBehaviour
                     0.50f
                 );
 
-            // The head enters the curve first. The body now follows the
-            // actual stored head-path behind it, so the root can remain
-            // responsive without making the whole mesh rotate rigidly.
             turnSpeedDeg =
                 UnityEngine.Random.Range(
                     108f,
-                    126f
+                    132f
                 );
 
             pitchSpeedDeg = 55f;
@@ -1088,8 +1096,8 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.26f,
-                    0.34f
+                    0.32f,
+                    0.42f
                 );
         }
         else
@@ -1111,14 +1119,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.78f,
-                    0.94f
+                    0.88f,
+                    1.06f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.24f,
-                    0.34f
+                    0.30f,
+                    0.42f
                 );
         }
 
@@ -1138,25 +1146,78 @@ public class TankFishAgent : MonoBehaviour
 
         baseHeight =
             UnityEngine.Random.Range(
-                0.72f,
-                1.08f
+                0.76f,
+                1.24f
             );
 
         heightAmplitude =
             goatfishPresentation != null
                 ? UnityEngine.Random.Range(
-                    0.025f,
-                    0.065f
+                    0.055f,
+                    0.11f
                 )
                 : UnityEngine.Random.Range(
-                    0.045f,
-                    0.10f
+                    0.075f,
+                    0.16f
                 );
 
         heightPhase =
             UnityEngine.Random.Range(
                 0f,
                 Mathf.PI * 2f
+            );
+
+        pathVariant =
+            UnityEngine.Random.Range(
+                0,
+                4
+            );
+
+        pathShapePhase =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        pathWobbleX =
+            UnityEngine.Random.Range(
+                0.06f,
+                0.14f
+            );
+
+        pathWobbleZ =
+            UnityEngine.Random.Range(
+                0.06f,
+                0.16f
+            );
+
+        heightHarmonic =
+            UnityEngine.Random.value < 0.5f
+                ? 1
+                : 2;
+
+        secondaryHeightPhase =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        speedDriftPhase =
+            UnityEngine.Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        speedDriftFrequency =
+            UnityEngine.Random.Range(
+                0.16f,
+                0.34f
+            );
+
+        speedDriftAmount =
+            UnityEngine.Random.Range(
+                0.05f,
+                0.13f
             );
 
         tail =
@@ -1244,7 +1305,7 @@ public class TankFishAgent : MonoBehaviour
         }
         else if (tunaPresentation != null)
         {
-            lookAhead = 0.36f;
+            lookAhead = 0.34f;
         }
         else
         {
@@ -1331,9 +1392,19 @@ public class TankFishAgent : MonoBehaviour
                     )
                 );
 
+            float speedDrift =
+                1f +
+                Mathf.Sin(
+                    Time.time *
+                    speedDriftFrequency +
+                    speedDriftPhase
+                ) *
+                speedDriftAmount;
+
             float desiredSpeed =
                 cruiseSpeed *
-                cornerSpeedFactor;
+                cornerSpeedFactor *
+                speedDrift;
 
             currentSpeed =
                 Mathf.MoveTowards(
@@ -1542,21 +1613,95 @@ public class TankFishAgent : MonoBehaviour
     private Vector3 EvaluatePath(
         float angle)
     {
+        float x =
+            Mathf.Cos(angle) *
+            pathRadiusX;
+
+        float z =
+            Mathf.Sin(angle) *
+            pathRadiusZ;
+
+        // Four gentle loop families. They stay closed and tank-safe but avoid
+        // making every fish orbit the same obvious ellipse.
+        switch (pathVariant)
+        {
+            case 1:
+                x +=
+                    Mathf.Sin(
+                        angle * 2f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusX *
+                    pathWobbleX;
+
+                z +=
+                    Mathf.Sin(
+                        angle * 3f +
+                        pathShapePhase * 0.7f
+                    ) *
+                    pathRadiusZ *
+                    pathWobbleZ;
+                break;
+
+            case 2:
+                x +=
+                    Mathf.Cos(
+                        angle * 3f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusX *
+                    pathWobbleX;
+
+                z +=
+                    Mathf.Sin(
+                        angle * 2f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusZ *
+                    pathWobbleZ;
+                break;
+
+            case 3:
+                float breathingRadius =
+                    0.90f +
+                    Mathf.Sin(
+                        angle * 2f +
+                        pathShapePhase
+                    ) *
+                    0.10f;
+
+                x *=
+                    breathingRadius;
+
+                z *=
+                    1.04f -
+                    (
+                        breathingRadius -
+                        0.90f
+                    );
+                break;
+        }
+
         float y =
             baseHeight +
             Mathf.Sin(
-                angle * 0.72f +
+                angle *
+                heightHarmonic +
                 heightPhase
             ) *
-            heightAmplitude;
+            heightAmplitude +
+            Mathf.Sin(
+                angle * 3f +
+                secondaryHeightPhase
+            ) *
+            heightAmplitude *
+            0.30f;
 
         return
             new Vector3(
-                Mathf.Cos(angle) *
-                pathRadiusX,
+                x,
                 y,
-                Mathf.Sin(angle) *
-                pathRadiusZ
+                z
             );
     }
 
@@ -1615,22 +1760,22 @@ public class TankFishAgent : MonoBehaviour
         position.x =
             Mathf.Clamp(
                 position.x,
-                -1.03f,
-                1.03f
+                -1.22f,
+                1.22f
             );
 
         position.y =
             Mathf.Clamp(
                 position.y,
-                0.43f,
-                1.33f
+                0.44f,
+                1.53f
             );
 
         position.z =
             Mathf.Clamp(
                 position.z,
-                -0.41f,
-                0.41f
+                -0.52f,
+                0.52f
             );
 
         transform.localPosition =
