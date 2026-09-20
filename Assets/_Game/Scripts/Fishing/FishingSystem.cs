@@ -382,6 +382,14 @@ public class FishingSystem : MonoBehaviour
             redSnapperPresentation.SetHeld(true);
         }
 
+        MackerelPresentation mackerelPresentation =
+            heldFishVisual.GetComponent<MackerelPresentation>();
+
+        if (mackerelPresentation != null)
+        {
+            mackerelPresentation.SetHeld(true);
+        }
+
         SetupHookedCatchPresentation();
 
         heldFishFlopOffset =
