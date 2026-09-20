@@ -886,20 +886,40 @@ armature = armatures[0]
 if armature.animation_data is None:
     armature.animation_data_create()
 
-if swim is not None:
-    armature.animation_data.action = swim
-    bpy.context.scene.frame_start = int(swim.frame_range[0])
-    bpy.context.scene.frame_end = int(swim.frame_range[1])
+if swim is None:
+    raise RuntimeError('No authored swim action was found in the Blend file.')
 
-bpy.ops.object.select_all(action='DESELECT')
+armature.animation_data.action = swim
+bpy.context.scene.frame_start = int(swim.frame_range[0])
+bpy.context.scene.frame_end = int(swim.frame_range[1])
+bpy.context.scene.frame_set(bpy.context.scene.frame_start)
+
+# Avoid bpy.ops.object.select_all here: that UI-style operator can fail
+# when Blender is running in --background mode.
+for obj in bpy.context.view_layer.objects:
+    try:
+        obj.select_set(False)
+    except Exception:
+        pass
 
 for obj in meshes + [armature]:
-    obj.hide_set(False)
     obj.hide_viewport = False
     obj.hide_render = False
-    obj.select_set(True)
 
-bpy.context.view_layer.objects.active = armature
+    try:
+        obj.hide_set(False)
+    except Exception:
+        pass
+
+    try:
+        obj.select_set(True)
+    except Exception:
+        pass
+
+try:
+    bpy.context.view_layer.objects.active = armature
+except Exception:
+    pass
 
 os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -991,11 +1011,15 @@ if not os.path.exists(out_path):
             !File.Exists(
                 fbxPath))
         {
-            throw new InvalidOperationException(
-                "Blender could not export the animated Goatfish FBX.\n\nBlender output:\n" +
+            Debug.LogError(
+                "Full Blender Goatfish export output:\n" +
                 standardOutput +
-                "\n\nBlender errors:\n" +
+                "\n\nFull Blender errors:\n" +
                 standardError
+            );
+
+            throw new InvalidOperationException(
+                "Blender opened the Goatfish source but could not finish the animated FBX export. The full Blender traceback was written to the Unity Console."
             );
         }
     }
