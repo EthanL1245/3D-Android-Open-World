@@ -283,25 +283,28 @@ public static class GoatfishPairImporter
             "/" +
             definition.folderName;
 
-        if (AssetDatabase.IsValidFolder(
-                variantRoot))
-        {
-            AssetDatabase.DeleteAsset(
-                variantRoot
-            );
-        }
-
         string prefabPath =
             ResourcesFolder +
             "/" +
             definition.prefabName +
             ".prefab";
 
+        // Delete the generated prefab BEFORE replacing its source FBX.
+        // Otherwise Unity briefly sees a prefab whose nested/model source
+        // has disappeared and reports it as corrupt.
         if (AssetDatabase.LoadAssetAtPath<GameObject>(
                 prefabPath) != null)
         {
             AssetDatabase.DeleteAsset(
                 prefabPath
+            );
+        }
+
+        if (AssetDatabase.IsValidFolder(
+                variantRoot))
+        {
+            AssetDatabase.DeleteAsset(
+                variantRoot
             );
         }
 
@@ -1426,6 +1429,19 @@ if not os.path.exists(out_path):
                     );
             }
 
+            // Keep mesh/animation asset references, but remove the nested
+            // prefab-instance relationship itself. This makes the generated
+            // gameplay prefab much less fragile during later re-imports.
+            if (PrefabUtility.IsPartOfPrefabInstance(
+                    model))
+            {
+                PrefabUtility.UnpackPrefabInstance(
+                    model,
+                    PrefabUnpackMode.Completely,
+                    InteractionMode.AutomatedAction
+                );
+            }
+
             model.name =
                 "AuthoredModel";
 
@@ -1541,6 +1557,11 @@ if not os.path.exists(out_path):
             PrefabUtility.SaveAsPrefabAsset(
                 root,
                 prefabPath
+            );
+
+            AssetDatabase.ImportAsset(
+                prefabPath,
+                ImportAssetOptions.ForceUpdate
             );
         }
         finally
