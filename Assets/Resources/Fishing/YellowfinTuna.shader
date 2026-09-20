@@ -189,9 +189,8 @@ Shader "OpenWorld/YellowfinTuna"
                         1.0 - normalizedBody;
                 }
 
-                // One coherent beat across the body.
-                // The head stays stable, the mid-body participates visibly,
-                // and the tail receives the largest displacement.
+                // Keep the head quiet while allowing progressively more
+                // swimming motion toward the rear and caudal fin.
                 float bodyFlex =
                     saturate(
                         (tailPosition - 0.24) /
@@ -203,11 +202,77 @@ Shader "OpenWorld/YellowfinTuna"
                     bodyFlex *
                     (
                         3.0 -
-                        2.0 * bodyFle                // ACTUAL HEAD-PATH FOLLOWING:
-                // These angles are historical headings sampled by physical
-                // distance behind the head/root. A body point therefore uses
-                // the heading the head had when it previously occupied that
-                // part of the curve. The curve develops naturally over time.
+                        2.0 * bodyFlex
+                    );
+
+                float rearFlex =
+                    saturate(
+                        (tailPosition - 0.56) /
+                        0.44
+                    );
+
+                rearFlex =
+                    rearFlex *
+                    rearFlex *
+                    (
+                        3.0 -
+                        2.0 * rearFlex
+                    );
+
+                float tailFlex =
+                    saturate(
+                        (tailPosition - 0.80) /
+                        0.20
+                    );
+
+                tailFlex =
+                    tailFlex *
+                    tailFlex *
+                    (
+                        3.0 -
+                        2.0 * tailFlex
+                    );
+
+                float bodyBeat =
+                    sin(
+                        _SwimPhase
+                    );
+
+                float rearBeat =
+                    sin(
+                        _SwimPhase -
+                        0.30
+                    );
+
+                float tailBeat =
+                    sin(
+                        _SwimPhase -
+                        0.58
+                    );
+
+                float3 bodyAxis =
+                    normalize(
+                        _BodyAxis.xyz
+                    );
+
+                float3 sideAxis =
+                    normalize(
+                        _SideAxis.xyz
+                    );
+
+                float3 tailAxis =
+                    _TailAtMin > 0.5
+                        ? -bodyAxis
+                        : bodyAxis;
+
+                float3 gameRightAxis =
+                    sideAxis *
+                    _PathSideSign;
+
+                // Reconstruct the centerline from the ACTUAL heading history
+                // of the head/root. A point farther toward the tail samples
+                // farther back in that history, so the curve propagates down
+                // the fish naturally instead of appearing instantly.
                 float3 curvedCenter =
                     float3(
                         0.0,
@@ -215,9 +280,6 @@ Shader "OpenWorld/YellowfinTuna"
                         0.0
                     );
 
-                // Integrate the historical tangent field from the head to
-                // this vertex. Eight small segments are enough for this
-                // aquarium-scale mesh and avoid any instant full-body bend.
                 const int PATH_STEPS = 8;
 
                 float stepT =
@@ -241,12 +303,10 @@ Shader "OpenWorld/YellowfinTuna"
                             sampleT
                         );
 
-                    float3 gameRightAxis =
-                        sideAxis *
-                        _PathSideSign;
-
-                    // tailAxis points head -> tail. A positive historical yaw
-                    // rotates that backwards tangent toward -gameRightAxis.
+                    // tailAxis points from head toward tail. Historical yaw is
+                    // measured from the current head heading toward an older
+                    // heading, so this tangent reproduces the path the head
+                    // has already traveled through.
                     float3 tangent =
                         tailAxis *
                         cos(
@@ -284,72 +344,9 @@ Shader "OpenWorld/YellowfinTuna"
                         2.2
                     );
 
-itude =
-                    abs(
-                        turnAmount
-                    );
-
-                // Tuna are stiff-bodied. Even a hard aquarium turn should
-                // bend the posterior body by only about 20-24 degrees rather
-                // than folding the whole animal into a U shape.
-                float totalTurnAngle =
-                    turnMagnitude *
-                    0.42;
-
-                if (rearT > 0.0 &&
-                    totalTurnAngle > 0.001)
-                {
-                    float rearLength =
-                        bodyRange *
-                        0.42;
-
-                    float distanceFromRear =
-                        rearT *
-                        rearLength;
-
-                    float localAngle =
-                        totalTurnAngle *
-                        rearT;
-
-                    float radius =
-                        rearLength /
-                        totalTurnAngle;
-
-                    float arcForward =
-                        sin(
-                            localAngle
-                        ) *
-                        radius;
-
-                    float arcSide =
-                        (
-                            1.0 -
-                            cos(
-                                localAngle
-                            )
-                        ) *
-                        radius *
-                        sign(
-                            turnAmount
-                        );
-
-                    float3 straightRear =
-                        tailAxis *
-                        distanceFromRear;
-
-                    float3 curvedRear =
-                        tailAxis *
-                        arcForward +
-                        sideAxis *
-                        arcSide;
-
-                    positionOS +=
-                        curvedRear -
-                        straightRear;
-                }
-
-                // Normal tail beat remains, but it yields to the turn shape
-                // as curvature increases so the tail does not fight momentum.
+                // Preserve the normal tail beat, but soften it during a large
+                // turn so the caudal motion does not fight the path-following
+                // shape.
                 float swimDuringTurn =
                     lerp(
                         1.0,
