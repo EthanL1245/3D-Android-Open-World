@@ -13,6 +13,13 @@ public class FishingSystem : MonoBehaviour
         Fighting
     }
 
+    private enum FishTemperament
+    {
+        Calm,
+        Irritated,
+        Angry
+    }
+
     [Header("References")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private OceanWater oceanWater;
@@ -24,6 +31,11 @@ public class FishingSystem : MonoBehaviour
     [SerializeField] private float minimumCastDistance = 5f;
     [SerializeField] private float maximumCastDistance = 28f;
     [SerializeField] private float castDuration = 0.72f;
+
+    [Header("Line + Valid Water")]
+    [SerializeField] private float maximumLineDistance = 36f;
+    [SerializeField] private float minimumFishingDepth = 1.75f;
+    [SerializeField] private float deepWaterSafetyRadius = 1.25f;
 
     [Header("Bites")]
     [SerializeField] private float minimumBiteDelay = 2.5f;
@@ -38,6 +50,10 @@ public class FishingSystem : MonoBehaviour
     private FishingRodView rodView;
     private LineRenderer fishingLine;
     private GameObject bobber;
+
+    private GameObject bobberIndicatorRoot;
+    private Image bobberIndicatorBackground;
+    private Text bobberIndicatorText;
 
     private Transform heldFishAnchor;
     private GameObject heldFishVisual;
@@ -56,6 +72,19 @@ public class FishingSystem : MonoBehaviour
 
     private int hookedSpeciesId;
     private float hookedWeightKg;
+    private FishTemperament hookedTemperament;
+
+    private Vector3 fightTravelDirection;
+    private float fightMovePhase;
+
+    private static readonly float[] FightMoveAngles =
+    {
+        0f,
+        32f,
+        -32f,
+        64f,
+        -64f
+    };
 
     private Terrain terrain;
 
@@ -167,8 +196,32 @@ public class FishingSystem : MonoBehaviour
 
         if (rodView != null)
         {
+            bool fighting =
+                rodEquipped &&
+                state ==
+                    FishingState.Fighting &&
+                bobber != null &&
+                bobber.activeSelf;
+
+            if (fighting)
+            {
+                rodView.SetLinePull(
+                    bobber.transform.position,
+                    fightTension,
+                    Time.deltaTime
+                );
+            }
+            else
+            {
+                rodView.RelaxLinePull(
+                    Time.deltaTime
+                );
+            }
+
             rodView.TickReel(
-                rodEquipped && state == FishingState.Fighting && action != null && action.IsHeld,
+                fighting &&
+                action != null &&
+                action.IsHeld,
                 Time.deltaTime
             );
         }
@@ -575,6 +628,12 @@ public class FishingSystem : MonoBehaviour
                     hookedSpeciesId
                 );
 
+            hookedTemperament =
+                RollTemperament(
+                    hookedSpeciesId,
+                    hookedWeightKg
+                );
+
             state =
                 FishingState.Bite;
 
@@ -633,6 +692,34 @@ public class FishingSystem : MonoBehaviour
                 2.3f
             );
 
+        fightMovePhase =
+            Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        Vector3 away =
+            bobber.transform.position -
+            transform.position;
+
+        away.y = 0f;
+
+        if (away.sqrMagnitude <
+            0.001f)
+        {
+            away =
+                Vector3.ProjectOnPlane(
+                    playerCamera.transform.forward,
+                    Vector3.up
+                );
+        }
+
+        fightTravelDirection =
+            away.sqrMagnitude >
+                0.001f
+                ? away.normalized
+                : Vector3.forward;
+
         hud.SetActionLabel("REEL");
         hud.SetStatus(
             "Hold REEL, but keep tension out of the red!"
@@ -651,6 +738,18 @@ public class FishingSystem : MonoBehaviour
                 hookedSpeciesId
             );
 
+        float effectiveDifficulty =
+            GetEffectiveFightDifficulty(
+                species,
+                hookedWeightKg
+            );
+
+        float temperamentTension =
+            GetTemperamentTensionMultiplier();
+
+        float temperamentResistance =
+            GetTemperamentResistanceMultiplier();
+
         fightTime += Time.deltaTime;
         surgeTimer -= Time.deltaTime;
 
@@ -662,16 +761,27 @@ public class FishingSystem : MonoBehaviour
                     0.90f
                 ) *
                 Mathf.Lerp(
-                    0.85f,
-                    1.25f,
-                    species.Difficulty
-                );
+                    0.82f,
+                    1.34f,
+                    effectiveDifficulty
+                ) *
+                temperamentResistance;
+
+            float temperamentInterval =
+                hookedTemperament ==
+                    FishTemperament.Angry
+                    ? 0.76f
+                    : hookedTemperament ==
+                        FishTemperament.Calm
+                        ? 1.15f
+                        : 1f;
 
             surgeTimer =
                 Random.Range(
                     1.6f,
                     3.0f
-                );
+                ) *
+                temperamentInterval;
         }
 
         surgeAmount =
@@ -682,27 +792,31 @@ public class FishingSystem : MonoBehaviour
             );
 
         float naturalResistance =
-            0.28f +
-            Mathf.Sin(
-                fightTime *
-                2.2f +
-                hookedSpeciesId
+            (
+                0.25f +
+                Mathf.Sin(
+                    fightTime *
+                    2.2f +
+                    hookedSpeciesId
+                ) *
+                0.10f +
+                effectiveDifficulty *
+                0.27f +
+                surgeAmount *
+                0.30f
             ) *
-            0.10f +
-            species.Difficulty *
-            0.22f +
-            surgeAmount *
-            0.30f;
+            temperamentResistance;
 
         if (reeling)
         {
             fightTension +=
                 Time.deltaTime *
                 (
-                    0.24f +
+                    0.20f +
                     naturalResistance *
-                    0.34f
-                );
+                    0.32f
+                ) *
+                temperamentTension;
 
             float safeFactor =
                 1f -
@@ -715,9 +829,9 @@ public class FishingSystem : MonoBehaviour
             fightProgress +=
                 Time.deltaTime *
                 Mathf.Lerp(
-                    0.19f,
-                    0.12f,
-                    species.Difficulty
+                    0.20f,
+                    0.105f,
+                    effectiveDifficulty
                 ) *
                 Mathf.Lerp(
                     0.40f,
@@ -730,23 +844,23 @@ public class FishingSystem : MonoBehaviour
             fightTension -=
                 Time.deltaTime *
                 Mathf.Lerp(
-                    0.50f,
-                    0.36f,
-                    species.Difficulty
+                    0.52f,
+                    0.32f,
+                    effectiveDifficulty
                 );
 
             fightProgress -=
                 Time.deltaTime *
                 (
-                    0.005f +
+                    0.004f +
                     naturalResistance *
-                    0.008f
+                    0.009f
                 );
         }
 
         fightTension +=
             naturalResistance *
-            0.035f *
+            0.032f *
             Time.deltaTime;
 
         fightTension =
@@ -758,6 +872,32 @@ public class FishingSystem : MonoBehaviour
             Mathf.Clamp01(
                 fightProgress
             );
+
+        UpdateFightBobber(
+            effectiveDifficulty
+        );
+
+        float lineDistance =
+            GetCurrentLineDistance();
+
+        if (lineDistance >=
+            maximumLineDistance)
+        {
+            fightTension = 1f;
+
+            hud.SetFightMeters(
+                fightTension,
+                fightProgress
+            );
+
+            UpdateBobberIndicator();
+
+            FailFishing(
+                "SNAP! Maximum line distance reached."
+            );
+
+            return;
+        }
 
         if (fightTension >= 0.985f)
         {
@@ -774,33 +914,6 @@ public class FishingSystem : MonoBehaviour
                 );
         }
 
-        float surface =
-            oceanWater.GetSurfaceHeight(
-                castPoint
-            );
-
-        Vector3 side =
-            playerCamera.transform.right *
-            Mathf.Sin(
-                fightTime *
-                2.8f +
-                hookedSpeciesId
-            ) *
-            (
-                0.25f +
-                surgeAmount * 0.55f
-            );
-
-        bobber.transform.position =
-            castPoint +
-            side +
-            Vector3.up *
-            (
-                surface -
-                castPoint.y -
-                0.08f
-            );
-
         hud.SetFightMeters(
             fightTension,
             fightProgress
@@ -808,7 +921,8 @@ public class FishingSystem : MonoBehaviour
 
         hud.SetStatus(
             reeling
-                ? "REELING - watch tension!"
+                ? GetTemperamentName() +
+                  " fish - watch tension!"
                 : "RESTING LINE - tension falling..."
         );
 
@@ -946,15 +1060,69 @@ public class FishingSystem : MonoBehaviour
         candidate.y =
             surface + 0.06f;
 
-        if (!IsOpenWater(candidate))
+        if (!IsValidFishingWater(
+                candidate))
+        {
+            hud.SetStatus(
+                "Cast into deeper open water."
+            );
+
             return false;
+        }
 
         target = candidate;
         return true;
     }
 
-    private bool IsOpenWater(
+    private bool IsValidFishingWater(
         Vector3 worldPosition)
+    {
+        if (!HasFishingDepth(
+                worldPosition,
+                minimumFishingDepth))
+        {
+            return false;
+        }
+
+        float radius =
+            Mathf.Max(
+                0f,
+                deepWaterSafetyRadius
+            );
+
+        if (radius <= 0f)
+            return true;
+
+        Vector3 right =
+            Vector3.right *
+            radius;
+
+        Vector3 forward =
+            Vector3.forward *
+            radius;
+
+        return
+            HasFishingDepth(
+                worldPosition + right,
+                minimumFishingDepth * 0.85f
+            ) &&
+            HasFishingDepth(
+                worldPosition - right,
+                minimumFishingDepth * 0.85f
+            ) &&
+            HasFishingDepth(
+                worldPosition + forward,
+                minimumFishingDepth * 0.85f
+            ) &&
+            HasFishingDepth(
+                worldPosition - forward,
+                minimumFishingDepth * 0.85f
+            );
+    }
+
+    private bool HasFishingDepth(
+        Vector3 worldPosition,
+        float requiredDepth)
     {
         if (terrain == null)
             return true;
@@ -966,6 +1134,8 @@ public class FishingSystem : MonoBehaviour
             worldPosition -
             terrain.transform.position;
 
+        // Outside the finite terrain there is no shoreline/ground mesh under
+        // the infinite ocean, so it is valid deep water.
         if (local.x < 0f ||
             local.z < 0f ||
             local.x > data.size.x ||
@@ -985,8 +1155,371 @@ public class FishingSystem : MonoBehaviour
                 worldPosition
             );
 
-        return ground <
-               water - 0.25f;
+        return
+            water -
+            ground >=
+            Mathf.Max(
+                0.25f,
+                requiredDepth
+            );
+    }
+
+    private float GetEffectiveFightDifficulty(
+        FishSpeciesDefinition species,
+        float weightKg)
+    {
+        float sizeDifficulty =
+            Mathf.InverseLerp(
+                species.MinWeightKg,
+                species.MaxWeightKg,
+                weightKg
+            );
+
+        return
+            Mathf.Clamp01(
+                species.Difficulty *
+                0.74f +
+                sizeDifficulty *
+                0.26f
+            );
+    }
+
+    private FishTemperament RollTemperament(
+        int speciesId,
+        float weightKg)
+    {
+        FishSpeciesDefinition species =
+            FishCatalog.Get(
+                speciesId
+            );
+
+        float difficulty =
+            GetEffectiveFightDifficulty(
+                species,
+                weightKg
+            );
+
+        float calmChance =
+            Mathf.Lerp(
+                0.76f,
+                0.12f,
+                difficulty
+            );
+
+        float angryChance =
+            Mathf.Lerp(
+                0.06f,
+                0.60f,
+                difficulty
+            );
+
+        float roll =
+            Random.value;
+
+        if (roll <
+            calmChance)
+        {
+            return
+                FishTemperament.Calm;
+        }
+
+        if (roll >
+            1f -
+            angryChance)
+        {
+            return
+                FishTemperament.Angry;
+        }
+
+        return
+            FishTemperament.Irritated;
+    }
+
+    private float GetTemperamentTensionMultiplier()
+    {
+        switch (hookedTemperament)
+        {
+            case FishTemperament.Calm:
+                return 0.55f;
+
+            case FishTemperament.Angry:
+                return 2.0f;
+
+            default:
+                return 1f;
+        }
+    }
+
+    private float GetTemperamentResistanceMultiplier()
+    {
+        switch (hookedTemperament)
+        {
+            case FishTemperament.Calm:
+                return 0.82f;
+
+            case FishTemperament.Angry:
+                return 1.28f;
+
+            default:
+                return 1f;
+        }
+    }
+
+    private string GetTemperamentName()
+    {
+        switch (hookedTemperament)
+        {
+            case FishTemperament.Calm:
+                return "CALM";
+
+            case FishTemperament.Angry:
+                return "ANGRY";
+
+            default:
+                return "IRRITATED";
+        }
+    }
+
+    private Color GetTemperamentColor()
+    {
+        switch (hookedTemperament)
+        {
+            case FishTemperament.Calm:
+                return
+                    new Color(
+                        0.18f,
+                        0.78f,
+                        0.30f,
+                        0.92f
+                    );
+
+            case FishTemperament.Angry:
+                return
+                    new Color(
+                        0.94f,
+                        0.16f,
+                        0.10f,
+                        0.94f
+                    );
+
+            default:
+                return
+                    new Color(
+                        0.96f,
+                        0.72f,
+                        0.10f,
+                        0.94f
+                    );
+        }
+    }
+
+    private void UpdateFightBobber(
+        float effectiveDifficulty)
+    {
+        if (bobber == null ||
+            !bobber.activeSelf)
+        {
+            return;
+        }
+
+        Vector3 current =
+            bobber.transform.position;
+
+        Vector3 away =
+            current -
+            transform.position;
+
+        away.y = 0f;
+
+        if (away.sqrMagnitude <
+            0.001f)
+        {
+            away =
+                fightTravelDirection;
+        }
+
+        if (away.sqrMagnitude <
+            0.001f)
+        {
+            away =
+                Vector3.ProjectOnPlane(
+                    playerCamera.transform.forward,
+                    Vector3.up
+                );
+        }
+
+        away =
+            away.sqrMagnitude >
+                0.001f
+                ? away.normalized
+                : Vector3.forward;
+
+        Vector3 side =
+            Vector3.Cross(
+                Vector3.up,
+                away
+            ).normalized;
+
+        float weave =
+            Mathf.Sin(
+                fightTime *
+                Mathf.Lerp(
+                    0.55f,
+                    1.05f,
+                    effectiveDifficulty
+                ) +
+                fightMovePhase
+            );
+
+        float surgeWeave =
+            Mathf.Sin(
+                fightTime * 1.7f +
+                fightMovePhase * 0.63f
+            ) *
+            surgeAmount *
+            0.22f;
+
+        Vector3 desiredDirection =
+            (
+                away +
+                side *
+                (
+                    weave * 0.58f +
+                    surgeWeave
+                )
+            ).normalized;
+
+        float temperamentPull =
+            hookedTemperament ==
+                FishTemperament.Angry
+                ? 1.35f
+                : hookedTemperament ==
+                    FishTemperament.Calm
+                    ? 0.62f
+                    : 0.92f;
+
+        float pullSpeed =
+            Mathf.Lerp(
+                0.38f,
+                1.05f,
+                effectiveDifficulty
+            ) *
+            temperamentPull *
+            (
+                1f +
+                surgeAmount * 0.28f
+            );
+
+        if (TryMoveBobberInValidWater(
+                current,
+                desiredDirection,
+                away,
+                pullSpeed *
+                Time.deltaTime,
+                out Vector3 next))
+        {
+            bobber.transform.position =
+                next;
+
+            fightTravelDirection =
+                desiredDirection;
+        }
+        else
+        {
+            current.y =
+                oceanWater.GetSurfaceHeight(
+                    current
+                ) -
+                0.08f;
+
+            bobber.transform.position =
+                current;
+        }
+
+        castPoint =
+            bobber.transform.position;
+    }
+
+    private bool TryMoveBobberInValidWater(
+        Vector3 current,
+        Vector3 desiredDirection,
+        Vector3 away,
+        float distance,
+        out Vector3 next)
+    {
+        for (int i = 0;
+             i < FightMoveAngles.Length;
+             i++)
+        {
+            Vector3 direction =
+                Quaternion.AngleAxis(
+                    FightMoveAngles[i],
+                    Vector3.up
+                ) *
+                desiredDirection;
+
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude <
+                0.001f)
+            {
+                continue;
+            }
+
+            direction.Normalize();
+
+            // Never choose a route that sends the hooked fish back through
+            // the player. Sideways is allowed, but the overall motion must
+            // continue away from the character.
+            if (Vector3.Dot(
+                    direction,
+                    away) <
+                0.12f)
+            {
+                continue;
+            }
+
+            Vector3 candidate =
+                current +
+                direction *
+                Mathf.Max(
+                    0f,
+                    distance
+                );
+
+            candidate.y =
+                oceanWater.GetSurfaceHeight(
+                    candidate
+                ) -
+                0.08f;
+
+            if (!IsValidFishingWater(
+                    candidate))
+            {
+                continue;
+            }
+
+            next = candidate;
+            return true;
+        }
+
+        next = current;
+        return false;
+    }
+
+    private float GetCurrentLineDistance()
+    {
+        if (rodTip == null ||
+            bobber == null)
+        {
+            return 0f;
+        }
+
+        return
+            Vector3.Distance(
+                rodTip.position,
+                bobber.transform.position
+            );
     }
 
     private void SnapBobberToSurface()
@@ -1049,6 +1582,16 @@ public class FishingSystem : MonoBehaviour
 
         if (bobber != null)
             bobber.SetActive(false);
+
+        if (bobberIndicatorRoot != null)
+            bobberIndicatorRoot.SetActive(false);
+
+        if (rodView != null)
+        {
+            rodView.RelaxLinePull(
+                Time.deltaTime
+            );
+        }
     }
 
     // Keep old scenes playable before the one-click asset installation has run.
@@ -1292,6 +1835,8 @@ public class FishingSystem : MonoBehaviour
             Destroy(bobberCollider);
 
         bobber.SetActive(false);
+
+        CreateBobberIndicator();
     }
 
     private void CreateHeldFishAnchor()
