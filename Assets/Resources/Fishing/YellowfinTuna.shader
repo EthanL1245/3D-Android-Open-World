@@ -151,8 +151,6 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float beat =
                     sin(
-                        _Time.y *
-                        _SwimSpeed +
                         _SwimPhase
                     );
 

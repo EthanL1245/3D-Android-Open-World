@@ -29,7 +29,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float heldRollDegrees = 1.6f;
 
     private bool held;
-    private float phase;
+    private float swimPhase;
     private float aquariumLocomotionSpeed = 0.45f;
 
     private MaterialPropertyBlock block;
@@ -54,7 +54,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
     {
         ResolveReferences();
 
-        phase =
+        swimPhase =
             Random.Range(
                 0f,
                 Mathf.PI * 2f
@@ -123,11 +123,20 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 ? heldSpeed
                 : GetAquariumSwimSpeed();
 
+        swimPhase +=
+            speed *
+            Time.deltaTime;
+
+        if (swimPhase >
+            Mathf.PI * 2f)
+        {
+            swimPhase -=
+                Mathf.PI * 2f;
+        }
+
         float beat =
             Mathf.Sin(
-                Time.time *
-                speed +
-                phase
+                swimPhase
             );
 
         if (held)
@@ -139,10 +148,8 @@ public class YellowfinTunaPresentation : MonoBehaviour
                     beat *
                     heldYawDegrees,
                     Mathf.Sin(
-                        Time.time *
-                        speed *
+                        swimPhase *
                         0.5f +
-                        phase +
                         0.8f
                     ) *
                     heldRollDegrees
@@ -244,7 +251,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
             block.SetFloat(
                 SwimPhaseId,
-                phase
+                swimPhase
             );
 
             renderer.SetPropertyBlock(
