@@ -949,6 +949,7 @@ public class TankFishAgent : MonoBehaviour
     private HeroFishAnimator heroAnimator;
     private YellowfinTunaPresentation tunaPresentation;
     private GoatfishPresentation goatfishPresentation;
+    private RedSnapperPresentation redSnapperPresentation;
 
     private float cruiseSpeed;
     private float currentSpeed;
@@ -977,6 +978,9 @@ public class TankFishAgent : MonoBehaviour
         goatfishPresentation =
             GetComponent<GoatfishPresentation>();
 
+        redSnapperPresentation =
+            GetComponent<RedSnapperPresentation>();
+
         if (goatfishPresentation != null)
         {
             // Use the supplied animation at 1.0x and move far enough per
@@ -985,8 +989,8 @@ public class TankFishAgent : MonoBehaviour
                 goatfishPresentation
                     .GetRecommendedCruiseSpeed() *
                 UnityEngine.Random.Range(
-                    0.96f,
-                    1.04f
+                    0.84f,
+                    0.90f
                 );
 
             turnSpeedDeg =
@@ -1007,6 +1011,36 @@ public class TankFishAgent : MonoBehaviour
                 UnityEngine.Random.Range(
                     0.19f,
                     0.26f
+                );
+        }
+        else if (redSnapperPresentation != null)
+        {
+            cruiseSpeed =
+                redSnapperPresentation
+                    .GetRecommendedCruiseSpeed() *
+                UnityEngine.Random.Range(
+                    0.96f,
+                    1.04f
+                );
+
+            turnSpeedDeg =
+                UnityEngine.Random.Range(
+                    108f,
+                    132f
+                );
+
+            pitchSpeedDeg = 55f;
+
+            pathRadiusX =
+                UnityEngine.Random.Range(
+                    0.76f,
+                    0.90f
+                );
+
+            pathRadiusZ =
+                UnityEngine.Random.Range(
+                    0.23f,
+                    0.31f
                 );
         }
         else if (tunaPresentation != null)
@@ -1340,6 +1374,13 @@ public class TankFishAgent : MonoBehaviour
         if (goatfishPresentation != null)
         {
             goatfishPresentation.SetAquariumLocomotion(
+                currentSpeed
+            );
+        }
+
+        if (redSnapperPresentation != null)
+        {
+            redSnapperPresentation.SetAquariumLocomotion(
                 currentSpeed
             );
         }

@@ -34,6 +34,7 @@ public struct FishSpeciesDefinition
 
 public static class FishCatalog
 {
+    public const int RedSnapperId = 1;
     public const int YellowfinTunaId = 5;
     public const int YellowGoatfishId = 6;
     public const int BlackSpotGoatfishId = 7;

@@ -64,6 +64,9 @@ public class FishingSystem : MonoBehaviour
     private const string GoatfishPreviewGrantKey =
         "OpenWorld.GoatfishPreviewGrant.v1";
 
+    private const string RedSnapperPreviewGrantKey =
+        "OpenWorld.RedSnapperPreviewGrant.v1";
+
     public FishingInventory Inventory => inventory;
 
     private void Start()
@@ -86,6 +89,7 @@ public class FishingSystem : MonoBehaviour
 
         GrantYellowfinPreviewOnce();
         GrantGoatfishPreviewOnce();
+        GrantRedSnapperPreviewOnce();
 
         CreateRodAndLine();
         CreateHeldFishAnchor();
@@ -254,6 +258,14 @@ public class FishingSystem : MonoBehaviour
             goatfishPresentation.SetHeld(true);
         }
 
+        RedSnapperPresentation redSnapperPresentation =
+            heldFishVisual.GetComponent<RedSnapperPresentation>();
+
+        if (redSnapperPresentation != null)
+        {
+            redSnapperPresentation.SetHeld(true);
+        }
+
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
@@ -348,6 +360,35 @@ public class FishingSystem : MonoBehaviour
 
         Debug.Log(
             "Granted one temporary Yellow Goatfish and one temporary Black Spot Goatfish for animation testing."
+        );
+    }
+
+    private void GrantRedSnapperPreviewOnce()
+    {
+        if (inventory == null)
+            return;
+
+        if (PlayerPrefs.GetInt(
+                RedSnapperPreviewGrantKey,
+                0) != 0)
+        {
+            return;
+        }
+
+        inventory.AddFish(
+            FishCatalog.RedSnapperId,
+            1.75f
+        );
+
+        PlayerPrefs.SetInt(
+            RedSnapperPreviewGrantKey,
+            1
+        );
+
+        PlayerPrefs.Save();
+
+        Debug.Log(
+            "Granted one temporary 1.75 kg Red Snapper for imported-model testing."
         );
     }
 

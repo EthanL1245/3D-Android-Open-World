@@ -11,6 +11,7 @@ public static class FishVisualFactory
 
     private static Mesh tailMesh;
     private static GameObject heroYellowtailPrefab;
+    private static GameObject redSnapperPrefab;
     private static GameObject yellowfinTunaPrefab;
     private static GameObject yellowGoatfishPrefab;
     private static GameObject blackSpotGoatfishPrefab;
@@ -70,6 +71,21 @@ public static class FishVisualFactory
 
             if (hero != null)
                 return hero;
+        }
+
+        if (allowHero &&
+            speciesId ==
+            FishCatalog.RedSnapperId)
+        {
+            GameObject snapper =
+                CreateRedSnapper(
+                    name,
+                    parent,
+                    scale
+                );
+
+            if (snapper != null)
+                return snapper;
         }
 
         if (allowHero &&
@@ -240,6 +256,43 @@ public static class FishVisualFactory
         GameObject instance =
             Object.Instantiate(
                 heroYellowtailPrefab
+            );
+
+        instance.name = name;
+
+        if (parent != null)
+        {
+            instance.transform.SetParent(
+                parent,
+                false
+            );
+        }
+
+        instance.transform.localScale =
+            Vector3.one * scale;
+
+        return instance;
+    }
+
+    private static GameObject CreateRedSnapper(
+        string name,
+        Transform parent,
+        float scale)
+    {
+        if (redSnapperPrefab == null)
+        {
+            redSnapperPrefab =
+                Resources.Load<GameObject>(
+                    "Fishing/RedSnapper"
+                );
+        }
+
+        if (redSnapperPrefab == null)
+            return null;
+
+        GameObject instance =
+            Object.Instantiate(
+                redSnapperPrefab
             );
 
         instance.name = name;
