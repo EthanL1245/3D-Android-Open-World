@@ -17,8 +17,6 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
 
-        _TurnFront ("Turn Front", Range(-1,1)) = 0
-        _TurnMid ("Turn Mid", Range(-1,1)) = 0
         _TurnRear ("Turn Rear", Range(-1,1)) = 0
         _TurnTail ("Turn Tail", Range(-1,1)) = 0
     }
@@ -64,8 +62,6 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimSpeed;
                 float _SwimPhase;
 
-                float _TurnFront;
-                float _TurnMid;
                 float _TurnRear;
                 float _TurnTail;
             CBUFFER_END
@@ -119,8 +115,8 @@ Shader "OpenWorld/YellowfinTuna"
                 // and the tail receives the largest displacement.
                 float bodyFlex =
                     saturate(
-                        (tailPosition - 0.12) /
-                        0.88
+                        (tailPosition - 0.38) /
+                        0.62
                     );
 
                 bodyFlex =
@@ -133,8 +129,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float rearFlex =
                     saturate(
-                        (tailPosition - 0.42) /
-                        0.58
+                        (tailPosition - 0.60) /
+                        0.40
                     );
 
                 rearFlex =
@@ -147,8 +143,8 @@ Shader "OpenWorld/YellowfinTuna"
 
                 float tailFlex =
                     saturate(
-                        (tailPosition - 0.74) /
-                        0.26
+                        (tailPosition - 0.80) /
+                        0.20
                     );
 
                 tailFlex =
@@ -196,52 +192,25 @@ Shader "OpenWorld/YellowfinTuna"
                         ? -bodyAxis
                         : bodyAxis;
 
-                // TURN HISTORY:
-                // The head/front, mid, rear and tail do NOT receive the new
-                // turn simultaneously. C# feeds four progressively delayed
-                // follower values. Interpolate those stages along the body so
-                // a U-turn grows from front to back instead of popping into a
-                // full-body U shape in one frame.
-                float frontToMid =
-                    smoothstep(
-                        0.08,
-                        0.38,
-                        tailPosition
-                    );
-
-                float midToRear =
-                    smoothstep(
-                        0.34,
-                        0.70,
-                        tailPosition
-                    );
-
-                float rearToTail =
-                    smoothstep(
-                        0.66,
-                        1.00,
-                        tailPosition
+                // THUNNIFORM TURNING:
+                // Keep the anterior ~58% of the tuna essentially rigid.
+                // Turning deformation begins only in the posterior body,
+                // with the caudal region following the head after a delay.
+                float rearT =
+                    saturate(
+                        (tailPosition - 0.58) /
+                        0.42
                     );
 
                 float turnAmount =
                     lerp(
-                        _TurnFront,
-                        _TurnMid,
-                        frontToMid
-                    );
-
-                turnAmount =
-                    lerp(
-                        turnAmount,
                         _TurnRear,
-                        midToRear
-                    );
-
-                turnAmount =
-                    lerp(
-                        turnAmount,
                         _TurnTail,
-                        rearToTail
+                        smoothstep(
+                            0.25,
+                            1.00,
+                            rearT
+                        )
                     );
 
                 turnAmount =
@@ -256,25 +225,30 @@ Shader "OpenWorld/YellowfinTuna"
                         turnAmount
                     );
 
-                // Maximum curvature is still strong enough to make a deep
-                // C/U turn, but because turnAmount is delayed down the body
-                // the shape now develops progressively.
+                // Tuna are stiff-bodied. Even a hard aquarium turn should
+                // bend the posterior body by only about 20-24 degrees rather
+                // than folding the whole animal into a U shape.
                 float totalTurnAngle =
                     turnMagnitude *
-                    2.20;
+                    0.42;
 
-                if (totalTurnAngle > 0.001)
+                if (rearT > 0.0 &&
+                    totalTurnAngle > 0.001)
                 {
-                    float distanceFromHead =
-                        tailPosition *
-                        bodyRange;
+                    float rearLength =
+                        bodyRange *
+                        0.42;
+
+                    float distanceFromRear =
+                        rearT *
+                        rearLength;
 
                     float localAngle =
                         totalTurnAngle *
-                        tailPosition;
+                        rearT;
 
                     float radius =
-                        bodyRange /
+                        rearLength /
                         totalTurnAngle;
 
                     float arcForward =
@@ -295,19 +269,19 @@ Shader "OpenWorld/YellowfinTuna"
                             turnAmount
                         );
 
-                    float3 straightCenter =
+                    float3 straightRear =
                         tailAxis *
-                        distanceFromHead;
+                        distanceFromRear;
 
-                    float3 curvedCenter =
+                    float3 curvedRear =
                         tailAxis *
                         arcForward +
                         sideAxis *
                         arcSide;
 
                     positionOS +=
-                        curvedCenter -
-                        straightCenter;
+                        curvedRear -
+                        straightRear;
                 }
 
                 // Normal tail beat remains, but it yields to the turn shape
@@ -315,7 +289,7 @@ Shader "OpenWorld/YellowfinTuna"
                 float swimDuringTurn =
                     lerp(
                         1.0,
-                        0.48,
+                        0.78,
                         turnMagnitude
                     );
 
@@ -325,13 +299,13 @@ Shader "OpenWorld/YellowfinTuna"
                     swimDuringTurn *
                     (
                         bodyFlex *
-                        0.24 *
+                        0.10 *
                         bodyBeat +
                         rearFlex *
-                        0.34 *
+                        0.28 *
                         rearBeat +
                         tailFlex *
-                        0.42 *
+                        0.62 *
                         tailBeat
                     );
 

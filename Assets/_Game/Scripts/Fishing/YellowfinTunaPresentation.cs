@@ -32,21 +32,16 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float swimPhase;
     private float aquariumLocomotionSpeed = 0.45f;
 
-    // Signed turn request from TankFishAgent.
-    // The head/root still owns locomotion. These staged followers make the
-    // turn propagate backward through the body over TIME instead of making
-    // the whole tuna bend in the same frame.
+    // Thunniform turn model:
+    // the head/front body stays comparatively rigid.
+    // Only the posterior body and tail trail the head with delay.
     private float aquariumTurnTarget;
 
-    private float turnFront;
-    private float turnMid;
-    private float turnRear;
-    private float turnTail;
+    private float rearTurn;
+    private float tailTurn;
 
-    private float turnFrontVelocity;
-    private float turnMidVelocity;
-    private float turnRearVelocity;
-    private float turnTailVelocity;
+    private float rearTurnVelocity;
+    private float tailTurnVelocity;
 
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
@@ -64,16 +59,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private static readonly int SwimPhaseId =
         Shader.PropertyToID(
             "_SwimPhase"
-        );
-
-    private static readonly int TurnFrontId =
-        Shader.PropertyToID(
-            "_TurnFront"
-        );
-
-    private static readonly int TurnMidId =
-        Shader.PropertyToID(
-            "_TurnMid"
         );
 
     private static readonly int TurnRearId =
@@ -122,6 +107,12 @@ public class YellowfinTunaPresentation : MonoBehaviour
     public void SetHeld(bool value)
     {
         held = value;
+
+        if (held)
+        {
+            aquariumTurnTarget = 0f;
+        }
+
         ApplyMaterialSettings();
     }
 
@@ -180,44 +171,24 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 ? 0f
                 : aquariumTurnTarget;
 
-        // Head/front reacts first. Every stage behind it follows the stage
-        // ahead with a slightly longer response time. This is deliberately
-        // a chained follower, not four copies of the same target.
-        turnFront =
+        // Rear body begins following after the head starts turning.
+        rearTurn =
             Mathf.SmoothDamp(
-                turnFront,
+                rearTurn,
                 turnTarget,
-                ref turnFrontVelocity,
-                0.07f,
+                ref rearTurnVelocity,
+                0.13f,
                 Mathf.Infinity,
                 Time.deltaTime
             );
 
-        turnMid =
+        // Tail follows the rear body, never the head directly.
+        // This creates a smooth trailing response instead of an instant bend.
+        tailTurn =
             Mathf.SmoothDamp(
-                turnMid,
-                turnFront,
-                ref turnMidVelocity,
-                0.11f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
-
-        turnRear =
-            Mathf.SmoothDamp(
-                turnRear,
-                turnMid,
-                ref turnRearVelocity,
-                0.15f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
-
-        turnTail =
-            Mathf.SmoothDamp(
-                turnTail,
-                turnRear,
-                ref turnTailVelocity,
+                tailTurn,
+                rearTurn,
+                ref tailTurnVelocity,
                 0.19f,
                 Mathf.Infinity,
                 Time.deltaTime
@@ -246,7 +217,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         }
         else
         {
-            // Keep the head/visual aligned exactly to the locomotion root.
+            // Head/front remains exactly aligned to the locomotion root.
             visualRoot.localRotation =
                 visualBaseRotation;
         }
@@ -350,31 +321,17 @@ public class YellowfinTunaPresentation : MonoBehaviour
             );
 
             block.SetFloat(
-                TurnFrontId,
-                held
-                    ? 0f
-                    : turnFront
-            );
-
-            block.SetFloat(
-                TurnMidId,
-                held
-                    ? 0f
-                    : turnMid
-            );
-
-            block.SetFloat(
                 TurnRearId,
                 held
                     ? 0f
-                    : turnRear
+                    : rearTurn
             );
 
             block.SetFloat(
                 TurnTailId,
                 held
                     ? 0f
-                    : turnTail
+                    : tailTurn
             );
 
             renderer.SetPropertyBlock(
