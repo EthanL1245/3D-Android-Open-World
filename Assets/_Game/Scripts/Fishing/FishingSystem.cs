@@ -2858,8 +2858,10 @@ public class FishingSystem : MonoBehaviour
         {
             Vector3 mouthTarget =
                 heldHookPoint.position +
+                heldFishAnchor.up *
+                0.010f +
                 playerCamera.transform.forward *
-                0.018f;
+                0.010f;
 
             Vector3 correction =
                 mouthTarget -
@@ -2981,8 +2983,10 @@ public class FishingSystem : MonoBehaviour
 
         Vector3 mouthTarget =
             heldHookPoint.position +
+            heldFishAnchor.up *
+            0.010f +
             playerCamera.transform.forward *
-            0.018f;
+            0.010f;
 
         Vector3 correction =
             mouthTarget -
@@ -3006,6 +3010,11 @@ public class FishingSystem : MonoBehaviour
                 "Bone"
             );
 
+        float mouthInset =
+            GetFishMouthInset(
+                fish
+            );
+
         if (headBone != null)
         {
             Vector3 headLocal =
@@ -3018,7 +3027,8 @@ public class FishingSystem : MonoBehaviour
                 new Vector3(
                     headLocal.x,
                     headLocal.y,
-                    frontZ - 0.01f
+                    frontZ -
+                    mouthInset
                 );
         }
 
@@ -3026,7 +3036,62 @@ public class FishingSystem : MonoBehaviour
             new Vector3(
                 0f,
                 0f,
-                frontZ - 0.01f
+                frontZ -
+                mouthInset
+            );
+    }
+
+    private float GetFishMouthInset(
+        GameObject fish)
+    {
+        Renderer[] renderers =
+            fish.GetComponentsInChildren<Renderer>(
+                true
+            );
+
+        if (renderers.Length == 0)
+            return 0.035f;
+
+        Bounds combined =
+            renderers[0].bounds;
+
+        for (int i = 1;
+             i < renderers.Length;
+             i++)
+        {
+            combined.Encapsulate(
+                renderers[i].bounds
+            );
+        }
+
+        Vector3 localFront =
+            fish.transform
+                .InverseTransformPoint(
+                    combined.center +
+                    fish.transform.forward *
+                    combined.extents.magnitude
+                );
+
+        Vector3 localBack =
+            fish.transform
+                .InverseTransformPoint(
+                    combined.center -
+                    fish.transform.forward *
+                    combined.extents.magnitude
+                );
+
+        float approximateLength =
+            Mathf.Abs(
+                localFront.z -
+                localBack.z
+            );
+
+        return
+            Mathf.Clamp(
+                approximateLength *
+                0.045f,
+                0.025f,
+                0.065f
             );
     }
 
