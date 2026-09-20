@@ -188,7 +188,7 @@ public class AquariumSystem : MonoBehaviour
     }
 
     public PlacedFishTank GetNearestTank(
-        float maxDistance = 10.5f)
+        float maxDistance = 5.0f)
     {
         if (player == null)
             return null;
@@ -422,7 +422,7 @@ public class AquariumSystem : MonoBehaviour
 
         Vector3 candidate =
             player.position +
-            forward * 10.5f;
+            forward * 5.0f;
 
         float groundY =
             FindGroundHeight(
@@ -497,9 +497,9 @@ public class AquariumSystem : MonoBehaviour
                 0f
             ),
             new Vector3(
-                17.25f,
-                0.28f,
-                9.50f
+                6.90f,
+                0.24f,
+                3.80f
             ),
             baseMaterial
         );
@@ -509,13 +509,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                4.58f,
+                1.86f,
                 0f
             ),
             new Vector3(
-                15.65f,
-                8.20f,
-                7.75f
+                6.26f,
+                3.00f,
+                3.10f
             ),
             preview
                 ? glassMaterial
@@ -527,13 +527,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                4.58f,
-                -4.10f
+                1.94f,
+                -1.64f
             ),
             new Vector3(
-                16.45f,
-                8.60f,
-                0.08f
+                6.58f,
+                3.44f,
+                0.05f
             ),
             glassMaterial
         );
@@ -543,13 +543,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                4.58f,
-                4.10f
+                1.94f,
+                1.64f
             ),
             new Vector3(
-                16.45f,
-                8.60f,
-                0.08f
+                6.58f,
+                3.44f,
+                0.05f
             ),
             glassMaterial
         );
@@ -558,14 +558,14 @@ public class AquariumSystem : MonoBehaviour
             "LeftGlass",
             root.transform,
             new Vector3(
-                -8.225f,
-                4.58f,
+                -3.29f,
+                1.94f,
                 0f
             ),
             new Vector3(
-                0.08f,
-                8.60f,
-                8.20f
+                0.05f,
+                3.44f,
+                3.28f
             ),
             glassMaterial
         );
@@ -574,14 +574,14 @@ public class AquariumSystem : MonoBehaviour
             "RightGlass",
             root.transform,
             new Vector3(
-                8.225f,
-                4.58f,
+                3.29f,
+                1.94f,
                 0f
             ),
             new Vector3(
-                0.08f,
-                8.60f,
-                8.20f
+                0.05f,
+                3.44f,
+                3.28f
             ),
             glassMaterial
         );
@@ -589,36 +589,36 @@ public class AquariumSystem : MonoBehaviour
         CreateFrame(
             root.transform,
             new Vector3(
-                8.225f,
-                4.58f,
-                4.10f
+                3.29f,
+                1.94f,
+                1.64f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -8.225f,
-                4.58f,
-                4.10f
+                -3.29f,
+                1.94f,
+                1.64f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                8.225f,
-                4.58f,
-                -4.10f
+                3.29f,
+                1.94f,
+                -1.64f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -8.225f,
-                4.58f,
-                -4.10f
+                -3.29f,
+                1.94f,
+                -1.64f
             )
         );
 
@@ -630,15 +630,15 @@ public class AquariumSystem : MonoBehaviour
             collider.center =
                 new Vector3(
                     0f,
-                    4.58f,
+                    1.94f,
                     0f
                 );
 
             collider.size =
                 new Vector3(
-                    17.50f,
-                    9.10f,
-                    9.60f
+                    7.00f,
+                    3.90f,
+                    3.84f
                 );
         }
 
@@ -654,9 +654,9 @@ public class AquariumSystem : MonoBehaviour
             parent,
             localPosition,
             new Vector3(
-                0.10f,
-                8.88f,
-                0.10f
+                0.08f,
+                3.88f,
+                0.08f
             ),
             frameMaterial
         );
@@ -1055,14 +1055,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    3.20f,
-                    6.70f
+                    1.35f,
+                    2.45f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    1.35f,
-                    3.15f
+                    0.48f,
+                    1.05f
                 );
         }
         else if (redSnapperPresentation != null)
@@ -1084,14 +1084,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    3.60f,
-                    6.90f
+                    1.45f,
+                    2.55f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    1.45f,
-                    3.25f
+                    0.52f,
+                    1.12f
                 );
         }
         else if (tunaPresentation != null)
@@ -1112,14 +1112,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    3.80f,
-                    7.00f
+                    1.55f,
+                    2.65f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    1.55f,
-                    3.30f
+                    0.60f,
+                    1.18f
                 );
         }
         else
@@ -1141,14 +1141,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    3.10f,
-                    6.80f
+                    1.40f,
+                    2.50f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    1.30f,
-                    3.20f
+                    0.55f,
+                    1.12f
                 );
         }
 
@@ -1168,19 +1168,19 @@ public class TankFishAgent : MonoBehaviour
 
         baseHeight =
             UnityEngine.Random.Range(
-                2.0f,
-                7.0f
+                0.85f,
+                2.95f
             );
 
         heightAmplitude =
             goatfishPresentation != null
                 ? UnityEngine.Random.Range(
-                    0.35f,
-                    1.15f
+                    0.14f,
+                    0.42f
                 )
                 : UnityEngine.Random.Range(
-                    0.50f,
-                    1.55f
+                    0.18f,
+                    0.58f
                 );
 
         heightPhase =
@@ -1221,14 +1221,14 @@ public class TankFishAgent : MonoBehaviour
 
         pathCenterX =
             UnityEngine.Random.Range(
-                -0.80f,
-                0.80f
+                -0.28f,
+                0.28f
             );
 
         pathCenterZ =
             UnityEngine.Random.Range(
-                -0.35f,
-                0.35f
+                -0.14f,
+                0.14f
             );
 
         heightHarmonic =
@@ -1257,8 +1257,8 @@ public class TankFishAgent : MonoBehaviour
 
         verticalDriftAmount =
             UnityEngine.Random.Range(
-                0.20f,
-                0.75f
+                0.08f,
+                0.28f
             );
 
         speedDriftPhase =
@@ -2178,8 +2178,8 @@ public class TankFishAgent : MonoBehaviour
         y =
             Mathf.Clamp(
                 y,
-                0.90f,
-                8.05f
+                0.45f,
+                3.35f
             );
 
         return
@@ -2187,15 +2187,15 @@ public class TankFishAgent : MonoBehaviour
                 Mathf.Clamp(
                     rotatedX +
                     pathCenterX,
-                    -7.30f,
-                    7.30f
+                    -2.85f,
+                    2.85f
                 ),
                 y,
                 Mathf.Clamp(
                     rotatedZ +
                     pathCenterZ,
-                    -3.45f,
-                    3.45f
+                    -1.36f,
+                    1.36f
                 )
             );
     }
@@ -2338,22 +2338,22 @@ public class TankFishAgent : MonoBehaviour
         position.x =
             Mathf.Clamp(
                 position.x,
-                -7.45f,
-                7.45f
+                -2.95f,
+                2.95f
             );
 
         position.y =
             Mathf.Clamp(
                 position.y,
-                0.75f,
-                8.15f
+                0.40f,
+                3.40f
             );
 
         position.z =
             Mathf.Clamp(
                 position.z,
-                -3.55f,
-                3.55f
+                -1.42f,
+                1.42f
             );
 
         transform.localPosition =
