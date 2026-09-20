@@ -71,6 +71,7 @@ public class FishingSystem : MonoBehaviour
     private float surgeAmount;
     private float surgeTimer;
     private float temperamentTimer;
+    private float initialEscapeBurstTimer;
     private bool fishUnconscious;
     private bool fishOnShore;
 
@@ -86,10 +87,24 @@ public class FishingSystem : MonoBehaviour
     private static readonly float[] FightMoveAngles =
     {
         0f,
-        32f,
-        -32f,
-        64f,
-        -64f
+        18f,
+        -18f,
+        36f,
+        -36f,
+        54f,
+        -54f,
+        72f,
+        -72f,
+        86f,
+        -86f
+    };
+
+    private static readonly float[] FightMoveStepScales =
+    {
+        1f,
+        0.60f,
+        0.32f,
+        0.16f
     };
 
     private Terrain terrain;
@@ -723,6 +738,9 @@ public class FishingSystem : MonoBehaviour
                 3.4f
             );
 
+        initialEscapeBurstTimer =
+            1.15f;
+
         surgeTimer =
             Random.Range(
                 1.2f,
@@ -786,6 +804,13 @@ public class FishingSystem : MonoBehaviour
 
         if (!fishUnconscious)
         {
+            initialEscapeBurstTimer =
+                Mathf.Max(
+                    0f,
+                    initialEscapeBurstTimer -
+                    Time.deltaTime
+                );
+
             temperamentTimer -=
                 Time.deltaTime;
 
@@ -1665,28 +1690,39 @@ public class FishingSystem : MonoBehaviour
         switch (hookedTemperament)
         {
             case FishTemperament.Calm:
-                moodSwimMultiplier = 0.78f;
+                moodSwimMultiplier = 0.95f;
                 break;
 
             case FishTemperament.Angry:
-                moodSwimMultiplier = 1.72f;
+                moodSwimMultiplier = 1.75f;
                 break;
 
             default:
-                moodSwimMultiplier = 1.18f;
+                moodSwimMultiplier = 1.35f;
                 break;
         }
 
+        float initialBurstMultiplier =
+            initialEscapeBurstTimer > 0f
+                ? Mathf.Lerp(
+                    1f,
+                    1.34f,
+                    initialEscapeBurstTimer /
+                    1.15f
+                )
+                : 1f;
+
         float outwardSpeed =
             Mathf.Lerp(
-                1.05f,
-                2.00f,
+                1.85f,
+                2.95f,
                 effectiveDifficulty
             ) *
             moodSwimMultiplier *
+            initialBurstMultiplier *
             (
                 1f +
-                surgeAmount * 0.34f
+                surgeAmount * 0.28f
             );
 
         Vector3 velocity =
@@ -1711,20 +1747,21 @@ public class FishingSystem : MonoBehaviour
                 switch (hookedTemperament)
                 {
                     case FishTemperament.Calm:
-                        inwardGain = 3.4f;
+                        inwardGain = 1.05f;
                         break;
 
                     case FishTemperament.Angry:
-                        inwardGain = 1.9f;
+                        inwardGain = 0.48f;
                         break;
 
                     default:
-                        inwardGain = 2.7f;
+                        inwardGain = 0.72f;
                         break;
                 }
 
-                // Always overcome the fish's current outward speed while
-                // REEL is held, then add a mood-dependent net retrieval gain.
+                // Reeling should win the tug-of-war, but only slowly.
+                // The fish's outward swimming is cancelled first, then the
+                // small mood-dependent gain is what actually retrieves line.
                 float reelPullSpeed =
                     outwardSpeed +
                     inwardGain;
@@ -1790,65 +1827,169 @@ public class FishingSystem : MonoBehaviour
         bool requireAway,
         out Vector3 next)
     {
-        for (int i = 0;
-             i < FightMoveAngles.Length;
-             i++)
+        desiredDirection.y = 0f;
+        away.y = 0f;
+
+        if (desiredDirection.sqrMagnitude <
+            0.001f)
         {
-            Vector3 direction =
-                Quaternion.AngleAxis(
-                    FightMoveAngles[i],
-                    Vector3.up
-                ) *
+            desiredDirection =
+                away;
+        }
+
+        if (away.sqrMagnitude <
+            0.001f)
+        {
+            away =
                 desiredDirection;
+        }
 
-            direction.y = 0f;
+        desiredDirection.Normalize();
+        away.Normalize();
 
-            if (direction.sqrMagnitude <
-                0.001f)
+        float requestedDistance =
+            Mathf.Max(
+                0f,
+                distance
+            );
+
+        // First try the desired swimming direction with progressively smaller
+        // steps. Fast fish therefore slide along a water boundary instead of
+        // freezing because one large frame step crossed into shallow water.
+        for (int scaleIndex = 0;
+             scaleIndex <
+                 FightMoveStepScales.Length;
+             scaleIndex++)
+        {
+            float stepDistance =
+                requestedDistance *
+                FightMoveStepScales[
+                    scaleIndex
+                ];
+
+            for (int i = 0;
+                 i < FightMoveAngles.Length;
+                 i++)
             {
-                continue;
+                Vector3 direction =
+                    Quaternion.AngleAxis(
+                        FightMoveAngles[i],
+                        Vector3.up
+                    ) *
+                    desiredDirection;
+
+                if (TryValidateFightMove(
+                        current,
+                        direction,
+                        away,
+                        stepDistance,
+                        requireAway,
+                        out next))
+                {
+                    return true;
+                }
             }
+        }
 
-            direction.Normalize();
-
-            // Never choose a route that sends the hooked fish back through
-            // the player. Sideways is allowed, but the overall motion must
-            // continue away from the character.
-            if (requireAway &&
-                Vector3.Dot(
-                    direction,
-                    away) <
-                0.12f)
+        // If the weave direction is boxed in near shore, explicitly search
+        // around the true away-from-player vector. This keeps an angry fish
+        // moving immediately rather than waiting for the sine weave to point
+        // somewhere valid again.
+        if (requireAway)
+        {
+            for (int scaleIndex = 0;
+                 scaleIndex <
+                     FightMoveStepScales.Length;
+                 scaleIndex++)
             {
-                continue;
+                float stepDistance =
+                    requestedDistance *
+                    FightMoveStepScales[
+                        scaleIndex
+                    ];
+
+                for (int i = 0;
+                     i < FightMoveAngles.Length;
+                     i++)
+                {
+                    Vector3 direction =
+                        Quaternion.AngleAxis(
+                            FightMoveAngles[i],
+                            Vector3.up
+                        ) *
+                        away;
+
+                    if (TryValidateFightMove(
+                            current,
+                            direction,
+                            away,
+                            stepDistance,
+                            true,
+                            out next))
+                    {
+                        return true;
+                    }
+                }
             }
-
-            Vector3 candidate =
-                current +
-                direction *
-                Mathf.Max(
-                    0f,
-                    distance
-                );
-
-            candidate.y =
-                oceanWater.GetSurfaceHeight(
-                    candidate
-                ) -
-                0.08f;
-
-            if (!IsValidFishingWater(
-                    candidate))
-            {
-                continue;
-            }
-
-            next = candidate;
-            return true;
         }
 
         next = current;
         return false;
+    }
+
+    private bool TryValidateFightMove(
+        Vector3 current,
+        Vector3 direction,
+        Vector3 away,
+        float distance,
+        bool requireAway,
+        out Vector3 next)
+    {
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <
+            0.001f ||
+            distance <= 0f)
+        {
+            next = current;
+            return false;
+        }
+
+        direction.Normalize();
+
+        // Allow almost-tangential motion so fish can slide along shore/depth
+        // boundaries, but never let a free-swimming fish move back at player.
+        if (requireAway &&
+            Vector3.Dot(
+                direction,
+                away
+            ) <
+            -0.02f)
+        {
+            next = current;
+            return false;
+        }
+
+        Vector3 candidate =
+            current +
+            direction *
+            distance;
+
+        candidate.y =
+            oceanWater.GetSurfaceHeight(
+                candidate
+            ) -
+            0.08f;
+
+        if (!IsValidFishingWater(
+                candidate))
+        {
+            next = current;
+            return false;
+        }
+
+        next = candidate;
+        return true;
     }
 
     private float GetCurrentLineDistance()
@@ -1915,7 +2056,7 @@ public class FishingSystem : MonoBehaviour
             current +
             direction *
             (
-                5.2f *
+                1.85f *
                 Time.deltaTime
             );
 
