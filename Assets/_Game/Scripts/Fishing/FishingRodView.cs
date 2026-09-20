@@ -7,8 +7,12 @@ public sealed class FishingRodView : MonoBehaviour
     [SerializeField] private Transform reelMount;
     [SerializeField] private Animation reelAnimation;
     [SerializeField] private AnimationClip reelClip;
-    [SerializeField, Min(0f)] private float reelSpeed = 1f;
+    [SerializeField, Min(0f)] private float reelSpeed = 2f;
+    [SerializeField] private Transform rodBendRoot;
+    [SerializeField, Range(0f, 35f)] private float maximumBendDegrees = 22f;
+
     private Quaternion restingRotation;
+    private Quaternion rodBendRestingRotation;
     private float reelTime;
     private bool initialized;
 
@@ -25,6 +29,27 @@ public sealed class FishingRodView : MonoBehaviour
     public void InitializePose()
     {
         restingRotation = transform.localRotation;
+
+        if (rodBendRoot == null)
+        {
+            rodBendRoot =
+                transform.Find("Rod");
+        }
+
+        if (rodBendRoot != null)
+        {
+            rodBendRestingRotation =
+                rodBendRoot.localRotation;
+        }
+
+        // Existing saved prefabs may still serialize the old 1x value.
+        // Upgrade them at runtime without requiring a prefab reinstall.
+        reelSpeed =
+            Mathf.Max(
+                2f,
+                reelSpeed
+            );
+
         initialized = true;
         ResetMotion();
     }
@@ -38,6 +63,108 @@ public sealed class FishingRodView : MonoBehaviour
         if (reeling)
             reelTime = Mathf.Repeat(reelTime + Mathf.Max(0f, deltaTime) * reelSpeed, reelClip.length);
         SampleReel();
+    }
+
+    public void SetLinePull(
+        Vector3 bobberWorldPosition,
+        float tension,
+        float deltaTime)
+    {
+        if (!initialized ||
+            rodBendRoot == null ||
+            rodTip == null)
+        {
+            return;
+        }
+
+        Vector3 pullWorld =
+            bobberWorldPosition -
+            rodTip.position;
+
+        if (pullWorld.sqrMagnitude <
+            0.0001f)
+        {
+            RelaxLinePull(deltaTime);
+            return;
+        }
+
+        Vector3 pullLocal =
+            transform.InverseTransformDirection(
+                pullWorld.normalized
+            );
+
+        Vector3 restingAxis =
+            rodBendRestingRotation *
+            Vector3.up;
+
+        Quaternion fullCorrection =
+            Quaternion.FromToRotation(
+                restingAxis,
+                pullLocal
+            );
+
+        float bendAmount =
+            Mathf.Lerp(
+                0.28f,
+                1f,
+                Mathf.Clamp01(tension)
+            );
+
+        Quaternion limitedCorrection =
+            Quaternion.RotateTowards(
+                Quaternion.identity,
+                fullCorrection,
+                maximumBendDegrees *
+                bendAmount
+            );
+
+        Quaternion target =
+            limitedCorrection *
+            rodBendRestingRotation;
+
+        float smoothing =
+            1f -
+            Mathf.Exp(
+                -12f *
+                Mathf.Max(
+                    0f,
+                    deltaTime
+                )
+            );
+
+        rodBendRoot.localRotation =
+            Quaternion.Slerp(
+                rodBendRoot.localRotation,
+                target,
+                smoothing
+            );
+    }
+
+    public void RelaxLinePull(
+        float deltaTime)
+    {
+        if (!initialized ||
+            rodBendRoot == null)
+        {
+            return;
+        }
+
+        float smoothing =
+            1f -
+            Mathf.Exp(
+                -10f *
+                Mathf.Max(
+                    0f,
+                    deltaTime
+                )
+            );
+
+        rodBendRoot.localRotation =
+            Quaternion.Slerp(
+                rodBendRoot.localRotation,
+                rodBendRestingRotation,
+                smoothing
+            );
     }
 
     private void SampleReel()
@@ -67,7 +194,18 @@ public sealed class FishingRodView : MonoBehaviour
 
     public void ResetMotion()
     {
-        if (initialized) transform.localRotation = restingRotation;
+        if (initialized)
+        {
+            transform.localRotation =
+                restingRotation;
+
+            if (rodBendRoot != null)
+            {
+                rodBendRoot.localRotation =
+                    rodBendRestingRotation;
+            }
+        }
+
         reelTime = 0f;
         SampleReel();
     }
