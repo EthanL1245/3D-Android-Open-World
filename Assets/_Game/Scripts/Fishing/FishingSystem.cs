@@ -34,8 +34,8 @@ public class FishingSystem : MonoBehaviour
 
     [Header("Line + Valid Water")]
     [SerializeField] private float maximumLineDistance = 36f;
-    [SerializeField] private float minimumFishingDepth = 1.75f;
-    [SerializeField] private float deepWaterSafetyRadius = 1.25f;
+    [SerializeField] private float minimumFishingDepth = 0.85f;
+    [SerializeField] private float deepWaterSafetyRadius = 0.75f;
 
     [Header("Bites")]
     [SerializeField] private float minimumBiteDelay = 2.5f;
@@ -52,6 +52,7 @@ public class FishingSystem : MonoBehaviour
     private GameObject bobber;
 
     private GameObject bobberIndicatorRoot;
+    private RectTransform bobberIndicatorRect;
     private Image bobberIndicatorBackground;
     private Text bobberIndicatorText;
 
@@ -64,11 +65,16 @@ public class FishingSystem : MonoBehaviour
     private Vector3 castPoint;
     private float stateTimer;
     private float fightTension;
-    private float fightProgress;
+    private float fishHealth;
     private float lineBreakTimer;
     private float fightTime;
     private float surgeAmount;
     private float surgeTimer;
+    private float temperamentTimer;
+    private bool fishUnconscious;
+    private bool fishOnShore;
+
+    private const float CatchDistance = 1.15f;
 
     private int hookedSpeciesId;
     private float hookedWeightKg;
@@ -116,6 +122,9 @@ public class FishingSystem : MonoBehaviour
         }
 
         terrain = Terrain.activeTerrain;
+
+        minimumFishingDepth = 0.85f;
+        deepWaterSafetyRadius = 0.75f;
 
         GrantYellowfinPreviewOnce();
         GrantGoatfishPreviewOnce();
@@ -166,6 +175,20 @@ public class FishingSystem : MonoBehaviour
             return;
 
         UpdateHeldFishAnimation();
+
+        if (state != FishingState.Idle &&
+            state != FishingState.Casting &&
+            playerCamera != null &&
+            oceanWater.IsPointUnderwater(
+                playerCamera.transform.position
+            ))
+        {
+            FailFishing(
+                "SNAP! The line broke when you went underwater."
+            );
+
+            return;
+        }
 
         FishingActionButton action =
             hud.ActionInput;
@@ -681,11 +704,20 @@ public class FishingSystem : MonoBehaviour
     {
         state = FishingState.Fighting;
 
-        fightTension = 0.30f;
-        fightProgress = 0.08f;
+        fightTension = 0.24f;
+        fishHealth = 1f;
         lineBreakTimer = 0f;
         fightTime = 0f;
         surgeAmount = 0f;
+        fishUnconscious = false;
+        fishOnShore = false;
+
+        temperamentTimer =
+            Random.Range(
+                1.6f,
+                3.4f
+            );
+
         surgeTimer =
             Random.Range(
                 1.2f,
@@ -722,12 +754,13 @@ public class FishingSystem : MonoBehaviour
 
         hud.SetActionLabel("REEL");
         hud.SetStatus(
-            "Hold REEL, but keep tension out of the red!"
+            GetTemperamentName() +
+            " fish - wear down its health."
         );
         hud.ShowFightMeters(true);
         hud.SetFightMeters(
             fightTension,
-            fightProgress
+            fishHealth
         );
     }
 
@@ -744,138 +777,183 @@ public class FishingSystem : MonoBehaviour
                 hookedWeightKg
             );
 
-        float temperamentTension =
-            GetTemperamentTensionMultiplier();
-
-        float temperamentResistance =
-            GetTemperamentResistanceMultiplier();
-
         fightTime += Time.deltaTime;
-        surgeTimer -= Time.deltaTime;
 
-        if (surgeTimer <= 0f)
+        if (!fishUnconscious)
         {
+            temperamentTimer -=
+                Time.deltaTime;
+
+            if (temperamentTimer <= 0f)
+            {
+                hookedTemperament =
+                    RollDifferentTemperament(
+                        hookedSpeciesId,
+                        hookedWeightKg,
+                        hookedTemperament
+                    );
+
+                temperamentTimer =
+                    Random.Range(
+                        1.45f,
+                        3.65f
+                    );
+            }
+
+            surgeTimer -=
+                Time.deltaTime;
+
+            float temperamentTension =
+                GetTemperamentTensionMultiplier();
+
+            float temperamentResistance =
+                GetTemperamentResistanceMultiplier();
+
+            if (surgeTimer <= 0f)
+            {
+                surgeAmount =
+                    Random.Range(
+                        0.42f,
+                        0.88f
+                    ) *
+                    Mathf.Lerp(
+                        0.82f,
+                        1.34f,
+                        effectiveDifficulty
+                    ) *
+                    temperamentResistance;
+
+                surgeTimer =
+                    Random.Range(
+                        1.5f,
+                        2.9f
+                    );
+            }
+
             surgeAmount =
-                Random.Range(
-                    0.45f,
-                    0.90f
-                ) *
-                Mathf.Lerp(
-                    0.82f,
-                    1.34f,
-                    effectiveDifficulty
+                Mathf.MoveTowards(
+                    surgeAmount,
+                    0f,
+                    Time.deltaTime * 0.55f
+                );
+
+            float naturalResistance =
+                (
+                    0.23f +
+                    Mathf.Sin(
+                        fightTime *
+                        2.2f +
+                        hookedSpeciesId
+                    ) *
+                    0.10f +
+                    effectiveDifficulty *
+                    0.28f +
+                    surgeAmount *
+                    0.30f
                 ) *
                 temperamentResistance;
 
-            float temperamentInterval =
-                hookedTemperament ==
-                    FishTemperament.Angry
-                    ? 0.76f
-                    : hookedTemperament ==
+            if (reeling)
+            {
+                fightTension +=
+                    Time.deltaTime *
+                    (
+                        0.18f +
+                        naturalResistance *
+                        0.34f
+                    ) *
+                    temperamentTension;
+
+                float healthRate =
+                    Mathf.Lerp(
+                        0.18f,
+                        0.085f,
+                        effectiveDifficulty
+                    );
+
+                float moodHealthFactor =
+                    hookedTemperament ==
                         FishTemperament.Calm
-                        ? 1.15f
-                        : 1f;
+                        ? 1.12f
+                        : hookedTemperament ==
+                            FishTemperament.Angry
+                            ? 0.78f
+                            : 0.96f;
 
-            surgeTimer =
-                Random.Range(
-                    1.6f,
-                    3.0f
-                ) *
-                temperamentInterval;
-        }
+                fishHealth -=
+                    Time.deltaTime *
+                    healthRate *
+                    moodHealthFactor;
+            }
+            else
+            {
+                fightTension -=
+                    Time.deltaTime *
+                    Mathf.Lerp(
+                        0.52f,
+                        0.32f,
+                        effectiveDifficulty
+                    );
+            }
 
-        surgeAmount =
-            Mathf.MoveTowards(
-                surgeAmount,
-                0f,
-                Time.deltaTime * 0.55f
-            );
-
-        float naturalResistance =
-            (
-                0.25f +
-                Mathf.Sin(
-                    fightTime *
-                    2.2f +
-                    hookedSpeciesId
-                ) *
-                0.10f +
-                effectiveDifficulty *
-                0.27f +
-                surgeAmount *
-                0.30f
-            ) *
-            temperamentResistance;
-
-        if (reeling)
-        {
             fightTension +=
-                Time.deltaTime *
-                (
-                    0.20f +
-                    naturalResistance *
-                    0.32f
-                ) *
-                temperamentTension;
+                naturalResistance *
+                0.032f *
+                Time.deltaTime;
 
-            float safeFactor =
-                1f -
-                Mathf.InverseLerp(
-                    0.74f,
-                    0.98f,
-                    fightTension
+            fishHealth =
+                Mathf.Clamp01(
+                    fishHealth
                 );
 
-            fightProgress +=
-                Time.deltaTime *
-                Mathf.Lerp(
-                    0.20f,
-                    0.105f,
+            if (fishHealth <= 0f)
+            {
+                fishHealth = 0f;
+                fishUnconscious = true;
+                surgeAmount = 0f;
+                lineBreakTimer = 0f;
+                fightTension =
+                    Mathf.Min(
+                        fightTension,
+                        0.18f
+                    );
+
+                hud.SetStatus(
+                    "UNCONSCIOUS - reel it in."
+                );
+            }
+            else
+            {
+                UpdateFightBobber(
                     effectiveDifficulty
-                ) *
-                Mathf.Lerp(
-                    0.40f,
-                    1f,
-                    safeFactor
                 );
+            }
         }
         else
         {
-            fightTension -=
-                Time.deltaTime *
-                Mathf.Lerp(
-                    0.52f,
-                    0.32f,
-                    effectiveDifficulty
+            surgeAmount = 0f;
+
+            fightTension =
+                Mathf.MoveTowards(
+                    fightTension,
+                    0.05f,
+                    Time.deltaTime * 0.80f
                 );
 
-            fightProgress -=
-                Time.deltaTime *
-                (
-                    0.004f +
-                    naturalResistance *
-                    0.009f
-                );
+            if (reeling)
+            {
+                UpdateUnconsciousBobber();
+            }
+            else
+            {
+                SnapCurrentBobberToSurface();
+            }
         }
-
-        fightTension +=
-            naturalResistance *
-            0.032f *
-            Time.deltaTime;
 
         fightTension =
             Mathf.Clamp01(
                 fightTension
             );
-
-        fightProgress =
-            Mathf.Clamp01(
-                fightProgress
-            );
-
-        UpdateFightBobber(
-            effectiveDifficulty
-        );
 
         float lineDistance =
             GetCurrentLineDistance();
@@ -887,7 +965,7 @@ public class FishingSystem : MonoBehaviour
 
             hud.SetFightMeters(
                 fightTension,
-                fightProgress
+                fishHealth
             );
 
             UpdateBobberIndicator();
@@ -899,7 +977,8 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
-        if (fightTension >= 0.985f)
+        if (!fishUnconscious &&
+            fightTension >= 0.985f)
         {
             lineBreakTimer +=
                 Time.deltaTime;
@@ -916,15 +995,27 @@ public class FishingSystem : MonoBehaviour
 
         hud.SetFightMeters(
             fightTension,
-            fightProgress
+            fishHealth
         );
 
-        hud.SetStatus(
-            reeling
-                ? GetTemperamentName() +
-                  " fish - watch tension!"
-                : "RESTING LINE - tension falling..."
-        );
+        if (!fishUnconscious)
+        {
+            hud.SetStatus(
+                reeling
+                    ? GetTemperamentName() +
+                      " - reducing fish health."
+                    : GetTemperamentName() +
+                      " - resting the line."
+            );
+        }
+        else
+        {
+            hud.SetStatus(
+                reeling
+                    ? "UNCONSCIOUS - pulling it toward you."
+                    : "UNCONSCIOUS - hold REEL to retrieve it."
+            );
+        }
 
         if (lineBreakTimer >= 0.55f)
         {
@@ -935,13 +1026,28 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
-        if (fightProgress >= 1f)
+        if (fishUnconscious &&
+            fishOnShore)
         {
-            CatchFish();
+            CatchFish(
+                true
+            );
+
+            return;
+        }
+
+        if (fishUnconscious &&
+            GetRemainingCatchDistance() <=
+                0.01f)
+        {
+            CatchFish(
+                false
+            );
         }
     }
 
-    private void CatchFish()
+    private void CatchFish(
+        bool shoreCatch)
     {
         int newIndex =
             inventory.AddFish(
@@ -957,7 +1063,12 @@ public class FishingSystem : MonoBehaviour
         state = FishingState.Idle;
 
         hud.ShowFightMeters(false);
-        hud.ShowCatch(record);
+        hud.ShowCatch(
+            record,
+            shoreCatch
+                ? "LANDED ON SHORE!"
+                : "CAUGHT!"
+        );
 
         HoldFish(newIndex);
     }
