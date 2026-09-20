@@ -989,14 +989,14 @@ public class TankFishAgent : MonoBehaviour
                 goatfishPresentation
                     .GetRecommendedCruiseSpeed() *
                 UnityEngine.Random.Range(
-                    0.84f,
-                    0.90f
+                    0.78f,
+                    0.84f
                 );
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(
-                    150f,
-                    180f
+                    138f,
+                    165f
                 );
 
             pitchSpeedDeg = 72f;
@@ -1033,14 +1033,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.76f,
-                    0.90f
+                    0.70f,
+                    0.80f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.23f,
-                    0.31f
+                    0.20f,
+                    0.27f
                 );
         }
         else if (tunaPresentation != null)
@@ -1172,11 +1172,13 @@ public class TankFishAgent : MonoBehaviour
                 effectiveRadius
             );
 
-        if (goatfishPresentation != null)
+        if (goatfishPresentation != null ||
+            redSnapperPresentation != null)
         {
-            // Keep the invisible guide anchored to the fish's REAL location.
-            // This prevents the target from racing around a corner and making
-            // the fish slide/back up while trying to catch it.
+            // Keep the guide anchored to the fish's REAL location.
+            // The head turns first and the fish then moves forward along
+            // that heading instead of being dragged toward a free-running
+            // path target.
             pathAngle =
                 EstimatePathAngle(
                     transform.localPosition
@@ -1196,7 +1198,11 @@ public class TankFishAgent : MonoBehaviour
 
         if (goatfishPresentation != null)
         {
-            lookAhead = 0.46f;
+            lookAhead = 0.44f;
+        }
+        else if (redSnapperPresentation != null)
+        {
+            lookAhead = 0.42f;
         }
         else if (tunaPresentation != null)
         {
@@ -1240,7 +1246,10 @@ public class TankFishAgent : MonoBehaviour
                 );
 
             float minimumCornerFactor =
-                goatfishPresentation != null
+                (
+                    goatfishPresentation != null ||
+                    redSnapperPresentation != null
+                )
                     ? 0.86f
                     : 0.78f;
 
@@ -1344,7 +1353,8 @@ public class TankFishAgent : MonoBehaviour
                 currentSpeed *
                 deltaTime;
 
-            if (goatfishPresentation == null)
+            if (goatfishPresentation == null &&
+                redSnapperPresentation == null)
             {
                 SoftContainInsideTank();
             }
