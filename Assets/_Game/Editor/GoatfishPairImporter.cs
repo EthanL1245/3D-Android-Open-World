@@ -122,6 +122,33 @@ public static class GoatfishPairImporter
             return;
         }
 
+        ImportPairFromZipPaths(
+            yellowZip,
+            blackZip,
+            true
+        );
+    }
+
+    public static void ImportPairFromZipPaths(
+        string yellowZip,
+        string blackZip,
+        bool showDialog)
+    {
+        if (EditorApplication.isPlaying)
+        {
+            throw new InvalidOperationException(
+                "Exit Play Mode before importing Goatfish."
+            );
+        }
+
+        if (!File.Exists(yellowZip) ||
+            !File.Exists(blackZip))
+        {
+            throw new FileNotFoundException(
+                "Both Goatfish ZIP files are required."
+            );
+        }
+
         try
         {
             EditorUtility.DisplayProgressBar(
@@ -167,24 +194,14 @@ public static class GoatfishPairImporter
                     "/YellowGoatfish.prefab"
                 );
 
-            EditorUtility.DisplayDialog(
-                "Goatfish Pair Imported",
-                "Done. Both fish were exported from their Blend armature into clean animated FBXs and use their authored swimming action, while their material uses the game's URP lighting. Cameras/lights from the source are excluded.\n\nThe next Play Mode will grant one Yellow Goatfish and one Black Spot Goatfish to your inventory for immediate testing.",
-                "OK"
-            );
-        }
-        catch (Exception exception)
-        {
-            Debug.LogException(
-                exception
-            );
-
-            EditorUtility.DisplayDialog(
-                "Goatfish Import Failed",
-                exception.Message +
-                "\n\nThe importer now exports the Blend source through blender.exe into an animated FBX before Unity imports it.",
-                "OK"
-            );
+            if (showDialog)
+            {
+                EditorUtility.DisplayDialog(
+                    "Goatfish Pair Imported",
+                    "Done. Both updated Goatfish models and authored swimming animations are installed.",
+                    "OK"
+                );
+            }
         }
         finally
         {
