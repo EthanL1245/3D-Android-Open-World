@@ -1299,51 +1299,190 @@ public class FishingSystem : MonoBehaviour
         int speciesId,
         float weightKg)
     {
-        FishSpeciesDefinition species =
-            FishCatalog.Get(
-                speciesId
-            );
+        GetTemperamentWeights(
+            speciesId,
+            weightKg,
+            out float calmWeight,
+            out float irritatedWeight,
+            out float angryWeight
+        );
 
-        float difficulty =
-            GetEffectiveFightDifficulty(
-                species,
-                weightKg
-            );
-
-        float calmChance =
-            Mathf.Lerp(
-                0.76f,
-                0.12f,
-                difficulty
-            );
-
-        float angryChance =
-            Mathf.Lerp(
-                0.06f,
-                0.60f,
-                difficulty
-            );
+        float total =
+            calmWeight +
+            irritatedWeight +
+            angryWeight;
 
         float roll =
-            Random.value;
+            Random.value *
+            total;
 
         if (roll <
-            calmChance)
+            calmWeight)
         {
             return
                 FishTemperament.Calm;
         }
 
-        if (roll >
-            1f -
-            angryChance)
+        roll -=
+            calmWeight;
+
+        if (roll <
+            irritatedWeight)
         {
             return
-                FishTemperament.Angry;
+                FishTemperament.Irritated;
         }
 
         return
-            FishTemperament.Irritated;
+            FishTemperament.Angry;
+    }
+
+    private FishTemperament RollDifferentTemperament(
+        int speciesId,
+        float weightKg,
+        FishTemperament current)
+    {
+        for (int i = 0;
+             i < 5;
+             i++)
+        {
+            FishTemperament next =
+                RollTemperament(
+                    speciesId,
+                    weightKg
+                );
+
+            if (next != current)
+            {
+                return next;
+            }
+        }
+
+        // Guarantee a visible mood change even after repeated weighted rolls.
+        if (current ==
+            FishTemperament.Calm)
+        {
+            return
+                FishTemperament.Irritated;
+        }
+
+        if (current ==
+            FishTemperament.Angry)
+        {
+            return
+                FishTemperament.Irritated;
+        }
+
+        return
+            Random.value < 0.5f
+                ? FishTemperament.Calm
+                : FishTemperament.Angry;
+    }
+
+    private void GetTemperamentWeights(
+        int speciesId,
+        float weightKg,
+        out float calm,
+        out float irritated,
+        out float angry)
+    {
+        // Species signatures. These are intentionally different even before
+        // size is considered, so each fish family has a recognizable fight.
+        switch (speciesId)
+        {
+            case FishCatalog.RedSnapperId:
+                calm = 0.22f;
+                irritated = 0.48f;
+                angry = 0.30f;
+                break;
+
+            case FishCatalog.YellowfinTunaId:
+                calm = 0.08f;
+                irritated = 0.28f;
+                angry = 0.64f;
+                break;
+
+            case FishCatalog.YellowGoatfishId:
+                calm = 0.64f;
+                irritated = 0.33f;
+                angry = 0.03f;
+                break;
+
+            case FishCatalog.BlackSpotGoatfishId:
+                calm = 0.68f;
+                irritated = 0.29f;
+                angry = 0.03f;
+                break;
+
+            case 4: // Young Tuna
+                calm = 0.16f;
+                irritated = 0.38f;
+                angry = 0.46f;
+                break;
+
+            case 3: // Yellowtail
+                calm = 0.28f;
+                irritated = 0.45f;
+                angry = 0.27f;
+                break;
+
+            case 2: // Sea Bass
+                calm = 0.42f;
+                irritated = 0.43f;
+                angry = 0.15f;
+                break;
+
+            default: // Blue Mackerel / fallback
+                calm = 0.70f;
+                irritated = 0.27f;
+                angry = 0.03f;
+                break;
+        }
+
+        FishSpeciesDefinition species =
+            FishCatalog.Get(
+                speciesId
+            );
+
+        float size =
+            Mathf.InverseLerp(
+                species.MinWeightKg,
+                species.MaxWeightKg,
+                weightKg
+            );
+
+        // Large individuals spend more of the fight angry, but every species
+        // keeps a non-zero chance to switch through all three moods.
+        float angryShift =
+            size *
+            Mathf.Lerp(
+                0.08f,
+                0.24f,
+                species.Difficulty
+            );
+
+        calm =
+            Mathf.Max(
+                0.05f,
+                calm -
+                angryShift *
+                0.72f
+            );
+
+        irritated =
+            Mathf.Max(
+                0.08f,
+                irritated -
+                angryShift *
+                0.28f
+            );
+
+        angry =
+            Mathf.Max(
+                0.02f,
+                angry +
+                angryShift
+            );
     }
 
     private float GetTemperamentTensionMultiplier()
@@ -1378,6 +1517,9 @@ public class FishingSystem : MonoBehaviour
 
     private string GetTemperamentName()
     {
+        if (fishUnconscious)
+            return "UNCONSCIOUS";
+
         switch (hookedTemperament)
         {
             case FishTemperament.Calm:
@@ -1393,6 +1535,17 @@ public class FishingSystem : MonoBehaviour
 
     private Color GetTemperamentColor()
     {
+        if (fishUnconscious)
+        {
+            return
+                new Color(
+                    0.34f,
+                    0.56f,
+                    0.72f,
+                    0.94f
+                );
+        }
+
         switch (hookedTemperament)
         {
             case FishTemperament.Calm:
@@ -1631,6 +1784,179 @@ public class FishingSystem : MonoBehaviour
                 rodTip.position,
                 bobber.transform.position
             );
+    }
+
+    private float GetRemainingCatchDistance()
+    {
+        if (bobber == null)
+            return 0f;
+
+        Vector3 delta =
+            bobber.transform.position -
+            transform.position;
+
+        delta.y = 0f;
+
+        return
+            Mathf.Max(
+                0f,
+                delta.magnitude -
+                CatchDistance
+            );
+    }
+
+    private void UpdateUnconsciousBobber()
+    {
+        if (bobber == null ||
+            !bobber.activeSelf)
+        {
+            return;
+        }
+
+        Vector3 current =
+            bobber.transform.position;
+
+        Vector3 toPlayer =
+            transform.position -
+            current;
+
+        toPlayer.y = 0f;
+
+        if (toPlayer.sqrMagnitude <
+            0.0001f)
+        {
+            return;
+        }
+
+        Vector3 direction =
+            toPlayer.normalized;
+
+        Vector3 candidate =
+            current +
+            direction *
+            (
+                3.8f *
+                Time.deltaTime
+            );
+
+        if (TryGetTerrainWaterDepth(
+                candidate,
+                out float ground,
+                out float water,
+                out float depth))
+        {
+            if (depth <= 0.08f)
+            {
+                candidate.y =
+                    ground +
+                    0.07f;
+
+                bobber.transform.position =
+                    candidate;
+
+                castPoint =
+                    candidate;
+
+                fishOnShore = true;
+
+                hud.SetStatus(
+                    "UNCONSCIOUS - landed on shore!"
+                );
+
+                return;
+            }
+
+            candidate.y =
+                water +
+                0.03f;
+        }
+        else
+        {
+            candidate.y =
+                oceanWater.GetSurfaceHeight(
+                    candidate
+                ) +
+                0.03f;
+        }
+
+        bobber.transform.position =
+            candidate;
+
+        castPoint =
+            candidate;
+    }
+
+    private void SnapCurrentBobberToSurface()
+    {
+        if (bobber == null ||
+            !bobber.activeSelf ||
+            fishOnShore)
+        {
+            return;
+        }
+
+        Vector3 position =
+            bobber.transform.position;
+
+        position.y =
+            oceanWater.GetSurfaceHeight(
+                position
+            ) +
+            0.03f;
+
+        bobber.transform.position =
+            position;
+
+        castPoint =
+            position;
+    }
+
+    private bool TryGetTerrainWaterDepth(
+        Vector3 worldPosition,
+        out float ground,
+        out float water,
+        out float depth)
+    {
+        water =
+            oceanWater.GetSurfaceHeight(
+                worldPosition
+            );
+
+        ground =
+            water -
+            1000f;
+
+        depth = 1000f;
+
+        if (terrain == null)
+            return false;
+
+        TerrainData data =
+            terrain.terrainData;
+
+        Vector3 local =
+            worldPosition -
+            terrain.transform.position;
+
+        if (local.x < 0f ||
+            local.z < 0f ||
+            local.x > data.size.x ||
+            local.z > data.size.z)
+        {
+            return false;
+        }
+
+        ground =
+            terrain.SampleHeight(
+                worldPosition
+            ) +
+            terrain.transform.position.y;
+
+        depth =
+            water -
+            ground;
+
+        return true;
     }
 
     private void SnapBobberToSurface()
