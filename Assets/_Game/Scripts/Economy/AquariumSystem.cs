@@ -999,14 +999,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    0.78f,
-                    0.90f
+                    0.68f,
+                    0.77f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.25f,
-                    0.33f
+                    0.19f,
+                    0.26f
                 );
         }
         else if (tunaPresentation != null)
@@ -1138,18 +1138,31 @@ public class TankFishAgent : MonoBehaviour
                 effectiveRadius
             );
 
-        pathAngle +=
-            pathDirection *
-            angularSpeed *
-            deltaTime;
+        if (goatfishPresentation != null)
+        {
+            // Keep the invisible guide anchored to the fish's REAL location.
+            // This prevents the target from racing around a corner and making
+            // the fish slide/back up while trying to catch it.
+            pathAngle =
+                EstimatePathAngle(
+                    transform.localPosition
+                );
+        }
+        else
+        {
+            pathAngle +=
+                pathDirection *
+                angularSpeed *
+                deltaTime;
 
-        WrapPathAngle();
+            WrapPathAngle();
+        }
 
         float lookAhead;
 
         if (goatfishPresentation != null)
         {
-            lookAhead = 0.38f;
+            lookAhead = 0.46f;
         }
         else if (tunaPresentation != null)
         {
@@ -1297,7 +1310,10 @@ public class TankFishAgent : MonoBehaviour
                 currentSpeed *
                 deltaTime;
 
-            SoftContainInsideTank();
+            if (goatfishPresentation == null)
+            {
+                SoftContainInsideTank();
+            }
         }
 
         SyncPresentationSpeed();
@@ -1390,6 +1406,38 @@ public class TankFishAgent : MonoBehaviour
                 Mathf.Sin(angle) *
                 pathRadiusZ
             );
+    }
+
+    private float EstimatePathAngle(
+        Vector3 localPosition)
+    {
+        float normalizedX =
+            localPosition.x /
+            Mathf.Max(
+                0.001f,
+                pathRadiusX
+            );
+
+        float normalizedZ =
+            localPosition.z /
+            Mathf.Max(
+                0.001f,
+                pathRadiusZ
+            );
+
+        float angle =
+            Mathf.Atan2(
+                normalizedZ,
+                normalizedX
+            );
+
+        if (angle < 0f)
+        {
+            angle +=
+                Mathf.PI * 2f;
+        }
+
+        return angle;
     }
 
     private void WrapPathAngle()

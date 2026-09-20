@@ -1044,12 +1044,12 @@ public static class YellowfinTunaImporter
 
         material.SetFloat(
             "_SwimStrength",
-            0.115f
+            0.17f
         );
 
         material.SetFloat(
             "_SwimSpeed",
-            5.6f
+            5.8f
         );
 
         material.enableInstancing = true;

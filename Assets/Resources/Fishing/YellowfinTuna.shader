@@ -13,8 +13,8 @@ Shader "OpenWorld/YellowfinTuna"
         _BodyMax ("Body Max", Float) = 1
         _TailAtMin ("Tail At Min", Float) = 1
 
-        _SwimStrength ("Body Flex Strength", Float) = 0.115
-        _SwimSpeed ("Tail Beat Speed", Float) = 5.6
+        _SwimStrength ("Body Flex Strength", Float) = 0.17
+        _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
     }
 
@@ -149,22 +149,42 @@ Shader "OpenWorld/YellowfinTuna"
                         2.0 * tailFlex
                     );
 
-                float beat =
+                // Yellowtail-style progressive flex:
+                // the mid-body begins the stroke, the rear follows slightly
+                // later, and the tail has the largest delayed kick.
+                // The phase offsets are deliberately modest so this stays
+                // tuna-like rather than becoming an eel wave.
+                float bodyBeat =
                     sin(
                         _SwimPhase
                     );
 
-                // Same phase everywhere: stronger tuna flex, not an eel wave.
-                float swimProfile =
-                    bodyFlex * 0.36 +
-                    rearFlex * 0.38 +
-                    tailFlex * 0.26;
+                float rearBeat =
+                    sin(
+                        _SwimPhase -
+                        0.30
+                    );
+
+                float tailBeat =
+                    sin(
+                        _SwimPhase -
+                        0.58
+                    );
 
                 float sideOffset =
-                    beat *
                     _SwimStrength *
                     bodyRange *
-                    swimProfile;
+                    (
+                        bodyFlex *
+                        0.24 *
+                        bodyBeat +
+                        rearFlex *
+                        0.34 *
+                        rearBeat +
+                        tailFlex *
+                        0.42 *
+                        tailBeat
+                    );
 
                 positionOS +=
                     normalize(

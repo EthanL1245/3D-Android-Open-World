@@ -10,14 +10,14 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
     [Header("Aquarium Swim")]
     [SerializeField]
-    private float swimStrength = 0.115f;
+    private float swimStrength = 0.17f;
 
     [SerializeField]
-    private float swimSpeed = 5.6f;
+    private float swimSpeed = 5.8f;
 
     [Header("Held Fish")]
     [SerializeField]
-    private float heldStrength = 0.145f;
+    private float heldStrength = 0.19f;
 
     [SerializeField]
     private float heldSpeed = 5.8f;
@@ -221,8 +221,14 @@ public class YellowfinTunaPresentation : MonoBehaviour
 
         float strength =
             held
-                ? heldStrength
-                : swimStrength;
+                ? Mathf.Max(
+                    heldStrength,
+                    0.19f
+                )
+                : Mathf.Max(
+                    swimStrength,
+                    0.17f
+                );
 
         float speed =
             held
