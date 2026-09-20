@@ -1314,6 +1314,16 @@ print('RED_SNAPPER_ACTION=' + swim.name)
                 model.transform
             );
 
+            // Final verification: regardless of how the authored Blend/FBX
+            // axes are represented, make the actual head-to-tail chain point
+            // along the gameplay root's +Z forward direction. TankFishAgent
+            // propels only along root.forward, so this prevents lateral
+            // "sideways swimming" while preserving the authored animation.
+            ForceHeadForward(
+                visual.transform,
+                model.transform
+            );
+
             NormalizeAndCenter(
                 root.transform,
                 visual.transform
@@ -1473,6 +1483,111 @@ print('RED_SNAPPER_ACTION=' + swim.name)
                 sourceBasis
             ) *
             visual.rotation;
+    }
+
+    private static void ForceHeadForward(
+        Transform visual,
+        Transform model)
+    {
+        Transform first =
+            FindBone(
+                model,
+                "Bone.001"
+            );
+
+        Transform last =
+            FindBone(
+                model,
+                "Bone.004"
+            );
+
+        if (first == null ||
+            last == null)
+        {
+            first =
+                FindBone(
+                    model,
+                    "Bone"
+                );
+
+            last =
+                FindBone(
+                    model,
+                    "Bone.004"
+                );
+        }
+
+        if (first == null ||
+            last == null)
+        {
+            Debug.LogWarning(
+                "Red Snapper forward verification could not find the body-chain endpoints."
+            );
+
+            return;
+        }
+
+        // Bone.001/Bone is the front of the authored chain and Bone.004
+        // is the tail end, so head direction is tail -> front.
+        Vector3 headDirection =
+            first.position -
+            last.position;
+
+        Vector3 horizontalHead =
+            Vector3.ProjectOnPlane(
+                headDirection,
+                Vector3.up
+            );
+
+        if (horizontalHead.sqrMagnitude <
+            0.0001f)
+        {
+            Debug.LogWarning(
+                "Red Snapper head direction was nearly vertical, so the importer could not verify horizontal forward orientation."
+            );
+
+            return;
+        }
+
+        horizontalHead.Normalize();
+
+        Quaternion correction =
+            Quaternion.FromToRotation(
+                horizontalHead,
+                Vector3.forward
+            );
+
+        visual.rotation =
+            correction *
+            visual.rotation;
+
+        // Verify the result immediately so a future model change cannot
+        // silently reintroduce sideways swimming.
+        Vector3 verifiedHead =
+            Vector3.ProjectOnPlane(
+                first.position -
+                last.position,
+                Vector3.up
+            );
+
+        if (verifiedHead.sqrMagnitude >
+            0.0001f)
+        {
+            verifiedHead.Normalize();
+
+            float forwardDot =
+                Vector3.Dot(
+                    verifiedHead,
+                    Vector3.forward
+                );
+
+            Debug.Log(
+                "Red Snapper forward alignment verified. Head/root forward dot = " +
+                forwardDot.ToString(
+                    "0.000"
+                )
+            );
+        }
     }
 
     private static Transform FindBone(
