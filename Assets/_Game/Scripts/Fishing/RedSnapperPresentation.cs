@@ -17,71 +17,31 @@ public class RedSnapperPresentation : MonoBehaviour
 
     private bool held;
 
+    // This rig is ordered front-to-back:
+    // Bone = head/front anchor
+    // Bone.001 = front body
+    // Bone.002+ = animated mid/rear body and tail
     private Transform headBone;
-    private Transform nextBodyBone;
-    private Transform tailBone;
-
-    // Stable, non-animated locomotion guide captured from the authored
-    // front-body bone structure. The swim animation is NOT allowed to
-    // steer the fish laterally.
-    private Vector3 headGuideLocalDirection =
-        Vector3.forward;
+    private Transform frontBodyBone;
 
     private Vector3 headRestLocalPosition;
     private Quaternion headRestLocalRotation =
         Quaternion.identity;
 
-    private Transform headParentBone;
-    private Vector3 headParentRestLocalPosition;
-    private Quaternion headParentRestLocalRotation =
+    private Vector3 frontBodyRestLocalPosition;
+    private Quaternion frontBodyRestLocalRotation =
         Quaternion.identity;
 
-    private bool headGuideCaptured;
+    private bool frontPoseCaptured;
 
     public void Configure(
         Animator targetAnimator)
     {
         animator = targetAnimator;
+
         ResolveBones();
-        CaptureStableHeadGuide();
+        CaptureFrontPose();
         ApplyState();
-    }
-
-    public bool TryGetHeadForward(
-        Transform referenceSpace,
-        out Vector3 direction)
-    {
-        ResolveBones();
-        CaptureStableHeadGuide();
-
-        Vector3 worldDirection =
-            transform.TransformDirection(
-                headGuideLocalDirection
-            );
-
-        if (worldDirection.sqrMagnitude <
-            0.000001f)
-        {
-            direction = Vector3.forward;
-            return false;
-        }
-
-        if (referenceSpace != null)
-        {
-            direction =
-                referenceSpace
-                    .InverseTransformDirection(
-                        worldDirection
-                    )
-                    .normalized;
-        }
-        else
-        {
-            direction =
-                worldDirection.normalized;
-        }
-
-        return true;
     }
 
     public void SetHeld(bool value)
@@ -93,8 +53,9 @@ public class RedSnapperPresentation : MonoBehaviour
     public void SetAquariumLocomotion(
         float worldSpeed)
     {
-        // Authored animation timing stays fixed.
-        // Tank locomotion matches itself to the clip instead.
+        // Aquarium locomotion deliberately does NOT drive animation or
+        // derive direction from animated bones. Like Yellowtail/Tuna, the
+        // gameplay root owns heading and translation.
     }
 
     public float GetRecommendedCruiseSpeed()
@@ -127,7 +88,7 @@ public class RedSnapperPresentation : MonoBehaviour
     {
         ResolveAnimator();
         ResolveBones();
-        CaptureStableHeadGuide();
+        CaptureFrontPose();
         ApplyState();
     }
 
@@ -135,7 +96,7 @@ public class RedSnapperPresentation : MonoBehaviour
     {
         ResolveAnimator();
         ResolveBones();
-        CaptureStableHeadGuide();
+        CaptureFrontPose();
         ApplyState();
     }
 
@@ -144,19 +105,13 @@ public class RedSnapperPresentation : MonoBehaviour
         if (held)
             return;
 
-        // Animator has already evaluated this frame. Re-anchor the very front
-        // of the skeleton so the Red Snapper's head does not wag the entire
-        // fish sideways. Rear/body/tail child bones keep their authored
-        // animation and therefore trail behind the stable head.
-        if (headParentBone != null)
-        {
-            headParentBone.localPosition =
-                headParentRestLocalPosition;
+        ResolveBones();
+        CaptureFrontPose();
 
-            headParentBone.localRotation =
-                headParentRestLocalRotation;
-        }
-
+        // Animator has evaluated already. Put the actual head/front section
+        // back at its authored rest pose so it can NEVER wag the locomotion
+        // direction sideways. Bone.002 and everything behind it remains free
+        // to use the supplied swimming animation.
         if (headBone != null)
         {
             headBone.localPosition =
@@ -164,6 +119,15 @@ public class RedSnapperPresentation : MonoBehaviour
 
             headBone.localRotation =
                 headRestLocalRotation;
+        }
+
+        if (frontBodyBone != null)
+        {
+            frontBodyBone.localPosition =
+                frontBodyRestLocalPosition;
+
+            frontBodyBone.localRotation =
+                frontBodyRestLocalRotation;
         }
     }
 
@@ -178,80 +142,10 @@ public class RedSnapperPresentation : MonoBehaviour
         }
     }
 
-    private void CaptureStableHeadGuide()
-    {
-        if (headGuideCaptured)
-            return;
-
-        ResolveBones();
-
-        if (headBone == null)
-            return;
-
-        Vector3 worldDirection =
-            Vector3.zero;
-
-        if (nextBodyBone != null)
-        {
-            worldDirection =
-                headBone.position -
-                nextBodyBone.position;
-        }
-        else if (tailBone != null)
-        {
-            worldDirection =
-                headBone.position -
-                tailBone.position;
-        }
-
-        if (worldDirection.sqrMagnitude <
-            0.000001f)
-        {
-            return;
-        }
-
-        headGuideLocalDirection =
-            transform
-                .InverseTransformDirection(
-                    worldDirection
-                )
-                .normalized;
-
-        headRestLocalPosition =
-            headBone.localPosition;
-
-        headRestLocalRotation =
-            headBone.localRotation;
-
-        // If the imported rig has an extra front/root bone above Bone.001,
-        // anchor it too. That prevents parent-bone sway from moving the head.
-        Transform candidateParent =
-            headBone.parent;
-
-        if (candidateParent != null &&
-            animator != null &&
-            candidateParent != animator.transform)
-        {
-            headParentBone =
-                candidateParent;
-
-            headParentRestLocalPosition =
-                headParentBone.localPosition;
-
-            headParentRestLocalRotation =
-                headParentBone.localRotation;
-        }
-
-        headGuideCaptured = true;
-    }
-
     private void ResolveBones()
     {
         if (headBone != null &&
-            (
-                nextBodyBone != null ||
-                tailBone != null
-            ))
+            frontBodyBone != null)
         {
             return;
         }
@@ -264,35 +158,55 @@ public class RedSnapperPresentation : MonoBehaviour
         headBone =
             FindBone(
                 bones,
+                "Bone"
+            );
+
+        frontBodyBone =
+            FindBone(
+                bones,
                 "Bone.001"
             );
 
-        nextBodyBone =
-            FindBone(
-                bones,
-                "Bone.002"
-            );
-
-        tailBone =
-            FindBone(
-                bones,
-                "Bone.004"
-            );
-
+        // Defensive fallback if a future exporter renames/removes the root
+        // Bone but retains the numbered chain.
         if (headBone == null)
         {
             headBone =
                 FindBone(
                     bones,
-                    "Bone"
-                );
-
-            nextBodyBone =
-                FindBone(
-                    bones,
                     "Bone.001"
                 );
+
+            frontBodyBone =
+                FindBone(
+                    bones,
+                    "Bone.002"
+                );
         }
+    }
+
+    private void CaptureFrontPose()
+    {
+        if (frontPoseCaptured ||
+            headBone == null ||
+            frontBodyBone == null)
+        {
+            return;
+        }
+
+        headRestLocalPosition =
+            headBone.localPosition;
+
+        headRestLocalRotation =
+            headBone.localRotation;
+
+        frontBodyRestLocalPosition =
+            frontBodyBone.localPosition;
+
+        frontBodyRestLocalRotation =
+            frontBodyBone.localRotation;
+
+        frontPoseCaptured = true;
     }
 
     private static Transform FindBone(

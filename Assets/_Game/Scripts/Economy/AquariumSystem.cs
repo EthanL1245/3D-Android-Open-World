@@ -1043,11 +1043,11 @@ public class TankFishAgent : MonoBehaviour
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(
-                    108f,
-                    132f
+                    165f,
+                    195f
                 );
 
-            pitchSpeedDeg = 55f;
+            pitchSpeedDeg = 62f;
 
             pathRadiusX =
                 UnityEngine.Random.Range(
@@ -1190,13 +1190,9 @@ public class TankFishAgent : MonoBehaviour
                 effectiveRadius
             );
 
-        if (goatfishPresentation != null ||
-            redSnapperPresentation != null)
+        if (goatfishPresentation != null)
         {
-            // Keep the guide anchored to the fish's REAL location.
-            // The head turns first and the fish then moves forward along
-            // that heading instead of being dragged toward a free-running
-            // path target.
+            // Goatfish use a current-position-anchored guide.
             pathAngle =
                 EstimatePathAngle(
                     transform.localPosition
@@ -1220,7 +1216,7 @@ public class TankFishAgent : MonoBehaviour
         }
         else if (redSnapperPresentation != null)
         {
-            lookAhead = 0.42f;
+            lookAhead = 0.34f;
         }
         else if (tunaPresentation != null)
         {
@@ -1252,25 +1248,6 @@ public class TankFishAgent : MonoBehaviour
                 transform.localRotation *
                 Vector3.forward;
 
-            Vector3 snapperHeadForward =
-                Vector3.zero;
-
-            // Red Snapper presentation returns a stable head-guide vector
-            // captured from the front bone structure, not a live wagging
-            // animation vector.
-            bool snapperUsesBoneForward =
-                redSnapperPresentation != null &&
-                redSnapperPresentation.TryGetHeadForward(
-                    transform.parent,
-                    out snapperHeadForward
-                );
-
-            if (snapperUsesBoneForward)
-            {
-                currentForward =
-                    snapperHeadForward;
-            }
-
             float signedTurn =
                 SignedHorizontalAngle(
                     currentForward,
@@ -1283,10 +1260,7 @@ public class TankFishAgent : MonoBehaviour
                 );
 
             float minimumCornerFactor =
-                (
-                    goatfishPresentation != null ||
-                    redSnapperPresentation != null
-                )
+                goatfishPresentation != null
                     ? 0.86f
                     : 0.78f;
 
@@ -1334,156 +1308,59 @@ public class TankFishAgent : MonoBehaviour
                 flatDesired.Normalize();
                 flatForward.Normalize();
 
-                if (snapperUsesBoneForward)
-                {
-                    // Red Snapper is still steered from its real head-bone
-                    // direction, but constrain the locomotion root to yaw +
-                    // pitch only. A full 3D FromToRotation can accumulate roll
-                    // and make the fish swim on its side.
-                    Vector3 snapperFlatForward =
-                        Vector3.ProjectOnPlane(
-                            currentForward,
-                            Vector3.up
-                        );
+                Vector3 newFlatForward =
+                    Vector3.RotateTowards(
+                        flatForward,
+                        flatDesired,
+                        turnSpeedDeg *
+                        Mathf.Deg2Rad *
+                        deltaTime,
+                        0f
+                    );
 
-                    Vector3 snapperFlatDesired =
-                        Vector3.ProjectOnPlane(
-                            desiredDirection,
-                            Vector3.up
-                        );
+                float desiredPitch =
+                    Mathf.Asin(
+                        Mathf.Clamp(
+                            desiredDirection.y,
+                            -0.30f,
+                            0.30f
+                        )
+                    ) *
+                    Mathf.Rad2Deg;
 
-                    if (snapperFlatForward.sqrMagnitude >
-                            0.0001f &&
-                        snapperFlatDesired.sqrMagnitude >
-                            0.0001f)
-                    {
-                        snapperFlatForward.Normalize();
-                        snapperFlatDesired.Normalize();
+                float currentPitch =
+                    NormalizeAngle(
+                        transform.localEulerAngles.x
+                    );
 
-                        float yawDelta =
-                            Vector3.SignedAngle(
-                                snapperFlatForward,
-                                snapperFlatDesired,
-                                Vector3.up
-                            );
+                float newPitch =
+                    Mathf.MoveTowardsAngle(
+                        currentPitch,
+                        -desiredPitch,
+                        pitchSpeedDeg *
+                        deltaTime
+                    );
 
-                        float limitedYaw =
-                            Mathf.Clamp(
-                                yawDelta,
-                                -turnSpeedDeg * deltaTime,
-                                turnSpeedDeg * deltaTime
-                            );
-
-                        transform.localRotation =
-                            Quaternion.AngleAxis(
-                                limitedYaw,
-                                Vector3.up
-                            ) *
-                            transform.localRotation;
-                    }
-
-                    float desiredPitch =
-                        Mathf.Asin(
-                            Mathf.Clamp(
-                                desiredDirection.y,
-                                -0.30f,
-                                0.30f
-                            )
-                        ) *
-                        Mathf.Rad2Deg;
-
-                    Vector3 rootEuler =
-                        transform.localEulerAngles;
-
-                    float currentPitch =
-                        NormalizeAngle(
-                            rootEuler.x
-                        );
-
-                    float newPitch =
-                        Mathf.MoveTowardsAngle(
-                            currentPitch,
-                            -desiredPitch,
-                            pitchSpeedDeg *
-                            deltaTime
-                        );
-
-                    // Rebuild an upright root rotation every frame. Preserve
-                    // yaw, apply the desired pitch, and force roll to zero.
-                    float currentYaw =
-                        transform.localEulerAngles.y;
-
-                    transform.localRotation =
-                        Quaternion.Euler(
-                            newPitch,
-                            currentYaw,
-                            0f
-                        );
-                }
-                else
-                {
-                    Vector3 newFlatForward =
-                        Vector3.RotateTowards(
-                            flatForward,
-                            flatDesired,
-                            turnSpeedDeg *
-                            Mathf.Deg2Rad *
-                            deltaTime,
-                            0f
-                        );
-
-                    float desiredPitch =
-                        Mathf.Asin(
-                            Mathf.Clamp(
-                                desiredDirection.y,
-                                -0.30f,
-                                0.30f
-                            )
-                        ) *
-                        Mathf.Rad2Deg;
-
-                    float currentPitch =
-                        NormalizeAngle(
-                            transform.localEulerAngles.x
-                        );
-
-                    float newPitch =
-                        Mathf.MoveTowardsAngle(
-                            currentPitch,
-                            -desiredPitch,
-                            pitchSpeedDeg *
-                            deltaTime
-                        );
-
-                    transform.localRotation =
-                        Quaternion.LookRotation(
-                            newFlatForward,
-                            Vector3.up
-                        ) *
-                        Quaternion.Euler(
-                            newPitch,
-                            0f,
-                            0f
-                        );
-                }
+                transform.localRotation =
+                    Quaternion.LookRotation(
+                        newFlatForward,
+                        Vector3.up
+                    ) *
+                    Quaternion.Euler(
+                        newPitch,
+                        0f,
+                        0f
+                    );
             }
 
-            // Move along the SAME direction the fish is visibly facing.
+            // Head-led propulsion, identical in principle to Yellowtail/Tuna:
+            // rotate the gameplay root first, then translate ONLY along that
+            // root's forward vector. There is no sideways/lateral component.
             // For Red Snapper this is the live animated front-bone vector,
             // not transform.forward, eliminating lateral skating.
             Vector3 forward =
                 transform.localRotation *
                 Vector3.forward;
-
-            if (redSnapperPresentation != null &&
-                redSnapperPresentation.TryGetHeadForward(
-                    transform.parent,
-                    out Vector3 verifiedSnapperForward
-                ))
-            {
-                forward =
-                    verifiedSnapperForward;
-            }
 
             forward.Normalize();
 
