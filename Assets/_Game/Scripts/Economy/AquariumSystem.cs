@@ -1252,6 +1252,19 @@ public class TankFishAgent : MonoBehaviour
                 transform.localRotation *
                 Vector3.forward;
 
+            bool snapperUsesBoneForward =
+                redSnapperPresentation != null &&
+                redSnapperPresentation.TryGetHeadForward(
+                    transform.parent,
+                    out Vector3 snapperHeadForward
+                );
+
+            if (snapperUsesBoneForward)
+            {
+                currentForward =
+                    snapperHeadForward;
+            }
+
             float signedTurn =
                 SignedHorizontalAngle(
                     currentForward,
@@ -1315,56 +1328,96 @@ public class TankFishAgent : MonoBehaviour
                 flatDesired.Normalize();
                 flatForward.Normalize();
 
-                Vector3 newFlatForward =
-                    Vector3.RotateTowards(
-                        flatForward,
-                        flatDesired,
-                        turnSpeedDeg *
-                        Mathf.Deg2Rad *
-                        deltaTime,
-                        0f
-                    );
+                if (snapperUsesBoneForward)
+                {
+                    // Red Snapper: rotate the WHOLE locomotion root by the
+                    // correction required to turn its actual front-bone
+                    // direction toward the target. The root axis is not used
+                    // as an approximation anymore.
+                    Quaternion wantedCorrection =
+                        Quaternion.FromToRotation(
+                            currentForward.normalized,
+                            desiredDirection.normalized
+                        );
 
-                float desiredPitch =
-                    Mathf.Asin(
-                        Mathf.Clamp(
-                            desiredDirection.y,
-                            -0.30f,
-                            0.30f
-                        )
-                    ) *
-                    Mathf.Rad2Deg;
+                    Quaternion limitedCorrection =
+                        Quaternion.RotateTowards(
+                            Quaternion.identity,
+                            wantedCorrection,
+                            turnSpeedDeg *
+                            deltaTime
+                        );
 
-                float currentPitch =
-                    NormalizeAngle(
-                        transform.localEulerAngles.x
-                    );
+                    transform.localRotation =
+                        limitedCorrection *
+                        transform.localRotation;
+                }
+                else
+                {
+                    Vector3 newFlatForward =
+                        Vector3.RotateTowards(
+                            flatForward,
+                            flatDesired,
+                            turnSpeedDeg *
+                            Mathf.Deg2Rad *
+                            deltaTime,
+                            0f
+                        );
 
-                float newPitch =
-                    Mathf.MoveTowardsAngle(
-                        currentPitch,
-                        -desiredPitch,
-                        pitchSpeedDeg *
-                        deltaTime
-                    );
+                    float desiredPitch =
+                        Mathf.Asin(
+                            Mathf.Clamp(
+                                desiredDirection.y,
+                                -0.30f,
+                                0.30f
+                            )
+                        ) *
+                        Mathf.Rad2Deg;
 
-                transform.localRotation =
-                    Quaternion.LookRotation(
-                        newFlatForward,
-                        Vector3.up
-                    ) *
-                    Quaternion.Euler(
-                        newPitch,
-                        0f,
-                        0f
-                    );
+                    float currentPitch =
+                        NormalizeAngle(
+                            transform.localEulerAngles.x
+                        );
+
+                    float newPitch =
+                        Mathf.MoveTowardsAngle(
+                            currentPitch,
+                            -desiredPitch,
+                            pitchSpeedDeg *
+                            deltaTime
+                        );
+
+                    transform.localRotation =
+                        Quaternion.LookRotation(
+                            newFlatForward,
+                            Vector3.up
+                        ) *
+                        Quaternion.Euler(
+                            newPitch,
+                            0f,
+                            0f
+                        );
+                }
             }
 
-            // Critical behavior: the head points first, then the fish
-            // actually travels along that same forward vector.
+            // Move along the SAME direction the fish is visibly facing.
+            // For Red Snapper this is the live animated front-bone vector,
+            // not transform.forward, eliminating lateral skating.
             Vector3 forward =
                 transform.localRotation *
                 Vector3.forward;
+
+            if (redSnapperPresentation != null &&
+                redSnapperPresentation.TryGetHeadForward(
+                    transform.parent,
+                    out Vector3 verifiedSnapperForward
+                ))
+            {
+                forward =
+                    verifiedSnapperForward;
+            }
+
+            forward.Normalize();
 
             transform.localPosition +=
                 forward *

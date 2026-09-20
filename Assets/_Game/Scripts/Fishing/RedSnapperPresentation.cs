@@ -17,11 +17,67 @@ public class RedSnapperPresentation : MonoBehaviour
 
     private bool held;
 
+    private Transform headBone;
+    private Transform nextBodyBone;
+    private Transform tailBone;
+
     public void Configure(
         Animator targetAnimator)
     {
         animator = targetAnimator;
+        ResolveBones();
         ApplyState();
+    }
+
+    public bool TryGetHeadForward(
+        Transform referenceSpace,
+        out Vector3 direction)
+    {
+        ResolveBones();
+
+        Vector3 worldDirection =
+            Vector3.zero;
+
+        // Prefer the front-most body segment. This represents the direction
+        // the head is actually pointing and is not distorted by tail wag.
+        if (headBone != null &&
+            nextBodyBone != null)
+        {
+            worldDirection =
+                headBone.position -
+                nextBodyBone.position;
+        }
+        else if (headBone != null &&
+                 tailBone != null)
+        {
+            worldDirection =
+                headBone.position -
+                tailBone.position;
+        }
+
+        if (worldDirection.sqrMagnitude <
+            0.000001f)
+        {
+            direction = Vector3.forward;
+            return false;
+        }
+
+        if (referenceSpace != null)
+        {
+            direction =
+                referenceSpace
+                    .InverseTransformDirection(
+                        worldDirection
+                    )
+                    .normalized;
+        }
+        else
+        {
+            direction =
+                worldDirection.normalized;
+        }
+
+        return true;
     }
 
     public void SetHeld(bool value)
@@ -66,12 +122,14 @@ public class RedSnapperPresentation : MonoBehaviour
     private void Awake()
     {
         ResolveAnimator();
+        ResolveBones();
         ApplyState();
     }
 
     private void OnEnable()
     {
         ResolveAnimator();
+        ResolveBones();
         ApplyState();
     }
 
@@ -84,6 +142,78 @@ public class RedSnapperPresentation : MonoBehaviour
                     true
                 );
         }
+    }
+
+    private void ResolveBones()
+    {
+        if (headBone != null &&
+            (
+                nextBodyBone != null ||
+                tailBone != null
+            ))
+        {
+            return;
+        }
+
+        Transform[] bones =
+            GetComponentsInChildren<Transform>(
+                true
+            );
+
+        headBone =
+            FindBone(
+                bones,
+                "Bone.001"
+            );
+
+        nextBodyBone =
+            FindBone(
+                bones,
+                "Bone.002"
+            );
+
+        tailBone =
+            FindBone(
+                bones,
+                "Bone.004"
+            );
+
+        if (headBone == null)
+        {
+            headBone =
+                FindBone(
+                    bones,
+                    "Bone"
+                );
+
+            nextBodyBone =
+                FindBone(
+                    bones,
+                    "Bone.001"
+                );
+        }
+    }
+
+    private static Transform FindBone(
+        Transform[] bones,
+        string boneName)
+    {
+        if (bones == null)
+            return null;
+
+        for (int i = 0;
+             i < bones.Length;
+             i++)
+        {
+            if (bones[i] != null &&
+                bones[i].name ==
+                boneName)
+            {
+                return bones[i];
+            }
+        }
+
+        return null;
     }
 
     private float GetSwimClipLength()
