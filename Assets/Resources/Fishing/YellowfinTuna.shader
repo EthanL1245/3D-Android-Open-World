@@ -389,7 +389,8 @@ Shader "OpenWorld/YellowfinTuna"
                 float4 textureSample =
                     SAMPLE_TEXTURE2D(
                         _BaseMap,
-                        sampler_BaseMap
+                        sampler_BaseMap,
+                        input.uv
                     );
 
                 float3 normalWS =
