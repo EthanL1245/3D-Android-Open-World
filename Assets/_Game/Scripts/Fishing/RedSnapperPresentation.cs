@@ -17,12 +17,6 @@ public class RedSnapperPresentation : MonoBehaviour
 
     private bool held;
 
-    // Front-to-back rig:
-    // Bone = head/front anchor
-    // Bone.001 = front body
-    // Bone.002 = mid
-    // Bone.003 = rear
-    // Bone.004 = tail
     private Transform headBone;
     private Transform frontBodyBone;
     private Transform midBodyBone;
@@ -33,8 +27,8 @@ public class RedSnapperPresentation : MonoBehaviour
     private Quaternion headRestLocalRotation =
         Quaternion.identity;
 
-    private Vector3 frontBodyRestLocalPosition;
-    private Quaternion frontBodyRestLocalRotation =
+    private Vector3 frontRestLocalPosition;
+    private Quaternion frontRestLocalRotation =
         Quaternion.identity;
 
     private Vector3 midRestLocalPosition;
@@ -51,17 +45,22 @@ public class RedSnapperPresentation : MonoBehaviour
 
     private bool restPoseCaptured;
 
-    // TankFishAgent supplies the BODY-TRAIL direction, opposite the head turn.
-    private float turnTarget;
+    private Vector3 trail25 =
+        Vector3.forward;
 
-    private float midTurn;
-    private float rearTurn;
-    private float tailTurn;
+    private Vector3 trail50 =
+        Vector3.forward;
 
-    private float midTurnVelocity;
-    private float rearTurnVelocity;
-    private float tailTurnVelocity;
+    private Vector3 trail75 =
+        Vector3.forward;
 
+    private Vector3 trail100 =
+        Vector3.forward;
+
+    private Vector3 headForward =
+        Vector3.forward;
+
+    private bool hasTrail;
     private float animatorSpeedCurrent = 1f;
 
     public void Configure(
@@ -83,20 +82,56 @@ public class RedSnapperPresentation : MonoBehaviour
     public void SetAquariumLocomotion(
         float worldSpeed)
     {
-        // Locomotion belongs to the gameplay root/head.
     }
 
     public void SetAquariumTurn(
         float normalizedTurn)
     {
-        turnTarget =
-            held
-                ? 0f
-                : Mathf.Clamp(
-                    normalizedTurn,
-                    -1f,
-                    1f
-                );
+        // Compatibility hook only.
+        // Actual turn shape comes from the recorded head track.
+    }
+
+    public void SetAquariumTrail(
+        Vector3 currentHeadForward,
+        Vector3 forward25,
+        Vector3 forward50,
+        Vector3 forward75,
+        Vector3 forward100)
+    {
+        if (held)
+            return;
+
+        headForward =
+            SafeDirection(
+                currentHeadForward,
+                transform.forward
+            );
+
+        trail25 =
+            SafeDirection(
+                forward25,
+                headForward
+            );
+
+        trail50 =
+            SafeDirection(
+                forward50,
+                trail25
+            );
+
+        trail75 =
+            SafeDirection(
+                forward75,
+                trail50
+            );
+
+        trail100 =
+            SafeDirection(
+                forward100,
+                trail75
+            );
+
+        hasTrail = true;
     }
 
     public bool TryGetHeadPosition(
@@ -127,6 +162,37 @@ public class RedSnapperPresentation : MonoBehaviour
         }
 
         return true;
+    }
+
+    public bool TryGetHeadPositionWorld(
+        out Vector3 position)
+    {
+        return
+            TryGetHeadPosition(
+                null,
+                out position
+            );
+    }
+
+    public float GetBodyLengthWorld()
+    {
+        ResolveBones();
+
+        if (headBone == null ||
+            tailBone == null)
+        {
+            return 0.92f;
+        }
+
+        return
+            Mathf.Clamp(
+                Vector3.Distance(
+                    headBone.position,
+                    tailBone.position
+                ),
+                0.30f,
+                1.60f
+            );
     }
 
     public float GetRecommendedCruiseSpeed()
@@ -179,68 +245,49 @@ public class RedSnapperPresentation : MonoBehaviour
         ResolveBones();
         CaptureRestPose();
 
-        // The gameplay root/head has already entered the curve in Update().
-        // The rest of the body follows in sequence rather than turning at once.
-        midTurn =
-            Mathf.SmoothDamp(
-                midTurn,
-                turnTarget,
-                ref midTurnVelocity,
-                0.10f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
+        if (!hasTrail)
+            return;
 
-        rearTurn =
-            Mathf.SmoothDamp(
-                rearTurn,
-                midTurn,
-                ref rearTurnVelocity,
-                0.13f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
-
-        tailTurn =
-            Mathf.SmoothDamp(
-                tailTurn,
-                rearTurn,
-                ref tailTurnVelocity,
-                0.17f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
-
-        float turnMagnitude =
-            Mathf.Clamp01(
-                Mathf.Max(
-                    Mathf.Abs(midTurn),
-                    Mathf.Max(
-                        Mathf.Abs(rearTurn),
-                        Mathf.Abs(tailTurn)
-                    )
+        float trailAngle =
+            Mathf.Max(
+                Vector3.Angle(
+                    headForward,
+                    trail50
+                ),
+                Vector3.Angle(
+                    headForward,
+                    trail100
                 )
             );
 
-        // If the authored wag is on the wrong half-cycle, do not let it fight
-        // the turn. Slow the clip and blend its rear-bone influence toward the
-        // rest pose while the turn-follow curve takes over.
+        float turnWeight =
+            Mathf.InverseLerp(
+                3f,
+                34f,
+                trailAngle
+            );
+
+        turnWeight =
+            Mathf.SmoothStep(
+                0f,
+                1f,
+                turnWeight
+            );
+
+        // During a real curve the track owns the rear body. Slow the authored
+        // clip so a random tail-wag phase cannot fling against momentum.
         float targetAnimatorSpeed =
             Mathf.Lerp(
                 1f,
-                0.16f,
-                Mathf.SmoothStep(
-                    0f,
-                    1f,
-                    turnMagnitude
-                )
+                0.18f,
+                turnWeight
             );
 
         animatorSpeedCurrent =
             Mathf.MoveTowards(
                 animatorSpeedCurrent,
                 targetAnimatorSpeed,
-                Time.deltaTime * 3.5f
+                Time.deltaTime * 4f
             );
 
         if (animator != null)
@@ -249,8 +296,7 @@ public class RedSnapperPresentation : MonoBehaviour
                 animatorSpeedCurrent;
         }
 
-        // Head and immediate front stay locked to the root. This is what makes
-        // the head enter the path first; body curvature begins behind it.
+        // Head is always the locomotive.
         if (headBone != null)
         {
             headBone.localPosition =
@@ -260,57 +306,88 @@ public class RedSnapperPresentation : MonoBehaviour
                 headRestLocalRotation;
         }
 
-        if (frontBodyBone != null)
-        {
-            frontBodyBone.localPosition =
-                frontBodyRestLocalPosition;
-
-            frontBodyBone.localRotation =
-                frontBodyRestLocalRotation;
-        }
-
         float authoredWeight =
             Mathf.Lerp(
                 1f,
-                0.10f,
-                Mathf.SmoothStep(
-                    0f,
-                    1f,
-                    turnMagnitude
-                )
+                0.08f,
+                turnWeight
             );
 
-        ApplyTurnFollower(
+        // Put the chain lengths back at their authored rest distances, then
+        // orient each cart toward the older tangent of the same head track.
+        PrepareBone(
+            frontBodyBone,
+            frontRestLocalPosition,
+            frontRestLocalRotation,
+            authoredWeight
+        );
+
+        PrepareBone(
             midBodyBone,
             midRestLocalPosition,
             midRestLocalRotation,
-            authoredWeight,
-            midTurn * 6f
+            authoredWeight
         );
 
-        ApplyTurnFollower(
+        PrepareBone(
             rearBodyBone,
             rearRestLocalPosition,
             rearRestLocalRotation,
-            authoredWeight,
-            rearTurn * 12f
+            authoredWeight
         );
 
-        ApplyTurnFollower(
+        PrepareBone(
             tailBone,
             tailRestLocalPosition,
             tailRestLocalRotation,
-            authoredWeight,
-            tailTurn * 19f
+            authoredWeight
         );
+
+        // Bone.001 controls where Bone.002 goes, Bone.002 controls Bone.003,
+        // and Bone.003 controls Bone.004. This is literally a train of carts.
+        AlignSegmentToTrack(
+            frontBodyBone,
+            midBodyBone,
+            trail25
+        );
+
+        AlignSegmentToTrack(
+            midBodyBone,
+            rearBodyBone,
+            trail50
+        );
+
+        AlignSegmentToTrack(
+            rearBodyBone,
+            tailBone,
+            trail75
+        );
+
+        if (tailBone != null)
+        {
+            Quaternion tailCorrection =
+                Quaternion.FromToRotation(
+                    SafeDirection(
+                        trail75,
+                        headForward
+                    ),
+                    SafeDirection(
+                        trail100,
+                        trail75
+                    )
+                );
+
+            tailBone.rotation =
+                tailCorrection *
+                tailBone.rotation;
+        }
     }
 
-    private void ApplyTurnFollower(
+    private static void PrepareBone(
         Transform bone,
         Vector3 restPosition,
         Quaternion restRotation,
-        float authoredWeight,
-        float turnDegrees)
+        float authoredWeight)
     {
         if (bone == null)
             return;
@@ -334,15 +411,63 @@ public class RedSnapperPresentation : MonoBehaviour
                 authoredRotation,
                 authoredWeight
             );
+    }
 
-        // turnTarget already points toward the trailing/outside side of the
-        // head turn. Hierarchical application makes the rear and tail lag.
+    private static void AlignSegmentToTrack(
+        Transform bone,
+        Transform child,
+        Vector3 desiredForwardWorld)
+    {
+        if (bone == null ||
+            child == null)
+        {
+            return;
+        }
+
+        Vector3 currentTailDirection =
+            child.position -
+            bone.position;
+
+        Vector3 desiredTailDirection =
+            -SafeDirection(
+                desiredForwardWorld,
+                bone.forward
+            );
+
+        if (currentTailDirection.sqrMagnitude <
+            0.000001f)
+        {
+            return;
+        }
+
+        Quaternion correction =
+            Quaternion.FromToRotation(
+                currentTailDirection.normalized,
+                desiredTailDirection
+            );
+
         bone.rotation =
-            Quaternion.AngleAxis(
-                turnDegrees,
-                transform.up
-            ) *
+            correction *
             bone.rotation;
+    }
+
+    private static Vector3 SafeDirection(
+        Vector3 value,
+        Vector3 fallback)
+    {
+        if (value.sqrMagnitude <
+            0.000001f)
+        {
+            value = fallback;
+        }
+
+        if (value.sqrMagnitude <
+            0.000001f)
+        {
+            value = Vector3.forward;
+        }
+
+        return value.normalized;
     }
 
     private void ResolveAnimator()
@@ -444,10 +569,10 @@ public class RedSnapperPresentation : MonoBehaviour
         headRestLocalRotation =
             headBone.localRotation;
 
-        frontBodyRestLocalPosition =
+        frontRestLocalPosition =
             frontBodyBone.localPosition;
 
-        frontBodyRestLocalRotation =
+        frontRestLocalRotation =
             frontBodyBone.localRotation;
 
         if (midBodyBone != null)

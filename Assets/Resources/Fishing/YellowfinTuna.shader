@@ -16,7 +16,12 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimStrength ("Body Flex Strength", Float) = 0.17
         _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
-        _TurnBend ("Subtle Turn Bend", Range(-1,1)) = 0
+
+        _TrailYaw25 ("Trail Yaw 25%", Float) = 0
+        _TrailYaw50 ("Trail Yaw 50%", Float) = 0
+        _TrailYaw75 ("Trail Yaw 75%", Float) = 0
+        _TrailYaw100 ("Trail Yaw 100%", Float) = 0
+        _PathSideSign ("Path Side Sign", Float) = 1
     }
 
     SubShader
@@ -59,7 +64,12 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
-                float _TurnBend;
+
+                float _TrailYaw25;
+                float _TrailYaw50;
+                float _TrailYaw75;
+                float _TrailYaw100;
+                float _PathSideSign;
             CBUFFER_END
 
             struct Attributes
@@ -76,6 +86,64 @@ Shader "OpenWorld/YellowfinTuna"
                 float3 normalWS : TEXCOORD1;
                 float2 uv : TEXCOORD2;
             };
+
+            float SampleTrailYaw(float t)
+            {
+                t = saturate(t);
+
+                if (t <= 0.25)
+                {
+                    return
+                        lerp(
+                            0.0,
+                            _TrailYaw25,
+                            smoothstep(
+                                0.0,
+                                1.0,
+                                t / 0.25
+                            )
+                        );
+                }
+
+                if (t <= 0.50)
+                {
+                    return
+                        lerp(
+                            _TrailYaw25,
+                            _TrailYaw50,
+                            smoothstep(
+                                0.0,
+                                1.0,
+                                (t - 0.25) / 0.25
+                            )
+                        );
+                }
+
+                if (t <= 0.75)
+                {
+                    return
+                        lerp(
+                            _TrailYaw50,
+                            _TrailYaw75,
+                            smoothstep(
+                                0.0,
+                                1.0,
+                                (t - 0.50) / 0.25
+                            )
+                        );
+                }
+
+                return
+                    lerp(
+                        _TrailYaw75,
+                        _TrailYaw100,
+                        smoothstep(
+                            0.0,
+                            1.0,
+                            (t - 0.75) / 0.25
+                        )
+                    );
+            }
 
             float3 DeformFish(float3 positionOS)
             {
@@ -106,9 +174,6 @@ Shader "OpenWorld/YellowfinTuna"
                         1.0 - normalizedBody;
                 }
 
-                // One coherent beat across the body.
-                // The head stays stable, the mid-body participates visibly,
-                // and the tail receives the largest displacement.
                 float bodyFlex =
                     saturate(
                         (tailPosition - 0.12) /
@@ -151,15 +216,8 @@ Shader "OpenWorld/YellowfinTuna"
                         2.0 * tailFlex
                     );
 
-                // Yellowtail-style progressive flex:
-                // the mid-body begins the stroke, the rear follows slightly
-                // later, and the tail has the largest delayed kick.
-                // The phase offsets are deliberately modest so this stays
-                // tuna-like rather than becoming an eel wave.
                 float bodyBeat =
-                    sin(
-                        _SwimPhase
-                    );
+                    sin(_SwimPhase);
 
                 float rearBeat =
                     sin(
@@ -173,9 +231,103 @@ Shader "OpenWorld/YellowfinTuna"
                         0.58
                     );
 
+                float3 bodyAxis =
+                    normalize(
+                        _BodyAxis.xyz
+                    );
+
+                float3 sideAxis =
+                    normalize(
+                        _SideAxis.xyz
+                    );
+
+                float3 tailAxis =
+                    _TailAtMin > 0.5
+                        ? -bodyAxis
+                        : bodyAxis;
+
+                float3 gameRightAxis =
+                    sideAxis *
+                    _PathSideSign;
+
+                // Train-track centerline. Each point farther down the tuna
+                // uses an older heading that the head actually travelled.
+                // The head stays fixed at t=0 and the body is dragged behind.
+                float3 curvedCenter =
+                    float3(
+                        0.0,
+                        0.0,
+                        0.0
+                    );
+
+                const int TRACK_STEPS = 6;
+
+                float stepT =
+                    tailPosition /
+                    TRACK_STEPS;
+
+                [unroll]
+                for (int step = 0;
+                     step < TRACK_STEPS;
+                     step++)
+                {
+                    float sampleT =
+                        (
+                            step +
+                            0.5
+                        ) *
+                        stepT;
+
+                    float angle =
+                        SampleTrailYaw(
+                            sampleT
+                        );
+
+                    float3 tangent =
+                        tailAxis *
+                        cos(angle) -
+                        gameRightAxis *
+                        sin(angle);
+
+                    curvedCenter +=
+                        tangent *
+                        (
+                            stepT *
+                            bodyRange
+                        );
+                }
+
+                float3 straightCenter =
+                    tailAxis *
+                    (
+                        tailPosition *
+                        bodyRange
+                    );
+
+                positionOS +=
+                    curvedCenter -
+                    straightCenter;
+
+                float turnAmount =
+                    saturate(
+                        abs(_TrailYaw100) /
+                        1.25
+                    );
+
+                // Preserve the old good swim. During a strong curve only
+                // reduce the free tail beat enough that it cannot fight the
+                // train-track shape.
+                float swimDuringTurn =
+                    lerp(
+                        1.0,
+                        0.64,
+                        turnAmount
+                    );
+
                 float sideOffset =
                     _SwimStrength *
                     bodyRange *
+                    swimDuringTurn *
                     (
                         bodyFlex *
                         0.24 *
@@ -188,41 +340,9 @@ Shader "OpenWorld/YellowfinTuna"
                         tailBeat
                     );
 
-                float3 sideAxis =
-                    normalize(
-                        _SideAxis.xyz
-                    );
-
                 positionOS +=
                     sideAxis *
                     sideOffset;
-
-                // Safe turn flex: preserve the known-good tuna animation and
-                // add only a modest posterior curve. The head/front half is
-                // untouched; the rear eases into the trail instead of moving
-                // as a rigid board.
-                float turnFlex =
-                    saturate(
-                        (tailPosition - 0.46) /
-                        0.54
-                    );
-
-                turnFlex =
-                    turnFlex *
-                    turnFlex *
-                    (
-                        3.0 -
-                        2.0 * turnFlex
-                    );
-
-                positionOS +=
-                    sideAxis *
-                    (
-                        _TurnBend *
-                        bodyRange *
-                        0.075 *
-                        turnFlex
-                    );
 
                 return positionOS;
             }
@@ -269,8 +389,7 @@ Shader "OpenWorld/YellowfinTuna"
                 float4 textureSample =
                     SAMPLE_TEXTURE2D(
                         _BaseMap,
-                        sampler_BaseMap,
-                        input.uv
+                        sampler_BaseMap
                     );
 
                 float3 normalWS =

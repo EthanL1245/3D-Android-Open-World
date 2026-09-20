@@ -978,6 +978,22 @@ public class TankFishAgent : MonoBehaviour
     private float speedDriftFrequency;
     private float speedDriftAmount;
 
+    private struct BodyTrailSample
+    {
+        public float distance;
+        public Vector3 positionWorld;
+        public Vector3 forwardWorld;
+    }
+
+    private readonly List<BodyTrailSample> bodyTrail =
+        new List<BodyTrailSample>(160);
+
+    private float bodyTrailDistance;
+    private Vector3 bodyTrailLastPosition;
+    private Vector3 bodyTrailLastForward;
+    private float bodyTrailLength = 0.92f;
+    private bool bodyTrailInitialized;
+
     public void Configure(
         float offset,
         int configuredSpeciesId)
@@ -1225,6 +1241,7 @@ public class TankFishAgent : MonoBehaviour
 
         PlaceOnPath();
 
+        ResetBodyTrail();
         SyncPresentationSpeed();
     }
 
@@ -1361,20 +1378,6 @@ public class TankFishAgent : MonoBehaviour
                     -1f,
                     1f
                 );
-
-            if (tunaPresentation != null)
-            {
-                tunaPresentation.SetAquariumTurn(
-                    normalizedBodyTurn
-                );
-            }
-
-            if (redSnapperPresentation != null)
-            {
-                redSnapperPresentation.SetAquariumTurn(
-                    normalizedBodyTurn
-                );
-            }
 
             float minimumCornerFactor =
                 goatfishPresentation != null
@@ -1532,6 +1535,8 @@ public class TankFishAgent : MonoBehaviour
             }
         }
 
+        UpdateBodyTrail();
+
         SyncPresentationSpeed();
 
         if (tail != null)
@@ -1549,6 +1554,331 @@ public class TankFishAgent : MonoBehaviour
                     0f
                 );
         }
+    }
+
+    private void ResetBodyTrail()
+    {
+        bodyTrail.Clear();
+        bodyTrailDistance = 0f;
+        bodyTrailInitialized = false;
+
+        if (!TryGetTrailHead(
+                out Vector3 positionWorld,
+                out Vector3 forwardWorld,
+                out float lengthWorld))
+        {
+            return;
+        }
+
+        bodyTrailLength =
+            Mathf.Clamp(
+                lengthWorld,
+                0.30f,
+                1.60f
+            );
+
+        bodyTrailLastPosition =
+            positionWorld;
+
+        bodyTrailLastForward =
+            forwardWorld;
+
+        bodyTrail.Add(
+            new BodyTrailSample
+            {
+                distance = 0f,
+                positionWorld =
+                    positionWorld,
+                forwardWorld =
+                    forwardWorld
+            }
+        );
+
+        bodyTrailInitialized = true;
+
+        PushBodyTrailToPresentation(
+            forwardWorld
+        );
+    }
+
+    private void UpdateBodyTrail()
+    {
+        if (tunaPresentation == null &&
+            redSnapperPresentation == null)
+        {
+            return;
+        }
+
+        if (!TryGetTrailHead(
+                out Vector3 positionWorld,
+                out Vector3 forwardWorld,
+                out float lengthWorld))
+        {
+            return;
+        }
+
+        bodyTrailLength =
+            Mathf.Lerp(
+                bodyTrailLength,
+                Mathf.Clamp(
+                    lengthWorld,
+                    0.30f,
+                    1.60f
+                ),
+                0.12f
+            );
+
+        if (!bodyTrailInitialized)
+        {
+            ResetBodyTrail();
+            return;
+        }
+
+        float moved =
+            Vector3.Distance(
+                positionWorld,
+                bodyTrailLastPosition
+            );
+
+        // A teleport/rebuild is not a piece of track.
+        if (moved > 0.75f)
+        {
+            ResetBodyTrail();
+            return;
+        }
+
+        // This is the key rope/train behavior: rotating in place does NOT lay
+        // new track. The rear can only enter a curve after the head has
+        // physically travelled into it.
+        if (moved > 0.0015f)
+        {
+            bodyTrailDistance +=
+                moved;
+
+            bodyTrail.Add(
+                new BodyTrailSample
+                {
+                    distance =
+                        bodyTrailDistance,
+                    positionWorld =
+                        positionWorld,
+                    forwardWorld =
+                        forwardWorld
+                }
+            );
+
+            bodyTrailLastPosition =
+                positionWorld;
+
+            bodyTrailLastForward =
+                forwardWorld;
+
+            float keepDistance =
+                Mathf.Max(
+                    1.25f,
+                    bodyTrailLength *
+                    1.65f
+                );
+
+            float oldest =
+                bodyTrailDistance -
+                keepDistance;
+
+            while (bodyTrail.Count > 3 &&
+                   bodyTrail[1].distance <
+                   oldest)
+            {
+                bodyTrail.RemoveAt(0);
+            }
+
+            while (bodyTrail.Count > 180)
+            {
+                bodyTrail.RemoveAt(0);
+            }
+        }
+
+        PushBodyTrailToPresentation(
+            forwardWorld
+        );
+    }
+
+    private bool TryGetTrailHead(
+        out Vector3 positionWorld,
+        out Vector3 forwardWorld,
+        out float lengthWorld)
+    {
+        forwardWorld =
+            transform.forward;
+
+        if (forwardWorld.sqrMagnitude <
+            0.0001f)
+        {
+            forwardWorld =
+                Vector3.forward;
+        }
+
+        forwardWorld.Normalize();
+
+        if (redSnapperPresentation != null &&
+            redSnapperPresentation.TryGetHeadPositionWorld(
+                out positionWorld))
+        {
+            lengthWorld =
+                redSnapperPresentation
+                    .GetBodyLengthWorld();
+
+            return true;
+        }
+
+        if (tunaPresentation != null &&
+            tunaPresentation.TryGetHeadPosition(
+                out positionWorld))
+        {
+            lengthWorld =
+                tunaPresentation
+                    .GetBodyLengthWorld();
+
+            return true;
+        }
+
+        positionWorld =
+            transform.position;
+
+        lengthWorld = 0.92f;
+
+        return false;
+    }
+
+    private void PushBodyTrailToPresentation(
+        Vector3 currentForwardWorld)
+    {
+        Vector3 forward25 =
+            SampleBodyTrailForward(
+                bodyTrailLength * 0.25f,
+                currentForwardWorld
+            );
+
+        Vector3 forward50 =
+            SampleBodyTrailForward(
+                bodyTrailLength * 0.50f,
+                forward25
+            );
+
+        Vector3 forward75 =
+            SampleBodyTrailForward(
+                bodyTrailLength * 0.75f,
+                forward50
+            );
+
+        Vector3 forward100 =
+            SampleBodyTrailForward(
+                bodyTrailLength * 1.00f,
+                forward75
+            );
+
+        if (tunaPresentation != null)
+        {
+            tunaPresentation.SetAquariumTrail(
+                currentForwardWorld,
+                forward25,
+                forward50,
+                forward75,
+                forward100
+            );
+        }
+
+        if (redSnapperPresentation != null)
+        {
+            redSnapperPresentation.SetAquariumTrail(
+                currentForwardWorld,
+                forward25,
+                forward50,
+                forward75,
+                forward100
+            );
+        }
+    }
+
+    private Vector3 SampleBodyTrailForward(
+        float distanceBehind,
+        Vector3 fallback)
+    {
+        if (bodyTrail.Count == 0)
+        {
+            return fallback.normalized;
+        }
+
+        float targetDistance =
+            bodyTrailDistance -
+            Mathf.Max(
+                0f,
+                distanceBehind
+            );
+
+        if (targetDistance <=
+            bodyTrail[0].distance)
+        {
+            return
+                bodyTrail[0]
+                    .forwardWorld
+                    .normalized;
+        }
+
+        for (int i =
+                bodyTrail.Count - 1;
+             i > 0;
+             i--)
+        {
+            BodyTrailSample newer =
+                bodyTrail[i];
+
+            BodyTrailSample older =
+                bodyTrail[i - 1];
+
+            if (older.distance <=
+                    targetDistance &&
+                newer.distance >=
+                    targetDistance)
+            {
+                float span =
+                    newer.distance -
+                    older.distance;
+
+                float t =
+                    span > 0.00001f
+                        ? (
+                            targetDistance -
+                            older.distance
+                          ) /
+                          span
+                        : 0f;
+
+                Vector3 result =
+                    Vector3.Slerp(
+                        older.forwardWorld,
+                        newer.forwardWorld,
+                        Mathf.Clamp01(t)
+                    );
+
+                if (result.sqrMagnitude >
+                    0.0001f)
+                {
+                    return
+                        result.normalized;
+                }
+
+                return
+                    older.forwardWorld
+                        .normalized;
+            }
+        }
+
+        return
+            bodyTrail[
+                bodyTrail.Count - 1
+            ]
+            .forwardWorld
+            .normalized;
     }
 
     private void SyncPresentationSpeed()

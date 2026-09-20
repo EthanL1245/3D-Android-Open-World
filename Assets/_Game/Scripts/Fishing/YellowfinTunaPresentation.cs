@@ -32,34 +32,38 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float swimPhase;
     private float aquariumLocomotionSpeed = 0.45f;
 
-    // Small, delayed rear-body flex only. The known-good swim remains intact.
-    private float aquariumTurnTarget;
-    private float aquariumTurnCurrent;
-    private float aquariumTurnVelocity;
-    private float sideAxisToRight = 1f;
+    private float trailYaw25;
+    private float trailYaw50;
+    private float trailYaw75;
+    private float trailYaw100;
+    private float pathSideSign = 1f;
 
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
 
     private static readonly int SwimStrengthId =
-        Shader.PropertyToID(
-            "_SwimStrength"
-        );
+        Shader.PropertyToID("_SwimStrength");
 
     private static readonly int SwimSpeedId =
-        Shader.PropertyToID(
-            "_SwimSpeed"
-        );
+        Shader.PropertyToID("_SwimSpeed");
 
     private static readonly int SwimPhaseId =
-        Shader.PropertyToID(
-            "_SwimPhase"
-        );
+        Shader.PropertyToID("_SwimPhase");
 
-    private static readonly int TurnBendId =
-        Shader.PropertyToID(
-            "_TurnBend"
-        );
+    private static readonly int TrailYaw25Id =
+        Shader.PropertyToID("_TrailYaw25");
+
+    private static readonly int TrailYaw50Id =
+        Shader.PropertyToID("_TrailYaw50");
+
+    private static readonly int TrailYaw75Id =
+        Shader.PropertyToID("_TrailYaw75");
+
+    private static readonly int TrailYaw100Id =
+        Shader.PropertyToID("_TrailYaw100");
+
+    private static readonly int PathSideSignId =
+        Shader.PropertyToID("_PathSideSign");
 
     private void Awake()
     {
@@ -74,7 +78,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         block =
             new MaterialPropertyBlock();
 
-        ResolveSideAxis();
+        ResolvePathSideSign();
         ApplyMaterialSettings();
     }
 
@@ -92,28 +96,167 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 new MaterialPropertyBlock();
         }
 
-        ResolveSideAxis();
+        ResolvePathSideSign();
         ApplyMaterialSettings();
     }
 
     public void SetHeld(bool value)
     {
         held = value;
+
+        if (held)
+        {
+            ClearTrail();
+        }
+
         ApplyMaterialSettings();
     }
 
     public void SetAquariumTurn(
         float normalizedTurn)
     {
-        // TankFishAgent sends the desired trailing-body sign.
-        aquariumTurnTarget =
-            held
-                ? 0f
-                : Mathf.Clamp(
-                    normalizedTurn,
-                    -1f,
-                    1f
+        // Compatibility hook only.
+        // Actual body turning comes from the recorded head path.
+    }
+
+    public void SetAquariumTrail(
+        Vector3 headForwardWorld,
+        Vector3 forward25World,
+        Vector3 forward50World,
+        Vector3 forward75World,
+        Vector3 forward100World)
+    {
+        if (held)
+            return;
+
+        trailYaw25 =
+            RelativeYawRadians(
+                headForwardWorld,
+                forward25World
+            );
+
+        trailYaw50 =
+            RelativeYawRadians(
+                headForwardWorld,
+                forward50World
+            );
+
+        trailYaw75 =
+            RelativeYawRadians(
+                headForwardWorld,
+                forward75World
+            );
+
+        trailYaw100 =
+            RelativeYawRadians(
+                headForwardWorld,
+                forward100World
+            );
+    }
+
+    public bool TryGetHeadPosition(
+        out Vector3 worldPosition)
+    {
+        ResolveReferences();
+
+        float length =
+            GetBodyLengthWorld();
+
+        worldPosition =
+            transform.position +
+            transform.forward *
+            length *
+            0.50f;
+
+        return length > 0.001f;
+    }
+
+    public float GetBodyLengthWorld()
+    {
+        ResolveReferences();
+
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
+            return 0.92f;
+        }
+
+        Vector3 forward =
+            transform.forward.normalized;
+
+        bool found = false;
+        float minProjection = 0f;
+        float maxProjection = 0f;
+
+        foreach (Renderer renderer
+                 in renderers)
+        {
+            if (renderer == null)
+                continue;
+
+            Bounds bounds =
+                renderer.bounds;
+
+            Vector3 center =
+                bounds.center;
+
+            Vector3 extents =
+                bounds.extents;
+
+            float centerProjection =
+                Vector3.Dot(
+                    center,
+                    forward
                 );
+
+            float projectedExtent =
+                Mathf.Abs(forward.x) *
+                    extents.x +
+                Mathf.Abs(forward.y) *
+                    extents.y +
+                Mathf.Abs(forward.z) *
+                    extents.z;
+
+            float localMin =
+                centerProjection -
+                projectedExtent;
+
+            float localMax =
+                centerProjection +
+                projectedExtent;
+
+            if (!found)
+            {
+                minProjection = localMin;
+                maxProjection = localMax;
+                found = true;
+            }
+            else
+            {
+                minProjection =
+                    Mathf.Min(
+                        minProjection,
+                        localMin
+                    );
+
+                maxProjection =
+                    Mathf.Max(
+                        maxProjection,
+                        localMax
+                    );
+            }
+        }
+
+        if (!found)
+            return 0.92f;
+
+        return
+            Mathf.Clamp(
+                maxProjection -
+                minProjection,
+                0.35f,
+                1.60f
+            );
     }
 
     public void SetAquariumLocomotion(
@@ -129,6 +272,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private void OnEnable()
     {
         ResolveReferences();
+        ResolvePathSideSign();
         ApplyMaterialSettings();
     }
 
@@ -153,18 +297,6 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 Mathf.PI * 2f;
         }
 
-        aquariumTurnCurrent =
-            Mathf.SmoothDamp(
-                aquariumTurnCurrent,
-                held
-                    ? 0f
-                    : aquariumTurnTarget,
-                ref aquariumTurnVelocity,
-                0.18f,
-                Mathf.Infinity,
-                Time.deltaTime
-            );
-
         float beat =
             Mathf.Sin(
                 swimPhase
@@ -188,7 +320,7 @@ public class YellowfinTunaPresentation : MonoBehaviour
         }
         else
         {
-            // Keep the head/visual aligned exactly to the locomotion root.
+            // The head/root owns direction. Only the body behind it deforms.
             visualRoot.localRotation =
                 visualBaseRotation;
         }
@@ -196,49 +328,61 @@ public class YellowfinTunaPresentation : MonoBehaviour
         ApplyMaterialSettings();
     }
 
-    private float GetAquariumSwimSpeed()
+    private static float RelativeYawRadians(
+        Vector3 currentForward,
+        Vector3 historicalForward)
     {
-        return
-            Mathf.Lerp(
-                swimSpeed * 0.90f,
-                swimSpeed * 1.08f,
-                Mathf.InverseLerp(
-                    0.32f,
-                    0.58f,
-                    aquariumLocomotionSpeed
-                )
+        Vector3 currentFlat =
+            Vector3.ProjectOnPlane(
+                currentForward,
+                Vector3.up
             );
+
+        Vector3 historicalFlat =
+            Vector3.ProjectOnPlane(
+                historicalForward,
+                Vector3.up
+            );
+
+        if (currentFlat.sqrMagnitude <
+                0.0001f ||
+            historicalFlat.sqrMagnitude <
+                0.0001f)
+        {
+            return 0f;
+        }
+
+        float degrees =
+            Vector3.SignedAngle(
+                currentFlat.normalized,
+                historicalFlat.normalized,
+                Vector3.up
+            );
+
+        // Aquarium turns should never require the mesh to fold through itself.
+        degrees =
+            Mathf.Clamp(
+                degrees,
+                -72f,
+                72f
+            );
+
+        return
+            degrees *
+            Mathf.Deg2Rad;
     }
 
-    private void ResolveReferences()
+    private void ClearTrail()
     {
-        if (renderers == null ||
-            renderers.Length == 0)
-        {
-            renderers =
-                GetComponentsInChildren<Renderer>(
-                    true
-                );
-        }
-
-        if (visualRoot == null)
-        {
-            visualRoot =
-                transform.Find(
-                    "Visual"
-                );
-        }
-
-        if (visualRoot != null)
-        {
-            visualBaseRotation =
-                visualRoot.localRotation;
-        }
+        trailYaw25 = 0f;
+        trailYaw50 = 0f;
+        trailYaw75 = 0f;
+        trailYaw100 = 0f;
     }
 
-    private void ResolveSideAxis()
+    private void ResolvePathSideSign()
     {
-        sideAxisToRight = 1f;
+        pathSideSign = 1f;
 
         if (renderers == null ||
             renderers.Length == 0 ||
@@ -284,10 +428,48 @@ public class YellowfinTunaPresentation : MonoBehaviour
         if (Mathf.Abs(dot) >
             0.05f)
         {
-            sideAxisToRight =
-                Mathf.Sign(
-                    dot
+            pathSideSign =
+                Mathf.Sign(dot);
+        }
+    }
+
+    private float GetAquariumSwimSpeed()
+    {
+        return
+            Mathf.Lerp(
+                swimSpeed * 0.90f,
+                swimSpeed * 1.08f,
+                Mathf.InverseLerp(
+                    0.32f,
+                    0.58f,
+                    aquariumLocomotionSpeed
+                )
+            );
+    }
+
+    private void ResolveReferences()
+    {
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
+            renderers =
+                GetComponentsInChildren<Renderer>(
+                    true
                 );
+        }
+
+        if (visualRoot == null)
+        {
+            visualRoot =
+                transform.Find(
+                    "Visual"
+                );
+        }
+
+        if (visualRoot != null)
+        {
+            visualBaseRotation =
+                visualRoot.localRotation;
         }
     }
 
@@ -347,11 +529,28 @@ public class YellowfinTunaPresentation : MonoBehaviour
             );
 
             block.SetFloat(
-                TurnBendId,
-                held
-                    ? 0f
-                    : aquariumTurnCurrent *
-                      sideAxisToRight
+                TrailYaw25Id,
+                held ? 0f : trailYaw25
+            );
+
+            block.SetFloat(
+                TrailYaw50Id,
+                held ? 0f : trailYaw50
+            );
+
+            block.SetFloat(
+                TrailYaw75Id,
+                held ? 0f : trailYaw75
+            );
+
+            block.SetFloat(
+                TrailYaw100Id,
+                held ? 0f : trailYaw100
+            );
+
+            block.SetFloat(
+                PathSideSignId,
+                pathSideSign
             );
 
             renderer.SetPropertyBlock(
