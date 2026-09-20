@@ -1055,14 +1055,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    1.35f,
-                    2.45f
+                    1.25f,
+                    2.10f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.48f,
-                    1.05f
+                    0.42f,
+                    0.82f
                 );
         }
         else if (redSnapperPresentation != null)
@@ -1084,14 +1084,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    1.45f,
-                    2.55f
+                    1.35f,
+                    2.15f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.52f,
-                    1.12f
+                    0.45f,
+                    0.86f
                 );
         }
         else if (tunaPresentation != null)
@@ -1112,14 +1112,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    1.55f,
-                    2.65f
+                    1.45f,
+                    2.20f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.60f,
-                    1.18f
+                    0.50f,
+                    0.90f
                 );
         }
         else
@@ -1141,14 +1141,14 @@ public class TankFishAgent : MonoBehaviour
 
             pathRadiusX =
                 UnityEngine.Random.Range(
-                    1.40f,
-                    2.50f
+                    1.30f,
+                    2.15f
                 );
 
             pathRadiusZ =
                 UnityEngine.Random.Range(
-                    0.55f,
-                    1.12f
+                    0.48f,
+                    0.88f
                 );
         }
 
@@ -1168,19 +1168,19 @@ public class TankFishAgent : MonoBehaviour
 
         baseHeight =
             UnityEngine.Random.Range(
-                0.85f,
-                2.95f
+                0.90f,
+                2.80f
             );
 
         heightAmplitude =
             goatfishPresentation != null
                 ? UnityEngine.Random.Range(
-                    0.14f,
-                    0.42f
+                    0.12f,
+                    0.34f
                 )
                 : UnityEngine.Random.Range(
-                    0.18f,
-                    0.58f
+                    0.16f,
+                    0.42f
                 );
 
         heightPhase =
@@ -1203,14 +1203,14 @@ public class TankFishAgent : MonoBehaviour
 
         pathWobbleX =
             UnityEngine.Random.Range(
-                0.08f,
-                0.30f
+                0.06f,
+                0.20f
             );
 
         pathWobbleZ =
             UnityEngine.Random.Range(
-                0.08f,
-                0.34f
+                0.06f,
+                0.24f
             );
 
         pathRotation =
@@ -1221,14 +1221,14 @@ public class TankFishAgent : MonoBehaviour
 
         pathCenterX =
             UnityEngine.Random.Range(
-                -0.28f,
-                0.28f
+                -0.20f,
+                0.20f
             );
 
         pathCenterZ =
             UnityEngine.Random.Range(
-                -0.14f,
-                0.14f
+                -0.08f,
+                0.08f
             );
 
         heightHarmonic =
@@ -1257,8 +1257,8 @@ public class TankFishAgent : MonoBehaviour
 
         verticalDriftAmount =
             UnityEngine.Random.Range(
-                0.08f,
-                0.28f
+                0.05f,
+                0.18f
             );
 
         speedDriftPhase =
@@ -2175,28 +2175,72 @@ public class TankFishAgent : MonoBehaviour
             ) *
             verticalDriftAmount;
 
+        const float safeHalfX = 2.45f;
+        const float safeHalfZ = 1.10f;
+
+        float finalX =
+            rotatedX +
+            pathCenterX;
+
+        float finalZ =
+            rotatedZ +
+            pathCenterZ;
+
+        // Uniformly shrink any oversized point toward the tank center.
+        // This preserves the route direction/shape while guaranteeing that
+        // the path itself stays inside a body-safe inner swim volume.
+        float safeScale = 1f;
+
+        float absX =
+            Mathf.Abs(
+                finalX
+            );
+
+        float absZ =
+            Mathf.Abs(
+                finalZ
+            );
+
+        if (absX >
+            safeHalfX)
+        {
+            safeScale =
+                Mathf.Min(
+                    safeScale,
+                    safeHalfX /
+                    absX
+                );
+        }
+
+        if (absZ >
+            safeHalfZ)
+        {
+            safeScale =
+                Mathf.Min(
+                    safeScale,
+                    safeHalfZ /
+                    absZ
+                );
+        }
+
+        finalX *=
+            safeScale;
+
+        finalZ *=
+            safeScale;
+
         y =
             Mathf.Clamp(
                 y,
-                0.45f,
-                3.35f
+                0.68f,
+                3.08f
             );
 
         return
             new Vector3(
-                Mathf.Clamp(
-                    rotatedX +
-                    pathCenterX,
-                    -2.85f,
-                    2.85f
-                ),
+                finalX,
                 y,
-                Mathf.Clamp(
-                    rotatedZ +
-                    pathCenterZ,
-                    -1.36f,
-                    1.36f
-                )
+                finalZ
             );
     }
 
@@ -2338,22 +2382,22 @@ public class TankFishAgent : MonoBehaviour
         position.x =
             Mathf.Clamp(
                 position.x,
-                -2.95f,
-                2.95f
+                -2.50f,
+                2.50f
             );
 
         position.y =
             Mathf.Clamp(
                 position.y,
-                0.40f,
-                3.40f
+                0.64f,
+                3.12f
             );
 
         position.z =
             Mathf.Clamp(
                 position.z,
-                -1.42f,
-                1.42f
+                -1.15f,
+                1.15f
             );
 
         transform.localPosition =
