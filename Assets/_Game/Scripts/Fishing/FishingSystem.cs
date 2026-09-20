@@ -1759,11 +1759,20 @@ public class FishingSystem : MonoBehaviour
                         break;
                 }
 
-                // Reeling should win the tug-of-war, but only slowly.
-                // The fish's outward swimming is cancelled first, then the
-                // small mood-dependent gain is what actually retrieves line.
+                // Cancel only the actual outward radial component,
+                // not the fish's lateral/weaving motion. This gives a stable
+                // slow retrieval rate while the fish still visibly swims.
+                float radialOutwardSpeed =
+                    Mathf.Max(
+                        0f,
+                        Vector3.Dot(
+                            velocity,
+                            away
+                        )
+                    );
+
                 float reelPullSpeed =
-                    outwardSpeed +
+                    radialOutwardSpeed +
                     inwardGain;
 
                 velocity +=
