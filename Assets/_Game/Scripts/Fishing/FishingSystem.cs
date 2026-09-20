@@ -66,6 +66,7 @@ public class FishingSystem : MonoBehaviour
     private float heldFishFlopOffset;
 
     private GameObject unconsciousFishVisual;
+    private Transform unconsciousFishMouthMarker;
 
     private bool rodEquipped = true;
 
@@ -256,7 +257,7 @@ public class FishingSystem : MonoBehaviour
             if (fighting)
             {
                 rodView.SetLinePull(
-                    bobber.transform.position,
+                    GetLineTargetPosition(),
                     fightTension,
                     reeling,
                     Time.deltaTime
@@ -589,6 +590,7 @@ public class FishingSystem : MonoBehaviour
         hud.SetStatus("Casting...");
 
         bobber.SetActive(true);
+        SetBobberVisible(true);
         fishingLine.enabled = true;
 
         Vector3 start = rodTip.position;
@@ -2027,7 +2029,7 @@ public class FishingSystem : MonoBehaviour
         return
             Vector3.Distance(
                 rodTip.position,
-                bobber.transform.position
+                GetLineTargetPosition()
             );
     }
 
@@ -2037,7 +2039,7 @@ public class FishingSystem : MonoBehaviour
             return 0f;
 
         Vector3 delta =
-            bobber.transform.position -
+            GetLineTargetPosition() -
             transform.position;
 
         delta.y = 0f;
@@ -2061,9 +2063,12 @@ public class FishingSystem : MonoBehaviour
         Vector3 current =
             bobber.transform.position;
 
+        Vector3 mouthPosition =
+            GetLineTargetPosition();
+
         Vector3 toPlayer =
             transform.position -
-            current;
+            mouthPosition;
 
         toPlayer.y = 0f;
 
@@ -2401,7 +2406,7 @@ public class FishingSystem : MonoBehaviour
 
         Vector3 screenPoint =
             playerCamera.WorldToScreenPoint(
-                bobber.transform.position +
+                GetLineTargetPosition() +
                 Vector3.up * 0.52f
             );
 
@@ -2501,7 +2506,7 @@ public class FishingSystem : MonoBehaviour
 
         fishingLine.SetPosition(
             1,
-            bobber.transform.position
+            GetLineTargetPosition()
         );
     }
 
@@ -2785,8 +2790,8 @@ public class FishingSystem : MonoBehaviour
 
         anchor.transform.localPosition =
             new Vector3(
-                0.32f,
-                -0.12f,
+                0.30f,
+                0.26f,
                 0.92f
             );
 
@@ -2892,10 +2897,21 @@ public class FishingSystem : MonoBehaviour
                 "CaughtFishHook";
 
             heldHookVisual.transform.localPosition =
-                Vector3.zero;
+                new Vector3(
+                    0f,
+                    0.04f,
+                    0f
+                );
 
+            // The imported Gaf currently appears upside down in the catch
+            // presentation. Flip the whole hook in-screen while keeping its
+            // generated HookPoint attached to the same physical end.
             heldHookVisual.transform.localRotation =
-                Quaternion.identity;
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    180f
+                );
 
             heldHookPoint =
                 FindDeepChildByName(
@@ -2942,11 +2958,6 @@ public class FishingSystem : MonoBehaviour
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation;
 
-        float headZ =
-            FindFrontmostLocalZ(
-                heldFishVisual
-            );
-
         GameObject marker =
             new GameObject(
                 "CatchMouthAnchor"
@@ -2958,10 +2969,8 @@ public class FishingSystem : MonoBehaviour
         );
 
         marker.transform.localPosition =
-            new Vector3(
-                0f,
-                0f,
-                headZ
+            FindFishMouthLocalPosition(
+                heldFishVisual
             );
 
         heldFishMouthMarker =
@@ -2973,6 +2982,85 @@ public class FishingSystem : MonoBehaviour
 
         heldFishVisual.transform.position +=
             correction;
+    }
+
+    private Vector3 FindFishMouthLocalPosition(
+        GameObject fish)
+    {
+        float frontZ =
+            FindFrontmostLocalZ(
+                fish
+            );
+
+        Transform headBone =
+            FindDeepChildByName(
+                fish.transform,
+                "Bone"
+            );
+
+        if (headBone != null)
+        {
+            Vector3 headLocal =
+                fish.transform
+                    .InverseTransformPoint(
+                        headBone.position
+                    );
+
+            return
+                new Vector3(
+                    headLocal.x,
+                    headLocal.y,
+                    frontZ - 0.01f
+                );
+        }
+
+        return
+            new Vector3(
+                0f,
+                0f,
+                frontZ - 0.01f
+            );
+    }
+
+    private Vector3 GetLineTargetPosition()
+    {
+        if (fishUnconscious &&
+            unconsciousFishMouthMarker != null)
+        {
+            return
+                unconsciousFishMouthMarker.position;
+        }
+
+        if (bobber != null)
+        {
+            return
+                bobber.transform.position;
+        }
+
+        return
+            rodTip != null
+                ? rodTip.position
+                : transform.position;
+    }
+
+    private void SetBobberVisible(
+        bool visible)
+    {
+        if (bobber == null)
+            return;
+
+        Renderer[] renderers =
+            bobber.GetComponentsInChildren<Renderer>(
+                true
+            );
+
+        for (int i = 0;
+             i < renderers.Length;
+             i++)
+        {
+            renderers[i].enabled =
+                visible;
+        }
     }
 
     private float FindFrontmostLocalZ(
@@ -3183,6 +3271,26 @@ public class FishingSystem : MonoBehaviour
         if (mackerel != null)
             mackerel.enabled = false;
 
+        GameObject mouthMarker =
+            new GameObject(
+                "UnconsciousMouthAnchor"
+            );
+
+        mouthMarker.transform.SetParent(
+            unconsciousFishVisual.transform,
+            false
+        );
+
+        mouthMarker.transform.localPosition =
+            FindFishMouthLocalPosition(
+                unconsciousFishVisual
+            );
+
+        unconsciousFishMouthMarker =
+            mouthMarker.transform;
+
+        SetBobberVisible(false);
+
         UpdateUnconsciousFishVisual();
     }
 
@@ -3310,6 +3418,7 @@ public class FishingSystem : MonoBehaviour
         );
 
         unconsciousFishVisual = null;
+        unconsciousFishMouthMarker = null;
     }
 
     private Material CreateMaterial(
