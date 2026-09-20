@@ -2790,9 +2790,9 @@ public class FishingSystem : MonoBehaviour
 
         anchor.transform.localPosition =
             new Vector3(
-                0.30f,
-                0.26f,
-                0.92f
+                0.20f,
+                0.52f,
+                1.02f
             );
 
         heldFishAnchor =
@@ -2844,7 +2844,7 @@ public class FishingSystem : MonoBehaviour
                 Mathf.Sin(
                     time * 1.12f
                 ) *
-                13f,
+                8f,
                 Mathf.Sin(
                     time * 2.05f
                 ) *
@@ -2856,8 +2856,13 @@ public class FishingSystem : MonoBehaviour
         if (heldHookPoint != null &&
             heldFishMouthMarker != null)
         {
+            Vector3 mouthTarget =
+                heldHookPoint.position +
+                playerCamera.transform.forward *
+                0.018f;
+
             Vector3 correction =
-                heldHookPoint.position -
+                mouthTarget -
                 heldFishMouthMarker.position;
 
             heldFishVisual.transform.position +=
@@ -2900,18 +2905,12 @@ public class FishingSystem : MonoBehaviour
                 new Vector3(
                     0f,
                     0.04f,
-                    0f
+                    -0.025f
                 );
 
-            // The imported Gaf currently appears upside down in the catch
-            // presentation. Flip the whole hook in-screen while keeping its
-            // generated HookPoint attached to the same physical end.
+            // Prefab is authored as: black handle UP, curved hook DOWN.
             heldHookVisual.transform.localRotation =
-                Quaternion.Euler(
-                    0f,
-                    0f,
-                    180f
-                );
+                Quaternion.identity;
 
             heldHookPoint =
                 FindDeepChildByName(
@@ -2949,6 +2948,10 @@ public class FishingSystem : MonoBehaviour
         // All gameplay fish are normalized with head toward local +Z.
         // Rotate +Z upward so the caught fish hangs vertically below its mouth.
         heldFishBaseRotation =
+            Quaternion.AngleAxis(
+                78f,
+                Vector3.up
+            ) *
             Quaternion.Euler(
                 -90f,
                 0f,
@@ -2976,8 +2979,13 @@ public class FishingSystem : MonoBehaviour
         heldFishMouthMarker =
             marker.transform;
 
+        Vector3 mouthTarget =
+            heldHookPoint.position +
+            playerCamera.transform.forward *
+            0.018f;
+
         Vector3 correction =
-            heldHookPoint.position -
+            mouthTarget -
             heldFishMouthMarker.position;
 
         heldFishVisual.transform.position +=
