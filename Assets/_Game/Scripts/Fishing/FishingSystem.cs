@@ -651,6 +651,11 @@ public class FishingSystem : MonoBehaviour
                     hookedSpeciesId
                 );
 
+            fishUnconscious = false;
+            fishOnShore = false;
+            fishHealth = 1f;
+            lineBreakTimer = 0f;
+
             hookedTemperament =
                 RollTemperament(
                     hookedSpeciesId,
@@ -866,8 +871,8 @@ public class FishingSystem : MonoBehaviour
 
                 float healthRate =
                     Mathf.Lerp(
-                        0.18f,
-                        0.085f,
+                        0.125f,
+                        0.058f,
                         effectiveDifficulty
                     );
 
@@ -925,7 +930,8 @@ public class FishingSystem : MonoBehaviour
             else
             {
                 UpdateFightBobber(
-                    effectiveDifficulty
+                    effectiveDifficulty,
+                    reeling
                 );
             }
         }
@@ -1578,7 +1584,8 @@ public class FishingSystem : MonoBehaviour
     }
 
     private void UpdateFightBobber(
-        float effectiveDifficulty)
+        float effectiveDifficulty,
+        bool reeling)
     {
         if (bobber == null ||
             !bobber.activeSelf)
@@ -1628,8 +1635,8 @@ public class FishingSystem : MonoBehaviour
             Mathf.Sin(
                 fightTime *
                 Mathf.Lerp(
-                    0.55f,
-                    1.05f,
+                    0.85f,
+                    1.45f,
                     effectiveDifficulty
                 ) +
                 fightMovePhase
@@ -1637,56 +1644,111 @@ public class FishingSystem : MonoBehaviour
 
         float surgeWeave =
             Mathf.Sin(
-                fightTime * 1.7f +
+                fightTime * 2.15f +
                 fightMovePhase * 0.63f
             ) *
             surgeAmount *
-            0.22f;
+            0.34f;
 
-        Vector3 desiredDirection =
+        Vector3 outwardDirection =
             (
                 away +
                 side *
                 (
-                    weave * 0.58f +
+                    weave * 0.72f +
                     surgeWeave
                 )
             ).normalized;
 
-        float temperamentPull =
-            hookedTemperament ==
-                FishTemperament.Angry
-                ? 1.35f
-                : hookedTemperament ==
-                    FishTemperament.Calm
-                    ? 0.62f
-                    : 0.92f;
+        float moodSwimMultiplier;
 
-        float pullSpeed =
+        switch (hookedTemperament)
+        {
+            case FishTemperament.Calm:
+                moodSwimMultiplier = 0.78f;
+                break;
+
+            case FishTemperament.Angry:
+                moodSwimMultiplier = 1.72f;
+                break;
+
+            default:
+                moodSwimMultiplier = 1.18f;
+                break;
+        }
+
+        float outwardSpeed =
             Mathf.Lerp(
-                0.38f,
                 1.05f,
+                2.00f,
                 effectiveDifficulty
             ) *
-            temperamentPull *
+            moodSwimMultiplier *
             (
                 1f +
-                surgeAmount * 0.28f
+                surgeAmount * 0.34f
             );
+
+        Vector3 velocity =
+            outwardDirection *
+            outwardSpeed;
+
+        if (reeling)
+        {
+            Vector3 toPlayer =
+                transform.position -
+                current;
+
+            toPlayer.y = 0f;
+
+            if (toPlayer.sqrMagnitude >
+                0.001f)
+            {
+                toPlayer.Normalize();
+
+                float reelPullSpeed =
+                    Mathf.Lerp(
+                        4.8f,
+                        4.1f,
+                        effectiveDifficulty
+                    );
+
+                velocity +=
+                    toPlayer *
+                    reelPullSpeed;
+            }
+        }
+
+        if (velocity.sqrMagnitude <
+            0.001f)
+        {
+            SnapCurrentBobberToSurface();
+            return;
+        }
+
+        Vector3 movementDirection =
+            velocity.normalized;
+
+        float movementDistance =
+            velocity.magnitude *
+            Time.deltaTime;
+
+        bool requireAway =
+            !reeling;
 
         if (TryMoveBobberInValidWater(
                 current,
-                desiredDirection,
+                movementDirection,
                 away,
-                pullSpeed *
-                Time.deltaTime,
+                movementDistance,
+                requireAway,
                 out Vector3 next))
         {
             bobber.transform.position =
                 next;
 
             fightTravelDirection =
-                desiredDirection;
+                outwardDirection;
         }
         else
         {
@@ -1709,6 +1771,7 @@ public class FishingSystem : MonoBehaviour
         Vector3 desiredDirection,
         Vector3 away,
         float distance,
+        bool requireAway,
         out Vector3 next)
     {
         for (int i = 0;
@@ -1735,7 +1798,8 @@ public class FishingSystem : MonoBehaviour
             // Never choose a route that sends the hooked fish back through
             // the player. Sideways is allowed, but the overall motion must
             // continue away from the character.
-            if (Vector3.Dot(
+            if (requireAway &&
+                Vector3.Dot(
                     direction,
                     away) <
                 0.12f)
@@ -1835,7 +1899,7 @@ public class FishingSystem : MonoBehaviour
             current +
             direction *
             (
-                3.8f *
+                5.2f *
                 Time.deltaTime
             );
 
