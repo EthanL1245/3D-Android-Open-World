@@ -1252,11 +1252,14 @@ public class TankFishAgent : MonoBehaviour
                 transform.localRotation *
                 Vector3.forward;
 
+            Vector3 snapperHeadForward =
+                Vector3.zero;
+
             bool snapperUsesBoneForward =
                 redSnapperPresentation != null &&
                 redSnapperPresentation.TryGetHeadForward(
                     transform.parent,
-                    out Vector3 snapperHeadForward
+                    out snapperHeadForward
                 );
 
             if (snapperUsesBoneForward)
