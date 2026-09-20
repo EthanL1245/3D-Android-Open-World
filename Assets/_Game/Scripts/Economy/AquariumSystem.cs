@@ -1255,6 +1255,9 @@ public class TankFishAgent : MonoBehaviour
             Vector3 snapperHeadForward =
                 Vector3.zero;
 
+            // Red Snapper presentation returns a stable head-guide vector
+            // captured from the front bone structure, not a live wagging
+            // animation vector.
             bool snapperUsesBoneForward =
                 redSnapperPresentation != null &&
                 redSnapperPresentation.TryGetHeadForward(
