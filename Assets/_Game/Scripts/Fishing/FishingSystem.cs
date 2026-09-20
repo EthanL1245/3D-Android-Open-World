@@ -1706,12 +1706,28 @@ public class FishingSystem : MonoBehaviour
             {
                 toPlayer.Normalize();
 
+                float inwardGain;
+
+                switch (hookedTemperament)
+                {
+                    case FishTemperament.Calm:
+                        inwardGain = 3.4f;
+                        break;
+
+                    case FishTemperament.Angry:
+                        inwardGain = 1.9f;
+                        break;
+
+                    default:
+                        inwardGain = 2.7f;
+                        break;
+                }
+
+                // Always overcome the fish's current outward speed while
+                // REEL is held, then add a mood-dependent net retrieval gain.
                 float reelPullSpeed =
-                    Mathf.Lerp(
-                        4.8f,
-                        4.1f,
-                        effectiveDifficulty
-                    );
+                    outwardSpeed +
+                    inwardGain;
 
                 velocity +=
                     toPlayer *
