@@ -11,6 +11,50 @@ using Debug = UnityEngine.Debug;
 
 public static class FishingGaffImporter
 {
+    [MenuItem("Tools/Open World/Rebuild Fishing Hook Presentation")]
+    public static void RebuildPresentation()
+    {
+        if (EditorApplication.isPlaying)
+        {
+            EditorUtility.DisplayDialog(
+                "Fishing Hook",
+                "Exit Play Mode first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(
+                FbxPath) == null)
+        {
+            EditorUtility.DisplayDialog(
+                "Fishing Hook",
+                "The imported Gaf FBX is missing. Run Install Updated Fishing Assets first.",
+                "OK"
+            );
+
+            return;
+        }
+
+        ConfigureTexture();
+        ConfigureFbx();
+        BuildPrefab();
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        Selection.activeObject =
+            AssetDatabase.LoadAssetAtPath<GameObject>(
+                PrefabPath
+            );
+
+        EditorUtility.DisplayDialog(
+            "Fishing Hook",
+            "Rebuilt with the black handle up, curved hook down, and the attachment point inside the hook curve.",
+            "OK"
+        );
+    }
     private const string Root =
         "Assets/_Game/Fishing/Gaff";
 
@@ -505,13 +549,14 @@ if not os.path.exists(out_path):
                     true;
             }
 
-            // Source model's long +X axis is the handle, while the actual
-            // curved hook is at negative X. Rotate +X upward so hook is down.
+            // Source geometry: the BLACK HANDLE is on the negative-X end
+            // and the curved metal hook is on positive X. Rotate -X upward:
+            // black handle UP, actual hook DOWN.
             visual.transform.localRotation =
                 Quaternion.Euler(
                     0f,
                     0f,
-                    90f
+                    -90f
                 );
 
             Bounds bounds =
@@ -564,8 +609,8 @@ if not os.path.exists(out_path):
             point.transform.localPosition =
                 new Vector3(
                     0f,
-                    0.055f,
-                    0f
+                    0.145f,
+                    -0.005f
                 );
 
             if (AssetDatabase.LoadAssetAtPath<GameObject>(
