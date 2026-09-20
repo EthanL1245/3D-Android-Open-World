@@ -3140,6 +3140,41 @@ public class FishingSystem : MonoBehaviour
             animator.enabled = false;
         }
 
+        HeroFishAnimator hero =
+            unconsciousFishVisual
+                .GetComponent<HeroFishAnimator>();
+
+        if (hero != null)
+            hero.enabled = false;
+
+        YellowfinTunaPresentation tuna =
+            unconsciousFishVisual
+                .GetComponent<YellowfinTunaPresentation>();
+
+        if (tuna != null)
+            tuna.enabled = false;
+
+        GoatfishPresentation goatfish =
+            unconsciousFishVisual
+                .GetComponent<GoatfishPresentation>();
+
+        if (goatfish != null)
+            goatfish.enabled = false;
+
+        RedSnapperPresentation snapper =
+            unconsciousFishVisual
+                .GetComponent<RedSnapperPresentation>();
+
+        if (snapper != null)
+            snapper.enabled = false;
+
+        MackerelPresentation mackerel =
+            unconsciousFishVisual
+                .GetComponent<MackerelPresentation>();
+
+        if (mackerel != null)
+            mackerel.enabled = false;
+
         UpdateUnconsciousFishVisual();
     }
 
