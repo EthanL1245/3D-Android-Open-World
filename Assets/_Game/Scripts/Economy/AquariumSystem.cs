@@ -1286,6 +1286,31 @@ public class TankFishAgent : MonoBehaviour
                     signedTurn
                 );
 
+            // Body curvature follows the same signed turn request as the
+            // head/root. The root still owns movement; these values only make
+            // the body trail the curve instead of remaining rigid.
+            float normalizedBodyTurn =
+                Mathf.Clamp(
+                    signedTurn /
+                    72f,
+                    -1f,
+                    1f
+                );
+
+            if (tunaPresentation != null)
+            {
+                tunaPresentation.SetAquariumTurn(
+                    normalizedBodyTurn
+                );
+            }
+
+            if (redSnapperPresentation != null)
+            {
+                redSnapperPresentation.SetAquariumTurn(
+                    normalizedBodyTurn
+                );
+            }
+
             float minimumCornerFactor =
                 goatfishPresentation != null
                     ? 0.86f

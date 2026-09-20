@@ -32,6 +32,11 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float swimPhase;
     private float aquariumLocomotionSpeed = 0.45f;
 
+    // Signed turn request from TankFishAgent.
+    // The head/root still owns locomotion; this only curves the body behind it.
+    private float aquariumTurnTarget;
+    private float aquariumTurnCurrent;
+
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
 
@@ -48,6 +53,11 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private static readonly int SwimPhaseId =
         Shader.PropertyToID(
             "_SwimPhase"
+        );
+
+    private static readonly int TurnBendId =
+        Shader.PropertyToID(
+            "_TurnBend"
         );
 
     private void Awake()
@@ -92,9 +102,14 @@ public class YellowfinTunaPresentation : MonoBehaviour
     public void SetAquariumTurn(
         float normalizedTurn)
     {
-        // Intentionally ignored.
-        // The aquarium root/head steering controls direction.
-        // No turn correction is layered onto the mesh anymore.
+        aquariumTurnTarget =
+            held
+                ? 0f
+                : Mathf.Clamp(
+                    normalizedTurn,
+                    -1f,
+                    1f
+                );
     }
 
     public void SetAquariumLocomotion(
@@ -133,6 +148,13 @@ public class YellowfinTunaPresentation : MonoBehaviour
             swimPhase -=
                 Mathf.PI * 2f;
         }
+
+        aquariumTurnCurrent =
+            Mathf.MoveTowards(
+                aquariumTurnCurrent,
+                aquariumTurnTarget,
+                Time.deltaTime * 4.2f
+            );
 
         float beat =
             Mathf.Sin(
@@ -258,6 +280,13 @@ public class YellowfinTunaPresentation : MonoBehaviour
             block.SetFloat(
                 SwimPhaseId,
                 swimPhase
+            );
+
+            block.SetFloat(
+                TurnBendId,
+                held
+                    ? 0f
+                    : aquariumTurnCurrent
             );
 
             renderer.SetPropertyBlock(

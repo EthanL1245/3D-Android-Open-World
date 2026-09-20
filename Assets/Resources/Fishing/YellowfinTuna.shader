@@ -16,6 +16,7 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimStrength ("Body Flex Strength", Float) = 0.17
         _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
+        _TurnBend ("Turn Bend", Range(-1,1)) = 0
     }
 
     SubShader
@@ -58,6 +59,7 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
+                float _TurnBend;
             CBUFFER_END
 
             struct Attributes
@@ -171,9 +173,102 @@ Shader "OpenWorld/YellowfinTuna"
                         0.58
                     );
 
+                float3 bodyAxis =
+                    normalize(
+                        _BodyAxis.xyz
+                    );
+
+                float3 sideAxis =
+                    normalize(
+                        _SideAxis.xyz
+                    );
+
+                float3 tailAxis =
+                    _TailAtMin > 0.5
+                        ? -bodyAxis
+                        : bodyAxis;
+
+                // Curve the centerline itself during a turn instead of
+                // rotating the fish like a rigid board. The head is t=0 and
+                // remains fixed; each farther-back section follows a larger
+                // portion of the arc. At a hard reversal the body naturally
+                // becomes a strong C/U shape.
+                float turnAmount =
+                    clamp(
+                        _TurnBend,
+                        -1.0,
+                        1.0
+                    );
+
+                float turnMagnitude =
+                    abs(
+                        turnAmount
+                    );
+
+                float totalTurnAngle =
+                    turnMagnitude *
+                    2.75;
+
+                if (totalTurnAngle > 0.001)
+                {
+                    float distanceFromHead =
+                        tailPosition *
+                        bodyRange;
+
+                    float localAngle =
+                        totalTurnAngle *
+                        tailPosition;
+
+                    float radius =
+                        bodyRange /
+                        totalTurnAngle;
+
+                    float arcForward =
+                        sin(
+                            localAngle
+                        ) *
+                        radius;
+
+                    float arcSide =
+                        (
+                            1.0 -
+                            cos(
+                                localAngle
+                            )
+                        ) *
+                        radius *
+                        sign(
+                            turnAmount
+                        );
+
+                    float3 straightCenter =
+                        tailAxis *
+                        distanceFromHead;
+
+                    float3 curvedCenter =
+                        tailAxis *
+                        arcForward +
+                        sideAxis *
+                        arcSide;
+
+                    positionOS +=
+                        curvedCenter -
+                        straightCenter;
+                }
+
+                // Normal tail beat remains, but it yields to the turn shape
+                // as curvature increases so the tail does not fight momentum.
+                float swimDuringTurn =
+                    lerp(
+                        1.0,
+                        0.48,
+                        turnMagnitude
+                    );
+
                 float sideOffset =
                     _SwimStrength *
                     bodyRange *
+                    swimDuringTurn *
                     (
                         bodyFlex *
                         0.24 *
@@ -187,9 +282,7 @@ Shader "OpenWorld/YellowfinTuna"
                     );
 
                 positionOS +=
-                    normalize(
-                        _SideAxis.xyz
-                    ) *
+                    sideAxis *
                     sideOffset;
 
                 return positionOS;

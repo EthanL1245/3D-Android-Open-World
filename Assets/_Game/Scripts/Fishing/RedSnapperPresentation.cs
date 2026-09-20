@@ -23,6 +23,9 @@ public class RedSnapperPresentation : MonoBehaviour
     // Bone.002+ = animated mid/rear body and tail
     private Transform headBone;
     private Transform frontBodyBone;
+    private Transform midBodyBone;
+    private Transform rearBodyBone;
+    private Transform tailBone;
 
     private Vector3 headRestLocalPosition;
     private Quaternion headRestLocalRotation =
@@ -32,7 +35,22 @@ public class RedSnapperPresentation : MonoBehaviour
     private Quaternion frontBodyRestLocalRotation =
         Quaternion.identity;
 
+    private Vector3 midRestLocalPosition;
+    private Quaternion midRestLocalRotation =
+        Quaternion.identity;
+
+    private Vector3 rearRestLocalPosition;
+    private Quaternion rearRestLocalRotation =
+        Quaternion.identity;
+
+    private Vector3 tailRestLocalPosition;
+    private Quaternion tailRestLocalRotation =
+        Quaternion.identity;
+
     private bool frontPoseCaptured;
+
+    private float aquariumTurnTarget;
+    private float aquariumTurnCurrent;
 
     public void Configure(
         Animator targetAnimator)
@@ -53,9 +71,21 @@ public class RedSnapperPresentation : MonoBehaviour
     public void SetAquariumLocomotion(
         float worldSpeed)
     {
-        // Aquarium locomotion deliberately does NOT drive animation or
-        // derive direction from animated bones. Like Yellowtail/Tuna, the
-        // gameplay root owns heading and translation.
+        // The head/root owns locomotion. Rear bones only shape themselves
+        // to match the current path curvature.
+    }
+
+    public void SetAquariumTurn(
+        float normalizedTurn)
+    {
+        aquariumTurnTarget =
+            held
+                ? 0f
+                : Mathf.Clamp(
+                    normalizedTurn,
+                    -1f,
+                    1f
+                );
     }
 
     public bool TryGetHeadPosition(
@@ -138,10 +168,16 @@ public class RedSnapperPresentation : MonoBehaviour
         ResolveBones();
         CaptureFrontPose();
 
-        // Animator has evaluated already. Put the actual head/front section
-        // back at its authored rest pose so it can NEVER wag the locomotion
-        // direction sideways. Bone.002 and everything behind it remains free
-        // to use the supplied swimming animation.
+        aquariumTurnCurrent =
+            Mathf.MoveTowards(
+                aquariumTurnCurrent,
+                aquariumTurnTarget,
+                Time.deltaTime * 4.5f
+            );
+
+        // Animator has evaluated already. The actual head/front section is
+        // restored to its authored rest pose so locomotion can never inherit
+        // lateral head wag from the clip.
         if (headBone != null)
         {
             headBone.localPosition =
@@ -159,6 +195,89 @@ public class RedSnapperPresentation : MonoBehaviour
             frontBodyBone.localRotation =
                 frontBodyRestLocalRotation;
         }
+
+        float turn =
+            aquariumTurnCurrent;
+
+        float turnMagnitude =
+            Mathf.Abs(
+                turn
+            );
+
+        // During a hard turn, reduce the clip's independent tail wag so the
+        // authored animation cannot point the tail against the actual curve.
+        // The turn-follow bend then becomes the dominant motion.
+        float authoredSwimWeight =
+            Mathf.Lerp(
+                1f,
+                0.30f,
+                turnMagnitude
+            );
+
+        ApplyTurnFollower(
+            midBodyBone,
+            midRestLocalPosition,
+            midRestLocalRotation,
+            authoredSwimWeight,
+            turn * 10f
+        );
+
+        ApplyTurnFollower(
+            rearBodyBone,
+            rearRestLocalPosition,
+            rearRestLocalRotation,
+            authoredSwimWeight,
+            turn * 20f
+        );
+
+        ApplyTurnFollower(
+            tailBone,
+            tailRestLocalPosition,
+            tailRestLocalRotation,
+            authoredSwimWeight,
+            turn * 34f
+        );
+    }
+
+    private void ApplyTurnFollower(
+        Transform bone,
+        Vector3 restPosition,
+        Quaternion restRotation,
+        float authoredWeight,
+        float turnDegrees)
+    {
+        if (bone == null)
+            return;
+
+        Quaternion authoredRotation =
+            bone.localRotation;
+
+        Vector3 authoredPosition =
+            bone.localPosition;
+
+        bone.localPosition =
+            Vector3.Lerp(
+                restPosition,
+                authoredPosition,
+                authoredWeight
+            );
+
+        bone.localRotation =
+            Quaternion.Slerp(
+                restRotation,
+                authoredRotation,
+                authoredWeight
+            );
+
+        // Apply turning in world-up yaw after the authored clip. Because the
+        // bones are hierarchical, each farther-back segment accumulates the
+        // curve and the tail naturally trails the head through the turn.
+        bone.rotation =
+            Quaternion.AngleAxis(
+                turnDegrees,
+                transform.up
+            ) *
+            bone.rotation;
     }
 
     private void ResolveAnimator()
@@ -197,6 +316,24 @@ public class RedSnapperPresentation : MonoBehaviour
                 "Bone.001"
             );
 
+        midBodyBone =
+            FindBone(
+                bones,
+                "Bone.002"
+            );
+
+        rearBodyBone =
+            FindBone(
+                bones,
+                "Bone.003"
+            );
+
+        tailBone =
+            FindBone(
+                bones,
+                "Bone.004"
+            );
+
         // Defensive fallback if a future exporter renames/removes the root
         // Bone but retains the numbered chain.
         if (headBone == null)
@@ -212,6 +349,20 @@ public class RedSnapperPresentation : MonoBehaviour
                     bones,
                     "Bone.002"
                 );
+
+            midBodyBone =
+                FindBone(
+                    bones,
+                    "Bone.003"
+                );
+
+            rearBodyBone =
+                FindBone(
+                    bones,
+                    "Bone.004"
+                );
+
+            tailBone = null;
         }
     }
 
@@ -235,6 +386,33 @@ public class RedSnapperPresentation : MonoBehaviour
 
         frontBodyRestLocalRotation =
             frontBodyBone.localRotation;
+
+        if (midBodyBone != null)
+        {
+            midRestLocalPosition =
+                midBodyBone.localPosition;
+
+            midRestLocalRotation =
+                midBodyBone.localRotation;
+        }
+
+        if (rearBodyBone != null)
+        {
+            rearRestLocalPosition =
+                rearBodyBone.localPosition;
+
+            rearRestLocalRotation =
+                rearBodyBone.localRotation;
+        }
+
+        if (tailBone != null)
+        {
+            tailRestLocalPosition =
+                tailBone.localPosition;
+
+            tailRestLocalRotation =
+                tailBone.localRotation;
+        }
 
         frontPoseCaptured = true;
     }
