@@ -44,10 +44,14 @@ public static class FishingRodReelSetup
             if (json == null) throw new InvalidOperationException("Missing RodReel.json. Pull all files from GitHub first.");
             Source source = JsonUtility.FromJson<Source>(json.text);
             ValidateSource(source);
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) throw new InvalidOperationException("The project's URP Lit shader is unavailable.");
+            Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/FishingEquipment.shader");
+            if (shader == null || ShaderUtil.ShaderHasError(shader))
+                throw new InvalidOperationException("FishingEquipment shader is missing or has compile errors. Pull the latest files and check the Console.");
             EnsureFolder(Generated);
             EnsureFolder("Assets/Resources/Fishing");
+            // Finish both imports before retaining any loaded texture references.
+            ConfigureTexture("RodTexture");
+            ConfigureTexture("ReelTexture");
             var rodTexture = LoadTexture("RodTexture");
             var reelTexture = LoadTexture("ReelTexture");
             var rodMaterial = MakeMaterial("RodWood", shader, rodTexture, 0f, 0.32f);
@@ -85,9 +89,15 @@ public static class FishingRodReelSetup
             animation.clip = clip;
             assembly.AddComponent<FishingRodView>().Configure(tip, reel, animation, clip);
             VerifyAssembly(assembly, reel, clip);
+            VerifyTextures(assembly, rodTexture, reelTexture);
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(assembly, PrefabPath);
             if (prefab == null) throw new InvalidOperationException("Unity could not save the rod/reel prefab.");
             AssetDatabase.SaveAssets();
+            VerifyTextures(prefab, rodTexture, reelTexture);
+            string[] dependencies = AssetDatabase.GetDependencies(PrefabPath, true);
+            foreach (Texture2D texture in new[] { rodTexture, reelTexture })
+                if (Array.IndexOf(dependencies, AssetDatabase.GetAssetPath(texture)) < 0)
+                    throw new InvalidOperationException("Saved prefab does not include texture: " + texture.name);
             Selection.activeObject = prefab;
             EditorGUIUtility.PingObject(prefab);
             Debug.Log("Fishing rod + animated reel installed. Press Play: hotbar slot 1 equips both; hold REEL during a fight to animate the reel.");
@@ -197,29 +207,78 @@ public static class FishingRodReelSetup
         clip.SampleAnimation(reel.gameObject, 0f);
     }
 
-    private static Texture2D LoadTexture(string name)
+    private static void ConfigureTexture(string name)
     {
         string path = Root + "/Source/" + name + ".png";
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) throw new InvalidOperationException("Missing texture: " + path);
         importer.textureType = TextureImporterType.Default;
+        importer.textureShape = TextureImporterShape.Texture2D;
         importer.sRGBTexture = true;
         importer.maxTextureSize = 2048;
         importer.mipmapEnabled = true;
         importer.wrapMode = TextureWrapMode.Repeat;
         importer.textureCompression = TextureImporterCompression.CompressedHQ;
         importer.SaveAndReimport();
-        return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+    }
+
+    private static Texture2D LoadTexture(string name)
+    {
+        string path = Root + "/Source/" + name + ".png";
+        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        if (texture == null || texture.width <= 1 || texture.height <= 1 || !EditorUtility.IsPersistent(texture))
+            throw new InvalidOperationException("Unity could not load the supplied texture: " + path);
+        return texture;
+    }
+
+    private static void VerifyTextures(GameObject root, Texture2D rodTexture, Texture2D reelTexture)
+    {
+        int checkedParts = 0;
+        foreach (MeshRenderer renderer in root.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            if (renderer.name == "ReelSeatCollar") continue;
+            Texture2D expected = renderer.name == "RodBlank" ? rodTexture : reelTexture;
+            Material material = renderer.sharedMaterial;
+            if (material == null || material.shader.name != "OpenWorld/FishingEquipment" ||
+                material.GetTexture("_BaseMap") != expected ||
+                material.GetTextureScale("_BaseMap") != Vector2.one ||
+                material.GetTextureOffset("_BaseMap") != Vector2.zero)
+                throw new InvalidOperationException("Missing or incorrect texture binding on " + renderer.name);
+            Mesh mesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+            Vector2[] uv = mesh.uv;
+            if (uv.Length != mesh.vertexCount || uv.Length == 0)
+                throw new InvalidOperationException("Missing texture coordinates on " + renderer.name);
+            bool varying = false;
+            foreach (Vector2 coordinate in uv)
+                if ((coordinate - uv[0]).sqrMagnitude > 0.000001f) { varying = true; break; }
+            if (!varying) throw new InvalidOperationException("Collapsed texture coordinates on " + renderer.name);
+            checkedParts++;
+        }
+        if (checkedParts != 6) throw new InvalidOperationException("Expected six textured rod/reel parts.");
     }
 
     private static Material MakeMaterial(string name, Shader shader, Texture texture, float metallic, float smoothness)
     {
-        var material = new Material(shader) { name = name };
+        // Edit the persistent asset directly, including on reinstall. This repairs
+        // existing prefabs without replacing material GUIDs or retaining stale slots.
+        string path = Generated + "/" + name + ".mat";
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (material == null)
+        {
+            material = new Material(shader) { name = name };
+            AssetDatabase.CreateAsset(material, path);
+        }
+        material.shader = shader;
+        material.shaderKeywords = Array.Empty<string>();
         material.SetColor("_BaseColor", Color.white);
         material.SetTexture("_BaseMap", texture);
+        material.SetTextureScale("_BaseMap", Vector2.one);
+        material.SetTextureOffset("_BaseMap", Vector2.zero);
         material.SetFloat("_Metallic", metallic);
         material.SetFloat("_Smoothness", smoothness);
-        return Save(material, Generated + "/" + name + ".mat");
+        EditorUtility.SetDirty(material);
+        return material;
     }
 
     private static T Save<T>(T asset, string path) where T : Object

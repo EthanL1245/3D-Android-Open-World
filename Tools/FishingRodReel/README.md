@@ -6,6 +6,12 @@ After pulling `main`, let Unity finish compiling, then click:
 
 Press Play in the existing fishing scene. Hotbar slot 1 equips the complete rod/reel item. No ZIP selection, Blender installation, Inspector wiring, or scene rebuild is required. Re-running the installer updates the same prefab, meshes, materials and clip, preserving their asset GUIDs.
 
+## Repair white/untextured equipment
+
+Pull the latest `main`, exit Play Mode, and run the same installation menu again. This updates existing material assets in place. The installer now finishes both PNG imports before loading texture references, rejects null/placeholder textures, sets explicit UV tiling `(1,1)` and offset `(0,0)`, and uses `OpenWorld/FishingEquipment`, which always samples the supplied atlas through UV0. It validates the six renderer bindings, non-collapsed mesh UVs, and the saved prefab's texture dependencies. A failed check reports an error instead of reporting a successful installation.
+
+The original PNGs and mesh/animation export are unchanged. The exact failing state in the user's locally generated materials was not available for inspection; these changes repair the material setup and remove reliance on the previous URP Lit material state. Final Unity/Android rendering still requires a local check.
+
 ## Behavior
 
 - The uploaded wood rod and silver/black reel retain their UVs and original textures.
