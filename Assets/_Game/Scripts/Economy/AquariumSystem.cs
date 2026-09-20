@@ -188,7 +188,7 @@ public class AquariumSystem : MonoBehaviour
     }
 
     public PlacedFishTank GetNearestTank(
-        float maxDistance = 3.2f)
+        float maxDistance = 10.5f)
     {
         if (player == null)
             return null;
@@ -422,7 +422,7 @@ public class AquariumSystem : MonoBehaviour
 
         Vector3 candidate =
             player.position +
-            forward * 3.2f;
+            forward * 10.5f;
 
         float groundY =
             FindGroundHeight(
@@ -497,9 +497,9 @@ public class AquariumSystem : MonoBehaviour
                 0f
             ),
             new Vector3(
-                3.45f,
-                0.24f,
-                1.90f
+                17.25f,
+                0.28f,
+                9.50f
             ),
             baseMaterial
         );
@@ -509,13 +509,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                0.99f,
+                4.58f,
                 0f
             ),
             new Vector3(
-                3.13f,
-                1.50f,
-                1.55f
+                15.65f,
+                8.20f,
+                7.75f
             ),
             preview
                 ? glassMaterial
@@ -527,13 +527,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                1.00f,
-                -0.82f
+                4.58f,
+                -4.10f
             ),
             new Vector3(
-                3.29f,
-                1.72f,
-                0.05f
+                16.45f,
+                8.60f,
+                0.08f
             ),
             glassMaterial
         );
@@ -543,13 +543,13 @@ public class AquariumSystem : MonoBehaviour
             root.transform,
             new Vector3(
                 0f,
-                1.00f,
-                0.82f
+                4.58f,
+                4.10f
             ),
             new Vector3(
-                3.29f,
-                1.72f,
-                0.05f
+                16.45f,
+                8.60f,
+                0.08f
             ),
             glassMaterial
         );
@@ -558,14 +558,14 @@ public class AquariumSystem : MonoBehaviour
             "LeftGlass",
             root.transform,
             new Vector3(
-                -1.645f,
-                1.00f,
+                -8.225f,
+                4.58f,
                 0f
             ),
             new Vector3(
-                0.05f,
-                1.72f,
-                1.64f
+                0.08f,
+                8.60f,
+                8.20f
             ),
             glassMaterial
         );
@@ -574,14 +574,14 @@ public class AquariumSystem : MonoBehaviour
             "RightGlass",
             root.transform,
             new Vector3(
-                1.645f,
-                1.00f,
+                8.225f,
+                4.58f,
                 0f
             ),
             new Vector3(
-                0.05f,
-                1.72f,
-                1.64f
+                0.08f,
+                8.60f,
+                8.20f
             ),
             glassMaterial
         );
@@ -589,36 +589,36 @@ public class AquariumSystem : MonoBehaviour
         CreateFrame(
             root.transform,
             new Vector3(
-                1.645f,
-                1.00f,
-                0.82f
+                8.225f,
+                4.58f,
+                4.10f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -1.645f,
-                1.00f,
-                0.82f
+                -8.225f,
+                4.58f,
+                4.10f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                1.645f,
-                1.00f,
-                -0.82f
+                8.225f,
+                4.58f,
+                -4.10f
             )
         );
 
         CreateFrame(
             root.transform,
             new Vector3(
-                -1.645f,
-                1.00f,
-                -0.82f
+                -8.225f,
+                4.58f,
+                -4.10f
             )
         );
 
@@ -630,15 +630,15 @@ public class AquariumSystem : MonoBehaviour
             collider.center =
                 new Vector3(
                     0f,
-                    0.98f,
+                    4.58f,
                     0f
                 );
 
             collider.size =
                 new Vector3(
-                    3.50f,
-                    1.95f,
-                    1.95f
+                    17.50f,
+                    9.10f,
+                    9.60f
                 );
         }
 
@@ -654,9 +654,9 @@ public class AquariumSystem : MonoBehaviour
             parent,
             localPosition,
             new Vector3(
-                0.07f,
-                1.94f,
-                0.07f
+                0.10f,
+                8.88f,
+                0.10f
             ),
             frameMaterial
         );
