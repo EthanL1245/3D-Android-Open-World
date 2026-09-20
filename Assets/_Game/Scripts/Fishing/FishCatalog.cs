@@ -212,13 +212,25 @@ public static class FishCatalog
                 weightKg
             );
 
-        return Mathf.Lerp(
-            0.68f,
-            1.42f,
-            Mathf.Pow(
-                weightPercent,
-                0.72f
-            )
-        );
+        float visualScale =
+            Mathf.Lerp(
+                0.68f,
+                1.42f,
+                Mathf.Pow(
+                    weightPercent,
+                    0.72f
+                )
+            );
+
+        // Red Snapper should read a little larger everywhere it is shown,
+        // while still preserving weight-based size differences.
+        if (speciesId ==
+            RedSnapperId)
+        {
+            visualScale *=
+                1.15f;
+        }
+
+        return visualScale;
     }
 }
