@@ -35,6 +35,7 @@ public class FishingSystem : MonoBehaviour
 
     private GameObject rodRoot;
     private Transform rodTip;
+    private FishingRodView rodView;
     private LineRenderer fishingLine;
     private GameObject bobber;
 
@@ -115,6 +116,11 @@ public class FishingSystem : MonoBehaviour
         EquipRod();
     }
 
+    private void OnDisable()
+    {
+        CancelFishing();
+    }
+
     private void OnDestroy()
     {
         if (inventory != null &&
@@ -157,6 +163,14 @@ public class FishingSystem : MonoBehaviour
                     action.IsHeld
                 );
                 break;
+        }
+
+        if (rodView != null)
+        {
+            rodView.TickReel(
+                rodEquipped && state == FishingState.Fighting && action != null && action.IsHeld,
+                Time.deltaTime
+            );
         }
 
         UpdateLineAndBobber();
@@ -475,30 +489,48 @@ public class FishingSystem : MonoBehaviour
         bobber.SetActive(true);
         fishingLine.enabled = true;
 
-        Vector3 start =
-            rodTip.position;
-
+        Vector3 start = rodTip.position;
+        bool released = rodView == null;
+        const float releaseProgress = 0.38f;
+        float duration = Mathf.Max(0.1f, castDuration);
         float elapsed = 0f;
 
-        while (elapsed < castDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
 
             float t =
                 Mathf.Clamp01(
-                    elapsed / castDuration
+                    elapsed / duration
                 );
+
+            if (rodView != null) rodView.SetCastPose(t);
+            if (!released && t < releaseProgress)
+            {
+                bobber.transform.position = rodTip.position;
+                SetLinePositions();
+                yield return null;
+                continue;
+            }
+            if (!released)
+            {
+                start = rodTip.position;
+                released = true;
+            }
+            float flightProgress = rodView != null
+                ? Mathf.InverseLerp(releaseProgress, 1f, t)
+                : t;
 
             Vector3 point =
                 Vector3.Lerp(
                     start,
                     target,
-                    t
+                    flightProgress
                 );
 
             point.y +=
                 Mathf.Sin(
-                    t * Mathf.PI
+                    flightProgress * Mathf.PI
                 ) *
                 4.0f;
 
@@ -510,6 +542,7 @@ public class FishingSystem : MonoBehaviour
             yield return null;
         }
 
+        if (rodView != null) rodView.SetCastPose(1f);
         castPoint = target;
         SnapBobberToSurface();
 
@@ -829,6 +862,8 @@ public class FishingSystem : MonoBehaviour
     private void CancelFishing()
     {
         StopAllCoroutines();
+        if (rodView != null) rodView.ResetMotion();
+        if (hud != null && hud.ActionInput != null) hud.ActionInput.ResetInput();
 
         state = FishingState.Idle;
 
@@ -1016,7 +1051,8 @@ public class FishingSystem : MonoBehaviour
             bobber.SetActive(false);
     }
 
-    private void CreateRodAndLine()
+    // Keep old scenes playable before the one-click asset installation has run.
+    private void CreatePlaceholderRod()
     {
         rodRoot =
             new GameObject(
@@ -1151,6 +1187,28 @@ public class FishingSystem : MonoBehaviour
             );
 
         rodTip = tip.transform;
+
+    }
+
+    private void CreateRodAndLine()
+    {
+        GameObject prefab = Resources.Load<GameObject>("Fishing/FishingRodReel");
+        FishingRodView prefabView = prefab != null ? prefab.GetComponent<FishingRodView>() : null;
+        if (prefabView != null && prefabView.RodTip != null)
+        {
+            rodRoot = Instantiate(prefab, playerCamera.transform, false);
+            rodRoot.name = "FishingRodViewModel";
+            rodRoot.transform.localPosition = new Vector3(0.28f, -0.23f, 0.48f);
+            rodRoot.transform.localRotation = Quaternion.Euler(67f, -6f, 11f);
+            rodView = rodRoot.GetComponent<FishingRodView>();
+            rodTip = rodView.RodTip;
+            rodView.InitializePose();
+        }
+        else
+        {
+            Debug.LogWarning("Rod/reel prefab not installed. Run Tools > Open World > Install Fishing Rod + Animated Reel (One Click).");
+            CreatePlaceholderRod();
+        }
 
         fishingLine =
             rodRoot.AddComponent<LineRenderer>();
@@ -1363,3 +1421,4 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
