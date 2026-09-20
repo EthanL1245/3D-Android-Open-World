@@ -1994,8 +1994,7 @@ public class TankFishAgent : MonoBehaviour
             Mathf.Sin(angle) *
             pathRadiusZ;
 
-        // Four gentle loop families. They stay closed and tank-safe but avoid
-        // making every fish orbit the same obvious ellipse.
+        // Eight smooth closed path families.
         switch (pathVariant)
         {
             case 1:
@@ -2008,52 +2007,152 @@ public class TankFishAgent : MonoBehaviour
                     pathWobbleX;
 
                 z +=
-                    Mathf.Sin(
+                    Mathf.Cos(
                         angle * 3f +
-                        pathShapePhase * 0.7f
+                        pathShapePhase
                     ) *
                     pathRadiusZ *
                     pathWobbleZ;
                 break;
 
             case 2:
-                x +=
-                    Mathf.Cos(
-                        angle * 3f +
-                        pathShapePhase
-                    ) *
-                    pathRadiusX *
-                    pathWobbleX;
-
                 z +=
                     Mathf.Sin(
                         angle * 2f +
                         pathShapePhase
                     ) *
                     pathRadiusZ *
-                    pathWobbleZ;
+                    0.42f;
+
+                x +=
+                    Mathf.Sin(
+                        angle * 3f +
+                        pathShapePhase * 0.6f
+                    ) *
+                    pathRadiusX *
+                    0.10f;
                 break;
 
             case 3:
                 float breathingRadius =
-                    0.90f +
+                    0.80f +
                     Mathf.Sin(
-                        angle * 2f +
+                        angle +
                         pathShapePhase
                     ) *
-                    0.10f;
+                    0.18f;
 
                 x *=
                     breathingRadius;
 
                 z *=
-                    1.04f -
+                    breathingRadius;
+                break;
+
+            case 4:
+                // Rounded figure-eight.
+                x =
+                    Mathf.Sin(angle) *
+                    pathRadiusX;
+
+                z =
+                    Mathf.Sin(
+                        angle * 2f
+                    ) *
+                    pathRadiusZ *
+                    0.70f;
+                break;
+
+            case 5:
+                // Three-lobed roaming loop.
+                float lobed =
+                    0.84f +
+                    Mathf.Sin(
+                        angle * 3f +
+                        pathShapePhase
+                    ) *
+                    0.14f;
+
+                x *=
+                    lobed;
+
+                z *=
+                    1.00f -
                     (
-                        breathingRadius -
-                        0.90f
-                    );
+                        lobed -
+                        0.84f
+                    ) *
+                    0.45f;
+                break;
+
+            case 6:
+                // Long diagonal weave.
+                x +=
+                    Mathf.Cos(
+                        angle * 2f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusX *
+                    0.20f;
+
+                z +=
+                    Mathf.Sin(
+                        angle * 4f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusZ *
+                    0.16f;
+                break;
+
+            case 7:
+                // Smooth asymmetric roaming loop.
+                x +=
+                    Mathf.Sin(
+                        angle * 2f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusX *
+                    0.16f;
+
+                z +=
+                    Mathf.Sin(
+                        angle * 3f -
+                        pathShapePhase
+                    ) *
+                    pathRadiusZ *
+                    0.23f;
+
+                x +=
+                    Mathf.Cos(
+                        angle * 5f +
+                        pathShapePhase
+                    ) *
+                    pathRadiusX *
+                    0.05f;
                 break;
         }
+
+        float cosRotation =
+            Mathf.Cos(
+                pathRotation
+            );
+
+        float sinRotation =
+            Mathf.Sin(
+                pathRotation
+            );
+
+        float rotatedX =
+            x *
+            cosRotation -
+            z *
+            sinRotation;
+
+        float rotatedZ =
+            x *
+            sinRotation +
+            z *
+            cosRotation;
 
         float y =
             baseHeight +
@@ -2068,46 +2167,152 @@ public class TankFishAgent : MonoBehaviour
                 secondaryHeightPhase
             ) *
             heightAmplitude *
-            0.30f;
+            0.36f +
+            Mathf.Sin(
+                Time.time *
+                verticalDriftFrequency +
+                verticalDriftPhase
+            ) *
+            verticalDriftAmount;
+
+        y =
+            Mathf.Clamp(
+                y,
+                0.90f,
+                8.05f
+            );
 
         return
             new Vector3(
-                x,
+                Mathf.Clamp(
+                    rotatedX +
+                    pathCenterX,
+                    -7.30f,
+                    7.30f
+                ),
                 y,
-                z
+                Mathf.Clamp(
+                    rotatedZ +
+                    pathCenterZ,
+                    -3.45f,
+                    3.45f
+                )
             );
     }
 
     private float EstimatePathAngle(
         Vector3 localPosition)
     {
-        float normalizedX =
-            localPosition.x /
-            Mathf.Max(
-                0.001f,
-                pathRadiusX
-            );
+        const int coarseSamples = 48;
 
-        float normalizedZ =
-            localPosition.z /
-            Mathf.Max(
-                0.001f,
-                pathRadiusZ
-            );
+        float fullCircle =
+            Mathf.PI * 2f;
 
-        float angle =
-            Mathf.Atan2(
-                normalizedZ,
-                normalizedX
-            );
+        float bestAngle = 0f;
+        float bestDistance =
+            float.PositiveInfinity;
 
-        if (angle < 0f)
+        for (int i = 0;
+             i < coarseSamples;
+             i++)
         {
-            angle +=
-                Mathf.PI * 2f;
+            float candidate =
+                fullCircle *
+                i /
+                coarseSamples;
+
+            Vector3 point =
+                EvaluatePath(
+                    candidate
+                );
+
+            float dx =
+                point.x -
+                localPosition.x;
+
+            float dz =
+                point.z -
+                localPosition.z;
+
+            float distance =
+                dx * dx +
+                dz * dz;
+
+            if (distance <
+                bestDistance)
+            {
+                bestDistance =
+                    distance;
+
+                bestAngle =
+                    candidate;
+            }
         }
 
-        return angle;
+        float coarseStep =
+            fullCircle /
+            coarseSamples;
+
+        for (int pass = 0;
+             pass < 2;
+             pass++)
+        {
+            float refinement =
+                coarseStep /
+                Mathf.Pow(
+                    4f,
+                    pass + 1
+                );
+
+            for (int offset = -3;
+                 offset <= 3;
+                 offset++)
+            {
+                float candidate =
+                    bestAngle +
+                    refinement *
+                    offset;
+
+                while (candidate < 0f)
+                    candidate += fullCircle;
+
+                while (candidate >=
+                       fullCircle)
+                {
+                    candidate -=
+                        fullCircle;
+                }
+
+                Vector3 point =
+                    EvaluatePath(
+                        candidate
+                    );
+
+                float dx =
+                    point.x -
+                    localPosition.x;
+
+                float dz =
+                    point.z -
+                    localPosition.z;
+
+                float distance =
+                    dx * dx +
+                    dz * dz;
+
+                if (distance <
+                    bestDistance)
+                {
+                    bestDistance =
+                        distance;
+
+                    bestAngle =
+                        candidate;
+                }
+            }
+        }
+
+        return bestAngle;
     }
 
     private void WrapPathAngle()
@@ -2133,22 +2338,22 @@ public class TankFishAgent : MonoBehaviour
         position.x =
             Mathf.Clamp(
                 position.x,
-                -1.22f,
-                1.22f
+                -7.45f,
+                7.45f
             );
 
         position.y =
             Mathf.Clamp(
                 position.y,
-                0.44f,
-                1.53f
+                0.75f,
+                8.15f
             );
 
         position.z =
             Mathf.Clamp(
                 position.z,
-                -0.52f,
-                0.52f
+                -3.55f,
+                3.55f
             );
 
         transform.localPosition =
