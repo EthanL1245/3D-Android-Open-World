@@ -1333,27 +1333,89 @@ public class TankFishAgent : MonoBehaviour
 
                 if (snapperUsesBoneForward)
                 {
-                    // Red Snapper: rotate the WHOLE locomotion root by the
-                    // correction required to turn its actual front-bone
-                    // direction toward the target. The root axis is not used
-                    // as an approximation anymore.
-                    Quaternion wantedCorrection =
-                        Quaternion.FromToRotation(
-                            currentForward.normalized,
-                            desiredDirection.normalized
+                    // Red Snapper is still steered from its real head-bone
+                    // direction, but constrain the locomotion root to yaw +
+                    // pitch only. A full 3D FromToRotation can accumulate roll
+                    // and make the fish swim on its side.
+                    Vector3 snapperFlatForward =
+                        Vector3.ProjectOnPlane(
+                            currentForward,
+                            Vector3.up
                         );
 
-                    Quaternion limitedCorrection =
-                        Quaternion.RotateTowards(
-                            Quaternion.identity,
-                            wantedCorrection,
-                            turnSpeedDeg *
+                    Vector3 snapperFlatDesired =
+                        Vector3.ProjectOnPlane(
+                            desiredDirection,
+                            Vector3.up
+                        );
+
+                    if (snapperFlatForward.sqrMagnitude >
+                            0.0001f &&
+                        snapperFlatDesired.sqrMagnitude >
+                            0.0001f)
+                    {
+                        snapperFlatForward.Normalize();
+                        snapperFlatDesired.Normalize();
+
+                        float yawDelta =
+                            Vector3.SignedAngle(
+                                snapperFlatForward,
+                                snapperFlatDesired,
+                                Vector3.up
+                            );
+
+                        float limitedYaw =
+                            Mathf.Clamp(
+                                yawDelta,
+                                -turnSpeedDeg * deltaTime,
+                                turnSpeedDeg * deltaTime
+                            );
+
+                        transform.localRotation =
+                            Quaternion.AngleAxis(
+                                limitedYaw,
+                                Vector3.up
+                            ) *
+                            transform.localRotation;
+                    }
+
+                    float desiredPitch =
+                        Mathf.Asin(
+                            Mathf.Clamp(
+                                desiredDirection.y,
+                                -0.30f,
+                                0.30f
+                            )
+                        ) *
+                        Mathf.Rad2Deg;
+
+                    Vector3 rootEuler =
+                        transform.localEulerAngles;
+
+                    float currentPitch =
+                        NormalizeAngle(
+                            rootEuler.x
+                        );
+
+                    float newPitch =
+                        Mathf.MoveTowardsAngle(
+                            currentPitch,
+                            -desiredPitch,
+                            pitchSpeedDeg *
                             deltaTime
                         );
 
+                    // Rebuild an upright root rotation every frame. Preserve
+                    // yaw, apply the desired pitch, and force roll to zero.
+                    float currentYaw =
+                        transform.localEulerAngles.y;
+
                     transform.localRotation =
-                        limitedCorrection *
-                        transform.localRotation;
+                        Quaternion.Euler(
+                            newPitch,
+                            currentYaw,
+                            0f
+                        );
                 }
                 else
                 {
