@@ -1328,14 +1328,13 @@ public class TankFishAgent : MonoBehaviour
         if (deltaTime <= 0f)
             return;
 
-        Vector3 snapperHeadBefore =
+        Vector3 headBefore =
             Vector3.zero;
 
-        bool snapperHasHead =
-            redSnapperPresentation != null &&
-            redSnapperPresentation.TryGetHeadPosition(
+        bool hasHeadLedFish =
+            TryGetHeadLedPosition(
                 transform.parent,
-                out snapperHeadBefore
+                out headBefore
             );
 
         float effectiveRadius =
@@ -1356,23 +1355,13 @@ public class TankFishAgent : MonoBehaviour
                 effectiveRadius
             );
 
-        if (redSnapperPresentation != null &&
-            snapperHasHead)
+        if (hasHeadLedFish)
         {
-            // The RED SNAPPER PATH IS GUIDED BY THE HEAD, not its body
-            // center. This prevents the body pivot from dragging the head
-            // sideways around turns.
+            // Red Snapper, Goatfish and Mackerel all use the same rule:
+            // the HEAD is the path guide and the body follows its history.
             pathAngle =
                 EstimatePathAngle(
-                    snapperHeadBefore
-                );
-        }
-        else if (goatfishPresentation != null)
-        {
-            // Goatfish use a current-position-anchored guide.
-            pathAngle =
-                EstimatePathAngle(
-                    transform.localPosition
+                    headBefore
                 );
         }
         else
@@ -1391,11 +1380,9 @@ public class TankFishAgent : MonoBehaviour
         {
             lookAhead = 0.44f;
         }
-        else if (redSnapperPresentation != null)
-        {
-            lookAhead = 0.34f;
-        }
-        else if (tunaPresentation != null)
+        else if (redSnapperPresentation != null ||
+                 mackerelPresentation != null ||
+                 tunaPresentation != null)
         {
             lookAhead = 0.34f;
         }
@@ -1412,9 +1399,8 @@ public class TankFishAgent : MonoBehaviour
             );
 
         Vector3 steeringOrigin =
-            redSnapperPresentation != null &&
-            snapperHasHead
-                ? snapperHeadBefore
+            hasHeadLedFish
+                ? headBefore
                 : transform.localPosition;
 
         Vector3 toTarget =
@@ -1440,18 +1426,6 @@ public class TankFishAgent : MonoBehaviour
             float absoluteTurn =
                 Mathf.Abs(
                     signedTurn
-                );
-
-            // The body must TRAIL the head through a turn.
-            // SignedHorizontalAngle describes where the HEAD is turning.
-            // The body/tail bend is therefore the opposite sign so the rear
-            // stays on the previous path instead of whipping into the turn.
-            float normalizedBodyTurn =
-                Mathf.Clamp(
-                    -signedTurn /
-                    80f,
-                    -1f,
-                    1f
                 );
 
             float minimumCornerFactor =
@@ -1558,27 +1532,23 @@ public class TankFishAgent : MonoBehaviour
                     );
             }
 
-            // Head-led propulsion.
             Vector3 forward =
                 transform.localRotation *
                 Vector3.forward;
 
             forward.Normalize();
 
-            if (redSnapperPresentation != null &&
-                snapperHasHead)
+            if (hasHeadLedFish)
             {
-                // Rotation above happens on the GameObject root, whose pivot
-                // is near the fish body. Counter that pivot sweep first, then
-                // move the HEAD exactly forward. This makes the head the
-                // locomotion anchor: it cannot strafe sideways during a turn.
-                if (redSnapperPresentation.TryGetHeadPosition(
+                // Counter the body-pivot sweep caused by root rotation, then
+                // advance the HEAD purely along root-forward. No side skating.
+                if (TryGetHeadLedPosition(
                         transform.parent,
                         out Vector3 headAfterRotation
                     ))
                 {
                     Vector3 desiredHeadPosition =
-                        snapperHeadBefore +
+                        headBefore +
                         forward *
                         currentSpeed *
                         deltaTime;
@@ -1603,15 +1573,13 @@ public class TankFishAgent : MonoBehaviour
                     deltaTime;
             }
 
-            if (goatfishPresentation == null &&
-                redSnapperPresentation == null)
+            if (!hasHeadLedFish)
             {
                 SoftContainInsideTank();
             }
         }
 
         UpdateBodyTrail();
-
         SyncPresentationSpeed();
 
         if (tail != null)
@@ -1629,6 +1597,41 @@ public class TankFishAgent : MonoBehaviour
                     0f
                 );
         }
+    }
+
+    private bool TryGetHeadLedPosition(
+        Transform referenceSpace,
+        out Vector3 position)
+    {
+        if (redSnapperPresentation != null &&
+            redSnapperPresentation.TryGetHeadPosition(
+                referenceSpace,
+                out position
+            ))
+        {
+            return true;
+        }
+
+        if (goatfishPresentation != null &&
+            goatfishPresentation.TryGetHeadPosition(
+                referenceSpace,
+                out position
+            ))
+        {
+            return true;
+        }
+
+        if (mackerelPresentation != null &&
+            mackerelPresentation.TryGetHeadPosition(
+                referenceSpace,
+                out position
+            ))
+        {
+            return true;
+        }
+
+        position = Vector3.zero;
+        return false;
     }
 
     private void ResetBodyTrail()
@@ -1679,7 +1682,9 @@ public class TankFishAgent : MonoBehaviour
     private void UpdateBodyTrail()
     {
         if (tunaPresentation == null &&
-            redSnapperPresentation == null)
+            redSnapperPresentation == null &&
+            goatfishPresentation == null &&
+            mackerelPresentation == null)
         {
             return;
         }
@@ -1805,6 +1810,28 @@ public class TankFishAgent : MonoBehaviour
             return true;
         }
 
+        if (goatfishPresentation != null &&
+            goatfishPresentation.TryGetHeadPositionWorld(
+                out positionWorld))
+        {
+            lengthWorld =
+                goatfishPresentation
+                    .GetBodyLengthWorld();
+
+            return true;
+        }
+
+        if (mackerelPresentation != null &&
+            mackerelPresentation.TryGetHeadPositionWorld(
+                out positionWorld))
+        {
+            lengthWorld =
+                mackerelPresentation
+                    .GetBodyLengthWorld();
+
+            return true;
+        }
+
         if (tunaPresentation != null &&
             tunaPresentation.TryGetHeadPosition(
                 out positionWorld))
@@ -1865,6 +1892,28 @@ public class TankFishAgent : MonoBehaviour
         if (redSnapperPresentation != null)
         {
             redSnapperPresentation.SetAquariumTrail(
+                currentForwardWorld,
+                forward25,
+                forward50,
+                forward75,
+                forward100
+            );
+        }
+
+        if (goatfishPresentation != null)
+        {
+            goatfishPresentation.SetAquariumTrail(
+                currentForwardWorld,
+                forward25,
+                forward50,
+                forward75,
+                forward100
+            );
+        }
+
+        if (mackerelPresentation != null)
+        {
+            mackerelPresentation.SetAquariumTrail(
                 currentForwardWorld,
                 forward25,
                 forward50,
