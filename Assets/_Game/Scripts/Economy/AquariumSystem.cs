@@ -988,25 +988,29 @@ public class TankFishAgent : MonoBehaviour
 
         if (goatfishPresentation != null)
         {
-            // Use the supplied animation at 1.0x and move far enough per
-            // animation cycle that the stroke and travel speed agree.
-            float goatfishSpeciesMultiplier =
-                speciesId ==
-                FishCatalog.YellowGoatfishId
-                    ? 0.50f
-                    : speciesId ==
-                      FishCatalog.BlackSpotGoatfishId
-                        ? 2.00f
-                        : 1.00f;
-
-            cruiseSpeed =
-                goatfishPresentation
-                    .GetRecommendedCruiseSpeed() *
-                UnityEngine.Random.Range(
-                    0.78f,
-                    0.84f
-                ) *
-                goatfishSpeciesMultiplier;
+            if (speciesId ==
+                FishCatalog.BlackSpotGoatfishId)
+            {
+                // Black Spot Goatfish and Red Snapper intentionally share
+                // the same aquarium travel-speed range.
+                cruiseSpeed =
+                    UnityEngine.Random.Range(
+                        0.92f,
+                        1.02f
+                    );
+            }
+            else
+            {
+                // Yellow Goatfish: restore the normal authored-animation
+                // matched cruise speed (remove the temporary 0.5x test).
+                cruiseSpeed =
+                    goatfishPresentation
+                        .GetRecommendedCruiseSpeed() *
+                    UnityEngine.Random.Range(
+                        0.78f,
+                        0.84f
+                    );
+            }
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(
@@ -1030,14 +1034,12 @@ public class TankFishAgent : MonoBehaviour
         }
         else if (redSnapperPresentation != null)
         {
+            // Exactly the same aquarium speed band as Black Spot Goatfish.
             cruiseSpeed =
-                redSnapperPresentation
-                    .GetRecommendedCruiseSpeed() *
                 UnityEngine.Random.Range(
-                    0.96f,
-                    1.04f
-                ) *
-                2.00f;
+                    0.92f,
+                    1.02f
+                );
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(

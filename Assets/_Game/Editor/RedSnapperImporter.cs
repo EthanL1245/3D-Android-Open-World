@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -6,6 +7,8 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Process = System.Diagnostics.Process;
+using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
 public static class RedSnapperImporter
 {
@@ -33,8 +36,15 @@ public static class RedSnapperImporter
     private const string PreviewGrantKey =
         "OpenWorld.RedSnapperPreviewGrant.v1";
 
+    // Reuse the Blender path already found by the Goatfish importer so the
+    // normal workflow remains one click after choosing the Red Snapper ZIP.
+    private const string BlenderEditorPrefsKey =
+        "OpenWorld.Goatfish.BlenderExecutable";
+
     private const float TargetLength =
         0.92f;
+
+    private static string sessionBlenderExecutable;
 
     [MenuItem("Tools/Open World/Import Red Snapper (One Click)...")]
     public static void ImportRedSnapper()
@@ -52,7 +62,7 @@ public static class RedSnapperImporter
 
         string zipPath =
             EditorUtility.OpenFilePanel(
-                "Select RedSnapper.zip",
+                "Select RedSnapper ZIP",
                 string.Empty,
                 "zip"
             );
@@ -74,22 +84,66 @@ public static class RedSnapperImporter
             CleanOldGeneratedAssets();
             EnsureFolders();
 
+            string libraryRoot =
+                Path.GetFullPath(
+                    "Library/RedSnapperImport"
+                );
+
+            if (Directory.Exists(
+                    libraryRoot))
+            {
+                Directory.Delete(
+                    libraryRoot,
+                    true
+                );
+            }
+
+            Directory.CreateDirectory(
+                libraryRoot
+            );
+
+            string blendPath =
+                Path.Combine(
+                    libraryRoot,
+                    "RedSnapper.blend"
+                );
+
             EditorUtility.DisplayProgressBar(
                 "Red Snapper",
-                "Extracting animated FBX and texture...",
-                0.18f
+                "Extracting new authored model, animation, and texture...",
+                0.16f
             );
 
             ExtractPackage(
-                zipPath
+                zipPath,
+                blendPath
             );
 
             ConfigureTexture();
 
             EditorUtility.DisplayProgressBar(
                 "Red Snapper",
-                "Importing authored bones and swim animation...",
-                0.36f
+                "Exporting the new authored animation through Blender...",
+                0.32f
+            );
+
+            string blenderExecutable =
+                ResolveBlenderExecutable();
+
+            ExportBlendToFbx(
+                blenderExecutable,
+                blendPath,
+                Path.GetFullPath(
+                    FbxPath
+                )
+            );
+
+            AssetDatabase.Refresh();
+
+            EditorUtility.DisplayProgressBar(
+                "Red Snapper",
+                "Importing bones and new swim animation...",
+                0.50f
             );
 
             ConfigureFbxImporter();
@@ -102,7 +156,7 @@ public static class RedSnapperImporter
             if (sourceAsset == null)
             {
                 throw new InvalidOperationException(
-                    "Unity could not load the Red Snapper FBX."
+                    "Unity could not load the Red Snapper FBX exported from Blender."
                 );
             }
 
@@ -112,14 +166,14 @@ public static class RedSnapperImporter
             if (swimClip == null)
             {
                 throw new InvalidOperationException(
-                    "The Red Snapper FBX imported, but no swim animation clip was found."
+                    "The Red Snapper FBX exported successfully, but Unity did not find its authored animation."
                 );
             }
 
             EditorUtility.DisplayProgressBar(
                 "Red Snapper",
-                "Building game-lit material and final prefab...",
-                0.64f
+                "Building game-lit material and final gameplay prefab...",
+                0.72f
             );
 
             Material material =
@@ -152,7 +206,7 @@ public static class RedSnapperImporter
 
             EditorUtility.DisplayDialog(
                 "Red Snapper Imported",
-                "Done. Species Red Snapper now uses your rigged FBX, supplied texture, authored swim animation, and the game's URP lighting. The next Play Mode will grant one temporary Red Snapper catch for immediate testing.",
+                "Done. The Red Snapper now uses the new authored Blend animation, supplied texture, head-led aquarium movement, and game lighting. The next Play Mode will grant a fresh test Red Snapper.",
                 "OK"
             );
         }
@@ -271,6 +325,8 @@ public static class RedSnapperImporter
 
     private static void CleanOldGeneratedAssets()
     {
+        // Delete the generated prefab first so Unity never observes a prefab
+        // whose model source has disappeared during the rebuild.
         if (AssetDatabase.LoadAssetAtPath<GameObject>(
                 PrefabPath) != null)
         {
@@ -302,7 +358,8 @@ public static class RedSnapperImporter
     }
 
     private static void ExtractPackage(
-        string zipPath)
+        string zipPath,
+        string blendPath)
     {
         using FileStream stream =
             File.OpenRead(
@@ -315,13 +372,13 @@ public static class RedSnapperImporter
                 ZipArchiveMode.Read
             );
 
-        ZipArchiveEntry fbx =
+        ZipArchiveEntry blend =
             archive.Entries
                 .FirstOrDefault(
                     entry =>
                         entry.FullName
                             .EndsWith(
-                                ".fbx",
+                                ".blend",
                                 StringComparison.OrdinalIgnoreCase
                             )
                 );
@@ -344,10 +401,10 @@ public static class RedSnapperImporter
                     }
                 );
 
-        if (fbx == null)
+        if (blend == null)
         {
             throw new InvalidDataException(
-                "No FBX file was found in the Red Snapper ZIP."
+                "No .blend file was found in the new Red Snapper ZIP."
             );
         }
 
@@ -359,13 +416,15 @@ public static class RedSnapperImporter
         }
 
         WriteEntry(
-            fbx,
-            FbxPath
+            blend,
+            blendPath
         );
 
         WriteEntry(
             texture,
-            TexturePath
+            Path.GetFullPath(
+                TexturePath
+            )
         );
 
         AssetDatabase.Refresh();
@@ -373,18 +432,25 @@ public static class RedSnapperImporter
 
     private static void WriteEntry(
         ZipArchiveEntry entry,
-        string assetPath)
+        string targetPath)
     {
         string absolute =
             Path.GetFullPath(
-                assetPath
+                targetPath
             );
 
-        Directory.CreateDirectory(
+        string directory =
             Path.GetDirectoryName(
                 absolute
-            )
-        );
+            );
+
+        if (!string.IsNullOrWhiteSpace(
+                directory))
+        {
+            Directory.CreateDirectory(
+                directory
+            );
+        }
 
         using Stream input =
             entry.Open();
@@ -397,6 +463,419 @@ public static class RedSnapperImporter
         input.CopyTo(
             output
         );
+    }
+
+    private static string ResolveBlenderExecutable()
+    {
+        if (!string.IsNullOrWhiteSpace(
+                sessionBlenderExecutable) &&
+            File.Exists(
+                sessionBlenderExecutable))
+        {
+            return sessionBlenderExecutable;
+        }
+
+        string saved =
+            EditorPrefs.GetString(
+                BlenderEditorPrefsKey,
+                string.Empty
+            );
+
+        if (!string.IsNullOrWhiteSpace(
+                saved) &&
+            File.Exists(saved))
+        {
+            sessionBlenderExecutable =
+                saved;
+
+            return saved;
+        }
+
+        List<string> candidates =
+            new List<string>();
+
+        string programFiles =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ProgramFiles
+            );
+
+        string programFilesX86 =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.ProgramFilesX86
+            );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFiles,
+                "Blender Foundation"
+            )
+        );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFilesX86,
+                "Blender Foundation"
+            )
+        );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                programFilesX86,
+                "Steam",
+                "steamapps",
+                "common",
+                "Blender"
+            )
+        );
+
+        string localAppData =
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData
+            );
+
+        AddBlenderCandidates(
+            candidates,
+            Path.Combine(
+                localAppData,
+                "Programs",
+                "Blender Foundation"
+            )
+        );
+
+        string found =
+            candidates
+                .Where(
+                    File.Exists
+                )
+                .OrderByDescending(
+                    path =>
+                        File.GetLastWriteTimeUtc(
+                            path
+                        )
+                )
+                .FirstOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(
+                found))
+        {
+            sessionBlenderExecutable =
+                found;
+
+            EditorPrefs.SetString(
+                BlenderEditorPrefsKey,
+                found
+            );
+
+            return found;
+        }
+
+        string picked =
+            EditorUtility.OpenFilePanel(
+                "Locate Blender.exe (one time)",
+                programFiles,
+                "exe"
+            );
+
+        if (string.IsNullOrWhiteSpace(
+                picked))
+        {
+            throw new InvalidOperationException(
+                "Blender could not be found. Select blender.exe once, then the Red Snapper importer will remember it."
+            );
+        }
+
+        if (!File.Exists(
+                picked) ||
+            !string.Equals(
+                Path.GetFileName(
+                    picked),
+                "blender.exe",
+                StringComparison.OrdinalIgnoreCase
+            ))
+        {
+            throw new InvalidOperationException(
+                "Please select Blender's blender.exe executable, not the RedSnapper.blend file."
+            );
+        }
+
+        sessionBlenderExecutable =
+            picked;
+
+        EditorPrefs.SetString(
+            BlenderEditorPrefsKey,
+            picked
+        );
+
+        return picked;
+    }
+
+    private static void AddBlenderCandidates(
+        List<string> candidates,
+        string root)
+    {
+        if (string.IsNullOrWhiteSpace(
+                root) ||
+            !Directory.Exists(
+                root))
+        {
+            return;
+        }
+
+        try
+        {
+            candidates.AddRange(
+                Directory.GetFiles(
+                    root,
+                    "blender.exe",
+                    SearchOption.AllDirectories
+                )
+            );
+        }
+        catch
+        {
+            // Ignore protected/unreadable folders.
+        }
+    }
+
+    private static void ExportBlendToFbx(
+        string blenderExecutable,
+        string blendPath,
+        string fbxPath)
+    {
+        if (!File.Exists(
+                blendPath))
+        {
+            throw new FileNotFoundException(
+                "The extracted Red Snapper Blend source is missing.",
+                blendPath
+            );
+        }
+
+        string scriptFolder =
+            Path.GetFullPath(
+                "Library/RedSnapperImport"
+            );
+
+        Directory.CreateDirectory(
+            scriptFolder
+        );
+
+        string scriptPath =
+            Path.Combine(
+                scriptFolder,
+                "ExportRedSnapper.py"
+            );
+
+        string python =
+@"import bpy
+import os
+import sys
+
+args = sys.argv
+out_path = args[args.index('--') + 1]
+
+armatures = [
+    obj for obj in bpy.context.scene.objects
+    if obj.type == 'ARMATURE'
+]
+
+meshes = [
+    obj for obj in bpy.context.scene.objects
+    if obj.type == 'MESH'
+]
+
+if not armatures:
+    raise RuntimeError('No armature was found in the Red Snapper Blend file.')
+
+if not meshes:
+    raise RuntimeError('No mesh was found in the Red Snapper Blend file.')
+
+# Prefer the armature actually used by the fish mesh.
+armature = None
+for mesh in meshes:
+    for modifier in mesh.modifiers:
+        if modifier.type == 'ARMATURE' and modifier.object is not None:
+            armature = modifier.object
+            break
+    if armature is not None:
+        break
+
+if armature is None:
+    armature = armatures[0]
+
+if armature.animation_data is None:
+    armature.animation_data_create()
+
+swim = armature.animation_data.action
+
+if swim is None:
+    for action in bpy.data.actions:
+        name = action.name.lower()
+        if 'swim' in name or 'armatureaction' in name:
+            swim = action
+            break
+
+if swim is None and len(bpy.data.actions) > 0:
+    swim = bpy.data.actions[0]
+
+if swim is None:
+    raise RuntimeError('No authored Red Snapper animation action was found.')
+
+armature.animation_data.action = swim
+
+bpy.context.scene.frame_start = int(swim.frame_range[0])
+bpy.context.scene.frame_end = int(swim.frame_range[1])
+bpy.context.scene.frame_set(bpy.context.scene.frame_start)
+
+# Avoid context-sensitive select_all calls in --background mode.
+for obj in bpy.context.view_layer.objects:
+    try:
+        obj.select_set(False)
+    except Exception:
+        pass
+
+for obj in meshes + [armature]:
+    obj.hide_viewport = False
+    obj.hide_render = False
+
+    try:
+        obj.hide_set(False)
+    except Exception:
+        pass
+
+    try:
+        obj.select_set(True)
+    except Exception:
+        pass
+
+try:
+    bpy.context.view_layer.objects.active = armature
+except Exception:
+    pass
+
+os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+bpy.ops.export_scene.fbx(
+    filepath=out_path,
+    use_selection=True,
+    object_types={'MESH', 'ARMATURE'},
+    apply_unit_scale=True,
+    add_leaf_bones=False,
+    bake_anim=True,
+    bake_anim_use_all_bones=True,
+    bake_anim_use_nla_strips=False,
+    bake_anim_use_all_actions=False,
+    bake_anim_force_startend_keying=True,
+    axis_forward='-Z',
+    axis_up='Y',
+    path_mode='AUTO'
+)
+
+if not os.path.exists(out_path):
+    raise RuntimeError('FBX export did not produce an output file.')
+
+print('RED_SNAPPER_ACTION=' + swim.name)
+";
+
+        File.WriteAllText(
+            scriptPath,
+            python
+        );
+
+        ProcessStartInfo startInfo =
+            new ProcessStartInfo();
+
+        startInfo.FileName =
+            blenderExecutable;
+
+        startInfo.Arguments =
+            "--background " +
+            QuoteArgument(
+                blendPath
+            ) +
+            " --python " +
+            QuoteArgument(
+                scriptPath
+            ) +
+            " -- " +
+            QuoteArgument(
+                fbxPath
+            );
+
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+
+        using Process process =
+            Process.Start(
+                startInfo
+            );
+
+        if (process == null)
+        {
+            throw new InvalidOperationException(
+                "Blender could not be started."
+            );
+        }
+
+        string standardOutput =
+            process.StandardOutput.ReadToEnd();
+
+        string standardError =
+            process.StandardError.ReadToEnd();
+
+        if (!process.WaitForExit(
+                120000))
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch
+            {
+            }
+
+            throw new TimeoutException(
+                "Blender took more than 2 minutes to export the Red Snapper."
+            );
+        }
+
+        if (process.ExitCode != 0 ||
+            !File.Exists(
+                fbxPath))
+        {
+            Debug.LogError(
+                "Full Blender Red Snapper export output:\n" +
+                standardOutput +
+                "\n\nFull Blender errors:\n" +
+                standardError
+            );
+
+            throw new InvalidOperationException(
+                "Blender opened the Red Snapper source but could not finish the animated FBX export. The full Blender traceback was written to the Unity Console."
+            );
+        }
+
+        Debug.Log(
+            "Red Snapper Blender export completed.\n" +
+            standardOutput
+        );
+    }
+
+    private static string QuoteArgument(
+        string value)
+    {
+        return
+            "\"" +
+            value.Replace(
+                "\"",
+                "\\\""
+            ) +
+            "\"";
     }
 
     private static void ConfigureTexture()
@@ -510,13 +989,19 @@ public static class RedSnapperImporter
         if (swim == null)
         {
             throw new InvalidOperationException(
-                "No animation clip was imported from RedSnapper.fbx."
+                "The FBX exported successfully, but Unity did not import an animation clip from RedSnapper.fbx."
             );
         }
 
         swim.name = "Swim";
         swim.loopTime = true;
         swim.loopPose = true;
+
+        Debug.Log(
+            "Using authored Red Snapper animation take: " +
+            swim.takeName +
+            " at its imported timing."
+        );
 
         importer.clipAnimations =
             new[]
@@ -545,6 +1030,9 @@ public static class RedSnapperImporter
             ) ||
             lower.Contains(
                 "swim"
+            ) ||
+            lower.Contains(
+                "action"
             );
     }
 
@@ -902,6 +1390,7 @@ public static class RedSnapperImporter
         Transform visual,
         Transform model)
     {
+        // The new Red Snapper package uses the same head-to-tail bone chain.
         Transform first =
             FindBone(
                 model,
@@ -917,8 +1406,26 @@ public static class RedSnapperImporter
         if (first == null ||
             last == null)
         {
+            // Fall back to the full chain if the exporter retained Bone as
+            // the first named joint.
+            first =
+                FindBone(
+                    model,
+                    "Bone"
+                );
+
+            last =
+                FindBone(
+                    model,
+                    "Bone.004"
+                );
+        }
+
+        if (first == null ||
+            last == null)
+        {
             Debug.LogWarning(
-                "Red Snapper rig endpoints Bone.001/Bone.004 were not found. Keeping the authored source orientation."
+                "Red Snapper rig endpoints were not found. Keeping the authored source orientation."
             );
 
             return;
