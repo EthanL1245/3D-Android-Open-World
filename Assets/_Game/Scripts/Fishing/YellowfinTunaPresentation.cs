@@ -33,9 +33,20 @@ public class YellowfinTunaPresentation : MonoBehaviour
     private float aquariumLocomotionSpeed = 0.45f;
 
     // Signed turn request from TankFishAgent.
-    // The head/root still owns locomotion; this only curves the body behind it.
+    // The head/root still owns locomotion. These staged followers make the
+    // turn propagate backward through the body over TIME instead of making
+    // the whole tuna bend in the same frame.
     private float aquariumTurnTarget;
-    private float aquariumTurnCurrent;
+
+    private float turnFront;
+    private float turnMid;
+    private float turnRear;
+    private float turnTail;
+
+    private float turnFrontVelocity;
+    private float turnMidVelocity;
+    private float turnRearVelocity;
+    private float turnTailVelocity;
 
     private MaterialPropertyBlock block;
     private Quaternion visualBaseRotation;
@@ -55,9 +66,24 @@ public class YellowfinTunaPresentation : MonoBehaviour
             "_SwimPhase"
         );
 
-    private static readonly int TurnBendId =
+    private static readonly int TurnFrontId =
         Shader.PropertyToID(
-            "_TurnBend"
+            "_TurnFront"
+        );
+
+    private static readonly int TurnMidId =
+        Shader.PropertyToID(
+            "_TurnMid"
+        );
+
+    private static readonly int TurnRearId =
+        Shader.PropertyToID(
+            "_TurnRear"
+        );
+
+    private static readonly int TurnTailId =
+        Shader.PropertyToID(
+            "_TurnTail"
         );
 
     private void Awake()
@@ -149,11 +175,52 @@ public class YellowfinTunaPresentation : MonoBehaviour
                 Mathf.PI * 2f;
         }
 
-        aquariumTurnCurrent =
-            Mathf.MoveTowards(
-                aquariumTurnCurrent,
-                aquariumTurnTarget,
-                Time.deltaTime * 5.5f
+        float turnTarget =
+            held
+                ? 0f
+                : aquariumTurnTarget;
+
+        // Head/front reacts first. Every stage behind it follows the stage
+        // ahead with a slightly longer response time. This is deliberately
+        // a chained follower, not four copies of the same target.
+        turnFront =
+            Mathf.SmoothDamp(
+                turnFront,
+                turnTarget,
+                ref turnFrontVelocity,
+                0.07f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        turnMid =
+            Mathf.SmoothDamp(
+                turnMid,
+                turnFront,
+                ref turnMidVelocity,
+                0.11f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        turnRear =
+            Mathf.SmoothDamp(
+                turnRear,
+                turnMid,
+                ref turnRearVelocity,
+                0.15f,
+                Mathf.Infinity,
+                Time.deltaTime
+            );
+
+        turnTail =
+            Mathf.SmoothDamp(
+                turnTail,
+                turnRear,
+                ref turnTailVelocity,
+                0.19f,
+                Mathf.Infinity,
+                Time.deltaTime
             );
 
         float beat =
@@ -283,10 +350,31 @@ public class YellowfinTunaPresentation : MonoBehaviour
             );
 
             block.SetFloat(
-                TurnBendId,
+                TurnFrontId,
                 held
                     ? 0f
-                    : aquariumTurnCurrent
+                    : turnFront
+            );
+
+            block.SetFloat(
+                TurnMidId,
+                held
+                    ? 0f
+                    : turnMid
+            );
+
+            block.SetFloat(
+                TurnRearId,
+                held
+                    ? 0f
+                    : turnRear
+            );
+
+            block.SetFloat(
+                TurnTailId,
+                held
+                    ? 0f
+                    : turnTail
             );
 
             renderer.SetPropertyBlock(

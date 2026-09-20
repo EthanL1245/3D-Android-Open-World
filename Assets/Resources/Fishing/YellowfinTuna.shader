@@ -16,7 +16,11 @@ Shader "OpenWorld/YellowfinTuna"
         _SwimStrength ("Body Flex Strength", Float) = 0.17
         _SwimSpeed ("Tail Beat Speed", Float) = 5.8
         _SwimPhase ("Swim Phase", Float) = 0
-        _TurnBend ("Turn Bend", Range(-1,1)) = 0
+
+        _TurnFront ("Turn Front", Range(-1,1)) = 0
+        _TurnMid ("Turn Mid", Range(-1,1)) = 0
+        _TurnRear ("Turn Rear", Range(-1,1)) = 0
+        _TurnTail ("Turn Tail", Range(-1,1)) = 0
     }
 
     SubShader
@@ -59,7 +63,11 @@ Shader "OpenWorld/YellowfinTuna"
                 float _SwimStrength;
                 float _SwimSpeed;
                 float _SwimPhase;
-                float _TurnBend;
+
+                float _TurnFront;
+                float _TurnMid;
+                float _TurnRear;
+                float _TurnTail;
             CBUFFER_END
 
             struct Attributes
@@ -188,14 +196,57 @@ Shader "OpenWorld/YellowfinTuna"
                         ? -bodyAxis
                         : bodyAxis;
 
-                // Curve the centerline itself during a turn instead of
-                // rotating the fish like a rigid board. The head is t=0 and
-                // remains fixed; each farther-back section follows a larger
-                // portion of the arc. At a hard reversal the body naturally
-                // becomes a strong C/U shape.
+                // TURN HISTORY:
+                // The head/front, mid, rear and tail do NOT receive the new
+                // turn simultaneously. C# feeds four progressively delayed
+                // follower values. Interpolate those stages along the body so
+                // a U-turn grows from front to back instead of popping into a
+                // full-body U shape in one frame.
+                float frontToMid =
+                    smoothstep(
+                        0.08,
+                        0.38,
+                        tailPosition
+                    );
+
+                float midToRear =
+                    smoothstep(
+                        0.34,
+                        0.70,
+                        tailPosition
+                    );
+
+                float rearToTail =
+                    smoothstep(
+                        0.66,
+                        1.00,
+                        tailPosition
+                    );
+
                 float turnAmount =
+                    lerp(
+                        _TurnFront,
+                        _TurnMid,
+                        frontToMid
+                    );
+
+                turnAmount =
+                    lerp(
+                        turnAmount,
+                        _TurnRear,
+                        midToRear
+                    );
+
+                turnAmount =
+                    lerp(
+                        turnAmount,
+                        _TurnTail,
+                        rearToTail
+                    );
+
+                turnAmount =
                     clamp(
-                        _TurnBend,
+                        turnAmount,
                         -1.0,
                         1.0
                     );
@@ -205,9 +256,12 @@ Shader "OpenWorld/YellowfinTuna"
                         turnAmount
                     );
 
+                // Maximum curvature is still strong enough to make a deep
+                // C/U turn, but because turnAmount is delayed down the body
+                // the shape now develops progressively.
                 float totalTurnAngle =
                     turnMagnitude *
-                    2.10;
+                    2.20;
 
                 if (totalTurnAngle > 0.001)
                 {
