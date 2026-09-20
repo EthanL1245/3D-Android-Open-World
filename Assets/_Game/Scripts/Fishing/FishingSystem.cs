@@ -58,7 +58,14 @@ public class FishingSystem : MonoBehaviour
 
     private Transform heldFishAnchor;
     private GameObject heldFishVisual;
+    private GameObject heldHookVisual;
+    private Transform heldHookPoint;
+    private Transform heldFishMouthMarker;
+    private Quaternion heldFishBaseRotation =
+        Quaternion.identity;
     private float heldFishFlopOffset;
+
+    private GameObject unconsciousFishVisual;
 
     private bool rodEquipped = true;
 
@@ -241,11 +248,17 @@ public class FishingSystem : MonoBehaviour
                 bobber != null &&
                 bobber.activeSelf;
 
+            bool reeling =
+                fighting &&
+                action != null &&
+                action.IsHeld;
+
             if (fighting)
             {
                 rodView.SetLinePull(
                     bobber.transform.position,
                     fightTension,
+                    reeling,
                     Time.deltaTime
                 );
             }
@@ -257,9 +270,7 @@ public class FishingSystem : MonoBehaviour
             }
 
             rodView.TickReel(
-                fighting &&
-                action != null &&
-                action.IsHeld,
+                reeling,
                 Time.deltaTime
             );
         }
@@ -371,15 +382,7 @@ public class FishingSystem : MonoBehaviour
             redSnapperPresentation.SetHeld(true);
         }
 
-        heldFishVisual.transform.localPosition =
-            Vector3.zero;
-
-        heldFishVisual.transform.localRotation =
-            Quaternion.Euler(
-                4f,
-                92f,
-                8f
-            );
+        SetupHookedCatchPresentation();
 
         heldFishFlopOffset =
             Random.Range(
@@ -942,6 +945,8 @@ public class FishingSystem : MonoBehaviour
                 fishUnconscious = true;
                 surgeAmount = 0f;
                 lineBreakTimer = 0f;
+
+                EnsureUnconsciousFishVisual();
                 fightTension =
                     Mathf.Min(
                         fightTension,
@@ -979,6 +984,8 @@ public class FishingSystem : MonoBehaviour
             {
                 SnapCurrentBobberToSurface();
             }
+
+            UpdateUnconsciousFishVisual();
         }
 
         fightTension =
@@ -2501,6 +2508,8 @@ public class FishingSystem : MonoBehaviour
         if (bobberIndicatorRoot != null)
             bobberIndicatorRoot.SetActive(false);
 
+        ClearUnconsciousFishVisual();
+
         if (rodView != null)
         {
             rodView.RelaxLinePull(
@@ -2768,9 +2777,9 @@ public class FishingSystem : MonoBehaviour
 
         anchor.transform.localPosition =
             new Vector3(
-                0.38f,
-                -0.30f,
-                0.86f
+                0.32f,
+                -0.12f,
+                0.92f
             );
 
         heldFishAnchor =
@@ -2783,55 +2792,481 @@ public class FishingSystem : MonoBehaviour
             return;
 
         float time =
-            Time.time * 5.6f +
+            Time.time * 5.8f +
             heldFishFlopOffset;
 
-        heldFishVisual.transform.localPosition =
-            new Vector3(
-                0f,
-                Mathf.Sin(time * 0.7f) *
-                0.018f,
-                0f
-            );
-
-        heldFishVisual.transform.localRotation =
-            Quaternion.Euler(
-                Mathf.Sin(time * 1.7f) *
-                5f,
-                92f +
-                Mathf.Sin(time) *
-                7f,
-                8f +
-                Mathf.Sin(time * 1.35f) *
-                13f
-            );
-
-        Transform tail =
-            heldFishVisual.transform.Find(
-                "Tail"
-            );
-
-        if (tail != null)
+        if (heldHookVisual != null)
         {
-            tail.localRotation =
-                Quaternion.Euler(
-                    0f,
+            heldHookVisual.transform.localPosition =
+                new Vector3(
                     Mathf.Sin(
-                        time * 2.2f
+                        time * 0.45f
                     ) *
-                    34f,
+                    0.006f,
+                    Mathf.Sin(
+                        time * 0.38f
+                    ) *
+                    0.005f,
                     0f
                 );
+
+            heldHookVisual.transform.localRotation =
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    Mathf.Sin(
+                        time * 0.42f
+                    ) *
+                    2.2f
+                );
+        }
+
+        heldFishVisual.transform.localRotation =
+            heldFishBaseRotation *
+            Quaternion.Euler(
+                Mathf.Sin(
+                    time * 1.65f
+                ) *
+                10f,
+                Mathf.Sin(
+                    time * 1.12f
+                ) *
+                13f,
+                Mathf.Sin(
+                    time * 2.05f
+                ) *
+                18f
+            );
+
+        // Keep the mouth/head pinned to the hook while the body swings and
+        // the authored fish animation adds most of the tail/body thrashing.
+        if (heldHookPoint != null &&
+            heldFishMouthMarker != null)
+        {
+            Vector3 correction =
+                heldHookPoint.position -
+                heldFishMouthMarker.position;
+
+            heldFishVisual.transform.position +=
+                correction;
         }
     }
 
-    private void ClearHeldFish()
+    private void SetupHookedCatchPresentation()
     {
         if (heldFishVisual == null)
             return;
 
-        Destroy(heldFishVisual);
-        heldFishVisual = null;
+        if (heldHookVisual != null)
+        {
+            Destroy(
+                heldHookVisual
+            );
+
+            heldHookVisual = null;
+        }
+
+        GameObject hookPrefab =
+            Resources.Load<GameObject>(
+                "Fishing/FishingGaff"
+            );
+
+        if (hookPrefab != null)
+        {
+            heldHookVisual =
+                Instantiate(
+                    hookPrefab,
+                    heldFishAnchor,
+                    false
+                );
+
+            heldHookVisual.name =
+                "CaughtFishHook";
+
+            heldHookVisual.transform.localPosition =
+                Vector3.zero;
+
+            heldHookVisual.transform.localRotation =
+                Quaternion.identity;
+
+            heldHookPoint =
+                FindDeepChildByName(
+                    heldHookVisual.transform,
+                    "HookPoint"
+                );
+        }
+
+        if (heldHookPoint == null)
+        {
+            GameObject fallback =
+                new GameObject(
+                    "HookPoint"
+                );
+
+            fallback.transform.SetParent(
+                heldFishAnchor,
+                false
+            );
+
+            fallback.transform.localPosition =
+                new Vector3(
+                    0f,
+                    0.18f,
+                    0f
+                );
+
+            heldHookPoint =
+                fallback.transform;
+        }
+
+        heldFishVisual.transform.localPosition =
+            Vector3.zero;
+
+        // All gameplay fish are normalized with head toward local +Z.
+        // Rotate +Z upward so the caught fish hangs vertically below its mouth.
+        heldFishBaseRotation =
+            Quaternion.Euler(
+                -90f,
+                0f,
+                0f
+            );
+
+        heldFishVisual.transform.localRotation =
+            heldFishBaseRotation;
+
+        float headZ =
+            FindFrontmostLocalZ(
+                heldFishVisual
+            );
+
+        GameObject marker =
+            new GameObject(
+                "CatchMouthAnchor"
+            );
+
+        marker.transform.SetParent(
+            heldFishVisual.transform,
+            false
+        );
+
+        marker.transform.localPosition =
+            new Vector3(
+                0f,
+                0f,
+                headZ
+            );
+
+        heldFishMouthMarker =
+            marker.transform;
+
+        Vector3 correction =
+            heldHookPoint.position -
+            heldFishMouthMarker.position;
+
+        heldFishVisual.transform.position +=
+            correction;
+    }
+
+    private float FindFrontmostLocalZ(
+        GameObject fish)
+    {
+        Renderer[] renderers =
+            fish.GetComponentsInChildren<Renderer>(
+                true
+            );
+
+        float best =
+            0.46f;
+
+        bool found = false;
+
+        foreach (Renderer renderer
+                 in renderers)
+        {
+            Bounds bounds =
+                renderer.bounds;
+
+            Vector3 center =
+                fish.transform
+                    .InverseTransformPoint(
+                        bounds.center
+                    );
+
+            Vector3 right =
+                fish.transform
+                    .InverseTransformVector(
+                        new Vector3(
+                            bounds.extents.x,
+                            0f,
+                            0f
+                        )
+                    );
+
+            Vector3 up =
+                fish.transform
+                    .InverseTransformVector(
+                        new Vector3(
+                            0f,
+                            bounds.extents.y,
+                            0f
+                        )
+                    );
+
+            Vector3 forward =
+                fish.transform
+                    .InverseTransformVector(
+                        new Vector3(
+                            0f,
+                            0f,
+                            bounds.extents.z
+                        )
+                    );
+
+            float projectedExtent =
+                Mathf.Abs(
+                    right.z
+                ) +
+                Mathf.Abs(
+                    up.z
+                ) +
+                Mathf.Abs(
+                    forward.z
+                );
+
+            float front =
+                center.z +
+                projectedExtent;
+
+            if (!found ||
+                front > best)
+            {
+                best = front;
+                found = true;
+            }
+        }
+
+        return best;
+    }
+
+    private static Transform FindDeepChildByName(
+        Transform root,
+        string childName)
+    {
+        if (root == null)
+            return null;
+
+        Transform[] transforms =
+            root.GetComponentsInChildren<Transform>(
+                true
+            );
+
+        for (int i = 0;
+             i < transforms.Length;
+             i++)
+        {
+            if (transforms[i].name ==
+                childName)
+            {
+                return transforms[i];
+            }
+        }
+
+        return null;
+    }
+
+    private void ClearHeldFish()
+    {
+        if (heldFishVisual != null)
+        {
+            Destroy(
+                heldFishVisual
+            );
+
+            heldFishVisual = null;
+        }
+
+        if (heldHookVisual != null)
+        {
+            Destroy(
+                heldHookVisual
+            );
+
+            heldHookVisual = null;
+        }
+
+        if (heldHookPoint != null &&
+            heldHookPoint.parent ==
+                heldFishAnchor)
+        {
+            Destroy(
+                heldHookPoint.gameObject
+            );
+        }
+
+        heldHookPoint = null;
+        heldFishMouthMarker = null;
+    }
+
+    private void EnsureUnconsciousFishVisual()
+    {
+        if (unconsciousFishVisual != null)
+            return;
+
+        unconsciousFishVisual =
+            FishVisualFactory.CreateFish(
+                "Unconscious_" +
+                FishCatalog
+                    .Get(
+                        hookedSpeciesId
+                    )
+                    .Name,
+                null,
+                hookedSpeciesId,
+                FishCatalog.GetVisualScale(
+                    hookedSpeciesId,
+                    hookedWeightKg
+                )
+            );
+
+        if (unconsciousFishVisual == null)
+            return;
+
+        foreach (Animator animator
+                 in unconsciousFishVisual
+                    .GetComponentsInChildren<Animator>(
+                        true
+                    ))
+        {
+            animator.enabled = false;
+        }
+
+        UpdateUnconsciousFishVisual();
+    }
+
+    private void UpdateUnconsciousFishVisual()
+    {
+        if (unconsciousFishVisual == null ||
+            bobber == null)
+        {
+            return;
+        }
+
+        Vector3 position =
+            bobber.transform.position;
+
+        float sample =
+            0.35f;
+
+        float left =
+            oceanWater.GetSurfaceHeight(
+                position -
+                Vector3.right * sample
+            );
+
+        float right =
+            oceanWater.GetSurfaceHeight(
+                position +
+                Vector3.right * sample
+            );
+
+        float back =
+            oceanWater.GetSurfaceHeight(
+                position -
+                Vector3.forward * sample
+            );
+
+        float front =
+            oceanWater.GetSurfaceHeight(
+                position +
+                Vector3.forward * sample
+            );
+
+        Vector3 tangentX =
+            new Vector3(
+                sample * 2f,
+                right - left,
+                0f
+            );
+
+        Vector3 tangentZ =
+            new Vector3(
+                0f,
+                front - back,
+                sample * 2f
+            );
+
+        Vector3 surfaceNormal =
+            Vector3.Cross(
+                tangentZ,
+                tangentX
+            );
+
+        if (surfaceNormal.y < 0f)
+        {
+            surfaceNormal =
+                -surfaceNormal;
+        }
+
+        if (surfaceNormal.sqrMagnitude <
+            0.0001f)
+        {
+            surfaceNormal =
+                Vector3.up;
+        }
+
+        surfaceNormal.Normalize();
+
+        Vector3 forward =
+            Vector3.ProjectOnPlane(
+                fightTravelDirection,
+                surfaceNormal
+            );
+
+        if (forward.sqrMagnitude <
+            0.0001f)
+        {
+            forward =
+                Vector3.ProjectOnPlane(
+                    playerCamera.transform.forward,
+                    surfaceNormal
+                );
+        }
+
+        if (forward.sqrMagnitude <
+            0.0001f)
+        {
+            forward =
+                Vector3.forward;
+        }
+
+        forward.Normalize();
+
+        unconsciousFishVisual.transform.position =
+            position +
+            surfaceNormal * 0.025f;
+
+        unconsciousFishVisual.transform.rotation =
+            Quaternion.LookRotation(
+                forward,
+                surfaceNormal
+            ) *
+            Quaternion.Euler(
+                0f,
+                0f,
+                90f
+            );
+    }
+
+    private void ClearUnconsciousFishVisual()
+    {
+        if (unconsciousFishVisual == null)
+            return;
+
+        Destroy(
+            unconsciousFishVisual
+        );
+
+        unconsciousFishVisual = null;
     }
 
     private Material CreateMaterial(
