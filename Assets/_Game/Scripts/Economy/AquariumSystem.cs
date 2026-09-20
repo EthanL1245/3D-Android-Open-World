@@ -936,7 +936,8 @@ public class PlacedFishTank : MonoBehaviour
                 visual.AddComponent<TankFishAgent>();
 
             agent.Configure(
-                i * 1.73f
+                i * 1.73f,
+                fish.speciesId
             );
         }
     }
@@ -956,6 +957,7 @@ public class TankFishAgent : MonoBehaviour
     private float turnSpeedDeg;
     private float pitchSpeedDeg;
     private float phase;
+    private int speciesId;
 
     private float pathAngle;
     private float pathDirection;
@@ -965,9 +967,12 @@ public class TankFishAgent : MonoBehaviour
     private float heightAmplitude;
     private float heightPhase;
 
-    public void Configure(float offset)
+    public void Configure(
+        float offset,
+        int configuredSpeciesId)
     {
         phase = offset;
+        speciesId = configuredSpeciesId;
 
         heroAnimator =
             GetComponent<HeroFishAnimator>();
@@ -985,13 +990,23 @@ public class TankFishAgent : MonoBehaviour
         {
             // Use the supplied animation at 1.0x and move far enough per
             // animation cycle that the stroke and travel speed agree.
+            float goatfishSpeciesMultiplier =
+                speciesId ==
+                FishCatalog.YellowGoatfishId
+                    ? 0.50f
+                    : speciesId ==
+                      FishCatalog.BlackSpotGoatfishId
+                        ? 2.00f
+                        : 1.00f;
+
             cruiseSpeed =
                 goatfishPresentation
                     .GetRecommendedCruiseSpeed() *
                 UnityEngine.Random.Range(
                     0.78f,
                     0.84f
-                );
+                ) *
+                goatfishSpeciesMultiplier;
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(
@@ -1021,7 +1036,8 @@ public class TankFishAgent : MonoBehaviour
                 UnityEngine.Random.Range(
                     0.96f,
                     1.04f
-                );
+                ) *
+                2.00f;
 
             turnSpeedDeg =
                 UnityEngine.Random.Range(
