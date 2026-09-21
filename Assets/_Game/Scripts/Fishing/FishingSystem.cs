@@ -128,8 +128,50 @@ public class FishingSystem : MonoBehaviour
 
     public FishingInventory Inventory => inventory;
 
+    private ShopProgress shopProgress;
+    private bool shopMode;
+    private float rodPower=1f, reelPower=1f, lineGuard=1f;
+    private float baseCastRange, basePreferredRange, baseLineRange;
+    private int activeBait;
+    private void ApplyShopGear()
+    {
+        if(shopProgress==null) return;
+        var gear=shopProgress.Data;
+        rodPower=1f+gear.rodEquipped*0.18f;
+        reelPower=1f+gear.reelEquipped*0.22f;
+        lineGuard=1f+gear.lineEquipped*0.12f;
+        float extension=ShopCatalog.LineBonus[gear.lineEquipped];
+        maximumCastDistance=baseCastRange+extension;
+        preferredCastDistance=basePreferredRange+extension*0.6f;
+        maximumLineDistance=baseLineRange+extension;
+        if(rodRoot!=null)
+        {
+            foreach(var renderer in rodRoot.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if(renderer.name=="ReelSeatCollar") continue;
+                var block=new MaterialPropertyBlock();renderer.GetPropertyBlock(block);
+                Color tint=renderer.name=="RodBlank" ? Color.Lerp(Color.white,new Color(0.2f,0.3f,0.33f),gear.rodEquipped/3f) : Color.Lerp(Color.white,new Color(0.94f,0.78f,0.42f),gear.reelEquipped/3f);
+                block.SetColor("_BaseColor",tint);renderer.SetPropertyBlock(block);
+            }
+        }
+    }
+    public void PrepareForWorldTravel()
+    {
+        CancelFishing(); ClearHeldFish();
+        if(hud!=null) hud.SetInventoryOpen(false);
+    }
+    public void SetShopWorld(bool shop)
+    {
+        shopMode=shop;
+        if(shop) { PrepareForWorldTravel(); if(rodRoot!=null) rodRoot.SetActive(false); }
+        else EquipRod();
+        if(hud!=null) hud.SetActionVisible(!shop);
+    }
     private void Start()
     {
+        shopProgress=GetComponent<ShopProgress>();
+        baseCastRange=maximumCastDistance; basePreferredRange=preferredCastDistance; baseLineRange=maximumLineDistance;
+        if(shopProgress!=null) { shopProgress.Changed+=ApplyShopGear; ApplyShopGear(); }
         ResolveReferences();
 
         if (playerCamera == null ||
@@ -154,6 +196,7 @@ public class FishingSystem : MonoBehaviour
         GrantRedSnapperPreviewOnce();
 
         CreateRodAndLine();
+        ApplyShopGear();
         CreateHeldFishAnchor();
 
         hud =
@@ -184,6 +227,7 @@ public class FishingSystem : MonoBehaviour
 
     private void OnDestroy()
     {
+        if(shopProgress!=null) shopProgress.Changed-=ApplyShopGear;
         if (inventory != null &&
             hud != null)
         {
@@ -194,6 +238,7 @@ public class FishingSystem : MonoBehaviour
 
     private void Update()
     {
+        if(shopMode || ShopWorldHUD.MenuOpen) return;
         if (hud == null)
             return;
 
@@ -272,7 +317,7 @@ public class FishingSystem : MonoBehaviour
 
             rodView.TickReel(
                 reeling,
-                Time.deltaTime
+                Time.deltaTime * reelPower
             );
         }
 
@@ -567,6 +612,7 @@ public class FishingSystem : MonoBehaviour
 
     private void TryCast()
     {
+        if(shopMode) return;
         if (!TryGetCastPoint(
                 out Vector3 target))
         {
@@ -577,6 +623,7 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
+        activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
         StartCoroutine(
             CastRoutine(target)
         );
@@ -655,13 +702,24 @@ public class FishingSystem : MonoBehaviour
             Random.Range(
                 minimumBiteDelay,
                 maximumBiteDelay
-            );
+            ) * (activeBait==1 ? 0.65f : activeBait==2 ? 0.8f : 1f);
 
         hud.SetActionLabel("WAIT");
         hud.SetStatus(
             "Waiting for a bite..."
         );
     }
+
+    private int RollBaitSpecies()
+    {
+        if(activeBait<2) return FishCatalog.RollSpecies();
+        float total=0;
+        for(int i=0;i<FishCatalog.Count;i++) total+=FishCatalog.Get(i).RelativeChance*BaitChance(i);
+        float roll=Random.value*total;
+        for(int i=0;i<FishCatalog.Count;i++) { roll-=FishCatalog.Get(i).RelativeChance*BaitChance(i); if(roll<=0) return i; }
+        return 0;
+    }
+    private float BaitChance(int id) => activeBait==2 ? (id==1 || id==6 || id==7 ? 2.5f : 1f) : (id==3 || id==4 || id==5 ? 4f : 1f);
 
     private void UpdateWaiting()
     {
@@ -672,7 +730,7 @@ public class FishingSystem : MonoBehaviour
         if (stateTimer <= 0f)
         {
             hookedSpeciesId =
-                FishCatalog.RollSpecies();
+                RollBaitSpecies();
 
             hookedWeightKg =
                 FishCatalog.RollWeight(
@@ -905,7 +963,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
-                    temperamentTension;
+                    temperamentTension / (rodPower * lineGuard);
 
                 float healthRate =
                     Mathf.Lerp(
@@ -926,7 +984,7 @@ public class FishingSystem : MonoBehaviour
                 fishHealth -=
                     Time.deltaTime *
                     healthRate *
-                    moodHealthFactor;
+                    moodHealthFactor * reelPower;
             }
             else
             {
@@ -2085,7 +2143,7 @@ public class FishingSystem : MonoBehaviour
             current +
             direction *
             (
-                1.85f *
+                1.85f * reelPower *
                 Time.deltaTime
             );
 

@@ -88,8 +88,28 @@ public class FirstPersonController : MonoBehaviour
         previousSwimming = IsSwimming;
     }
 
+    private bool uiBlocked;
+    public void SetUIBlocked(bool blocked)
+    {
+        uiBlocked=blocked;
+        ResetMotion();
+        if(!Application.isMobilePlatform) { Cursor.lockState=blocked?CursorLockMode.None:CursorLockMode.Locked; Cursor.visible=blocked; }
+    }
+    public void ResetViewPitch()
+    {
+        cameraPitch=0;
+        if(cameraTransform!=null) cameraTransform.localRotation=Quaternion.identity;
+    }
+    public void ResetMotion()
+    {
+        planarVelocity=Vector3.zero; swimVelocity=Vector3.zero; verticalVelocity=0f;
+        IsSwimming=false; previousSwimming=false; IsSprinting=false;
+        mobileSprintHoldTimer=0f; mobileSprintLatched=false;
+        if(touchLookArea!=null) touchLookArea.ConsumeLookDelta();
+    }
     private void Update()
     {
+        if(uiBlocked) { if(touchLookArea!=null) touchLookArea.ConsumeLookDelta(); return; }
         HandleMovement();
 
         if (moveJoystick != null)
@@ -302,10 +322,8 @@ public class FirstPersonController : MonoBehaviour
                 swimAcceleration * Time.deltaTime
             );
 
-        float waterHeight =
-            oceanWater.GetSurfaceHeight(
-                transform.position
-            );
+        if(!ShopWaterVolume.TrySurface(transform.position,oceanWater,out float waterHeight))
+        { IsSwimming=false; return; }
 
         float bodyHeight =
             transform.position.y +
@@ -392,22 +410,8 @@ public class FirstPersonController : MonoBehaviour
 
     private void UpdateSwimmingState()
     {
-        if (oceanWater == null)
-        {
-            oceanWater =
-                FindFirstObjectByType<OceanWater>();
-
-            if (oceanWater == null)
-            {
-                IsSwimming = false;
-                return;
-            }
-        }
-
-        float waterHeight =
-            oceanWater.GetSurfaceHeight(
-                transform.position
-            );
+        if(!ShopWaterVolume.TrySurface(transform.position,oceanWater,out float waterHeight))
+        { IsSwimming=false; return; }
 
         float bodyHeight =
             transform.position.y +

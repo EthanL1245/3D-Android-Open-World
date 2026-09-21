@@ -1,0 +1,53 @@
+using System.Text.Json;
+
+// Same record fields as Unity's FishingInventory; these tests compile the real
+// ShopLedger and ShopCatalog, without depending on Unity or third-party packages.
+[Serializable] public sealed class CaughtFishRecord
+{
+    public int speciesId; public float weightKg; public long caughtUtcTicks;
+}
+internal static class Program
+{
+    private static int checks;
+    private static void Check(bool condition,string message) { checks++; if(!condition)throw new Exception(message); }
+    private static CaughtFishRecord Fish(float kg,int species=0) => new CaughtFishRecord { speciesId=species,weightKg=kg,caughtUtcTicks=DateTime.UtcNow.Ticks };
+    private static void Main()
+    {
+        var d=new ShopLedger { coins=179 };
+        Check(!d.BuyGear(GearKind.Rod,1) && d.coins==179,"Unaffordable purchase changed balance");
+        d.coins=180; Check(d.BuyGear(GearKind.Rod,1) && d.coins==0 && d.rodEquipped==1,"Exact-price upgrade failed");
+        Check(!d.BuyGear(GearKind.Rod,1),"Duplicate gear purchase");
+        d.coins=10000;Check(!d.BuyGear(GearKind.Rod,3),"Skipped prerequisite");
+        Check(!d.Equip(GearKind.Reel,3),"Equipped unowned item");
+        Check(d.Equip(GearKind.Rod,0),"Could not re-equip starter");
+        Check(d.BuyBait(2) && d.bait[2]==10,"Bait pack size");
+        for(int i=0;i<10;i++)Check(d.ConsumeBait()==2,"Wrong bait consumed");
+        Check(d.baitEquipped==0 && d.ConsumeBait()==0 && d.bait[2]==0,"No free-lure fallback");
+        Check(d.BuyHabitat("nano"),"Habitat purchase failed");int coins=d.coins;
+        Check(!d.BuyHabitat("nano") && d.coins==coins,"Duplicate habitat charged");
+        var heavy=Fish(0.81f);d.bag.Add(heavy);Check(!d.Deposit("nano",heavy) && d.bag.Contains(heavy),"Oversized fish lost");
+        var a=Fish(0.8f);var b=Fish(0.8f);var c=Fish(0.3f);d.bag.AddRange(new[]{a,b,c});
+        Check(d.Deposit("nano",a) && d.Deposit("nano",b),"Valid transfer failed");
+        Check(!d.Deposit("nano",c) && d.bag.Contains(c),"Total mass limit bypassed");
+        Check(!d.Deposit("nano",a),"Same fish deposited twice");
+        Check(d.Withdraw("nano",a) && d.bag.Contains(a),"Withdrawal lost fish");
+        Check(!d.Withdraw("nano",a),"Same fish withdrawn twice");
+        var tiny=Fish(0.1f);var tiny2=Fish(0.1f);var tiny3=Fish(0.1f);d.bag.AddRange(new[]{tiny,tiny2,tiny3});
+        Check(d.Deposit("nano",tiny) && d.Deposit("nano",tiny2) && !d.Deposit("nano",tiny3),"Fish count limit bypassed");
+        Check(!d.Deposit("lake",heavy),"Deposit into unowned lake");
+        var invalid=Fish(float.NaN);d.bag.Add(invalid);Check(!d.Deposit("nano",invalid),"NaN admitted");d.bag.Remove(invalid);
+        Check(d.Sell(a,20) && !d.Sell(a,20),"Duplicate sale paid twice");
+        Check(Math.Abs(ShopCatalog.FishLength(0,8)/ShopCatalog.FishLength(0,1)-2)<0.00001,"Weight scaling is not cubic");
+        for(int i=0;i<150;i++)d.bag.Add(Fish(0.25f));
+        var options=new JsonSerializerOptions { IncludeFields=true };
+        string json=JsonSerializer.Serialize(d,options);var restored=JsonSerializer.Deserialize<ShopLedger>(json,options);
+        Check(restored.coins==d.coins && restored.bag.Count==d.bag.Count && restored.bag.Count>150,"Full bag save lost fish");
+        Check(restored.Habitat("nano").fish.Count==3 && restored.rodOwned==1 && restored.bait[2]==0,"Save lost ownership or bait");
+        foreach(var habitat in ShopCatalog.Habitats)
+        {
+            Check(habitat.price>0 && habitat.fishLimit>0 && habitat.maxFishKg<=habitat.totalKg,"Invalid habitat limits");
+            Check(ShopCatalog.FishLength(5,habitat.maxFishKg)<Math.Min(habitat.width,habitat.depth)*0.48f,"Catalog admits fish too long to turn");
+        }
+        Console.WriteLine($"PASS: {checks} commerce, gear, bait, capacity, transfer, weight scaling and save checks.");
+    }
+}

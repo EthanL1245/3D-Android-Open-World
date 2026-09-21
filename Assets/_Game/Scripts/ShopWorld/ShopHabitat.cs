@@ -1,0 +1,57 @@
+using UnityEngine;
+
+public sealed class ShopHabitat : MonoBehaviour
+{
+    public string id;
+    public Transform interaction, entrance, exit, fishRoot;
+    public ShopWaterVolume water;
+    public BoxCollider purchaseBarrier;
+    public TextMesh label;
+    private ShopProgress progress;
+    private int fishSignature=int.MinValue;
+    private float visibilityTimer;
+    private void Update()
+    {
+        if(progress==null || fishRoot==null) return;
+        visibilityTimer-=Time.deltaTime; if(visibilityTimer>0) return; visibilityTimer=0.5f;
+        var d=ShopCatalog.Habitat(id);
+        float range=55f+Mathf.Max(d.width,d.depth)*0.6f;
+        bool visible=(progress.transform.position-transform.position).sqrMagnitude<range*range;
+        if(fishRoot.gameObject.activeSelf!=visible) fishRoot.gameObject.SetActive(visible);
+    }
+    private void Start()
+    {
+        progress=FindFirstObjectByType<ShopProgress>();
+        if(progress!=null) { progress.Changed+=Refresh; Refresh(); }
+    }
+    private void OnDestroy() { if(progress!=null) progress.Changed-=Refresh; }
+    private void Refresh()
+    {
+        var d=ShopCatalog.Habitat(id); var owned=progress.Data.Habitat(id);
+        bool purchased=owned!=null;
+        water.available=purchased && d.swimmable;
+        if(purchaseBarrier!=null) purchaseBarrier.enabled=!purchased || !d.swimmable;
+        float kg=0; int signature=purchased?17:0;
+        if(purchased) foreach(var f in owned.fish) { kg+=f.weightKg; unchecked { signature=signature*31+f.GetHashCode(); } }
+        if(label!=null) label.text=d.name.ToUpperInvariant()+"\n"+(purchased ? $"OWNED  |  {owned.fish.Count}/{d.fishLimit} FISH  |  {kg:0.0}/{d.totalKg:0} KG" : $"{d.price:N0} COINS  |  PURCHASE AT THIS SIGN")+$"\nMAX {d.maxFishKg:0.0} KG EACH";
+        if(signature==fishSignature) return;
+        fishSignature=signature;
+        fishRoot.gameObject.SetActive(true);
+        for(int i=fishRoot.childCount-1;i>=0;i--) { fishRoot.GetChild(i).gameObject.SetActive(false); Destroy(fishRoot.GetChild(i).gameObject); }
+        if(!purchased) return;
+        for(int i=0;i<owned.fish.Count;i++)
+        {
+            var record=owned.fish[i];
+            var fish=FishVisualFactory.CreateFish("Resident_"+i,fishRoot,record.speciesId,1f);
+            var renderers=fish.GetComponentsInChildren<Renderer>();
+            if(renderers.Length==0) { Destroy(fish); continue; }
+            Bounds bounds=renderers[0].bounds;
+            foreach(var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            float length=ShopCatalog.FishLength(record.speciesId,record.weightKg);
+            fish.transform.localScale*=length/Mathf.Max(0.001f,Mathf.Max(bounds.size.x,Mathf.Max(bounds.size.y,bounds.size.z)));
+            var agent=fish.AddComponent<TankFishAgent>();
+            agent.Configure(i*1.73f,record.speciesId);
+            agent.ConfigureHabitat(water.size,length);
+        }
+    }
+}

@@ -202,35 +202,8 @@ public static class FishCatalog
         int speciesId,
         float weightKg)
     {
-        FishSpeciesDefinition species =
-            Get(speciesId);
-
-        float weightPercent =
-            Mathf.InverseLerp(
-                species.MinWeightKg,
-                species.MaxWeightKg,
-                weightKg
-            );
-
-        float visualScale =
-            Mathf.Lerp(
-                0.68f,
-                1.42f,
-                Mathf.Pow(
-                    weightPercent,
-                    0.72f
-                )
-            );
-
-        // Red Snapper should read a little larger everywhere it is shown,
-        // while still preserving weight-based size differences.
-        if (speciesId ==
-            RedSnapperId)
-        {
-            visualScale *=
-                1.15f;
-        }
-
-        return visualScale;
+        FishSpeciesDefinition species=Get(speciesId);
+        float reference=Mathf.Sqrt(species.MinWeightKg*species.MaxWeightKg);
+        return Mathf.Pow(Mathf.Max(0.01f,weightKg)/reference,1f/3f) * (speciesId==RedSnapperId ? 1.15f : 1f);
     }
 }

@@ -8,12 +8,16 @@ public class EconomySystem : MonoBehaviour
 
     [SerializeField] private int startingCoins = 0;
 
-    public int Coins { get; private set; }
+    private int legacyCoins;
+    private ShopProgress shop;
+    public int Coins { get => shop!=null ? shop.Data.coins : legacyCoins; private set { if(shop!=null) shop.Data.coins=value; else legacyCoins=value; } }
 
     public event Action Changed;
 
     private void Awake()
     {
+        shop=GetComponent<ShopProgress>();
+        if(shop!=null) { shop.Changed+=OnShopChanged; return; }
         Coins =
             PlayerPrefs.GetInt(
                 CoinsKey,
@@ -44,8 +48,11 @@ public class EconomySystem : MonoBehaviour
         return true;
     }
 
+    private void OnShopChanged() => Changed?.Invoke();
+    private void OnDestroy() { if(shop!=null) shop.Changed-=OnShopChanged; }
     private void Save()
     {
+        if(shop!=null) { shop.Save(); return; }
         PlayerPrefs.SetInt(
             CoinsKey,
             Coins

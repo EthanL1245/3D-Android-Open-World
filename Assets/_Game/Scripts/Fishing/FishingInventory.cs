@@ -30,10 +30,15 @@ public class FishingInventory : MonoBehaviour
 
     public IReadOnlyList<CaughtFishRecord> Fish => fish;
 
+    private ShopProgress shop;
     private void Awake()
     {
-        Load();
+        shop=GetComponent<ShopProgress>();
+        if(shop!=null) { fish=shop.Data.bag; shop.Changed+=OnShopChanged; }
+        else Load();
     }
+    private void OnShopChanged() { fish=shop.Data.bag; Changed?.Invoke(); }
+    private void OnDestroy() { if(shop!=null) shop.Changed-=OnShopChanged; }
 
     public int AddFish(
         int speciesId,
@@ -120,6 +125,7 @@ public class FishingInventory : MonoBehaviour
 
     private void Save()
     {
+        if(shop!=null) { shop.Save(); return; }
         FishingInventorySaveData data =
             new FishingInventorySaveData
             {

@@ -224,6 +224,7 @@ public class FishingHUD : MonoBehaviour
 
     public void RefreshInventory()
     {
+        if(GetComponent<ShopWorldHUD>()!=null) return;
         if (inventoryList == null ||
             system == null ||
             system.Inventory == null)
@@ -254,11 +255,8 @@ public class FishingHUD : MonoBehaviour
                 );
         }
 
-        int visibleCount =
-            Mathf.Min(
-                fish.Count,
-                10
-            );
+        int visibleCount = fish.Count;
+        inventoryList.sizeDelta=new Vector2(0f,Mathf.Max(1f,visibleCount*64f));
 
         for (int row = 0;
              row < visibleCount;
@@ -351,8 +349,18 @@ public class FishingHUD : MonoBehaviour
         }
     }
 
+    public void SetMenuCovered(bool covered)
+    {
+        if(root!=null) root.SetActive(!covered);
+        if(actionInput!=null) actionInput.ResetInput();
+    }
     public void SetInventoryOpen(bool open)
     {
+        if(open)
+        {
+            ShopWorldHUD shop=FindFirstObjectByType<ShopWorldHUD>();
+            if(shop!=null) { shop.Open("bag"); return; }
+        }
         if (inventoryPanel == null)
             return;
 
@@ -1046,34 +1054,20 @@ public class FishingHUD : MonoBehaviour
             closeText.rectTransform
         );
 
-        GameObject listObject =
-            new GameObject(
-                "FishList",
-                typeof(RectTransform)
-            );
-
-        listObject.transform.SetParent(
-            inventoryPanel.transform,
-            false
-        );
-
-        inventoryList =
-            listObject.GetComponent<RectTransform>();
-
-        inventoryList.anchorMin =
-            new Vector2(0f, 1f);
-
-        inventoryList.anchorMax =
-            new Vector2(1f, 1f);
-
-        inventoryList.pivot =
-            new Vector2(0.5f, 1f);
-
-        inventoryList.offsetMin =
-            new Vector2(20f, -680f);
-
-        inventoryList.offsetMax =
-            new Vector2(-20f, -88f);
+        GameObject viewport = new GameObject("FishViewport",typeof(RectTransform),typeof(Image),typeof(RectMask2D),typeof(ScrollRect));
+        viewport.transform.SetParent(inventoryPanel.transform,false);
+        RectTransform viewportRect=viewport.GetComponent<RectTransform>();
+        viewportRect.anchorMin=Vector2.zero; viewportRect.anchorMax=Vector2.one;
+        viewportRect.offsetMin=new Vector2(20f,24f); viewportRect.offsetMax=new Vector2(-20f,-88f);
+        viewport.GetComponent<Image>().color=new Color(0,0,0,0.01f);
+        GameObject listObject=new GameObject("FishList",typeof(RectTransform));
+        listObject.transform.SetParent(viewport.transform,false);
+        inventoryList=listObject.GetComponent<RectTransform>();
+        inventoryList.anchorMin=new Vector2(0,1); inventoryList.anchorMax=Vector2.one;
+        inventoryList.pivot=new Vector2(0.5f,1); inventoryList.sizeDelta=Vector2.zero;
+        ScrollRect scroll=viewport.GetComponent<ScrollRect>();
+        scroll.viewport=viewportRect; scroll.content=inventoryList; scroll.horizontal=false;
+        scroll.movementType=ScrollRect.MovementType.Clamped; scroll.scrollSensitivity=35f;
 
         emptyInventoryText =
             CreateText(

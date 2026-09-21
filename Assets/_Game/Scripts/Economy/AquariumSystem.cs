@@ -1320,6 +1320,22 @@ public class TankFishAgent : MonoBehaviour
         SyncPresentationSpeed();
     }
 
+    private bool habitatMode;
+    private Vector3 habitatSize;
+    public void ConfigureHabitat(Vector3 size,float fishLength)
+    {
+        habitatMode=true; habitatSize=size;
+        float margin=Mathf.Max(0.18f,fishLength*1.1f);
+        pathRadiusX=Mathf.Max(0.12f,size.x*0.5f-margin)*UnityEngine.Random.Range(0.65f,0.85f);
+        pathRadiusZ=Mathf.Max(0.12f,size.z*0.5f-margin)*UnityEngine.Random.Range(0.65f,0.85f);
+        baseHeight=size.y*UnityEngine.Random.Range(0.32f,0.68f);
+        heightAmplitude=size.y*0.06f;
+        cruiseSpeed=Mathf.Clamp(fishLength*0.75f,0.12f,1.0f);
+        currentSpeed=cruiseSpeed;
+        turnSpeedDeg=200f;
+        PlaceOnPath(); ResetBodyTrail(); SyncPresentationSpeed();
+    }
+
     private void Update()
     {
         float deltaTime =
@@ -2074,6 +2090,10 @@ public class TankFishAgent : MonoBehaviour
     private Vector3 EvaluatePath(
         float angle)
     {
+        if(habitatMode) return new Vector3(Mathf.Cos(angle)*pathRadiusX,
+            baseHeight+Mathf.Sin(angle*2f+heightPhase)*heightAmplitude,
+            Mathf.Sin(angle)*pathRadiusZ);
+
         float x =
             Mathf.Cos(angle) *
             pathRadiusX;
@@ -2464,6 +2484,15 @@ public class TankFishAgent : MonoBehaviour
 
     private void SoftContainInsideTank()
     {
+        if(habitatMode)
+        {
+            Vector3 p=transform.localPosition;
+            p.x=Mathf.Clamp(p.x,-habitatSize.x*0.46f,habitatSize.x*0.46f);
+            p.y=Mathf.Clamp(p.y,habitatSize.y*0.14f,habitatSize.y*0.86f);
+            p.z=Mathf.Clamp(p.z,-habitatSize.z*0.46f,habitatSize.z*0.46f);
+            transform.localPosition=p; return;
+        }
+
         Vector3 position =
             transform.localPosition;
 

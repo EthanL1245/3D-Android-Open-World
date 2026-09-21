@@ -46,7 +46,7 @@ public class UnderwaterVisuals : MonoBehaviour
                 return;
         }
 
-        bool underwater = oceanWater.IsPointUnderwater(transform.position);
+        bool underwater = ShopWaterVolume.TrySurface(transform.position,oceanWater,out float surface) && transform.position.y < surface;
 
         underwaterBlend = Mathf.MoveTowards(
             underwaterBlend,
