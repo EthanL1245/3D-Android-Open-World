@@ -3331,18 +3331,25 @@ public class FishingSystem : MonoBehaviour
                     bool isMackerel =
                         fish.GetComponent<MackerelPresentation>() != null;
 
+                    bool isYellowtail =
+                        fish.GetComponent<YellowtailPresentation>() != null;
+
+                    bool useTightMouthProjection =
+                        isMackerel ||
+                        isYellowtail;
+
                     float projectionFraction =
-                        isMackerel
+                        useTightMouthProjection
                             ? 0.16f
                             : 0.42f;
 
                     float projectionMinimum =
-                        isMackerel
+                        useTightMouthProjection
                             ? 0.006f
                             : 0.018f;
 
                     float projectionMaximum =
-                        isMackerel
+                        useTightMouthProjection
                             ? 0.040f
                             : 0.11f;
 
