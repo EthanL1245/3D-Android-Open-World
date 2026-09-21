@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
@@ -19,6 +20,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Text heading, wallet, feedback, nearLabel;
     private string page="travel", message="";
     private bool dirty;
+    private string shopSession, bagPicker;
+    private int bagSort, speciesFilter=-1;
+    private GameObject menuShortcut;
+    private readonly List<GameObject> navigationTabs=new List<GameObject>();
+    private static readonly string[] SortNames={"Newest first","Heaviest first","Lightest first","Highest value","Species name"};
     private ShopPreview previews;
     private readonly Color ink=new Color(0.025f,0.055f,0.07f,0.98f);
     private readonly Color teal=new Color(0.04f,0.36f,0.39f,1f);
@@ -39,7 +45,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(root==null) return;
         if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)
         { if(MenuOpen) Close(); else Open("travel"); }
-        if(Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
+        menuShortcut.SetActive(!MenuOpen);
+        if(shopSession==null && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
         string nearest=travel.Nearest();
         nearbyButton.SetActive(!MenuOpen && nearest!=null && !travel.Traveling);
         if(nearest!=null) nearLabel.text=nearest=="gear" ? "OPEN TACKLE STORE" : nearest=="market" ? "SELL FISH" : "VIEW HABITAT";
@@ -52,27 +59,33 @@ public sealed class ShopWorldHUD : MonoBehaviour
     public void Open(string destination)
     {
         if(root==null || travel.Traveling) return;
+        if(MenuOpen && shopSession!=null && destination!=shopSession && !(shopSession=="market" && destination=="sell-confirm"))return;
         if(MenuOpen && page==destination && !dirty)return;
-        if(!MenuOpen) fishing.PrepareForWorldTravel();
+        if(!MenuOpen)
+        {
+            shopSession=destination=="gear" || destination=="market"?destination:null;
+            fishing.PrepareForMenu();
+        }
         MenuOpen=true; page=destination; modal.SetActive(true); root.transform.SetAsLastSibling();
-        player.SetUIBlocked(true); if(fishingHUD!=null) fishingHUD.SetMenuCovered(true);
+        player.SetMenuOpen(true); if(fishingHUD!=null) fishingHUD.SetMenuCovered(true);
         Refresh(true);
     }
     public void Close()
     {
         if(travel!=null && travel.Traveling) return;
-        MenuOpen=false;
-        if(previews!=null)previews.Clear();
+        MenuOpen=false;shopSession=null;bagPicker=null;
+        if(previews!=null)previews.Suspend();
         if(modal!=null) modal.SetActive(false);
-        if(player!=null) player.SetUIBlocked(false);
+        if(player!=null) player.SetMenuOpen(false);
         if(fishingHUD!=null) fishingHUD.SetMenuCovered(false);
-        if(fishing!=null) fishing.SetShopWorld(travel!=null && travel.InDimension);
+
     }
     private void Build()
     {
         root=Panel("TideglassHUD",transform,Color.clear); Full(root.GetComponent<RectTransform>());
         root.GetComponent<Image>().raycastTarget=false;
         Button menu=ButtonAt(root.transform,"MENU / TRAVEL",()=>Open("travel"));
+        menuShortcut=menu.gameObject;
         Rect(menu.GetComponent<RectTransform>(),new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-24,-20),new Vector2(260,64));
         nearbyButton=ButtonAt(root.transform,"OPEN",()=>Open(travel.Nearest()??"travel")).gameObject;
         nearLabel=nearbyButton.GetComponentInChildren<Text>();
@@ -83,7 +96,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         wallet=Label(modal.transform,"",22,Color.white); Anchor(wallet.rectTransform,0,1,1,1,24,-92,-24,-62);
         Button close=ButtonAt(modal.transform,"CLOSE",Close); Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(148,56));
         string[] tabs={"travel","bag","equipment"}; string[] names={"TRAVEL","FISH BAG","EQUIPMENT"};
-        for(int i=0;i<tabs.Length;i++) { string tab=tabs[i]; var b=ButtonAt(modal.transform,names[i],()=>Open(tab)); Anchor(b.GetComponent<RectTransform>(),i/3f,1,(i+1)/3f,1,16,-148,-16,-103); }
+        for(int i=0;i<tabs.Length;i++) { string tab=tabs[i]; var b=ButtonAt(modal.transform,names[i],()=>Open(tab)); navigationTabs.Add(b.gameObject); Anchor(b.GetComponent<RectTransform>(),i/3f,1,(i+1)/3f,1,16,-148,-16,-103); }
         GameObject viewport=Panel("ScrollViewport",modal.transform,new Color(0,0,0,0.1f));
         var vr=viewport.GetComponent<RectTransform>(); Anchor(vr,0,0,1,1,20,70,-30,-164);
         viewport.AddComponent<RectMask2D>(); scroll=viewport.AddComponent<ScrollRect>();
@@ -107,7 +120,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
         wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":"FISHING ISLAND")}";
         feedback.text=progress.ReadOnly ? progress.Notice : message;
-        heading.text="MENU / TRAVEL";
+        heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
+        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
         else HabitatPage(page);
@@ -135,21 +149,48 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void BagPage()
     {
-        if(progress.Data.bag.Count==0) { Row("No catches yet","Your reusable lure is always available. Travel to the island and cast.","TRAVEL",()=>Open("travel")); return; }
-        foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
+        var species=progress.Data.bag.Select(f=>f.speciesId).Distinct().OrderBy(id=>FishCatalog.Get(id).Name).ToList();
+        if(speciesFilter!=-1 && !species.Contains(speciesFilter))speciesFilter=-1;
+        var controls=Panel("Sort and filter",list,Color.clear);controls.AddComponent<LayoutElement>().preferredHeight=64;
+        var sort=ButtonAt(controls.transform,"SORT: "+SortNames[bagSort],()=>{bagPicker=bagPicker=="sort"?null:"sort";Refresh(true);});
+        Anchor(sort.GetComponent<RectTransform>(),0,0,0.5f,1,0,0,-6,0);
+        var filter=ButtonAt(controls.transform,"SPECIES: "+(speciesFilter<0?"All":FishCatalog.Get(speciesFilter).Name),()=>{bagPicker=bagPicker=="species"?null:"species";Refresh(true);});
+        Anchor(filter.GetComponent<RectTransform>(),0.5f,0,1,1,6,0,0,0);
+        if(bagPicker=="sort")
         {
-            var f=fish; Row(FishCatalog.Get(f.speciesId).Name,$"{f.weightKg:0.00} kg  /  {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m  /  value {FishCatalog.GetSellValue(f.speciesId,f.weightKg)} coins","HOLD",()=>{Close(); int index=progress.Data.bag.IndexOf(f); if(index>=0) fishing.HoldFish(index);},fish:f);
+            for(int i=0;i<SortNames.Length;i++){int choice=i;Row(SortNames[i],"Choose how catches are ordered.",bagSort==i?"SELECTED":"SELECT",()=>{bagSort=choice;bagPicker=null;Refresh(true);});}
+            return;
+        }
+        if(bagPicker=="species")
+        {
+            Row("All species","Show every catch.","SELECT",()=>{speciesFilter=-1;bagPicker=null;Refresh(true);});
+            foreach(int id in species){int choice=id;Row(FishCatalog.Get(id).Name,$"{progress.Data.bag.Count(f=>f.speciesId==id)} in bag","SELECT",()=>{speciesFilter=choice;bagPicker=null;Refresh(true);});}
+            return;
+        }
+        if(progress.Data.bag.Count==0) {Row("No catches yet","Your reusable lure is always available. Travel to the island and cast.","TRAVEL",()=>Open("travel"));return;}
+        IEnumerable<CaughtFishRecord> fish=progress.Data.bag.Where(f=>speciesFilter<0 || f.speciesId==speciesFilter);
+        switch(bagSort)
+        {
+            case 1:fish=fish.OrderByDescending(f=>f.weightKg).ThenByDescending(f=>f.caughtUtcTicks);break;
+            case 2:fish=fish.OrderBy(f=>f.weightKg).ThenByDescending(f=>f.caughtUtcTicks);break;
+            case 3:fish=fish.OrderByDescending(f=>FishCatalog.GetSellValue(f.speciesId,f.weightKg));break;
+            case 4:fish=fish.OrderBy(f=>FishCatalog.Get(f.speciesId).Name).ThenByDescending(f=>f.weightKg);break;
+            default:fish=fish.OrderByDescending(f=>f.caughtUtcTicks);break;
+        }
+        foreach(var record in fish)
+        {
+            var f=record;Row(FishCatalog.Get(f.speciesId).Name,$"{f.weightKg:0.00} kg / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m / value {FishCatalog.GetSellValue(f.speciesId,f.weightKg)} coins",fishing.IsHolding(f)?"PUT AWAY":"HOLD",()=>{Close();int index=progress.Data.bag.IndexOf(f);if(index>=0)fishing.HoldFish(index);},fish:f);
         }
     }
     private void EquipmentPage(bool shop)
     {
-        if(shop && !travel.Near("gear")) { Row("Visit the tackle counter","Purchases happen in the shop world.","TRAVEL",()=>Open("travel")); return; }
+        if(shop && !travel.Near("gear")) { Row("Visit the tackle counter","Return to the counter to make purchases.","CLOSE",Close); return; }
         foreach(GearKind kind in Enum.GetValues(typeof(GearKind)))
         {
             for(int tier=0;tier<4;tier++)
             {
                 int t=tier; GearKind k=kind; bool owned=t<=progress.Data.Owned(k), equipped=t==progress.Data.Equipped(k);
-                if(!shop && !owned) continue;
+                if((!shop && !owned) || (shop && owned)) continue;
                 string stats=k==GearKind.Rod?$"{t*18}% more tension control":k==GearKind.Reel?$"{t*22}% faster tiring and retrieval":$"+{ShopCatalog.LineBonus[t]} m range; {t*12}% more line tolerance";
                 string action=equipped?"EQUIPPED":owned?"EQUIP":$"BUY {ShopCatalog.GearPrice(k,t):N0}";
                 bool can=owned?!equipped:t==progress.Data.Owned(k)+1 && progress.Data.coins>=ShopCatalog.GearPrice(k,t);
@@ -165,13 +206,13 @@ public sealed class ShopWorldHUD : MonoBehaviour
             int id=i; string effect=id==0?"Unlimited uses. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
             string count=id==0?"Unlimited":$"{progress.Data.bait[id]} remaining";
             if(shop && id>0) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
-            Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (id==0 || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
+            if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (id==0 || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
         }
     }
     private void MarketPage()
     {
-        if(!travel.Near("market")) { Row("Visit the fish market","Sell fish from your bag. Fish in habitats are never sold automatically.","TRAVEL",()=>Open("travel")); return; }
-        if(progress.Data.bag.Count==0) { Row("Your bag is empty","Bring your next catch to the market.","FISHING ISLAND",()=>travel.Travel(false)); return; }
+        if(!travel.Near("market")) { Row("Visit the fish market","Return to the market counter to sell fish.","CLOSE",Close); return; }
+        if(progress.Data.bag.Count==0) { Row("Your bag is empty","Bring your next catch to the market.","CLOSE",Close); return; }
         Row("Sell bag contents","Review the total before selling all fish in the bag.","REVIEW ALL",()=>Open("sell-confirm"));
         foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
         {

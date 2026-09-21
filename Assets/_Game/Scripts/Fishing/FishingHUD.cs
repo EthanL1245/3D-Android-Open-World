@@ -521,7 +521,7 @@ public class FishingHUD : MonoBehaviour
                     slot.AddComponent<Button>();
 
                 button.onClick.AddListener(
-                    system.EquipRod
+                    system.ToggleRod
                 );
 
                 CreateRodIcon(slot.transform);

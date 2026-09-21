@@ -158,6 +158,30 @@ public class FishingSystem : MonoBehaviour
             }
         }
     }
+    private CaughtFishRecord heldRecord;
+    public bool IsHolding(CaughtFishRecord record) => heldRecord==record && heldFishVisual!=null;
+    public void PrepareForMenu()
+    {
+        if(state!=FishingState.Idle) {CancelFishing();RefreshHandHud();}
+    }
+    private void RefreshHandHud()
+    {
+        if(hud==null)return;
+        bool ready=rodEquipped && !shopMode;
+        hud.SetRodSelected(ready);hud.SetActionVisible(ready);hud.SetActionLabel("CAST");
+        hud.SetStatus(ready?"Aim toward open water and cast.":heldRecord!=null?FishCatalog.Get(heldRecord.speciesId).Name+"  "+heldRecord.weightKg.ToString("0.00")+" kg":"");
+    }
+    public void ToggleRod()
+    {
+        if(shopMode)return;
+        if(rodEquipped)UnequipHands();else EquipRod();
+    }
+    public void UnequipHands()
+    {
+        CancelFishing();ClearHeldFish();rodEquipped=false;
+        if(rodRoot!=null)rodRoot.SetActive(false);
+        RefreshHandHud();
+    }
     public void PrepareForWorldTravel()
     {
         CancelFishing(); ClearHeldFish();
@@ -166,9 +190,9 @@ public class FishingSystem : MonoBehaviour
     public void SetShopWorld(bool shop)
     {
         shopMode=shop;
-        if(shop) { PrepareForWorldTravel(); if(rodRoot!=null) rodRoot.SetActive(false); }
+        if(shop) { UnequipHands(); }
         else EquipRod();
-        if(hud!=null) hud.SetActionVisible(!shop);
+        RefreshHandHud();
     }
     private void Start()
     {
@@ -241,11 +265,12 @@ public class FishingSystem : MonoBehaviour
 
     private void Update()
     {
+        if(heldRecord!=null && inventory!=null && !System.Linq.Enumerable.Contains(inventory.Fish,heldRecord))
+        {ClearHeldFish();RefreshHandHud();}
+        UpdateHeldFishAnimation();
         if(shopMode || ShopWorldHUD.MenuOpen) return;
         if (hud == null)
             return;
-
-        UpdateHeldFishAnimation();
 
         if (state != FishingState.Idle &&
             state != FishingState.Casting &&
@@ -341,6 +366,7 @@ public class FishingSystem : MonoBehaviour
 
     public void EquipRod()
     {
+        if(shopMode)return;
         CancelFishing();
 
         rodEquipped = true;
@@ -373,6 +399,7 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
+        if(IsHolding(inventory.Fish[inventoryIndex])) {UnequipHands();return;}
         CancelFishing();
 
         rodEquipped = false;
@@ -385,6 +412,7 @@ public class FishingSystem : MonoBehaviour
         CaughtFishRecord record =
             inventory.Fish[inventoryIndex];
 
+        heldRecord=record;
         heldFishVisual =
             FishVisualFactory.CreateFish(
                 "Held_" +
@@ -3593,6 +3621,7 @@ public class FishingSystem : MonoBehaviour
 
     private void ClearHeldFish()
     {
+        heldRecord=null;
         if (heldFishVisual != null)
         {
             Destroy(

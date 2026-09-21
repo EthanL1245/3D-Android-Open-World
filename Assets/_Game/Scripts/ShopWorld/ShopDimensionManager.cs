@@ -58,13 +58,13 @@ public sealed class ShopDimensionManager : MonoBehaviour
             AsyncOperation operation=null;
             try { operation=SceneManager.LoadSceneAsync(next,LoadSceneMode.Additive); }
             catch(System.Exception ex) { TravelError=ex.Message; }
-            if(operation==null) { Traveling=false; yield break; }
+            if(operation==null) { Traveling=false; controller.SetUIBlocked(false); yield break; }
             yield return operation;
             var scene=SceneManager.GetSceneByName(next);
             foreach(var root in scene.GetRootGameObjects())
             { target=root.GetComponentInChildren<ShopWorldEnvironment>(); if(target!=null)break; }
             if(target==null || target.spawn==null)
-            { TravelError="Arrival point missing. Reinstall Shop World."; yield return SceneManager.UnloadSceneAsync(next); Traveling=false; yield break; }
+            { TravelError="Arrival point missing. Reinstall Shop World."; yield return SceneManager.UnloadSceneAsync(next); Traveling=false; controller.SetUIBlocked(false); yield break; }
         }
         if(previous==0)
         {
@@ -79,7 +79,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
         }
         else Teleport(target.spawn.position,target.spawn.rotation);
         if(previous!=0)yield return SceneManager.UnloadSceneAsync(previous==1?SceneName:HomeSceneName);
-        fishing.SetShopWorld(InDimension); Traveling=false;
+        fishing.SetShopWorld(InDimension); Traveling=false; controller.SetUIBlocked(false);
         var ui=FindFirstObjectByType<ShopWorldHUD>();
         if(ui!=null)ui.Close(); else controller.SetUIBlocked(false);
     }

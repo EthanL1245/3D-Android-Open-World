@@ -115,12 +115,19 @@ public class FirstPersonController : MonoBehaviour
             swimUpRect.anchoredPosition=landJumpPosition+(swimming?Vector2.up*(swimUpRect.sizeDelta.y+14):Vector2.zero);
         }
     }
+    private bool menuOpen;
+    public void SetMenuOpen(bool open)
+    {
+        menuOpen=open;
+        if(touchLookArea!=null)touchLookArea.ConsumeLookDelta();
+        if(!Application.isMobilePlatform){Cursor.lockState=open?CursorLockMode.None:CursorLockMode.Locked;Cursor.visible=open;}
+    }
     private bool uiBlocked;
     public void SetUIBlocked(bool blocked)
     {
         uiBlocked=blocked;
         ResetMotion();
-        if(!Application.isMobilePlatform) { Cursor.lockState=blocked?CursorLockMode.None:CursorLockMode.Locked; Cursor.visible=blocked; }
+        if(!Application.isMobilePlatform) { Cursor.lockState=(blocked || menuOpen)?CursorLockMode.None:CursorLockMode.Locked; Cursor.visible=blocked || menuOpen; }
     }
     public void ResetViewPitch()
     {
@@ -144,7 +151,8 @@ public class FirstPersonController : MonoBehaviour
             moveJoystick.SetSprinting(IsSprinting);
         }
 
-        HandleLook();
+        if(!menuOpen)HandleLook();
+        else if(touchLookArea!=null)touchLookArea.ConsumeLookDelta();
         UpdateCameraFov();
     }
 

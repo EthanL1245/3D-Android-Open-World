@@ -16,14 +16,15 @@ public sealed class ShopPreview : MonoBehaviour
     private RenderTexture rendering;
     public void Attach(RawImage target,int species,float kg,string gear=null)
     {
+        target.enabled=false; // A RawImage with no texture is a white rectangle.
         string key=gear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
-        if(cache.TryGetValue(key,out var ready)) {target.texture=ready;return;}
+        if(cache.TryGetValue(key,out var ready)) {target.texture=ready;target.enabled=ready.IsCreated();if(target.enabled)return;cache.Remove(key);Destroy(ready);}
         requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,gear));else busy=false;});
     }
     private void Update() { if(!busy && requests.Count>0) {busy=true;requests.Dequeue()();} }
     private IEnumerator Render(RawImage target,string key,int species,float kg,string gear)
     {
-        if(cache.TryGetValue(key,out var existing)) {target.texture=existing;busy=false;yield break;}
+        if(cache.TryGetValue(key,out var existing)) {target.texture=existing;target.enabled=true;busy=false;yield break;}
         if(stage==null)
         {
             stage=new GameObject("InventoryPreviewStudio");stage.transform.position=new Vector3(10000,10000,10000);
@@ -74,7 +75,7 @@ public sealed class ShopPreview : MonoBehaviour
         // Let the normal render pipeline draw this camera once (also works with URP).
         yield return new WaitForEndOfFrame();
         studio.enabled=false;studio.targetTexture=null;Destroy(model);model=null;
-        cache[key]=texture;rendering=null;if(target!=null)target.texture=texture;
+        cache[key]=texture;rendering=null;if(target!=null){target.texture=texture;target.enabled=true;}
         busy=false;
     }
     private GameObject BuildItem(string kind)
@@ -104,12 +105,17 @@ public sealed class ShopPreview : MonoBehaviour
         else part(PrimitiveType.Capsule,Vector3.zero,new Vector3(0.2f,0.35f,0.2f),new Color(0.9f,0.65f,0.15f));
         root.transform.localRotation=Quaternion.Euler(20,0,20);return root;
     }
-    public void Clear()
+    public void Suspend()
     {
         StopAllCoroutines(); requests.Clear();busy=false;
         if(rendering!=null){rendering.Release();Destroy(rendering);rendering=null;}
         if(studio!=null){studio.enabled=false;studio.targetTexture=null;}
         if(model!=null)Destroy(model);
+        if(cache.Count>96){foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();}
+    }
+    public void Clear()
+    {
+        Suspend();
         foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();
     }
     private void OnDestroy(){Clear();if(stage!=null)Destroy(stage);if(itemMaterial!=null)Destroy(itemMaterial);}

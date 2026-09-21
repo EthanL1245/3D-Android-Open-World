@@ -17,7 +17,7 @@ Commit the generated `_Game/ShopWorld` assets, updated island scene and `Project
 
 The menu has Travel, Fish Bag and Equipment tabs. All long lists have touch dragging, wheel scrolling and a visible scrollbar. The bag lists every saved fish without the old ten-row cap. HOLD displays a selected fish using the existing hook system.
 
-Walk to a counter or habitat sign to use its OPEN button (keyboard E). Purchases and sales require the Quay; resident transfers require Home. Both require proximity to the appropriate interaction point. Opening the menu cancels the current cast/fight and blocks camera/movement input until closing it.
+Walk to a counter or habitat sign to use its OPEN button (keyboard E). Purchases and sales require the Quay; resident transfers require Home. Both require proximity to the appropriate interaction point. Opening a menu cancels an active cast/fight but preserves the held fish and movement input. Camera look is suspended while interacting with menus. Only teleporting blocks movement and resets the player. Tackle and market menus have no travel/equipment tabs or keyboard shortcut escape into another page; close them to return to normal navigation.
 
 The fish market sells individual bag fish at the existing FishCatalog values. Sell All first shows a total and confirmation. It never sells habitat residents. Gear tiers are permanent; purchases auto-equip and require the previous tier. Earlier owned tiers remain selectable from Equipment.
 
@@ -101,3 +101,9 @@ Unity compilation, shader compilation, Play Mode, Android performance and final 
 - Inspect signs from the front/back and behind walls; inspect sand beds and stairs for flickering.
 - Inspect thumbnail framing for small/large fish and equipped-button stability.
 - Restart and revisit the shop; confirm balances, bait, owned habitats and residents persist.
+
+## Menu interaction update
+
+Fish Bag supports newest, heaviest, lightest, value and species sorting, plus a filter populated only from species in the bag. Sorting never changes inventory identity/order, so HOLD still selects the correct catch. Clicking an already-held catch puts it away. Clicking the selected rod slot unequips it and clears the cast hint. Opening/closing a menu does not change hand selection. Selling or depositing the held fish clears its hand visual.
+
+Preview images stay hidden until rendered. Completed textures survive menu close/reopen, with bounded caching and cleanup when the HUD is destroyed. Validate preview loading, all sort/filter combinations, rod toggling, held-fish preservation, mobile joystick dragging during a menu, and three-world travel in Unity. The six changed C# files passed syntax parsing; no Unity runtime was available for this update.
