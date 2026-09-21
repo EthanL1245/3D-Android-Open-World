@@ -61,6 +61,7 @@ public class FishingSystem : MonoBehaviour
     private GameObject heldHookVisual;
     private Transform heldHookPoint;
     private Transform heldFishMouthMarker;
+    private LineRenderer heldCatchLine;
     private Quaternion heldFishBaseRotation =
         Quaternion.identity;
     private float heldFishFlopOffset;
@@ -2848,8 +2849,8 @@ public class FishingSystem : MonoBehaviour
 
         anchor.transform.localPosition =
             new Vector3(
-                0.20f,
-                0.52f,
+                0.43f,
+                0.50f,
                 1.02f
             );
 
@@ -2863,63 +2864,30 @@ public class FishingSystem : MonoBehaviour
             return;
 
         float time =
-            Time.time * 5.8f +
+            Time.time * 5.2f +
             heldFishFlopOffset;
 
-        if (heldHookVisual != null)
-        {
-            heldHookVisual.transform.localPosition =
-                new Vector3(
-                    Mathf.Sin(
-                        time * 0.45f
-                    ) *
-                    0.006f,
-                    Mathf.Sin(
-                        time * 0.38f
-                    ) *
-                    0.005f,
-                    0f
-                );
-
-            heldHookVisual.transform.localRotation =
-                Quaternion.Euler(
-                    0f,
-                    0f,
-                    Mathf.Sin(
-                        time * 0.42f
-                    ) *
-                    2.2f
-                );
-        }
-
+        // Keep whole-fish motion restrained. Compatible bone-rigged fish get
+        // their stronger rear/tail flop from CaughtFishFlop in LateUpdate.
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation *
             Quaternion.Euler(
                 Mathf.Sin(
-                    time * 1.65f
-                ) *
-                10f,
+                    time * 1.25f
+                ) * 2.5f,
                 Mathf.Sin(
-                    time * 1.12f
-                ) *
-                8f,
+                    time * 0.90f
+                ) * 1.5f,
                 Mathf.Sin(
-                    time * 2.05f
-                ) *
-                18f
+                    time * 1.80f
+                ) * 5f
             );
 
-        // Keep the mouth/head pinned to the hook while the body swings and
-        // the authored fish animation adds most of the tail/body thrashing.
         if (heldHookPoint != null &&
             heldFishMouthMarker != null)
         {
             Vector3 mouthTarget =
-                heldHookPoint.position +
-                heldFishAnchor.up *
-                0.010f +
-                playerCamera.transform.forward *
-                0.010f;
+                heldHookPoint.position;
 
             Vector3 correction =
                 mouthTarget -
@@ -2927,6 +2895,21 @@ public class FishingSystem : MonoBehaviour
 
             heldFishVisual.transform.position +=
                 correction;
+
+            if (heldCatchLine != null)
+            {
+                heldCatchLine.SetPosition(
+                    0,
+                    mouthTarget +
+                    heldFishAnchor.up *
+                    0.14f
+                );
+
+                heldCatchLine.SetPosition(
+                    1,
+                    heldFishMouthMarker.position
+                );
+            }
         }
     }
 
@@ -2952,64 +2935,95 @@ public class FishingSystem : MonoBehaviour
         if (hookPrefab != null)
         {
             heldHookVisual =
-                Instantiate(
-                    hookPrefab,
-                    heldFishAnchor,
-                    false
-                );
+                I    private void SetupHookedCatchPresentation()
+    {
+        if (heldFishVisual == null)
+            return;
 
-            heldHookVisual.name =
-                "CaughtFishHook";
-
-            heldHookVisual.transform.localPosition =
-                new Vector3(
-                    0f,
-                    0.04f,
-                    -0.025f
-                );
-
-            // Prefab is authored as: black handle UP, curved hook DOWN.
-            heldHookVisual.transform.localRotation =
-                Quaternion.identity;
-
-            heldHookPoint =
-                FindDeepChildByName(
-                    heldHookVisual.transform,
-                    "HookPoint"
-                );
-        }
-
-        if (heldHookPoint == null)
+        if (heldHookVisual != null)
         {
-            GameObject fallback =
-                new GameObject(
-                    "HookPoint"
-                );
-
-            fallback.transform.SetParent(
-                heldFishAnchor,
-                false
+            Destroy(
+                heldHookVisual
             );
 
-            fallback.transform.localPosition =
-                new Vector3(
-                    0f,
-                    0.18f,
-                    0f
-                );
+            heldHookVisual = null;
+        }
 
-            heldHookPoint =
-                fallback.transform;
+        if (heldCatchLine != null)
+        {
+            Destroy(
+                heldCatchLine.gameObject
+            );
+
+            heldCatchLine = null;
+        }
+
+        if (heldHookPoint != null &&
+            heldHookPoint.parent ==
+                heldFishAnchor)
+        {
+            Destroy(
+                heldHookPoint.gameObject
+            );
+
+            heldHookPoint = null;
+        }
+
+        // No hook visual. This fixed point is where the fishing line enters
+        // the fish's mouth.
+        GameObject mouthTargetObject =
+            new GameObject(
+                "HeldCatchMouthPoint"
+            );
+
+        mouthTargetObject.transform.SetParent(
+            heldFishAnchor,
+            false
+        );
+
+        mouthTargetObject.transform.localPosition =
+            new Vector3(
+                0f,
+                0.035f,
+                0f
+            );
+
+        heldHookPoint =
+            mouthTargetObject.transform;
+
+        GameObject lineObject =
+            new GameObject(
+                "HeldCatchLine"
+            );
+
+        lineObject.transform.SetParent(
+            heldFishAnchor,
+            false
+        );
+
+        heldCatchLine =
+            lineObject.AddComponent<LineRenderer>();
+
+        heldCatchLine.useWorldSpace = true;
+        heldCatchLine.positionCount = 2;
+        heldCatchLine.startWidth = 0.0055f;
+        heldCatchLine.endWidth = 0.0035f;
+        heldCatchLine.numCapVertices = 4;
+
+        if (fishingLine != null &&
+            fishingLine.sharedMaterial != null)
+        {
+            heldCatchLine.sharedMaterial =
+                fishingLine.sharedMaterial;
         }
 
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
-        // All gameplay fish are normalized with head toward local +Z.
-        // Rotate +Z upward so the caught fish hangs vertically below its mouth.
+        // Vertical fish, almost full side view.
         heldFishBaseRotation =
             Quaternion.AngleAxis(
-                78f,
+                86f,
                 Vector3.up
             ) *
             Quaternion.Euler(
@@ -3039,19 +3053,40 @@ public class FishingSystem : MonoBehaviour
         heldFishMouthMarker =
             marker.transform;
 
-        Vector3 mouthTarget =
-            heldHookPoint.position +
-            heldFishAnchor.up *
-            0.010f +
-            playerCamera.transform.forward *
-            0.010f;
-
         Vector3 correction =
-            mouthTarget -
+            heldHookPoint.position -
             heldFishMouthMarker.position;
 
         heldFishVisual.transform.position +=
             correction;
+
+        if (heldCatchLine != null)
+        {
+            heldCatchLine.SetPosition(
+                0,
+                heldHookPoint.position +
+                heldFishAnchor.up *
+                0.14f
+            );
+
+            heldCatchLine.SetPosition(
+                1,
+                heldFishMouthMarker.position
+            );
+        }
+
+        CaughtFishFlop flop =
+            heldFishVisual
+                .GetComponent<CaughtFishFlop>();
+
+        if (flop == null)
+        {
+            flop =
+                heldFishVisual
+                    .AddComponent<CaughtFishFlop>();
+        }
+
+        flop.Initialize();
     }
 
     private Vector3 FindFishMouthLocalPosition(
@@ -3319,6 +3354,15 @@ public class FishingSystem : MonoBehaviour
             );
 
             heldHookVisual = null;
+        }
+
+        if (heldCatchLine != null)
+        {
+            Destroy(
+                heldCatchLine.gameObject
+            );
+
+            heldCatchLine = null;
         }
 
         if (heldHookPoint != null &&
