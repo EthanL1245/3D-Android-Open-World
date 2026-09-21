@@ -22,7 +22,7 @@ public sealed class ShopWaterVolume : MonoBehaviour
     public static bool TrySurface(Vector3 position,OceanWater ocean,out float height)
     {
         if(Surface(position,out height)) return true;
-        if(ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InShop) return false;
+        if(ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InDimension) return false;
         if(ocean==null) return false;
         height=ocean.GetSurfaceHeight(position); return true;
     }

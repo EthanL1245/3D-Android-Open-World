@@ -11,7 +11,8 @@ using Object=UnityEngine.Object;
 public static class ShopWorldSetup
 {
     private const string Root="Assets/_Game/ShopWorld";
-    private const string ScenePath=Root+"/TideglassShopWorld.unity";
+    private const string ScenePath=Root+"/TideglassShopWorld.unity", HomePath=Root+"/FishingHomeWorld.unity";
+    private static Material signMaterial;
     private static Material stone, wood, dark, gold, plaster, glass, water, green, sand, glow;
     private static int lightCount;
     private static readonly Vector3 DimensionOrigin=new Vector3(2000,200,2000);
@@ -23,7 +24,7 @@ public static class ShopWorldSetup
         try
         {
             if(EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Exit Play Mode first.");
-            if(string.IsNullOrEmpty(island.path) || island.name==ShopDimensionManager.SceneName) throw new InvalidOperationException("Open your saved fishing island scene first.");
+            if(string.IsNullOrEmpty(island.path) || (island.name==ShopDimensionManager.SceneName || island.name==ShopDimensionManager.HomeSceneName)) throw new InvalidOperationException("Open your saved fishing island scene first.");
             GameObject player=GameObject.Find("Player");
             if(player==null || player.GetComponent<FirstPersonController>()==null || player.GetComponent<FishingSystem>()==null || player.GetComponent<FishingInventory>()==null)
                 throw new InvalidOperationException("This scene needs the existing Player, fishing system and inventory.");
@@ -46,6 +47,12 @@ public static class ShopWorldSetup
             BuildWorld();
             if(!EditorSceneManager.SaveScene(shop,ScenePath)) throw new InvalidOperationException("Could not save the shop world.");
             EditorSceneManager.CloseScene(shop,true); shop=default;
+            loaded=SceneManager.GetSceneByPath(HomePath);
+            if(loaded.IsValid() && loaded.isLoaded)EditorSceneManager.CloseScene(loaded,true);
+            shop=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Additive);
+            SceneManager.SetActiveScene(shop); BuildHome();
+            if(!EditorSceneManager.SaveScene(shop,HomePath))throw new InvalidOperationException("Could not save Home.");
+            EditorSceneManager.CloseScene(shop,true);shop=default;
             SceneManager.SetActiveScene(island);
             EditorUtility.DisplayProgressBar("Tideglass Quay","Connecting travel, purchases, inventory and migration...",0.8f);
             Vector3 safeArrival=FindSafeIslandArrival(player.transform.position);
@@ -67,10 +74,10 @@ public static class ShopWorldSetup
             player.transform.position=arrival.position;
             EditorUtility.SetDirty(travel); EditorUtility.SetDirty(ui); EditorUtility.SetDirty(player);
             var scenes=new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
-            AddBuildScene(scenes,island.path); AddBuildScene(scenes,ScenePath); EditorBuildSettings.scenes=scenes.ToArray();
+            AddBuildScene(scenes,island.path); AddBuildScene(scenes,ScenePath); AddBuildScene(scenes,HomePath); EditorBuildSettings.scenes=scenes.ToArray();
             EditorSceneManager.MarkSceneDirty(island); EditorSceneManager.SaveScene(island); AssetDatabase.SaveAssets();
             Selection.activeGameObject=player;
-            EditorUtility.DisplayDialog("Tideglass Quay ready","Press Play and use MENU / TRAVEL.\n\nThe island's old shops/platform and aquarium system have been removed. Existing aquarium fish and refunds migrate into the new save on first Play.\n\nVisit counters or habitat signs to buy, sell and manage fish. Larger habitats have stairs, swimming access and EXIT WATER.\n\nYour pre-install island scene is backed up under _Game/ShopWorld/Backups.","OK");
+            EditorUtility.DisplayDialog("Tideglass Quay ready","Press Play and use MENU / TRAVEL.\n\nThe island's old shops/platform and aquarium system have been removed. Existing aquarium fish and refunds migrate into the new save on first Play.\n\nVisit Quay counters to shop. Aquarium and pond purchases upgrade your Home in place. Manage residents at Home; use the swimming up/down controls.\n\nYour pre-install island scene is backed up under _Game/ShopWorld/Backups.","OK");
         }
         catch(Exception error) { Debug.LogException(error); EditorUtility.DisplayDialog("Shop setup failed",error.Message,"OK"); }
         finally
@@ -136,6 +143,48 @@ public static class ShopWorldSetup
         probe.mode=ReflectionProbeMode.Realtime; probe.refreshMode=ReflectionProbeRefreshMode.OnAwake;
         probe.timeSlicingMode=ReflectionProbeTimeSlicingMode.AllFacesAtOnce; probe.resolution=128; probe.cullingMask=~0;
     }
+    private static void BuildHome()
+    {
+        lightCount=0;
+        var root=new GameObject("Home");root.transform.position=new Vector3(4000,200,4000);
+        var world=root.AddComponent<ShopWorldEnvironment>();world.isHome=true;var t=root.transform;
+        // Fixed roomy plot: aquarium west, pond east. All future upgrades share these centers.
+        Box("Foundation",t,new Vector3(0,-8,22),new Vector3(100,1,100),stone);
+        Box("TiledCourtyard",t,new Vector3(-25,-0.15f,22),new Vector3(50,0.3f,100),stone);
+        // Garden ground around the maximum 32 x 24 m pond footprint centered at (24,30).
+        Box("GardenFront",t,new Vector3(25,-0.15f,-5),new Vector3(50,0.3f,46),green);
+        Box("GardenRear",t,new Vector3(25,-0.15f,57),new Vector3(50,0.3f,30),green);
+        Box("GardenLeft",t,new Vector3(4,-0.15f,30),new Vector3(8,0.3f,24),green);
+        Box("GardenRight",t,new Vector3(45,-0.15f,30),new Vector3(10,0.3f,24),green);
+        world.emptyPondCover=Box("ReservedPondPlot",t,new Vector3(24,-0.15f,30),new Vector3(32,0.3f,24),green);
+        Box("GardenWalk",t,new Vector3(24,0.025f,11),new Vector3(44,0.05f,4),stone);
+        world.spawn=Point("HomeArrival",t,new Vector3(0,0.25f,-16),0);
+        Sign(t,"HOME",new Vector3(0,3,-20),180,0.12f);
+        var habitats=new List<ShopHabitat>();
+        foreach(var d in ShopCatalog.Habitats)
+        {
+            var h=BuildHabitat(t,d,d.pond?new Vector3(24,0,30):new Vector3(-23,0,28));
+            if(d.pond)
+            {
+                float side=(32-d.width)/2, end=(24-d.depth)/2;
+                if(side>0)for(int sign=-1;sign<=1;sign+=2)
+                    Box("FuturePondSide",h.transform,new Vector3(sign*(d.width/2+side/2),-0.15f,0),new Vector3(side,0.3f,24),green);
+                if(end>0)for(int sign=-1;sign<=1;sign+=2)
+                    Box("FuturePondEnd",h.transform,new Vector3(0,-0.15f,sign*(d.depth/2+end/2)),new Vector3(d.width,0.3f,end),green);
+            }
+            habitats.Add(h);h.gameObject.SetActive(false);
+        }
+        world.habitats=habitats.ToArray();
+        for(int side=-1;side<=1;side+=2)
+        {
+            Box("PlotHedge",t,new Vector3(side*49,1,22),new Vector3(1,2,100),green);
+            for(int z=-20;z<70;z+=15){Tree(t,new Vector3(side*45,0,z));Lamp(t,new Vector3(side*42,0,z));}
+        }
+        Box("BackHedge",t,new Vector3(0,1,71),new Vector3(98,2,1),green);
+        Box("FrontHedge",t,new Vector3(0,1,-27),new Vector3(98,2,1),green);
+        Bench(t,new Vector3(-9,0,-9));Planter(t,new Vector3(9,0,-9));
+    }
+
     private static void ValidateWorld(ShopWorldEnvironment world)
     {
         if(world.habitats.Length!=ShopCatalog.Habitats.Length || world.spawn==null || world.gearPoint==null || world.marketPoint==null)
@@ -198,11 +247,21 @@ public static class ShopWorldSetup
         float w=d.width,h=d.height,z=d.depth,bottom=d.pond ? 0.35f-d.height : 0.45f;
         Material wall=d.pond?stone:glass;
         Box("Plinth",root,new Vector3(0,bottom-0.22f,0),new Vector3(w+0.65f,0.44f,z+0.65f),dark);
-        Box("SandBed",root,new Vector3(0,bottom-0.04f,0),new Vector3(w,0.08f,z),sand);
-        Box("Front",root,new Vector3(0,bottom+h/2,-z/2),new Vector3(w, h+0.18f,0.13f),wall);
-        Box("Back",root,new Vector3(0,bottom+h/2,z/2),new Vector3(w, h+0.18f,0.13f),wall);
-        Box("Left",root,new Vector3(-w/2,bottom+h/2,0),new Vector3(0.13f,h+0.18f,z),wall);
-        Box("Right",root,new Vector3(w/2,bottom+h/2,0),new Vector3(0.13f,h+0.18f,z),wall);
+        Box("SandBed",root,new Vector3(0,bottom+0.04f,0),new Vector3(w,0.08f,z),sand);
+        if(d.pond)
+        {
+            Box("Front",root,new Vector3(0,bottom+h/2,-z/2),new Vector3(w,h+0.18f,0.13f),wall);
+            Box("Back",root,new Vector3(0,bottom+h/2,z/2),new Vector3(w,h+0.18f,0.13f),wall);
+            Box("Left",root,new Vector3(-w/2,bottom+h/2,0),new Vector3(0.13f,h+0.18f,z),wall);
+            Box("Right",root,new Vector3(w/2,bottom+h/2,0),new Vector3(0.13f,h+0.18f,z),wall);
+        }
+        else
+        {
+            GlassPanel(root,new Vector3(0,bottom+h/2,-z/2),w,h,0);
+            GlassPanel(root,new Vector3(0,bottom+h/2,z/2),w,h,180);
+            GlassPanel(root,new Vector3(-w/2,bottom+h/2,0),z,h,90);
+            GlassPanel(root,new Vector3(w/2,bottom+h/2,0),z,h,-90);
+        }
         for(int side=-1;side<=1;side+=2)
         {
             Box("TopRim",root,new Vector3(0,bottom+h+0.1f,side*z/2),new Vector3(w+0.25f,0.17f,0.23f),d.pond?stone:gold);
@@ -216,14 +275,16 @@ public static class ShopWorldSetup
         Transform volume=Point("SwimVolume",root,new Vector3(0,bottom,0),0);
         habitat.water=volume.gameObject.AddComponent<ShopWaterVolume>(); habitat.water.size=new Vector3(w-0.18f,h-0.18f,z-0.18f);
         habitat.fishRoot=Point("Residents",root,new Vector3(0,bottom,0),0);
-        Box("WaterSurface",root,new Vector3(0,bottom+h-0.18f,0),new Vector3(w-0.16f,0.018f,z-0.16f),water,false);
+        Primitive(PrimitiveType.Plane,"WaterSurface",root,new Vector3(0,bottom+h-0.18f,0),new Vector3((w-0.2f)/10f,1,(z-0.2f)/10f),water,false);
         GameObject barrier=new GameObject("UnpurchasedAccessCover");barrier.transform.SetParent(root,false);barrier.transform.localPosition=new Vector3(0,bottom+h+0.24f,0);
         habitat.purchaseBarrier=barrier.AddComponent<BoxCollider>();habitat.purchaseBarrier.size=new Vector3(w,0.12f,z);
         habitat.interaction=Point("PurchasePoint",root,new Vector3(0,0.25f,-z/2-3.1f),0);
         habitat.exit=Point("Exit",root,new Vector3(w/2+2.4f,0.25f,-z/2-2f),0);
         habitat.entrance=Point("WaterEntry",root,new Vector3(w*0.24f,bottom+h-1.25f,0),0);
         Box("SignPedestal",root,new Vector3(0,0.85f,-z/2-1.5f),new Vector3(Mathf.Min(w+1,5),1.5f,0.22f),dark);
-        habitat.label=Sign(root,d.name.ToUpperInvariant()+$"\n{d.price:N0} COINS\n{d.fishLimit} FISH / MAX {d.maxFishKg} KG EACH",new Vector3(0,1.32f,-z/2-1.64f),0,d.width<3?0.027f:0.04f);
+        habitat.label=Sign(root,d.name.ToUpperInvariant()+$"\n{d.price:N0} COINS\n{d.fishLimit} FISH / MAX {d.maxFishKg} KG EACH",new Vector3(0,0.85f,-z/2-1.625f),0,d.width<3?0.027f:0.04f);
+        habitat.label.GetComponent<ShopSign>().area=new Vector2(Mathf.Min(w+1,5)-0.25f,1.22f);
+        habitat.label.GetComponent<ShopSign>().Fit();
         if(d.swimmable)
         {
             // Real stair access in addition to the accessible Enter/Exit controls.
@@ -233,13 +294,13 @@ public static class ShopWorldSetup
                 for(int i=0;i<submergedSteps;i++)
                 {
                     float top=h+0.25f-i*0.18f;
-                    Box("PondExitStep",root,new Vector3(w/2-1.05f,bottom+top/2,-z/2+0.4f+i*0.32f),new Vector3(1.5f,top,0.34f),stone);
+                    Box("PondExitStep",root,new Vector3(w/2-1.05f,bottom+top/2,-z/2+0.4f+i*0.32f),new Vector3(1.5f,top,0.315f),stone);
                 }
             }
             int steps=Mathf.CeilToInt((bottom+h+0.3f)/0.18f);
-            for(int i=0;i<steps;i++) Box("AccessStep",root,new Vector3(w/2+1.05f,(i+1)*0.09f,-z/2-steps*0.32f+i*0.32f),new Vector3(1.6f,(i+1)*0.18f,0.34f),wood);
+            for(int i=0;i<steps;i++) Box("AccessStep",root,new Vector3(w/2+1.05f,(i+1)*0.09f,-z/2-steps*0.32f+i*0.32f),new Vector3(1.6f,(i+1)*0.18f,0.315f),wood);
             Box("AccessLanding",root,new Vector3(w/2+0.55f,bottom+h+0.23f,-z/2+0.6f),new Vector3(2.6f,0.18f,1.8f),wood);
-            Sign(root,"SWIM ACCESS",new Vector3(w/2+1.1f,1.3f,-z/2-steps*0.32f-0.3f),0,0.028f);
+
         }
         UnityEngine.Random.State state=UnityEngine.Random.state; UnityEngine.Random.InitState(d.price);
         int decorations=d.pond?14:6;
@@ -259,6 +320,12 @@ public static class ShopWorldSetup
         UnityEngine.Random.state=state;
         if(!d.pond) Light(root,new Vector3(0,h+1,0),new Color(0.35f,0.8f,1),Mathf.Min(1.6f,w*0.2f),Mathf.Max(w,z));
         return habitat;
+    }
+    private static void GlassPanel(Transform root,Vector3 position,float width,float height,float yaw)
+    {
+        var panel=Primitive(PrimitiveType.Quad,"GlassPanel",root,position,new Vector3(width,height,1),glass,false);
+        panel.transform.localRotation=Quaternion.Euler(0,yaw,0);
+        panel.AddComponent<BoxCollider>().size=new Vector3(1,1,0.13f);
     }
     private static Transform Kiosk(Transform parent,Vector3 position,string title,string subtitle,bool market)
     {
@@ -289,6 +356,7 @@ public static class ShopWorldSetup
                 }
             }
         }
+        if(market)root.gameObject.AddComponent<ShopMarketDisplay>();
         Light(root,new Vector3(0,5,-1),new Color(1,0.85f,0.62f),1.5f,13);
         return Point("CounterInteraction",root,new Vector3(0,0.25f,-4.3f),0);
     }
@@ -308,6 +376,13 @@ public static class ShopWorldSetup
         water=Mat("HabitatWater",transparent,new Color(0.06f,0.42f,0.45f,0.19f),null,0);water.SetFloat("_Water",1);
         Shader unlit=Shader.Find("Universal Render Pipeline/Unlit"); if(unlit==null) unlit=lit;
         glow=Mat("WarmLight",unlit,new Color(1.5f,1.2f,0.65f),null,0);
+        Shader signs=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/ShopSign.shader");
+        if(signs==null || ShaderUtil.ShaderHasError(signs))throw new InvalidOperationException("Sign shader has not compiled.");
+        string signPath=Root+"/Materials/SignText.mat";
+        signMaterial=AssetDatabase.LoadAssetAtPath<Material>(signPath);
+        if(signMaterial==null){signMaterial=new Material(signs);AssetDatabase.CreateAsset(signMaterial,signPath);}
+        signMaterial.shader=signs;signMaterial.mainTexture=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf").material.mainTexture;
+        EditorUtility.SetDirty(signMaterial);
         AssetDatabase.SaveAssets();
     }
     private static Texture2D Texture(string name,bool timber)
@@ -354,7 +429,17 @@ public static class ShopWorldSetup
         var node=Point("Sign",parent,position,yaw); var label=node.gameObject.AddComponent<TextMesh>();
         label.text=text;label.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");label.fontSize=64;label.characterSize=size;
         label.anchor=TextAnchor.MiddleCenter;label.alignment=TextAlignment.Center;label.color=new Color(0.96f,0.87f,0.65f);
-        node.GetComponent<MeshRenderer>().sharedMaterial=label.font.material;return label;
+        node.GetComponent<MeshRenderer>().sharedMaterial=signMaterial;
+        var fit=node.gameObject.AddComponent<ShopSign>();
+        bool major=text=="TIDEGLASS QUAY" || text=="THE TACKLE ATELIER" || text=="FRESH CATCH MARKET" || text=="AQUARIUM GALLERY" || text=="POND GARDENS";
+        if(!major && !text.Contains("COINS"))
+        {
+            float width=Mathf.Clamp(text.Length*size*0.65f,2,12);
+            var board=Box("SignBoard",parent,position+Quaternion.Euler(0,yaw,0)*new Vector3(0,0,0.045f),new Vector3(width,0.75f,0.06f),dark);
+            board.transform.localRotation=Quaternion.Euler(0,yaw,0);fit.area=new Vector2(width-0.2f,0.6f);
+        }
+        else fit.area=major?new Vector2(18,1.5f):new Vector2(4.6f,1.22f);
+        fit.Fit();return label;
     }
     private static Transform Point(string name,Transform parent,Vector3 position,float yaw)
     {var go=new GameObject(name);go.transform.SetParent(parent,false);go.transform.localPosition=position;go.transform.localRotation=Quaternion.Euler(0,yaw,0);return go.transform;}

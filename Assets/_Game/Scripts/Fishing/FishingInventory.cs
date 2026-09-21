@@ -26,6 +26,7 @@ public class FishingInventory : MonoBehaviour
     private List<CaughtFishRecord> fish =
         new List<CaughtFishRecord>();
 
+    public bool IsFull => fish.Count>=ShopLedger.BagLimit;
     public event Action Changed;
 
     public IReadOnlyList<CaughtFishRecord> Fish => fish;
@@ -44,6 +45,7 @@ public class FishingInventory : MonoBehaviour
         int speciesId,
         float weightKg)
     {
+        if(IsFull || (shop!=null && shop.ReadOnly)) return -1;
         CaughtFishRecord record =
             new CaughtFishRecord
             {
@@ -62,7 +64,7 @@ public class FishingInventory : MonoBehaviour
     public int AddExistingFish(
         CaughtFishRecord record)
     {
-        if (record == null)
+        if (record == null || IsFull || (shop!=null && shop.ReadOnly))
             return -1;
 
         fish.Add(record);

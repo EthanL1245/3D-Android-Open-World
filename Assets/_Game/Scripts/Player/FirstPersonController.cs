@@ -88,6 +88,33 @@ public class FirstPersonController : MonoBehaviour
         previousSwimming = IsSwimming;
     }
 
+    private MobileActionButton swimDownButton;
+    private RectTransform swimUpRect;
+    private Vector2 landJumpPosition;
+    private bool swimLayout;
+    private void LateUpdate()
+    {
+        if(jumpButton==null)return;
+        if(swimDownButton==null)
+        {
+            swimUpRect=jumpButton.GetComponent<RectTransform>();landJumpPosition=swimUpRect.anchoredPosition;
+            var go=Instantiate(jumpButton.gameObject,jumpButton.transform.parent);go.name="SwimDown";
+            swimDownButton=go.GetComponent<MobileActionButton>();
+            var button=go.GetComponent<UnityEngine.UI.Button>();if(button!=null)button.onClick.RemoveAllListeners();
+            foreach(var label in go.GetComponentsInChildren<UnityEngine.UI.Text>())label.text="▼";
+            go.GetComponent<RectTransform>().anchoredPosition=landJumpPosition;
+            go.GetComponent<RectTransform>().localRotation=Quaternion.Euler(0,0,180);
+            foreach(var label in go.GetComponentsInChildren<UnityEngine.UI.Text>())label.rectTransform.localRotation=Quaternion.Euler(0,0,180);
+            go.SetActive(false);
+        }
+        bool swimming=IsSwimming && !uiBlocked;
+        swimDownButton.gameObject.SetActive(swimming);
+        if(swimLayout!=swimming)
+        {
+            swimLayout=swimming;
+            swimUpRect.anchoredPosition=landJumpPosition+(swimming?Vector2.up*(swimUpRect.sizeDelta.y+14):Vector2.zero);
+        }
+    }
     private bool uiBlocked;
     public void SetUIBlocked(bool blocked)
     {
@@ -495,6 +522,7 @@ public class FirstPersonController : MonoBehaviour
 
     private float ReadKeyboardSwimDownInput()
     {
+        if(swimDownButton!=null && swimDownButton.IsHeld)return 1f;
         if (Keyboard.current == null)
             return 0f;
 

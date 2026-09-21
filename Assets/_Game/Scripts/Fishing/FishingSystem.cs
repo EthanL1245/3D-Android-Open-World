@@ -615,6 +615,7 @@ public class FishingSystem : MonoBehaviour
 
     private void TryCast()
     {
+        if(inventory.IsFull) { hud.SetStatus("FISH BAG FULL (50). Sell fish or move them into your Home habitat."); return; }
         if(shopMode) return;
         if (!TryGetCastPoint(
                 out Vector3 target))
@@ -1163,6 +1164,8 @@ public class FishingSystem : MonoBehaviour
                 hookedSpeciesId,
                 hookedWeightKg
             );
+
+        if(newIndex<0) { FailFishing("FISH BAG FULL (50). Fish released. Sell or house fish to make room."); return; }
 
         CaughtFishRecord record =
             inventory.Fish[newIndex];

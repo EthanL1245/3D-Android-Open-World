@@ -48,6 +48,27 @@ internal static class Program
             Check(habitat.price>0 && habitat.fishLimit>0 && habitat.maxFishKg<=habitat.totalKg,"Invalid habitat limits");
             Check(ShopCatalog.FishLength(5,habitat.maxFishKg)<Math.Min(habitat.width,habitat.depth)*0.48f,"Catalog admits fish too long to turn");
         }
+        var upgrades=new ShopLedger {coins=50000};
+        Check(!upgrades.BuyHabitat("reef"),"Skipped aquarium prerequisite");
+        Check(upgrades.BuyHabitat("nano") && upgrades.coins==49750,"Initial aquarium price");
+        var resident=Fish(0.2f);upgrades.bag.Add(resident);upgrades.Deposit("nano",resident);
+        Check(upgrades.UpgradeCost("reef")==450,"Upgrade should charge the difference");
+        Check(upgrades.BuyHabitat("reef") && upgrades.Habitat("nano")==null && upgrades.Habitat("reef").fish.Contains(resident),"Upgrade lost resident or retained old aquarium");
+        foreach(string id in new[]{"lagoon","grand","ocean"})Check(upgrades.BuyHabitat(id),"Aquarium progression failed");
+        Check(upgrades.habitats.Count==1 && upgrades.coins==32000,"Aquarium total cost or single-slot ownership incorrect");
+        Check(!upgrades.BuyHabitat("lake") && upgrades.BuyHabitat("pond"),"Pond prerequisite");
+        Check(upgrades.BuyHabitat("garden") && upgrades.BuyHabitat("lake") && upgrades.habitats.Count==2 && upgrades.coins==17000,"Independent pond progression");
+        for(int i=0;i<ShopLedger.BagLimit;i++)upgrades.bag.Add(Fish(1));
+        Check(upgrades.BagFull && !upgrades.Withdraw("ocean",resident) && upgrades.Habitat("ocean").fish.Contains(resident),"Full-bag withdrawal lost resident");
+        upgrades.bag.RemoveAt(0);Check(upgrades.Withdraw("ocean",resident) && upgrades.bag.Count==50,"Last bag slot rejected");
+        var legacy=new ShopLedger {coins=100};
+        legacy.habitats.Add(new HabitatOwnership{id="nano",fish=new(){Fish(0.2f)}});
+        legacy.habitats.Add(new HabitatOwnership{id="reef",fish=new(){Fish(1)}});
+        legacy.habitats.Add(new HabitatOwnership{id="garden",fish=new(){Fish(2)}});
+        legacy.MigrateHome();
+        Check(legacy.habitats.Count==2 && legacy.Habitat("reef").fish.Count==2 && legacy.coins==350,"Legacy consolidation lost fish or credit");
+        legacy.MigrateHome();Check(legacy.coins==350 && legacy.Habitat("reef").fish.Count==2,"Migration applied twice");
+        Check(legacy.UpgradeCost("lake")==10000,"Migrated pond cannot upgrade");
         Console.WriteLine($"PASS: {checks} commerce, gear, bait, capacity, transfer, weight scaling and save checks.");
     }
 }

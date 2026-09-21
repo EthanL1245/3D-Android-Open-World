@@ -28,12 +28,14 @@ public sealed class ShopHabitat : MonoBehaviour
     private void Refresh()
     {
         var d=ShopCatalog.Habitat(id); var owned=progress.Data.Habitat(id);
-        bool purchased=owned!=null;
+        bool home=GetComponentInParent<ShopWorldEnvironment>().isHome;
+        bool purchased=home && owned!=null;
         water.available=purchased && d.swimmable;
         if(purchaseBarrier!=null) purchaseBarrier.enabled=!purchased || !d.swimmable;
         float kg=0; int signature=purchased?17:0;
         if(purchased) foreach(var f in owned.fish) { kg+=f.weightKg; unchecked { signature=signature*31+f.GetHashCode(); } }
-        if(label!=null) label.text=d.name.ToUpperInvariant()+"\n"+(purchased ? $"OWNED  |  {owned.fish.Count}/{d.fishLimit} FISH  |  {kg:0.0}/{d.totalKg:0} KG" : $"{d.price:N0} COINS  |  PURCHASE AT THIS SIGN")+$"\nMAX {d.maxFishKg:0.0} KG EACH";
+        if(label!=null) label.text=d.name.ToUpperInvariant()+"\n"+(purchased ? $"OWNED  |  {owned.fish.Count}/{d.fishLimit} FISH  |  {kg:0.0}/{d.totalKg:0} KG" : $"{d.price:N0} TOTAL VALUE  |  UPGRADE FOR HOME")+$"\nMAX {d.maxFishKg:0.0} KG EACH";
+        var sign=label!=null?label.GetComponent<ShopSign>():null; if(sign!=null)sign.Fit();
         if(signature==fishSignature) return;
         fishSignature=signature;
         fishRoot.gameObject.SetActive(true);

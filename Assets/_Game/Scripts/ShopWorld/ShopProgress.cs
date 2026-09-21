@@ -21,6 +21,7 @@ public sealed class ShopProgress : MonoBehaviour
                 catch { Data=Read(PlayerPrefs.GetString(SaveKey+".backup")); Notice="Recovered the previous shop save."; }
             }
             else Migrate();
+            if(!Data.homeMigrated) { Data.MigrateHome(); Save(); Notice="Your habitats now live at Home. Earlier smaller purchases were credited; all fish were preserved."; }
         }
         catch(Exception ex)
         {
@@ -83,7 +84,8 @@ public sealed class ShopProgress : MonoBehaviour
     public bool BuyBait(int id) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyBait(id));
     public bool BuyHabitat(string id) => CanTrade && ShopDimensionManager.Instance.Near(id) && Commit(Data.BuyHabitat(id));
     public bool Sell(CaughtFishRecord fish) => CanTrade && ShopDimensionManager.Instance.Near("market") && Commit(Data.Sell(fish,FishCatalog.GetSellValue(fish.speciesId,fish.weightKg)));
-    public bool Deposit(string id,CaughtFishRecord fish) => CanTrade && ShopDimensionManager.Instance.Near(id) && Commit(Data.Deposit(id,fish));
-    public bool Withdraw(string id,CaughtFishRecord fish) => CanTrade && ShopDimensionManager.Instance.Near(id) && Commit(Data.Withdraw(id,fish));
+    public bool CanManage => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InHome;
+    public bool Deposit(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Deposit(id,fish));
+    public bool Withdraw(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Withdraw(id,fish));
     public int TakeBait() { if(ReadOnly) return 0; int id=Data.ConsumeBait(); if(id!=0) Save(); return id; }
 }

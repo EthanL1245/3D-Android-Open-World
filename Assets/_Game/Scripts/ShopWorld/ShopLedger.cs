@@ -15,6 +15,36 @@ using System.Collections.Generic;
     public List<CaughtFishRecord> bag = new List<CaughtFishRecord>();
     public List<HabitatOwnership> habitats = new List<HabitatOwnership>();
     public bool legacyMigrated;
+    public bool homeMigrated;
+    public const int BagLimit=50;
+    public bool BagFull => bag.Count>=BagLimit;
+    public HabitatOwnership CurrentHabitat(bool pond) => habitats.Find(h=>ShopCatalog.Habitat(h.id).pond==pond);
+    public int UpgradeCost(string id)
+    {
+        var d=ShopCatalog.Habitat(id); if(d==null)return -1;
+        var current=CurrentHabitat(d.pond);
+        int index=Array.IndexOf(ShopCatalog.Habitats,d);
+        int previous=current==null?(d.pond?4:-1):Array.IndexOf(ShopCatalog.Habitats,ShopCatalog.Habitat(current.id));
+        return index==previous+1 ? d.price-(current==null?0:ShopCatalog.Habitat(current.id).price) : -1;
+    }
+    public void MigrateHome()
+    {
+        if(homeMigrated)return;
+        foreach(bool pond in new[]{false,true})
+        {
+            var old=habitats.FindAll(h=>ShopCatalog.Habitat(h.id).pond==pond);
+            if(old.Count<2)continue;
+            old.Sort((a,b)=>ShopCatalog.Habitat(a.id).price.CompareTo(ShopCatalog.Habitat(b.id).price));
+            var keep=old[old.Count-1];
+            for(int i=0;i<old.Count-1;i++)
+            {
+                keep.fish.AddRange(old[i].fish);
+                coins=(int)Math.Min(int.MaxValue,(long)coins+ShopCatalog.Habitat(old[i].id).price);
+                habitats.Remove(old[i]);
+            }
+        }
+        homeMigrated=true;
+    }
     public int Owned(GearKind kind) => kind == GearKind.Rod ? rodOwned : kind == GearKind.Reel ? reelOwned : lineOwned;
     public int Equipped(GearKind kind) => kind == GearKind.Rod ? rodEquipped : kind == GearKind.Reel ? reelEquipped : lineEquipped;
     public HabitatOwnership Habitat(string id) => habitats.Find(h => h.id == id);
@@ -47,8 +77,12 @@ using System.Collections.Generic;
     public bool BuyHabitat(string id)
     {
         var definition=ShopCatalog.Habitat(id);
-        if (definition==null || Habitat(id)!=null || !Spend(definition.price)) return false;
-        habitats.Add(new HabitatOwnership { id=id }); return true;
+        int cost=UpgradeCost(id);
+        if (definition==null || cost<0 || !Spend(cost)) return false;
+        var current=CurrentHabitat(definition.pond);
+        if(current==null) habitats.Add(new HabitatOwnership { id=id });
+        else current.id=id;
+        return true;
     }
     public string Admission(string id, CaughtFishRecord fish)
     {
@@ -69,7 +103,7 @@ using System.Collections.Generic;
     }
     public bool Withdraw(string id, CaughtFishRecord fish)
     {
-        var h=Habitat(id); if(h==null || !h.fish.Remove(fish)) return false;
+        var h=Habitat(id); if(BagFull || h==null || !h.fish.Remove(fish)) return false;
         bag.Add(fish); return true;
     }
     public bool Sell(CaughtFishRecord fish, int value)

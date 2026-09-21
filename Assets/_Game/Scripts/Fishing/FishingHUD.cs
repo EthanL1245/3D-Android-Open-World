@@ -928,6 +928,8 @@ public class FishingHUD : MonoBehaviour
                 )
         );
 
+        if(GetComponent<ShopWorldHUD>()!=null) inventoryButton.SetActive(false);
+
         Text inventoryButtonText =
             CreateText(
                 "Label",
