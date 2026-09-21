@@ -84,94 +84,135 @@ public sealed class CaughtFishFlop : MonoBehaviour
             Initialize();
 
         float t =
-            Time.time * 10.5f +
+            Time.time * 9.2f +
             phase;
 
-        // Frantic caught-fish thrashing: small motion in the middle, much
-        // stronger and less regular movement toward the rear and tail.
+        // A caught fish should KICK, not smoothly wave. SharpWave creates
+        // fast direction changes, while the phase delay sends the kick from
+        // mid-body through the rear and finally into the tail.
+        float burst =
+            Mathf.Lerp(
+                0.62f,
+                1.12f,
+                Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    0.5f +
+                    0.5f *
+                    Mathf.Sin(
+                        t * 0.31f +
+                        phase
+                    )
+                )
+            );
+
+        float midBeat =
+            SharpWave(
+                t * 1.05f
+            );
+
+        float rearBeat =
+            SharpWave(
+                t * 1.05f -
+                0.48f
+            );
+
+        float tailBeat =
+            SharpWave(
+                t * 1.05f -
+                0.98f
+            );
+
+        float twitch =
+            SharpWave(
+                t * 1.93f +
+                1.4f
+            );
+
         if (midBone != null)
         {
-            float midYaw =
-                Mathf.Sin(t) * 8f +
-                Mathf.Sin(
-                    t * 1.87f +
-                    0.8f
-                ) * 3.5f;
-
-            float midRoll =
-                Mathf.Sin(
-                    t * 0.73f +
-                    1.1f
-                ) * 3f;
-
             midBone.localRotation =
                 midRest *
                 Quaternion.Euler(
+                    twitch *
+                    2.5f *
+                    burst,
+                    (
+                        midBeat * 11f +
+                        twitch * 3f
+                    ) *
+                    burst,
                     Mathf.Sin(
-                        t * 1.31f
-                    ) * 2f,
-                    midYaw,
-                    midRoll
+                        t * 0.77f
+                    ) *
+                    3f *
+                    burst
                 );
         }
 
         if (rearBone != null)
         {
-            float rearYaw =
-                Mathf.Sin(
-                    t - 0.38f
-                ) * 18f +
-                Mathf.Sin(
-                    t * 1.63f +
-                    1.7f
-                ) * 7f;
-
-            float rearRoll =
-                Mathf.Sin(
-                    t * 0.91f +
-                    0.5f
-                ) * 6f;
-
             rearBone.localRotation =
                 rearRest *
                 Quaternion.Euler(
+                    twitch *
+                    5f *
+                    burst,
+                    (
+                        rearBeat * 27f +
+                        twitch * 8f
+                    ) *
+                    burst,
                     Mathf.Sin(
-                        t * 1.42f +
-                        0.3f
-                    ) * 4f,
-                    rearYaw,
-                    rearRoll
+                        t * 0.91f +
+                        0.8f
+                    ) *
+                    7f *
+                    burst
                 );
         }
 
         if (tailBone != null)
         {
-            float tailYaw =
-                Mathf.Sin(
-                    t - 0.82f
-                ) * 34f +
-                Mathf.Sin(
-                    t * 1.78f +
-                    2.1f
-                ) * 12f;
-
-            float tailRoll =
-                Mathf.Sin(
-                    t * 1.12f +
-                    1.4f
-                ) * 9f;
-
             tailBone.localRotation =
                 tailRest *
                 Quaternion.Euler(
+                    twitch *
+                    8f *
+                    burst,
+                    (
+                        tailBeat * 50f +
+                        twitch * 15f
+                    ) *
+                    burst,
                     Mathf.Sin(
-                        t * 1.55f +
-                        0.6f
-                    ) * 6f,
-                    tailYaw,
-                    tailRoll
+                        t * 1.14f +
+                        1.6f
+                    ) *
+                    11f *
+                    burst
                 );
         }
+    }
+
+    private static float SharpWave(
+        float value)
+    {
+        float wave =
+            Mathf.Sin(
+                value
+            );
+
+        return
+            Mathf.Sign(
+                wave
+            ) *
+            Mathf.Pow(
+                Mathf.Abs(
+                    wave
+                ),
+                0.48f
+            );
     }
 
     private static Transform FindBone(
