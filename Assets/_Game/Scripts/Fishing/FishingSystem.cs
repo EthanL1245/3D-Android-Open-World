@@ -3051,20 +3051,37 @@ public class FishingSystem : MonoBehaviour
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation;
 
+        Vector3 mouthLocal =
+            FindFishMouthLocalPosition(
+                heldFishVisual
+            );
+
+        Vector3 mouthWorld =
+            heldFishVisual.transform
+                .TransformPoint(
+                    mouthLocal
+                );
+
+        Transform mouthParent =
+            FindDeepChildByName(
+                heldFishVisual.transform,
+                "Bone"
+            );
+
         GameObject marker =
             new GameObject(
                 "CatchMouthAnchor"
             );
 
         marker.transform.SetParent(
-            heldFishVisual.transform,
+            mouthParent != null
+                ? mouthParent
+                : heldFishVisual.transform,
             false
         );
 
-        marker.transform.localPosition =
-            FindFishMouthLocalPosition(
-                heldFishVisual
-            );
+        marker.transform.position =
+            mouthWorld;
 
         heldFishMouthMarker =
             marker.transform;
