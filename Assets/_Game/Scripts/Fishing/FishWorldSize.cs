@@ -1,33 +1,47 @@
 using UnityEngine;
 
+/// <summary>One Unity world unit is one metre, regardless of imported rig units.</summary>
 public static class FishWorldSize
 {
-    public static GameObject Create(string name,Transform parent,int species,float kg)
+    public static GameObject Create(string name, Transform parent, int species, float kg)
     {
-        var fish=FishVisualFactory.CreateFish(name,parent,species,1f);
-        SetLength(fish,ShopCatalog.FishLength(species,kg));return fish;
+        var fish = FishVisualFactory.CreateFish(name, parent, species, 1f);
+        SetLength(fish, ShopCatalog.FishLength(species, kg));
+        return fish;
     }
-    public static void SetLength(GameObject fish,float metres)
+
+    public static void SetLength(GameObject fish, float metres)
     {
-        if(fish==null)return;
-        Vector3 forward=fish.transform.forward;
-        float min=float.PositiveInfinity,max=float.NegativeInfinity;
-        foreach(var renderer in fish.GetComponentsInChildren<Renderer>())
+        if (fish == null || metres <= 0f || float.IsNaN(metres) || float.IsInfinity(metres))
+            return;
+
+        // Measure the same renderer bounds used by the prefab importers. Baking
+        // skinned vertices here mixes FBX rig units with the normalized visual
+        // hierarchy and caused the held fish and thumbnails to shrink severely.
+        // Neutral world rotation keeps the longitudinal (+Z) measurement identical
+        // for aquarium fish, camera-parented catches and sideways UI previews.
+        var root = fish.transform;
+        Quaternion rotation = root.rotation;
+        try
         {
-            Mesh mesh=null;bool temporary=false;
-            var skin=renderer as SkinnedMeshRenderer;
-            if(skin!=null){mesh=new Mesh();skin.BakeMesh(mesh);temporary=true;}
-            else {var filter=renderer.GetComponent<MeshFilter>();if(filter!=null)mesh=filter.sharedMesh;}
-            if(mesh==null)continue;
-            if(mesh.isReadable)
-                foreach(var v in mesh.vertices){float z=Vector3.Dot(renderer.transform.TransformPoint(v)-fish.transform.position,forward);min=Mathf.Min(min,z);max=Mathf.Max(max,z);}
-            else
+            root.rotation = Quaternion.identity;
+            bool found = false;
+            Bounds bounds = default;
+            foreach (var renderer in fish.GetComponentsInChildren<Renderer>())
             {
-                var b=renderer.localBounds;
-                for(int i=0;i<8;i++){var v=b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));float z=Vector3.Dot(renderer.transform.TransformPoint(v)-fish.transform.position,forward);min=Mathf.Min(min,z);max=Mathf.Max(max,z);}
+                if (!renderer.enabled ||
+                    (!(renderer is MeshRenderer) && !(renderer is SkinnedMeshRenderer)))
+                    continue;
+                if (!found) { bounds = renderer.bounds; found = true; }
+                else bounds.Encapsulate(renderer.bounds);
             }
-            if(temporary)Object.Destroy(mesh);
+            float length = bounds.size.z;
+            if (found && length > 0.0001f && !float.IsNaN(length) && !float.IsInfinity(length))
+                root.localScale *= metres / length;
         }
-        if(max-min>0.0001f && !float.IsInfinity(max-min))fish.transform.localScale*=metres/(max-min);
+        finally
+        {
+            root.rotation = rotation;
+        }
     }
 }

@@ -2784,7 +2784,7 @@ public class FishingSystem : MonoBehaviour
     {
         Canvas.ForceUpdateCanvases();
         var mount=rodRoot.transform.Find("ReelMount");if(mount==null)return;
-        float target=Screen.height*0.20f;
+        float target=Screen.height*0.22f;
         var joystick=FindFirstObjectByType<MobileJoystick>();
         if(joystick!=null)
         {
@@ -2797,8 +2797,7 @@ public class FishingSystem : MonoBehaviour
         for(int pass=0;pass<4;pass++)
         {
             Bounds b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
-            Vector3 screen=playerCamera.WorldToViewportPoint(b.center);
-            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.58f,0.24f,Mathf.Max(0.3f,screen.z)))-b.center;
+            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.88f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-b.center;
             b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
             float low=float.PositiveInfinity,high=float.NegativeInfinity;
             for(int i=0;i<8;i++)
@@ -2806,9 +2805,15 @@ public class FishingSystem : MonoBehaviour
                 var corner=b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
                 float y=playerCamera.WorldToScreenPoint(corner).y;low=Mathf.Min(low,y);high=Mathf.Max(high,y);
             }
-            float size=Mathf.Clamp(rodRoot.transform.localScale.x*target/Mathf.Max(1,high-low),1.4f,4f);
+            float size=Mathf.Clamp(rodRoot.transform.localScale.x*target/Mathf.Max(1,high-low),0.35f,4f);
             rodRoot.transform.localScale=Vector3.one*size;
         }
+        // Scaling moves the mount around the rod pivot: pin it once more after
+        // the last fit so the reel stays beside, and above, the right control.
+        Bounds finalBounds=renderers[0].bounds;
+        foreach(var renderer in renderers)finalBounds.Encapsulate(renderer.bounds);
+        rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(
+            new Vector3(0.88f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-finalBounds.center;
     }
 
     private void CreateRodAndLine()
@@ -2819,8 +2824,8 @@ public class FishingSystem : MonoBehaviour
         {
             rodRoot = Instantiate(prefab, playerCamera.transform, false);
             rodRoot.name = "FishingRodViewModel";
-            rodRoot.transform.localPosition = new Vector3(0.06f, -0.24f, 0.60f);
-            rodRoot.transform.localRotation = Quaternion.Euler(67f, -6f, 11f);
+            rodRoot.transform.localPosition = new Vector3(0.38f, -0.18f, 0.48f);
+            rodRoot.transform.localRotation = Quaternion.Euler(43f, -6f, -4f);
             rodRoot.transform.localScale=Vector3.one*2f;
             rodFitPending=true;
             rodView = rodRoot.GetComponent<FishingRodView>();
