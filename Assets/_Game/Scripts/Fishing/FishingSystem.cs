@@ -2849,7 +2849,7 @@ public class FishingSystem : MonoBehaviour
 
         anchor.transform.localPosition =
             new Vector3(
-                0.43f,
+                0.58f,
                 0.50f,
                 1.02f
             );
@@ -2864,22 +2864,29 @@ public class FishingSystem : MonoBehaviour
             return;
 
         float time =
-            Time.time * 5.2f +
+            Time.time * 7.4f +
             heldFishFlopOffset;
 
-        // Keep the head/front steady. The rear half does the stronger motion.
+        // The whole fish still pivots from its mouth, but only moderately.
+        // Most of the frantic motion comes from the rear-body bone controller.
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation *
             Quaternion.Euler(
                 Mathf.Sin(
-                    time * 1.25f
-                ) * 2.5f,
+                    time * 1.17f
+                ) * 4.5f +
                 Mathf.Sin(
-                    time * 0.90f
+                    time * 2.41f
                 ) * 1.5f,
                 Mathf.Sin(
-                    time * 1.80f
-                ) * 5f
+                    time * 0.83f
+                ) * 2.8f,
+                Mathf.Sin(
+                    time * 1.74f
+                ) * 8f +
+                Mathf.Sin(
+                    time * 2.66f
+                ) * 2.5f
             );
 
         if (heldHookPoint != null &&
@@ -2899,9 +2906,9 @@ public class FishingSystem : MonoBehaviour
             {
                 heldCatchLine.SetPosition(
                     0,
-                    mouthTarget +
-                    heldFishAnchor.up *
-                    0.14f
+                    GetHeldCatchLineTop(
+                        mouthTarget
+                    )
                 );
 
                 heldCatchLine.SetPosition(
@@ -3035,9 +3042,9 @@ public class FishingSystem : MonoBehaviour
 
         heldCatchLine.SetPosition(
             0,
-            heldHookPoint.position +
-            heldFishAnchor.up *
-            0.14f
+            GetHeldCatchLineTop(
+                heldFishMouthMarker.position
+            )
         );
 
         heldCatchLine.SetPosition(
@@ -3057,6 +3064,41 @@ public class FishingSystem : MonoBehaviour
         }
 
         flop.Initialize();
+    }
+
+    private Vector3 GetHeldCatchLineTop(
+        Vector3 mouthWorldPosition)
+    {
+        if (playerCamera == null)
+        {
+            return
+                mouthWorldPosition +
+                Vector3.up * 2f;
+        }
+
+        Vector3 viewport =
+            playerCamera.WorldToViewportPoint(
+                mouthWorldPosition
+            );
+
+        float depth =
+            Mathf.Max(
+                playerCamera.nearClipPlane +
+                0.05f,
+                viewport.z
+            );
+
+        // Same screen X/depth as the mouth, but just above the top edge.
+        // The visible line therefore runs continuously all the way to the
+        // top of the display regardless of aspect ratio.
+        return
+            playerCamera.ViewportToWorldPoint(
+                new Vector3(
+                    viewport.x,
+                    1.03f,
+                    depth
+                )
+            );
     }
 
     private Vector3 FindFishMouthLocalPosition(
