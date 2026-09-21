@@ -268,23 +268,24 @@ public class FishingSystem : MonoBehaviour
         if(heldRecord!=null && inventory!=null && !System.Linq.Enumerable.Contains(inventory.Fish,heldRecord))
         {ClearHeldFish();RefreshHandHud();}
         UpdateHeldFishAnimation();
-        if(shopMode || ShopWorldHUD.MenuOpen) return;
-        if (hud == null)
-            return;
-
-        if (state != FishingState.Idle &&
-            state != FishingState.Casting &&
+        // If the player submerges while the rod is equipped, put the
+        // entire fishing setup away immediately. Nothing snaps and nothing is
+        // lost: active casting/fighting state is simply cancelled and the rod,
+        // bobber and line return to their stored/unequipped state.
+        if (rodEquipped &&
             playerCamera != null &&
+            oceanWater != null &&
             oceanWater.IsPointUnderwater(
                 playerCamera.transform.position
             ))
         {
-            FailFishing(
-                "SNAP! The line broke when you went underwater."
-            );
-
+            UnequipHands();
             return;
         }
+
+        if(shopMode || ShopWorldHUD.MenuOpen) return;
+        if (hud == null)
+            return;
 
         FishingActionButton action =
             hud.ActionInput;
@@ -367,6 +368,17 @@ public class FishingSystem : MonoBehaviour
     public void EquipRod()
     {
         if(shopMode)return;
+
+        if (playerCamera != null &&
+            oceanWater != null &&
+            oceanWater.IsPointUnderwater(
+                playerCamera.transform.position
+            ))
+        {
+            UnequipHands();
+            return;
+        }
+
         CancelFishing();
 
         rodEquipped = true;
@@ -465,6 +477,14 @@ public class FishingSystem : MonoBehaviour
         if (mackerelPresentation != null)
         {
             mackerelPresentation.SetHeld(true);
+        }
+
+        YellowtailPresentation yellowtailPresentation =
+            heldFishVisual.GetComponent<YellowtailPresentation>();
+
+        if (yellowtailPresentation != null)
+        {
+            yellowtailPresentation.SetHeld(true);
         }
 
         SetupHookedCatchPresentation();
@@ -3729,6 +3749,13 @@ public class FishingSystem : MonoBehaviour
 
         if (mackerel != null)
             mackerel.enabled = false;
+
+        YellowtailPresentation yellowtail =
+            unconsciousFishVisual
+                .GetComponent<YellowtailPresentation>();
+
+        if (yellowtail != null)
+            yellowtail.enabled = false;
 
         GameObject mouthMarker =
             new GameObject(
