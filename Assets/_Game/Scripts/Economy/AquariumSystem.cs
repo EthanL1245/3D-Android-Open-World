@@ -952,6 +952,7 @@ public class TankFishAgent : MonoBehaviour
     private GoatfishPresentation goatfishPresentation;
     private RedSnapperPresentation redSnapperPresentation;
     private MackerelPresentation mackerelPresentation;
+    private YellowtailPresentation yellowtailPresentation;
 
     private float cruiseSpeed;
     private float currentSpeed;
@@ -1023,6 +1024,9 @@ public class TankFishAgent : MonoBehaviour
         mackerelPresentation =
             GetComponent<MackerelPresentation>();
 
+        yellowtailPresentation =
+            GetComponent<YellowtailPresentation>();
+
         if (goatfishPresentation != null)
         {
             if (speciesId ==
@@ -1085,6 +1089,37 @@ public class TankFishAgent : MonoBehaviour
                 );
 
             pitchSpeedDeg = 62f;
+
+            pathRadiusX =
+                UnityEngine.Random.Range(
+                    1.35f,
+                    2.15f
+                );
+
+            pathRadiusZ =
+                UnityEngine.Random.Range(
+                    0.45f,
+                    0.86f
+                );
+        }
+        else if (yellowtailPresentation != null)
+        {
+            // New Yellowtail uses the same head-led movement philosophy as
+            // Red Snapper: decisive head steering with the body following the
+            // exact historical track through turns.
+            cruiseSpeed =
+                UnityEngine.Random.Range(
+                    0.72f,
+                    1.20f
+                );
+
+            turnSpeedDeg =
+                UnityEngine.Random.Range(
+                    155f,
+                    185f
+                );
+
+            pitchSpeedDeg = 64f;
 
             pathRadiusX =
                 UnityEngine.Random.Range(
@@ -1646,6 +1681,15 @@ public class TankFishAgent : MonoBehaviour
             return true;
         }
 
+        if (yellowtailPresentation != null &&
+            yellowtailPresentation.TryGetHeadPosition(
+                referenceSpace,
+                out position
+            ))
+        {
+            return true;
+        }
+
         position = Vector3.zero;
         return false;
     }
@@ -1700,7 +1744,8 @@ public class TankFishAgent : MonoBehaviour
         if (tunaPresentation == null &&
             redSnapperPresentation == null &&
             goatfishPresentation == null &&
-            mackerelPresentation == null)
+            mackerelPresentation == null &&
+            yellowtailPresentation == null)
         {
             return;
         }
@@ -1848,6 +1893,17 @@ public class TankFishAgent : MonoBehaviour
             return true;
         }
 
+        if (yellowtailPresentation != null &&
+            yellowtailPresentation.TryGetHeadPositionWorld(
+                out positionWorld))
+        {
+            lengthWorld =
+                yellowtailPresentation
+                    .GetBodyLengthWorld();
+
+            return true;
+        }
+
         if (tunaPresentation != null &&
             tunaPresentation.TryGetHeadPosition(
                 out positionWorld))
@@ -1930,6 +1986,17 @@ public class TankFishAgent : MonoBehaviour
         if (mackerelPresentation != null)
         {
             mackerelPresentation.SetAquariumTrail(
+                currentForwardWorld,
+                forward25,
+                forward50,
+                forward75,
+                forward100
+            );
+        }
+
+        if (yellowtailPresentation != null)
+        {
+            yellowtailPresentation.SetAquariumTrail(
                 currentForwardWorld,
                 forward25,
                 forward50,
@@ -2047,6 +2114,13 @@ public class TankFishAgent : MonoBehaviour
         if (mackerelPresentation != null)
         {
             mackerelPresentation.SetAquariumLocomotion(
+                currentSpeed
+            );
+        }
+
+        if (yellowtailPresentation != null)
+        {
+            yellowtailPresentation.SetAquariumLocomotion(
                 currentSpeed
             );
         }
