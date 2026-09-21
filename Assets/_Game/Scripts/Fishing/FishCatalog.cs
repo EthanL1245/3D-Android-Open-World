@@ -105,7 +105,7 @@ public static class FishCatalog
             new Color(0.78f, 0.76f, 0.62f),
             new Color(0.96f, 0.78f, 0.08f),
             0.35f,
-            2.40f,
+            2.20f,
             0.46f,
             13.0f,
             48
@@ -115,7 +115,7 @@ public static class FishCatalog
             new Color(0.72f, 0.73f, 0.70f),
             new Color(0.22f, 0.18f, 0.15f),
             0.30f,
-            2.10f,
+            1.80f,
             0.43f,
             14.0f,
             44
@@ -202,8 +202,6 @@ public static class FishCatalog
         int speciesId,
         float weightKg)
     {
-        FishSpeciesDefinition species=Get(speciesId);
-        float reference=Mathf.Sqrt(species.MinWeightKg*species.MaxWeightKg);
-        return Mathf.Pow(Mathf.Max(0.01f,weightKg)/reference,1f/3f) * (speciesId==RedSnapperId ? 1.15f : 1f);
+        return FishSizeTable.LengthMetres(speciesId,weightKg);
     }
 }

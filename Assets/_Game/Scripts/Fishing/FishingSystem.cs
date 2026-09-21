@@ -169,7 +169,7 @@ public class FishingSystem : MonoBehaviour
         if(hud==null)return;
         bool ready=rodEquipped && !shopMode;
         hud.SetRodSelected(ready);hud.SetActionVisible(ready);hud.SetActionLabel("CAST");
-        hud.SetStatus(ready?"Aim toward open water and cast.":heldRecord!=null?FishCatalog.Get(heldRecord.speciesId).Name+"  "+heldRecord.weightKg.ToString("0.00")+" kg":"");
+        hud.SetStatus(ready?"Aim toward open water and cast.":heldRecord!=null?FishCatalog.Get(heldRecord.speciesId).Name+"  "+heldRecord.weightKg.ToString("0.00")+" kg / "+ShopCatalog.FishLength(heldRecord.speciesId,heldRecord.weightKg).ToString("0.00")+" m":"");
     }
     public void ToggleRod()
     {
@@ -426,17 +426,14 @@ public class FishingSystem : MonoBehaviour
 
         heldRecord=record;
         heldFishVisual =
-            FishVisualFactory.CreateFish(
+            FishWorldSize.Create(
                 "Held_" +
                 FishCatalog
                     .Get(record.speciesId)
                     .Name,
                 heldFishAnchor,
                 record.speciesId,
-                FishCatalog.GetVisualScale(
-                    record.speciesId,
-                    record.weightKg
-                )
+                record.weightKg
             );
 
         HeroFishAnimator heroAnimator =
@@ -506,7 +503,7 @@ public class FishingSystem : MonoBehaviour
                 "  " +
                 record.weightKg
                     .ToString("0.00") +
-                " kg"
+                " kg / " + ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m"
             );
             hud.ShowFightMeters(false);
             hud.SetInventoryOpen(false);
@@ -2782,6 +2779,38 @@ public class FishingSystem : MonoBehaviour
 
     }
 
+    private bool rodFitPending;
+    private void FitRodToControls()
+    {
+        Canvas.ForceUpdateCanvases();
+        var mount=rodRoot.transform.Find("ReelMount");if(mount==null)return;
+        float target=Screen.height*0.20f;
+        var joystick=FindFirstObjectByType<MobileJoystick>();
+        if(joystick!=null)
+        {
+            var rect=joystick.GetComponent<RectTransform>();var canvas=joystick.GetComponentInParent<Canvas>();
+            var corners=new Vector3[4];rect.GetWorldCorners(corners);
+            var camera=canvas!=null && canvas.renderMode!=RenderMode.ScreenSpaceOverlay?canvas.worldCamera:null;
+            target=Vector2.Distance(RectTransformUtility.WorldToScreenPoint(camera,corners[1]),RectTransformUtility.WorldToScreenPoint(camera,corners[0]));
+        }
+        var renderers=mount.GetComponentsInChildren<Renderer>();if(renderers.Length==0)return;
+        for(int pass=0;pass<4;pass++)
+        {
+            Bounds b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
+            Vector3 screen=playerCamera.WorldToViewportPoint(b.center);
+            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.58f,0.24f,Mathf.Max(0.3f,screen.z)))-b.center;
+            b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
+            float low=float.PositiveInfinity,high=float.NegativeInfinity;
+            for(int i=0;i<8;i++)
+            {
+                var corner=b.center+Vector3.Scale(b.extents,new Vector3((i&1)==0?-1:1,(i&2)==0?-1:1,(i&4)==0?-1:1));
+                float y=playerCamera.WorldToScreenPoint(corner).y;low=Mathf.Min(low,y);high=Mathf.Max(high,y);
+            }
+            float size=Mathf.Clamp(rodRoot.transform.localScale.x*target/Mathf.Max(1,high-low),1.4f,4f);
+            rodRoot.transform.localScale=Vector3.one*size;
+        }
+    }
+
     private void CreateRodAndLine()
     {
         GameObject prefab = Resources.Load<GameObject>("Fishing/FishingRodReel");
@@ -2790,8 +2819,10 @@ public class FishingSystem : MonoBehaviour
         {
             rodRoot = Instantiate(prefab, playerCamera.transform, false);
             rodRoot.name = "FishingRodViewModel";
-            rodRoot.transform.localPosition = new Vector3(0.28f, -0.23f, 0.48f);
+            rodRoot.transform.localPosition = new Vector3(0.06f, -0.24f, 0.60f);
             rodRoot.transform.localRotation = Quaternion.Euler(67f, -6f, 11f);
+            rodRoot.transform.localScale=Vector3.one*2f;
+            rodFitPending=true;
             rodView = rodRoot.GetComponent<FishingRodView>();
             rodTip = rodView.RodTip;
             rodView.InitializePose();
@@ -2920,6 +2951,9 @@ public class FishingSystem : MonoBehaviour
             Time.time * 5.8f +
             heldFishFlopOffset;
 
+        var struggle=heldFishVisual.GetComponent<CaughtFishFlop>();
+        float swingGain=1f+(struggle!=null?struggle.SwingBoost*1.5f:0f);
+
         // Swing the MOUTH ATTACHMENT itself like a pendulum. The fish then
         // hangs from that moving point, so the line and fish visibly swing
         // together instead of the line being forced vertical every frame.
@@ -2950,9 +2984,9 @@ public class FishingSystem : MonoBehaviour
             heldHookPoint.localPosition =
                 heldMouthRestLocalPosition +
                 new Vector3(
-                    swingX,
-                    lift,
-                    swingZ
+                    swingX*swingGain,
+                    lift*swingGain,
+                    swingZ*swingGain
                 );
         }
 
@@ -2965,13 +2999,13 @@ public class FishingSystem : MonoBehaviour
             Quaternion.Euler(
                 Mathf.Sin(
                     time * 1.65f
-                ) * 10f,
+                ) * 10f*swingGain,
                 Mathf.Sin(
                     time * 1.12f
-                ) * 8f,
+                ) * 8f*swingGain,
                 Mathf.Sin(
                     time * 2.05f
-                ) * 18f
+                ) * 18f*swingGain
             );
 
         if (heldHookPoint != null &&
@@ -2990,6 +3024,7 @@ public class FishingSystem : MonoBehaviour
 
     private void LateUpdate()
     {
+        if(rodFitPending){rodFitPending=false;FitRodToControls();}
         UpdateHeldCatchLine();
     }
 
@@ -3206,6 +3241,12 @@ public class FishingSystem : MonoBehaviour
         }
 
         flop.Initialize();
+        flop.PoseUpdated=()=>
+        {
+            if(heldFishVisual!=null && heldHookPoint!=null && heldFishMouthMarker!=null)
+                heldFishVisual.transform.position+=heldHookPoint.position-heldFishMouthMarker.position;
+            UpdateHeldCatchLine();
+        };
     }
 
     private Vector3 GetHeldCatchMouthTargetWorld()
@@ -3696,7 +3737,7 @@ public class FishingSystem : MonoBehaviour
             return;
 
         unconsciousFishVisual =
-            FishVisualFactory.CreateFish(
+            FishWorldSize.Create(
                 "Unconscious_" +
                 FishCatalog
                     .Get(
@@ -3705,10 +3746,7 @@ public class FishingSystem : MonoBehaviour
                     .Name,
                 null,
                 hookedSpeciesId,
-                FishCatalog.GetVisualScale(
-                    hookedSpeciesId,
-                    hookedWeightKg
-                )
+                hookedWeightKg
             );
 
         if (unconsciousFishVisual == null)

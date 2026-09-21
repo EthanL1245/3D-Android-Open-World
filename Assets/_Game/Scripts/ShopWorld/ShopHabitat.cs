@@ -44,13 +44,8 @@ public sealed class ShopHabitat : MonoBehaviour
         for(int i=0;i<owned.fish.Count;i++)
         {
             var record=owned.fish[i];
-            var fish=FishVisualFactory.CreateFish("Resident_"+i,fishRoot,record.speciesId,1f);
-            var renderers=fish.GetComponentsInChildren<Renderer>();
-            if(renderers.Length==0) { Destroy(fish); continue; }
-            Bounds bounds=renderers[0].bounds;
-            foreach(var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+            var fish=FishWorldSize.Create("Resident_"+i,fishRoot,record.speciesId,record.weightKg);
             float length=ShopCatalog.FishLength(record.speciesId,record.weightKg);
-            fish.transform.localScale*=length/Mathf.Max(0.001f,Mathf.Max(bounds.size.x,Mathf.Max(bounds.size.y,bounds.size.z)));
             var agent=fish.AddComponent<TankFishAgent>();
             agent.Configure(i*1.73f,record.speciesId);
             agent.ConfigureHabitat(water.size,length);

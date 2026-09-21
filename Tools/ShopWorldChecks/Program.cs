@@ -37,7 +37,13 @@ internal static class Program
         Check(!d.Deposit("lake",heavy),"Deposit into unowned lake");
         var invalid=Fish(float.NaN);d.bag.Add(invalid);Check(!d.Deposit("nano",invalid),"NaN admitted");d.bag.Remove(invalid);
         Check(d.Sell(a,20) && !d.Sell(a,20),"Duplicate sale paid twice");
-        Check(Math.Abs(ShopCatalog.FishLength(0,8)/ShopCatalog.FishLength(0,1)-2)<0.00001,"Weight scaling is not cubic");
+        Check(Math.Abs(ShopCatalog.FishLength(0,0.5f)-0.3556f)<0.01f,"Mackerel length disagrees with source estimate");
+        Check(ShopCatalog.FishLength(0,1000)<=0.55f && ShopCatalog.FishLength(6,1000)<=0.5f,"Extreme saved weights create giant fish");
+        for(int species=0;species<8;species++)
+        {
+            float previous=0;
+            for(int i=1;i<=200;i++){float length=ShopCatalog.FishLength(species,i*0.1f);Check(length>=previous && !float.IsNaN(length),"Length table not monotone");previous=length;}
+        }
         for(int i=0;i<150;i++)d.bag.Add(Fish(0.25f));
         var options=new JsonSerializerOptions { IncludeFields=true };
         string json=JsonSerializer.Serialize(d,options);var restored=JsonSerializer.Deserialize<ShopLedger>(json,options);

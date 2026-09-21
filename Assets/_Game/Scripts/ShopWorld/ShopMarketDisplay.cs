@@ -6,13 +6,13 @@ public sealed class ShopMarketDisplay : MonoBehaviour
     {
         for(int i=0;i<5;i++)
         {
-            var fish=FishVisualFactory.CreateFish("HangingMarketFish",transform,i%4,1);
+            var species=FishCatalog.Get(i%4);
+            var fish=FishWorldSize.Create("HangingMarketFish",transform,i%4,(species.MinWeightKg+species.MaxWeightKg)*0.5f);
             foreach(var b in fish.GetComponentsInChildren<MonoBehaviour>())b.enabled=false;
             foreach(var c in fish.GetComponentsInChildren<Collider>())c.enabled=false;
             fish.transform.localRotation=Quaternion.Euler(90,0,i%2==0?7:-7);
             var renderers=fish.GetComponentsInChildren<Renderer>();if(renderers.Length==0)continue;
             Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
-            fish.transform.localScale*=(1.3f+i*0.16f)/Mathf.Max(0.001f,bounds.size.y);
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
             Vector3 hook=transform.TransformPoint(new Vector3((i-2)*2.1f,4.7f,0.6f));
             fish.transform.position+=hook-new Vector3(bounds.center.x,bounds.max.y,bounds.center.z);

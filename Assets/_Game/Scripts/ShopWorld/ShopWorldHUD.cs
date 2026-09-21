@@ -94,7 +94,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         var r=modal.GetComponent<RectTransform>(); r.anchorMin=new Vector2(0.045f,0.045f); r.anchorMax=new Vector2(0.955f,0.955f); r.offsetMin=r.offsetMax=Vector2.zero;
         heading=Label(modal.transform,"MENU / TRAVEL",36,gold); Anchor(heading.rectTransform,0,1,1,1,24,-62,-150,-12);
         wallet=Label(modal.transform,"",22,Color.white); Anchor(wallet.rectTransform,0,1,1,1,24,-92,-24,-62);
-        Button close=ButtonAt(modal.transform,"CLOSE",Close); Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(148,56));
+        Button close=ButtonAt(modal.transform,"CLOSE",Close); Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(160,64));
         string[] tabs={"travel","bag","equipment"}; string[] names={"TRAVEL","FISH BAG","EQUIPMENT"};
         for(int i=0;i<tabs.Length;i++) { string tab=tabs[i]; var b=ButtonAt(modal.transform,names[i],()=>Open(tab)); navigationTabs.Add(b.gameObject); Anchor(b.GetComponent<RectTransform>(),i/3f,1,(i+1)/3f,1,16,-148,-16,-103); }
         GameObject viewport=Panel("ScrollViewport",modal.transform,new Color(0,0,0,0.1f));
@@ -141,8 +141,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
             Anchor(button.GetComponent<RectTransform>(),i/3f,0,(i+1)/3f,1,8,8,-8,-8);
             var caption=button.GetComponentInChildren<Text>().rectTransform;caption.offsetMin=new Vector2(16,16);caption.offsetMax=new Vector2(-16,-16);
             button.GetComponent<Image>().color=colors[i];
-            button.GetComponentInChildren<Text>().fontSize=28;
-            button.GetComponentInChildren<Text>().resizeTextMaxSize=28;
+            button.GetComponentInChildren<Text>().fontSize=34;
+            button.GetComponentInChildren<Text>().resizeTextMaxSize=34;
             button.interactable=travel.Destination!=i;
             if(travel.Destination==i)button.GetComponent<Image>().color=new Color(0.16f,0.22f,0.24f);
         }
@@ -257,11 +257,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
     {
         GameObject row=Panel("Item",list,new Color(0.07f,0.12f,0.14f,1));
-        row.AddComponent<LayoutElement>().preferredHeight=156;
+        row.AddComponent<LayoutElement>().preferredHeight=184;
         var accent=Panel("Accent",row.transform,gold); Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
-        var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,0.5f,1,1,(fish!=null || gear!=null?170:22),0,-215,-10);
-        var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,0.55f,(fish!=null || gear!=null?170:22),10,-215,0);
-        var b=ButtonAt(row.transform,action,callback); Rect(b.GetComponent<RectTransform>(),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(-14,0),new Vector2(184,66));
+        var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,0.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
+        var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,0.55f,(fish!=null || gear!=null?170:22),10,-232,0);
+        var b=ButtonAt(row.transform,action,callback); Rect(b.GetComponent<RectTransform>(),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(-14,0),new Vector2(205,76));
         b.interactable=enabled;
         if(!enabled)b.GetComponent<Image>().color=new Color(0.17f,0.23f,0.24f);
         if(fish!=null || gear!=null)
@@ -279,8 +279,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Text Label(Transform parent,string text,int size,Color color)
     {
         var go=new GameObject("Label",typeof(RectTransform),typeof(Text));go.transform.SetParent(parent,false);
-        var t=go.GetComponent<Text>();t.font=font;t.text=text;t.fontSize=size;t.color=color;t.alignment=TextAnchor.MiddleLeft;t.raycastTarget=false;t.supportRichText=false;
-        t.resizeTextForBestFit=true;t.resizeTextMinSize=18;t.resizeTextMaxSize=size; return t;
+        var t=go.GetComponent<Text>();t.font=font;t.text=text;size=Mathf.RoundToInt(size*1.2f);t.fontSize=size;t.color=color;t.alignment=TextAnchor.MiddleLeft;t.raycastTarget=false;t.supportRichText=false;
+        t.resizeTextForBestFit=true;t.resizeTextMinSize=22;t.resizeTextMaxSize=size; return t;
     }
     private Button ButtonAt(Transform parent,string text,Action action)
     {

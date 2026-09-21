@@ -55,7 +55,7 @@ All exhibits are built before purchase, with prices and limits on physical signs
 
 Water volumes are slightly inset from walls. The ponds are sunk into actual ground-mesh openings, with stairs for walking out. Large aquarium stairways lead to access landings. At Home, climb the aquarium stairs or walk into the pond. When swimming, the mobile up button shifts upward and a down button appears beneath it. Both return to the land layout when swimming ends. Hold the up/down arrows to ascend/descend. On keyboard use Space to rise and Ctrl to descend. Water detection is bounded to owned, swimmable Home habitats and cannot make the whole dimension behave as ocean water.
 
-Fish length grows with the cube root of weight. Habitat fish are normalized to `ShopCatalog.FishLength` (0.40 m at 1 kg, or 0.48 m for tuna), rather than shrinking every species to a fixed tank display size. Admission checks count, individual weight, total mass and turning length. Existing head-led body-trail swimming is preserved, with paths sized to each habitat. Distant habitat fish are disabled until approached to reduce animation cost.
+Fish length uses species-specific total-length/weight tables derived from FishBase estimates, with linear interpolation and bounded extrapolation. See [FishSizeData.md](FishSizeData.md) for coefficients, sources, assumptions and units. Held catches, retrieved fish, habitat residents and previews use the same metre value. Mesh geometry is measured along the fish's forward axis before scaling, so 0.50 m means the same world-space length for every species. Existing saved weights remain intact. Admission still checks count, individual weight, total mass and turning space.
 
 ## Updated menu and capacity
 
@@ -107,3 +107,9 @@ Unity compilation, shader compilation, Play Mode, Android performance and final 
 Fish Bag supports newest, heaviest, lightest, value and species sorting, plus a filter populated only from species in the bag. Sorting never changes inventory identity/order, so HOLD still selects the correct catch. Clicking an already-held catch puts it away. Clicking the selected rod slot unequips it and clears the cast hint. Opening/closing a menu does not change hand selection. Selling or depositing the held fish clears its hand visual.
 
 Preview images stay hidden until rendered. Completed textures survive menu close/reopen, with bounded caching and cleanup when the HUD is destroyed. Validate preview loading, all sort/filter combinations, rod toggling, held-fish preservation, mobile joystick dragging during a menu, and three-world travel in Unity. The six changed C# files passed syntax parsing; no Unity runtime was available for this update.
+
+## Presentation and measurement update
+
+The rod/reel view shifts left and scales together to approximate the joystick's projected height (bounded scale for camera safety). Reel inventory preview uses a three-quarter orientation. Menu font targets are 20% larger with taller rows/buttons. Held catches retain their normal pendulum sway and attempt three 0.18-second authored swim cycles at random 5–10-second start intervals, adding sway that settles afterward; the mouth is pinned again after skeletal animation. Rigs without an authored Animator clip use a rear-body/tail fallback.
+
+Validation: 1,665 .NET assertions passed, including monotonically increasing and capped species tables plus existing economy/upgrade/migration checks. C# syntax parsing passed. Unity rendering, geometry bounds and animation appearance need local Play Mode confirmation. No scene installer rerun is required for these runtime changes.

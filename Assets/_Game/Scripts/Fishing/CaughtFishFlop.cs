@@ -1,239 +1,57 @@
 using UnityEngine;
 
-/// <summary>
-/// Adds extra caught-fish motion only to the rear half of compatible
-/// bone-rigged fish. The mouth/front remain stable while the body and tail
-/// provide most of the visible flop.
-/// </summary>
+// Authored swim in three short attempts, followed by a quiet pendulum interval.
+[DefaultExecutionOrder(900)]
 public sealed class CaughtFishFlop : MonoBehaviour
 {
-    private Transform midBone;
-    private Transform rearBone;
-    private Transform tailBone;
-
-    private Quaternion midRest;
-    private Quaternion rearRest;
-    private Quaternion tailRest;
-
-    private float phase;
-    private bool initialized;
-
+    public System.Action PoseUpdated;
+    public float SwingBoost { get; private set; }
+    private Transform[] bones;
+    private Vector3[] restPositions;
+    private Quaternion[] restRotations;
+    private Animator animator;
+    private AnimationClip swim;
+    private float nextBurst, burstStart=-100f;
+    private const float Cycle=0.18f, Duration=Cycle*3;
     public void Initialize()
     {
-        Transform[] bones =
-            GetComponentsInChildren<Transform>(
-                true
-            );
-
-        midBone =
-            FindBone(
-                bones,
-                "Bone.002"
-            );
-
-        rearBone =
-            FindBone(
-                bones,
-                "Bone.003"
-            );
-
-        tailBone =
-            FindBone(
-                bones,
-                "Bone.004"
-            );
-
-        // Some rigs end at Bone.003.
-        if (tailBone == null)
+        if(bones!=null)return;
+        bones=GetComponentsInChildren<Transform>(true);
+        restPositions=new Vector3[bones.Length];restRotations=new Quaternion[bones.Length];
+        for(int i=0;i<bones.Length;i++){restPositions[i]=bones[i].localPosition;restRotations[i]=bones[i].localRotation;}
+        animator=GetComponentInChildren<Animator>();
+        if(animator!=null && animator.runtimeAnimatorController!=null)
         {
-            tailBone = rearBone;
-            rearBone = midBone;
-            midBone =
-                FindBone(
-                    bones,
-                    "Bone.001"
-                );
+            foreach(var clip in animator.runtimeAnimatorController.animationClips)
+                if(swim==null || clip.name.ToLowerInvariant().Contains("swim"))swim=clip;
+            animator.enabled=false;
         }
-
-        if (midBone != null)
-            midRest = midBone.localRotation;
-
-        if (rearBone != null)
-            rearRest = rearBone.localRotation;
-
-        if (tailBone != null)
-            tailRest = tailBone.localRotation;
-
-        phase =
-            Random.Range(
-                0f,
-                Mathf.PI * 2f
-            );
-
-        initialized = true;
+        nextBurst=Time.time+Random.Range(5f,10f);
     }
-
-    private void Awake()
-    {
-        Initialize();
-    }
-
+    private void Awake()=>Initialize();
     private void LateUpdate()
     {
-        if (!initialized)
-            Initialize();
-
-        float t =
-            Time.time * 9.2f +
-            phase;
-
-        // A caught fish should KICK, not smoothly wave. SharpWave creates
-        // fast direction changes, while the phase delay sends the kick from
-        // mid-body through the rear and finally into the tail.
-        float burst =
-            Mathf.Lerp(
-                0.62f,
-                1.12f,
-                Mathf.SmoothStep(
-                    0f,
-                    1f,
-                    0.5f +
-                    0.5f *
-                    Mathf.Sin(
-                        t * 0.31f +
-                        phase
-                    )
-                )
-            );
-
-        float midBeat =
-            SharpWave(
-                t * 1.05f
-            );
-
-        float rearBeat =
-            SharpWave(
-                t * 1.05f -
-                0.48f
-            );
-
-        float tailBeat =
-            SharpWave(
-                t * 1.05f -
-                0.98f
-            );
-
-        float twitch =
-            SharpWave(
-                t * 1.93f +
-                1.4f
-            );
-
-        if (midBone != null)
+        if(Time.time>=nextBurst){burstStart=Time.time;nextBurst=burstStart+Random.Range(5f,10f);}
+        float age=Time.time-burstStart;
+        bool active=age>=0 && age<Duration;
+        float phase=active?(age%Cycle)/Cycle:0;
+        float envelope=active?Mathf.Sin(phase*Mathf.PI):0;
+        SwingBoost=Mathf.MoveTowards(SwingBoost,active?1f:0f,Time.deltaTime*(active?9f:0.65f));
+        Vector3 position=transform.localPosition,scale=transform.localScale;Quaternion rotation=transform.localRotation;
+        for(int i=1;i<bones.Length;i++){bones[i].localPosition=restPositions[i];bones[i].localRotation=restRotations[i];}
+        if(active && swim!=null)
         {
-            midBone.localRotation =
-                midRest *
-                Quaternion.Euler(
-                    twitch *
-                    2.5f *
-                    burst,
-                    (
-                        midBeat * 11f +
-                        twitch * 3f
-                    ) *
-                    burst,
-                    Mathf.Sin(
-                        t * 0.77f
-                    ) *
-                    3f *
-                    burst
-                );
+            swim.SampleAnimation(animator.gameObject,phase*swim.length);
+            for(int i=1;i<bones.Length;i++)
+            {bones[i].localPosition=Vector3.Lerp(restPositions[i],bones[i].localPosition,envelope);bones[i].localRotation=Quaternion.Slerp(restRotations[i],bones[i].localRotation,envelope);}
         }
-
-        if (rearBone != null)
+        else if(active)
         {
-            rearBone.localRotation =
-                rearRest *
-                Quaternion.Euler(
-                    twitch *
-                    5f *
-                    burst,
-                    (
-                        rearBeat * 27f +
-                        twitch * 8f
-                    ) *
-                    burst,
-                    Mathf.Sin(
-                        t * 0.91f +
-                        0.8f
-                    ) *
-                    7f *
-                    burst
-                );
+            for(int i=1;i<bones.Length;i++)
+                if(bones[i].name=="Bone.002" || bones[i].name=="Bone.003" || bones[i].name=="Bone.004" || bones[i].name=="Tail")
+                    bones[i].localRotation=restRotations[i]*Quaternion.Euler(0,Mathf.Sin(phase*Mathf.PI*2-i*0.4f)*30f*envelope,0);
         }
-
-        if (tailBone != null)
-        {
-            tailBone.localRotation =
-                tailRest *
-                Quaternion.Euler(
-                    twitch *
-                    8f *
-                    burst,
-                    (
-                        tailBeat * 50f +
-                        twitch * 15f
-                    ) *
-                    burst,
-                    Mathf.Sin(
-                        t * 1.14f +
-                        1.6f
-                    ) *
-                    11f *
-                    burst
-                );
-        }
-    }
-
-    private static float SharpWave(
-        float value)
-    {
-        float wave =
-            Mathf.Sin(
-                value
-            );
-
-        return
-            Mathf.Sign(
-                wave
-            ) *
-            Mathf.Pow(
-                Mathf.Abs(
-                    wave
-                ),
-                0.48f
-            );
-    }
-
-    private static Transform FindBone(
-        Transform[] bones,
-        string boneName)
-    {
-        for (int i = 0;
-             i < bones.Length;
-             i++)
-        {
-            Transform bone =
-                bones[i];
-
-            if (bone != null &&
-                bone.name ==
-                    boneName)
-            {
-                return bone;
-            }
-        }
-
-        return null;
+        transform.localPosition=position;transform.localRotation=rotation;transform.localScale=scale;
+        PoseUpdated?.Invoke();
     }
 }

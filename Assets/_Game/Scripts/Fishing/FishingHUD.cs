@@ -216,7 +216,7 @@ public class FishingHUD : MonoBehaviour
             species.Name +
             "\n" +
             record.weightKg.ToString("0.00") +
-            " kg";
+            " kg / " + ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m";
 
         catchPanel.SetActive(true);
         catchPanelTimer = 3.5f;

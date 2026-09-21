@@ -921,15 +921,11 @@ public class PlacedFishTank : MonoBehaviour
                 record.fish[i];
 
             GameObject visual =
-                FishVisualFactory.CreateFish(
+                FishWorldSize.Create(
                     "TankFish_" + i,
                     fishRoot,
                     fish.speciesId,
-                    FishCatalog.GetVisualScale(
-                        fish.speciesId,
-                        fish.weightKg
-                    ) *
-                    0.48f
+                    fish.weightKg
                 );
 
             TankFishAgent agent =

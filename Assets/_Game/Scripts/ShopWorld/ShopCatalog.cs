@@ -41,6 +41,5 @@ public static class ShopCatalog
     public static HabitatDefinition Habitat(string id) => Array.Find(Habitats, h => h.id == id);
     public static string GearName(GearKind kind, int tier) => (kind == GearKind.Rod ? RodNames : kind == GearKind.Reel ? ReelNames : LineNames)[tier];
     public static int GearPrice(GearKind kind, int tier) => (kind == GearKind.Rod ? RodPrices : kind == GearKind.Reel ? ReelPrices : LinePrices)[tier];
-    // Constant-density growth: doubling mass increases length by cube root of two.
-    public static float FishLength(int species, float kg) => (float)((species == 4 || species == 5 ? 0.48 : 0.40) * Math.Pow(Math.Max(0.01, kg), 1.0/3.0));
+    public static float FishLength(int species,float kg) => FishSizeTable.LengthMetres(species,kg);
 }

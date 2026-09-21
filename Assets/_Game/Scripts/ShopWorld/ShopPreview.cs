@@ -32,7 +32,7 @@ public sealed class ShopPreview : MonoBehaviour
             studio.clearFlags=CameraClearFlags.SolidColor;studio.backgroundColor=new Color(0.08f,0.18f,0.20f);
             studio.orthographic=true;studio.nearClipPlane=0.01f;studio.farClipPlane=15;studio.cullingMask=1<<30;studio.enabled=false;
         }
-        if(gear==null)model=FishVisualFactory.CreateFish("FishPreview",stage.transform,species,1);
+        if(gear==null)model=FishWorldSize.Create("FishPreview",stage.transform,species,kg);
         else
         {
             var prefab=gear=="Rod" || gear=="Reel"?Resources.Load<GameObject>("Fishing/FishingRodReel"):null;
@@ -51,13 +51,13 @@ public sealed class ShopPreview : MonoBehaviour
                 renderer.enabled=gear=="Reel"?reel:!reel;
             }
         }
-        model.transform.localRotation=gear=="Rod"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,-90,0);
+        model.transform.localRotation=gear=="Rod"?Quaternion.Euler(0,-90,40):gear=="Reel"?Quaternion.Euler(12,35,-12):Quaternion.Euler(0,-90,0);
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0){Destroy(model);busy=false;yield break;}
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
         if(gear==null)
         {
-            model.transform.localScale*=ShopCatalog.FishLength(species,kg)/Mathf.Max(0.001f,bounds.size.x);
+
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
             // Common world-size frame: small fish fit; larger bodies extend off the right edge.
             studio.orthographicSize=0.36f;
