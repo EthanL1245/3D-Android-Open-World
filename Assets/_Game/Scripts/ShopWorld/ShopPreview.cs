@@ -60,8 +60,8 @@ public sealed class ShopPreview : MonoBehaviour
 
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
             // Common world-size frame: small fish fit; larger bodies extend off the right edge.
-            studio.orthographicSize=0.36f;
-            Vector3 head=new Vector3(bounds.min.x+0.25f,bounds.center.y,bounds.center.z);
+            studio.orthographicSize=0.26f;
+            Vector3 head=new Vector3(bounds.min.x+0.18f,bounds.center.y,bounds.center.z);
             studio.transform.position=head+Vector3.back*5;
         }
         else

@@ -16,6 +16,8 @@ public sealed class ShopMarketDisplay : MonoBehaviour
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
             Vector3 hook=transform.TransformPoint(new Vector3((i-2)*2.1f,4.7f,0.6f));
             fish.transform.position+=hook-new Vector3(bounds.center.x,bounds.max.y,bounds.center.z);
+            var struggle=fish.AddComponent<CaughtFishFlop>();
+            struggle.ConfigureHanging(hook,fish.transform.InverseTransformPoint(hook));
             var rope=GameObject.CreatePrimitive(PrimitiveType.Cylinder);rope.name="HangingCord";rope.transform.SetParent(transform,false);
             rope.transform.localPosition=new Vector3((i-2)*2.1f,5.25f,0.6f);rope.transform.localScale=new Vector3(0.018f,0.55f,0.018f);
             Destroy(rope.GetComponent<Collider>());

@@ -2797,7 +2797,7 @@ public class FishingSystem : MonoBehaviour
         for(int pass=0;pass<4;pass++)
         {
             Bounds b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
-            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.88f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-b.center;
+            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.82f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-b.center;
             b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
             float low=float.PositiveInfinity,high=float.NegativeInfinity;
             for(int i=0;i<8;i++)
@@ -2813,7 +2813,7 @@ public class FishingSystem : MonoBehaviour
         Bounds finalBounds=renderers[0].bounds;
         foreach(var renderer in renderers)finalBounds.Encapsulate(renderer.bounds);
         rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(
-            new Vector3(0.88f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-finalBounds.center;
+            new Vector3(0.82f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-finalBounds.center;
     }
 
     private void CreateRodAndLine()
@@ -2940,7 +2940,7 @@ public class FishingSystem : MonoBehaviour
             new Vector3(
                 0.58f,
                 0.50f,
-                1.02f
+                0.65f
             );
 
         heldFishAnchor =
@@ -3268,7 +3268,7 @@ public class FishingSystem : MonoBehaviour
         const float targetViewportY = 0.82f;
 
         float depth =
-            1.02f;
+            0.65f;
 
         if (heldFishAnchor != null)
         {
