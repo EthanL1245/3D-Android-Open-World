@@ -3298,7 +3298,8 @@ public class FishingSystem : MonoBehaviour
         bool useBoneMouth =
             fish.GetComponent<RedSnapperPresentation>() != null ||
             fish.GetComponent<GoatfishPresentation>() != null ||
-            fish.GetComponent<MackerelPresentation>() != null;
+            fish.GetComponent<MackerelPresentation>() != null ||
+            fish.GetComponent<YellowtailPresentation>() != null;
 
         if (useBoneMouth)
         {
