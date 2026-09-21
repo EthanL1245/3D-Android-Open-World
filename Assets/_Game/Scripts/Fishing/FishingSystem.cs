@@ -2956,8 +2956,28 @@ public class FishingSystem : MonoBehaviour
         Vector3 mouth =
             heldFishMouthMarker.position;
 
-        // End exactly at the animated mouth marker. The previous long
-        // extension could visibly continue past the mouths of shorter models.
+        Vector3 throughMouth =
+            mouth -
+            top;
+
+        if (throughMouth.sqrMagnitude >
+            0.000001f)
+        {
+            throughMouth.Normalize();
+        }
+        else
+        {
+            throughMouth =
+                -heldFishAnchor.up;
+        }
+
+        // Keep every fish exactly where it is. Only extend the rendered line
+        // farther through the mouth/head so there can be no visible white gap.
+        Vector3 lineEnd =
+            mouth +
+            throughMouth *
+            0.075f;
+
         heldCatchLine.SetPosition(
             0,
             top
@@ -2965,7 +2985,7 @@ public class FishingSystem : MonoBehaviour
 
         heldCatchLine.SetPosition(
             1,
-            mouth
+            lineEnd
         );
     }
 
