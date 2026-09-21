@@ -2867,8 +2867,7 @@ public class FishingSystem : MonoBehaviour
             Time.time * 5.2f +
             heldFishFlopOffset;
 
-        // Keep whole-fish motion restrained. Compatible bone-rigged fish get
-        // their stronger rear/tail flop from CaughtFishFlop in LateUpdate.
+        // Keep the head/front steady. The rear half does the stronger motion.
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation *
             Quaternion.Euler(
@@ -2918,28 +2917,7 @@ public class FishingSystem : MonoBehaviour
         if (heldFishVisual == null)
             return;
 
-        if (heldHookVisual != null)
-        {
-            Destroy(
-                heldHookVisual
-            );
-
-            heldHookVisual = null;
-        }
-
-        GameObject hookPrefab =
-            Resources.Load<GameObject>(
-                "Fishing/FishingGaff"
-            );
-
-        if (hookPrefab != null)
-        {
-            heldHookVisual =
-                I    private void SetupHookedCatchPresentation()
-    {
-        if (heldFishVisual == null)
-            return;
-
+        // Remove legacy hook presentation completely.
         if (heldHookVisual != null)
         {
             Destroy(
@@ -2969,8 +2947,6 @@ public class FishingSystem : MonoBehaviour
             heldHookPoint = null;
         }
 
-        // No hook visual. This fixed point is where the fishing line enters
-        // the fish's mouth.
         GameObject mouthTargetObject =
             new GameObject(
                 "HeldCatchMouthPoint"
@@ -3020,7 +2996,7 @@ public class FishingSystem : MonoBehaviour
         heldFishVisual.transform.localPosition =
             Vector3.zero;
 
-        // Vertical fish, almost full side view.
+        // Keep the fish vertical while presenting almost its full side.
         heldFishBaseRotation =
             Quaternion.AngleAxis(
                 86f,
@@ -3053,27 +3029,21 @@ public class FishingSystem : MonoBehaviour
         heldFishMouthMarker =
             marker.transform;
 
-        Vector3 correction =
+        heldFishVisual.transform.position +=
             heldHookPoint.position -
             heldFishMouthMarker.position;
 
-        heldFishVisual.transform.position +=
-            correction;
+        heldCatchLine.SetPosition(
+            0,
+            heldHookPoint.position +
+            heldFishAnchor.up *
+            0.14f
+        );
 
-        if (heldCatchLine != null)
-        {
-            heldCatchLine.SetPosition(
-                0,
-                heldHookPoint.position +
-                heldFishAnchor.up *
-                0.14f
-            );
-
-            heldCatchLine.SetPosition(
-                1,
-                heldFishMouthMarker.position
-            );
-        }
+        heldCatchLine.SetPosition(
+            1,
+            heldFishMouthMarker.position
+        );
 
         CaughtFishFlop flop =
             heldFishVisual
