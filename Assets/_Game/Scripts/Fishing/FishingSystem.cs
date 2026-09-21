@@ -3279,13 +3279,32 @@ public class FishingSystem : MonoBehaviour
                 if (segmentLength >
                     0.0001f)
                 {
+                    bool isMackerel =
+                        fish.GetComponent<MackerelPresentation>() != null;
+
+                    float projectionFraction =
+                        isMackerel
+                            ? 0.16f
+                            : 0.42f;
+
+                    float projectionMinimum =
+                        isMackerel
+                            ? 0.006f
+                            : 0.018f;
+
+                    float projectionMaximum =
+                        isMackerel
+                            ? 0.040f
+                            : 0.11f;
+
                     Vector3 mouthWorld =
                         headBone.position +
                         headDirection.normalized *
                         Mathf.Clamp(
-                            segmentLength * 0.42f,
-                            0.018f,
-                            0.11f
+                            segmentLength *
+                            projectionFraction,
+                            projectionMinimum,
+                            projectionMaximum
                         );
 
                     return
