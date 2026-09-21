@@ -84,53 +84,92 @@ public sealed class CaughtFishFlop : MonoBehaviour
             Initialize();
 
         float t =
-            Time.time * 7.2f +
+            Time.time * 10.5f +
             phase;
 
-        // Intentionally little motion near the head/front and progressively
-        // stronger motion toward the tail.
+        // Frantic caught-fish thrashing: small motion in the middle, much
+        // stronger and less regular movement toward the rear and tail.
         if (midBone != null)
         {
+            float midYaw =
+                Mathf.Sin(t) * 8f +
+                Mathf.Sin(
+                    t * 1.87f +
+                    0.8f
+                ) * 3.5f;
+
+            float midRoll =
+                Mathf.Sin(
+                    t * 0.73f +
+                    1.1f
+                ) * 3f;
+
             midBone.localRotation =
                 midRest *
                 Quaternion.Euler(
-                    0f,
-                    Mathf.Sin(t) * 4.5f,
                     Mathf.Sin(
-                        t * 0.58f
-                    ) * 1.5f
+                        t * 1.31f
+                    ) * 2f,
+                    midYaw,
+                    midRoll
                 );
         }
 
         if (rearBone != null)
         {
+            float rearYaw =
+                Mathf.Sin(
+                    t - 0.38f
+                ) * 18f +
+                Mathf.Sin(
+                    t * 1.63f +
+                    1.7f
+                ) * 7f;
+
+            float rearRoll =
+                Mathf.Sin(
+                    t * 0.91f +
+                    0.5f
+                ) * 6f;
+
             rearBone.localRotation =
                 rearRest *
                 Quaternion.Euler(
-                    0f,
                     Mathf.Sin(
-                        t - 0.42f
-                    ) * 10f,
-                    Mathf.Sin(
-                        t * 0.72f +
-                        0.7f
-                    ) * 3f
+                        t * 1.42f +
+                        0.3f
+                    ) * 4f,
+                    rearYaw,
+                    rearRoll
                 );
         }
 
         if (tailBone != null)
         {
+            float tailYaw =
+                Mathf.Sin(
+                    t - 0.82f
+                ) * 34f +
+                Mathf.Sin(
+                    t * 1.78f +
+                    2.1f
+                ) * 12f;
+
+            float tailRoll =
+                Mathf.Sin(
+                    t * 1.12f +
+                    1.4f
+                ) * 9f;
+
             tailBone.localRotation =
                 tailRest *
                 Quaternion.Euler(
-                    0f,
                     Mathf.Sin(
-                        t - 0.86f
-                    ) * 22f,
-                    Mathf.Sin(
-                        t * 0.88f +
-                        1.2f
-                    ) * 5f
+                        t * 1.55f +
+                        0.6f
+                    ) * 6f,
+                    tailYaw,
+                    tailRoll
                 );
         }
     }
