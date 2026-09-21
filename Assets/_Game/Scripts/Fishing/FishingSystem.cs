@@ -2933,20 +2933,66 @@ public class FishingSystem : MonoBehaviour
             heldFishVisual.transform.position +=
                 correction;
 
-            if (heldCatchLine != null)
-            {
-                heldCatchLine.SetPosition(
-                    0,
-                    GetHeldCatchLineTop()
-                );
 
-                // Always use the live mouth marker as the bottom endpoint.
-                heldCatchLine.SetPosition(
-                    1,
-                    heldFishMouthMarker.position
-                );
-            }
         }
+    }
+
+    private void LateUpdate()
+    {
+        UpdateHeldCatchLine();
+    }
+
+    private void UpdateHeldCatchLine()
+    {
+        if (heldCatchLine == null ||
+            heldFishMouthMarker == null)
+        {
+            return;
+        }
+
+        Vector3 top =
+            GetHeldCatchLineTop();
+
+        Vector3 mouth =
+            heldFishMouthMarker.position;
+
+        Vector3 intoFish =
+            mouth -
+            top;
+
+        if (intoFish.sqrMagnitude >
+            0.000001f)
+        {
+            intoFish.Normalize();
+        }
+        else
+        {
+            intoFish =
+                -heldFishAnchor.up;
+        }
+
+        // Extend the rendered line slightly THROUGH the mouth. This removes
+        // any visible gap caused by skin thickness or depth testing.
+        Vector3 embeddedEnd =
+            mouth +
+            intoFish * 0.018f;
+
+        if (playerCamera != null)
+        {
+            embeddedEnd -=
+                playerCamera.transform.forward *
+                0.003f;
+        }
+
+        heldCatchLine.SetPosition(
+            0,
+            top
+        );
+
+        heldCatchLine.SetPosition(
+            1,
+            embeddedEnd
+        );
     }
 
     private void SetupHookedCatchPresentation()
@@ -3023,7 +3069,7 @@ public class FishingSystem : MonoBehaviour
         heldCatchLine.useWorldSpace = true;
         heldCatchLine.positionCount = 2;
         heldCatchLine.startWidth = 0.0055f;
-        heldCatchLine.endWidth = 0.0035f;
+        heldCatchLine.endWidth = 0.0042f;
         heldCatchLine.numCapVertices = 6;
 
         if (fishingLine != null &&
@@ -3105,15 +3151,7 @@ public class FishingSystem : MonoBehaviour
                 );
         }
 
-        heldCatchLine.SetPosition(
-            0,
-            GetHeldCatchLineTop()
-        );
-
-        heldCatchLine.SetPosition(
-            1,
-            heldFishMouthMarker.position
-        );
+        UpdateHeldCatchLine();
 
         CaughtFishFlop flop =
             heldFishVisual
@@ -3265,9 +3303,9 @@ public class FishingSystem : MonoBehaviour
         return
             Mathf.Clamp(
                 approximateLength *
-                0.045f,
-                0.025f,
-                0.065f
+                0.030f,
+                0.015f,
+                0.045f
             );
     }
 
@@ -3321,73 +3359,102 @@ public class FishingSystem : MonoBehaviour
             );
 
         float best =
-            0.46f;
+            float.NegativeInfinity;
 
-        bool found = false;
-
-        foreach (Renderer renderer
-                 in renderers)
+        for (int r = 0;
+             r < renderers.Length;
+             r++)
         {
-            Bounds bounds =
-                renderer.bounds;
+            Renderer renderer =
+                renderers[r];
 
-            Vector3 center =
-                fish.transform
-                    .InverseTransformPoint(
-                        bounds.center
-                    );
+            Bounds localBounds;
+            Transform boundsTransform;
 
-            Vector3 right =
-                fish.transform
-                    .InverseTransformVector(
-                        new Vector3(
-                            bounds.extents.x,
-                            0f,
-                            0f
-                        )
-                    );
+            SkinnedMeshRenderer skinned =
+                renderer as SkinnedMeshRenderer;
 
-            Vector3 up =
-                fish.transform
-                    .InverseTransformVector(
-                        new Vector3(
-                            0f,
-                            bounds.extents.y,
-                            0f
-                        )
-                    );
-
-            Vector3 forward =
-                fish.transform
-                    .InverseTransformVector(
-                        new Vector3(
-                            0f,
-                            0f,
-                            bounds.extents.z
-                        )
-                    );
-
-            float projectedExtent =
-                Mathf.Abs(
-                    right.z
-                ) +
-                Mathf.Abs(
-                    up.z
-                ) +
-                Mathf.Abs(
-                    forward.z
-                );
-
-            float front =
-                center.z +
-                projectedExtent;
-
-            if (!found ||
-                front > best)
+            if (skinned != null)
             {
-                best = front;
-                found = true;
+                localBounds =
+                    skinned.localBounds;
+
+                boundsTransform =
+                    skinned.transform;
             }
+            else
+            {
+                MeshFilter filter =
+                    renderer.GetComponent<MeshFilter>();
+
+                if (filter == null ||
+                    filter.sharedMesh == null)
+                {
+                    continue;
+                }
+
+                localBounds =
+                    filter.sharedMesh.bounds;
+
+                boundsTransform =
+                    filter.transform;
+            }
+
+            Vector3 c =
+                localBounds.center;
+
+            Vector3 e =
+                localBounds.extents;
+
+            for (int x = -1;
+                 x <= 1;
+                 x += 2)
+            {
+                for (int y = -1;
+                     y <= 1;
+                     y += 2)
+                {
+                    for (int z = -1;
+                         z <= 1;
+                         z += 2)
+                    {
+                        Vector3 localCorner =
+                            c +
+                            Vector3.Scale(
+                                e,
+                                new Vector3(
+                                    x,
+                                    y,
+                                    z
+                                )
+                            );
+
+                        Vector3 worldCorner =
+                            boundsTransform.TransformPoint(
+                                localCorner
+                            );
+
+                        float fishLocalZ =
+                            fish.transform
+                                .InverseTransformPoint(
+                                    worldCorner
+                                )
+                                .z;
+
+                        best =
+                            Mathf.Max(
+                                best,
+                                fishLocalZ
+                            );
+                    }
+                }
+            }
+        }
+
+        if (float.IsNegativeInfinity(
+                best))
+        {
+            return 0.46f;
         }
 
         return best;
