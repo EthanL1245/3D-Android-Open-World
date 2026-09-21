@@ -2974,13 +2974,12 @@ public class FishingSystem : MonoBehaviour
                 -heldFishAnchor.up;
         }
 
-        // The mouth marker now comes from the actual mesh. Use only a very
-        // small overlap into the lip so the line reads as attached without
-        // visibly continuing through the fish's head.
+        // Keep every fish exactly where it is. Only extend the rendered line
+        // farther through the mouth/head so there can be no visible white gap.
         Vector3 lineEnd =
             mouth +
             throughMouth *
-            0.012f;
+            0.075f;
 
         heldCatchLine.SetPosition(
             0,
@@ -3248,16 +3247,58 @@ public class FishingSystem : MonoBehaviour
     private Vector3 FindFishMouthLocalPosition(
         GameObject fish)
     {
-        // Yellowfin Tuna already has the held framing/attachment we want.
-        // Preserve its existing geometry estimate exactly.
-        if (fish.GetComponent<YellowfinTunaPresentation>() == null &&
-            TryFindRiggedFishMouthFromMesh(
-                fish,
-                out Vector3 riggedMouth))
+        bool useBoneMouth =
+            fish.GetComponent<RedSnapperPresentation>() != null ||
+            fish.GetComponent<GoatfishPresentation>() != null ||
+            fish.GetComponent<MackerelPresentation>() != null;
+
+        if (useBoneMouth)
         {
-            return riggedMouth;
+            Transform headBone =
+                FindDeepChildByName(
+                    fish.transform,
+                    "Bone"
+                );
+
+            Transform nextBone =
+                FindDeepChildByName(
+                    fish.transform,
+                    "Bone.001"
+                );
+
+            if (headBone != null &&
+                nextBone != null)
+            {
+                Vector3 headDirection =
+                    headBone.position -
+                    nextBone.position;
+
+                float segmentLength =
+                    headDirection.magnitude;
+
+                if (segmentLength >
+                    0.0001f)
+                {
+                    Vector3 mouthWorld =
+                        headBone.position +
+                        headDirection.normalized *
+                        Mathf.Clamp(
+                            segmentLength * 0.42f,
+                            0.018f,
+                            0.11f
+                        );
+
+                    return
+                        fish.transform
+                            .InverseTransformPoint(
+                                mouthWorld
+                            );
+                }
+            }
         }
 
+        // Yellowfin Tuna and non-standard rigs retain the geometry-based
+        // mouth estimate that already gives the desired held presentation.
         float frontZ =
             FindFrontmostLocalZ(
                 fish
@@ -3298,363 +3339,6 @@ public class FishingSystem : MonoBehaviour
                 frontZ -
                 mouthInset
             );
-    }
-
-    private bool TryFindRiggedFishMouthFromMesh(
-        GameObject fish,
-        out Vector3 mouthLocal)
-    {
-        mouthLocal = Vector3.zero;
-
-        Transform headBone =
-            FindDeepChildByName(
-                fish.transform,
-                "Bone"
-            );
-
-        Transform nextBone =
-            FindDeepChildByName(
-                fish.transform,
-                "Bone.001"
-            );
-
-        if (headBone == null ||
-            nextBone == null)
-        {
-            return false;
-        }
-
-        System.Collections.Generic.List<Vector3> vertices =
-            new System.Collections.Generic.List<Vector3>(
-                4096
-            );
-
-        SkinnedMeshRenderer[] skinnedRenderers =
-            fish.GetComponentsInChildren<SkinnedMeshRenderer>(
-                true
-            );
-
-        for (int i = 0;
-             i < skinnedRenderers.Length;
-             i++)
-        {
-            SkinnedMeshRenderer renderer =
-                skinnedRenderers[i];
-
-            if (renderer == null ||
-                renderer.sharedMesh == null)
-            {
-                continue;
-            }
-
-            Mesh baked =
-                new Mesh();
-
-            renderer.BakeMesh(
-                baked
-            );
-
-            Vector3[] bakedVertices =
-                baked.vertices;
-
-            for (int v = 0;
-                 v < bakedVertices.Length;
-                 v++)
-            {
-                Vector3 world =
-                    renderer.transform
-                        .TransformPoint(
-                            bakedVertices[v]
-                        );
-
-                vertices.Add(
-                    fish.transform
-                        .InverseTransformPoint(
-                            world
-                        )
-                );
-            }
-
-            Destroy(
-                baked
-            );
-        }
-
-        MeshFilter[] meshFilters =
-            fish.GetComponentsInChildren<MeshFilter>(
-                true
-            );
-
-        for (int i = 0;
-             i < meshFilters.Length;
-             i++)
-        {
-            MeshFilter filter =
-                meshFilters[i];
-
-            if (filter == null ||
-                filter.sharedMesh == null)
-            {
-                continue;
-            }
-
-            Vector3[] sourceVertices =
-                filter.sharedMesh.vertices;
-
-            for (int v = 0;
-                 v < sourceVertices.Length;
-                 v++)
-            {
-                Vector3 world =
-                    filter.transform
-                        .TransformPoint(
-                            sourceVertices[v]
-                        );
-
-                vertices.Add(
-                    fish.transform
-                        .InverseTransformPoint(
-                            world
-                        )
-                );
-            }
-        }
-
-        if (vertices.Count == 0)
-            return false;
-
-        float minX = float.PositiveInfinity;
-        float maxX = float.NegativeInfinity;
-        float minY = float.PositiveInfinity;
-        float maxY = float.NegativeInfinity;
-        float minZ = float.PositiveInfinity;
-        float maxZ = float.NegativeInfinity;
-
-        for (int i = 0;
-             i < vertices.Count;
-             i++)
-        {
-            Vector3 vertex =
-                vertices[i];
-
-            minX =
-                Mathf.Min(
-                    minX,
-                    vertex.x
-                );
-
-            maxX =
-                Mathf.Max(
-                    maxX,
-                    vertex.x
-                );
-
-            minY =
-                Mathf.Min(
-                    minY,
-                    vertex.y
-                );
-
-            maxY =
-                Mathf.Max(
-                    maxY,
-                    vertex.y
-                );
-
-            minZ =
-                Mathf.Min(
-                    minZ,
-                    vertex.z
-                );
-
-            maxZ =
-                Mathf.Max(
-                    maxZ,
-                    vertex.z
-                );
-        }
-
-        float bodyLength =
-            Mathf.Max(
-                0.001f,
-                maxZ - minZ
-            );
-
-        float bodyWidth =
-            Mathf.Max(
-                0.001f,
-                maxX - minX
-            );
-
-        float bodyHeight =
-            Mathf.Max(
-                0.001f,
-                maxY - minY
-            );
-
-        Vector3 headLocal =
-            fish.transform
-                .InverseTransformPoint(
-                    headBone.position
-                );
-
-        Vector3 nextLocal =
-            fish.transform
-                .InverseTransformPoint(
-                    nextBone.position
-                );
-
-        // Determine which end of the local Z axis is actually the head for
-        // this imported rig instead of assuming every source used +Z.
-        float headSign =
-            headLocal.z >=
-            nextLocal.z
-                ? 1f
-                : -1f;
-
-        float headExtremeZ =
-            headSign > 0f
-                ? maxZ
-                : minZ;
-
-        float frontBand =
-            bodyLength *
-            0.20f;
-
-        float allowedHalfWidth =
-            Mathf.Max(
-                bodyWidth * 0.24f,
-                0.012f
-            );
-
-        // The mouth is normally near the body center vertically or a little
-        // below it, not on a dorsal/pectoral fin. Bias the search there.
-        float desiredY =
-            headLocal.y -
-            bodyHeight * 0.045f;
-
-        float allowedY =
-            Mathf.Max(
-                bodyHeight * 0.22f,
-                0.015f
-            );
-
-        bool found = false;
-        float bestScore =
-            float.NegativeInfinity;
-
-        Vector3 best =
-            headLocal;
-
-        for (int i = 0;
-             i < vertices.Count;
-             i++)
-        {
-            Vector3 vertex =
-                vertices[i];
-
-            float frontDistance =
-                headSign > 0f
-                    ? headExtremeZ -
-                      vertex.z
-                    : vertex.z -
-                      headExtremeZ;
-
-            if (frontDistance < 0f ||
-                frontDistance >
-                    frontBand)
-            {
-                continue;
-            }
-
-            float lateralDistance =
-                Mathf.Abs(
-                    vertex.x -
-                    headLocal.x
-                );
-
-            if (lateralDistance >
-                allowedHalfWidth)
-            {
-                continue;
-            }
-
-            float verticalDistance =
-                Mathf.Abs(
-                    vertex.y -
-                    desiredY
-                );
-
-            if (verticalDistance >
-                allowedY)
-            {
-                continue;
-            }
-
-            float frontScore =
-                1f -
-                Mathf.Clamp01(
-                    frontDistance /
-                    frontBand
-                );
-
-            float lateralScore =
-                1f -
-                Mathf.Clamp01(
-                    lateralDistance /
-                    allowedHalfWidth
-                );
-
-            float verticalScore =
-                1f -
-                Mathf.Clamp01(
-                    verticalDistance /
-                    allowedY
-                );
-
-            float score =
-                frontScore * 4f +
-                lateralScore * 2.2f +
-                verticalScore * 1.5f;
-
-            if (!found ||
-                score >
-                    bestScore)
-            {
-                found = true;
-                bestScore = score;
-                best = vertex;
-            }
-        }
-
-        if (!found)
-        {
-            // Fallback to the head bone projected almost to the actual front
-            // of this specific mesh. Still model-specific and far more stable
-            // than the previous fixed Bone->Bone.001 distance guess.
-            best =
-                new Vector3(
-                    headLocal.x,
-                    desiredY,
-                    headExtremeZ
-                );
-        }
-
-        // Place the attachment just inside the lip surface. The rendered line
-        // gets a tiny overlap as well, so it cannot appear to float above the
-        // mouth because of skin thickness.
-        best.z -=
-            headSign *
-            Mathf.Clamp(
-                bodyLength * 0.008f,
-                0.003f,
-                0.012f
-            );
-
-        mouthLocal =
-            best;
-
-        return true;
     }
 
     private float GetFishMouthInset(
