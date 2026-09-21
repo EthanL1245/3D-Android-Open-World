@@ -2956,34 +2956,8 @@ public class FishingSystem : MonoBehaviour
         Vector3 mouth =
             heldFishMouthMarker.position;
 
-        Vector3 intoFish =
-            mouth -
-            top;
-
-        if (intoFish.sqrMagnitude >
-            0.000001f)
-        {
-            intoFish.Normalize();
-        }
-        else
-        {
-            intoFish =
-                -heldFishAnchor.up;
-        }
-
-        // Extend the rendered line slightly THROUGH the mouth. This removes
-        // any visible gap caused by skin thickness or depth testing.
-        Vector3 embeddedEnd =
-            mouth +
-            intoFish * 0.018f;
-
-        if (playerCamera != null)
-        {
-            embeddedEnd -=
-                playerCamera.transform.forward *
-                0.003f;
-        }
-
+        // End exactly at the animated mouth marker. The previous long
+        // extension could visibly continue past the mouths of shorter models.
         heldCatchLine.SetPosition(
             0,
             top
@@ -2991,7 +2965,7 @@ public class FishingSystem : MonoBehaviour
 
         heldCatchLine.SetPosition(
             1,
-            embeddedEnd
+            mouth
         );
     }
 
@@ -3049,9 +3023,6 @@ public class FishingSystem : MonoBehaviour
 
         heldHookPoint =
             mouthTargetObject.transform;
-
-        heldMouthRestLocalPosition =
-            heldHookPoint.localPosition;
 
         GameObject lineObject =
             new GameObject(
@@ -3132,24 +3103,23 @@ public class FishingSystem : MonoBehaviour
         heldFishMouthMarker =
             marker.transform;
 
+        Vector3 desiredMouthWorld =
+            GetHeldCatchMouthTargetWorld();
+
+        heldHookPoint.position =
+            desiredMouthWorld;
+
+        heldMouthRestLocalPosition =
+            heldHookPoint.localPosition;
+
         heldFishVisual.transform.position +=
-            heldHookPoint.position -
+            desiredMouthWorld -
             heldFishMouthMarker.position;
 
-        if (playerCamera != null)
-        {
-            Vector3 mouthViewport =
-                playerCamera.WorldToViewportPoint(
-                    heldFishMouthMarker.position
-                );
-
-            heldCatchLineTopViewportX =
-                Mathf.Clamp(
-                    mouthViewport.x,
-                    0.05f,
-                    0.95f
-                );
-        }
+        // Keep the line's ceiling attachment fixed over the common held-fish
+        // presentation point. The fish can still swing underneath it.
+        heldCatchLineTopViewportX =
+            0.72f;
 
         UpdateHeldCatchLine();
 
@@ -3165,6 +3135,47 @@ public class FishingSystem : MonoBehaviour
         }
 
         flop.Initialize();
+    }
+
+    private Vector3 GetHeldCatchMouthTargetWorld()
+    {
+        if (playerCamera == null)
+        {
+            return
+                heldFishAnchor != null
+                    ? heldFishAnchor.position
+                    : transform.position;
+        }
+
+        const float targetViewportX = 0.72f;
+        const float targetViewportY = 0.82f;
+
+        float depth =
+            1.02f;
+
+        if (heldFishAnchor != null)
+        {
+            Vector3 anchorViewport =
+                playerCamera.WorldToViewportPoint(
+                    heldFishAnchor.position
+                );
+
+            if (anchorViewport.z >
+                playerCamera.nearClipPlane)
+            {
+                depth =
+                    anchorViewport.z;
+            }
+        }
+
+        return
+            playerCamera.ViewportToWorldPoint(
+                new Vector3(
+                    targetViewportX,
+                    targetViewportY,
+                    depth
+                )
+            );
     }
 
     private Vector3 GetHeldCatchLineTop()
@@ -3213,12 +3224,64 @@ public class FishingSystem : MonoBehaviour
     private Vector3 FindFishMouthLocalPosition(
         GameObject fish)
     {
+        bool useBoneMouth =
+            fish.GetComponent<RedSnapperPresentation>() != null ||
+            fish.GetComponent<GoatfishPresentation>() != null ||
+            fish.GetComponent<MackerelPresentation>() != null;
+
+        if (useBoneMouth)
+        {
+            Transform headBone =
+                FindDeepChildByName(
+                    fish.transform,
+                    "Bone"
+                );
+
+            Transform nextBone =
+                FindDeepChildByName(
+                    fish.transform,
+                    "Bone.001"
+                );
+
+            if (headBone != null &&
+                nextBone != null)
+            {
+                Vector3 headDirection =
+                    headBone.position -
+                    nextBone.position;
+
+                float segmentLength =
+                    headDirection.magnitude;
+
+                if (segmentLength >
+                    0.0001f)
+                {
+                    Vector3 mouthWorld =
+                        headBone.position +
+                        headDirection.normalized *
+                        Mathf.Clamp(
+                            segmentLength * 0.42f,
+                            0.018f,
+                            0.11f
+                        );
+
+                    return
+                        fish.transform
+                            .InverseTransformPoint(
+                                mouthWorld
+                            );
+                }
+            }
+        }
+
+        // Yellowfin Tuna and non-standard rigs retain the geometry-based
+        // mouth estimate that already gives the desired held presentation.
         float frontZ =
             FindFrontmostLocalZ(
                 fish
             );
 
-        Transform headBone =
+        Transform fallbackHead =
             FindDeepChildByName(
                 fish.transform,
                 "Bone"
@@ -3229,12 +3292,12 @@ public class FishingSystem : MonoBehaviour
                 fish
             );
 
-        if (headBone != null)
+        if (fallbackHead != null)
         {
             Vector3 headLocal =
                 fish.transform
                     .InverseTransformPoint(
-                        headBone.position
+                        fallbackHead.position
                     );
 
             return
