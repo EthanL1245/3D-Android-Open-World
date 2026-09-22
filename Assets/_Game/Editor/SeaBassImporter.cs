@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -12,13 +13,6 @@ public static class SeaBassImporter
     {
         const string fbx=Folder+"/SeaBass.fbx", png=Folder+"/SeaBassTexture.png";
         AssetDatabase.ImportAsset(fbx,ImportAssetOptions.ForceSynchronousImport);
-        AssetDatabase.ImportAsset(png,ImportAssetOptions.ForceSynchronousImport);
-        var textureImporter=AssetImporter.GetAtPath(png) as TextureImporter;
-        if(textureImporter==null)throw new InvalidOperationException("Sea bass texture missing. Pull the complete Suncrest Reef update.");
-        textureImporter.textureType=TextureImporterType.Default;
-        textureImporter.sRGBTexture=true;textureImporter.mipmapEnabled=true;textureImporter.maxTextureSize=2048;
-        textureImporter.textureCompression=TextureImporterCompression.Compressed;
-        textureImporter.SaveAndReimport();
         var importer=AssetImporter.GetAtPath(fbx) as ModelImporter;
         if(importer==null)throw new InvalidOperationException("SeaBass.fbx was not imported.");
         importer.importAnimation=true;importer.animationType=ModelImporterAnimationType.Generic;
@@ -47,8 +41,7 @@ public static class SeaBassImporter
         // Explicit atlas sampling uses the same verified shader as the authored rod.
         material.shader=Resources.Load<Shader>("Fishing/FishingEquipment");
         if(material.shader==null)throw new InvalidOperationException("FishingEquipment shader missing.");
-        var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>(png);
-        if(atlas==null)throw new InvalidOperationException("Sea bass atlas could not be loaded.");
+        var atlas=BuildAtlas(png);
         material.SetTexture("_BaseMap",atlas);
         material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);
         material.SetColor("_BaseColor",Color.white);material.SetFloat("_Smoothness",0.4f);material.SetFloat("_Metallic",0.06f);
@@ -109,7 +102,7 @@ public static class SeaBassImporter
             if(!AssetDatabase.IsValidFolder("Assets/Resources/Fishing"))AssetDatabase.CreateFolder("Assets/Resources","Fishing");
             var saved=PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
             AssetDatabase.SaveAssets();
-            if(saved==null || !AssetDatabase.GetDependencies(PrefabPath,true).Contains(png))
+            if(saved==null || !AssetDatabase.GetDependencies(PrefabPath,true).Contains(AssetDatabase.GetAssetPath(atlas)))
                 throw new InvalidOperationException("Saved sea bass prefab lost its texture dependency.");
             foreach(var renderer in saved.GetComponentsInChildren<Renderer>(true))
                 foreach(var mat in renderer.sharedMaterials)
@@ -118,6 +111,38 @@ public static class SeaBassImporter
         }
         finally { UnityEngine.Object.DestroyImmediate(root); }
         AssetDatabase.SaveAssets();
+    }
+    // Decode the supplied PNG without depending on its TextureImporter artifact.
+    // Native assets retain their GUID across reinstalls and are build dependencies.
+    private static Texture2D BuildAtlas(string png)
+    {
+        string source=Path.GetFullPath(Path.Combine(Application.dataPath,"..",png));
+        if(!File.Exists(source))throw new FileNotFoundException("Sea bass source PNG is missing. Pull the complete update.",source);
+        byte[] bytes=File.ReadAllBytes(source);
+        var decoded=new Texture2D(2,2,TextureFormat.RGBA32,true,false);
+        try
+        {
+            if(!ImageConversion.LoadImage(decoded,bytes,false) || decoded.width<2 || decoded.height<2)
+                throw new InvalidOperationException("Cannot decode sea bass PNG: "+source+" ("+bytes.Length+" bytes). Pull the source PNG again.");
+            decoded.name="SeaBass Authored Atlas";
+            decoded.wrapMode=TextureWrapMode.Repeat;decoded.filterMode=FilterMode.Trilinear;
+            decoded.anisoLevel=2;decoded.Apply(true,false);
+            string path=Folder+"/SeaBassAtlas.asset";
+            var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if(atlas==null)
+            {
+                AssetDatabase.CreateAsset(decoded,path);
+                atlas=decoded;decoded=null;
+            }
+            else EditorUtility.CopySerialized(decoded,atlas);
+            EditorUtility.SetDirty(atlas);AssetDatabase.SaveAssets();
+            var saved=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if(saved==null || saved.width<2 || saved.height<2)
+                throw new InvalidOperationException("Could not save the decoded sea bass atlas at "+path);
+            Debug.Log("Sea bass atlas ready: "+saved.width+" x "+saved.height+" from the supplied PNG.");
+            return saved;
+        }
+        finally {if(decoded!=null)UnityEngine.Object.DestroyImmediate(decoded);}
     }
     private static Bounds BoundsOf(GameObject root)
     {

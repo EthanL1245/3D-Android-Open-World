@@ -67,3 +67,7 @@ Pull, reopen the island scene, and run the same **Install Suncrest Reef (One Cli
 - The seven species probabilities above apply to fishing and ambient fish alike.
 
 Local checks: look for a textured sea bass and a connected line through its full struggle cycle; inspect the pond shoreline, grounded boulders and hotbar; open the seven-species index. Unity compilation/rendering and Android profiling must be checked locally.
+
+## Sea bass PNG import recovery
+
+The installer now decodes `SeaBassTexture.png` directly and saves `SeaBassAtlas.asset` as a native Unity texture. It does not depend on the PNG's imported texture artifact, which could return null on the Android editor target. The supplied PNG pixels are unchanged. Reinstalling updates the native texture in place, preserving its GUID; the saved fish prefab is checked for its texture dependency. Pull this fix and rerun **Install Suncrest Reef (One Click)**. No manual material assignment or project-cache deletion is needed.
