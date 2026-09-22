@@ -178,13 +178,18 @@ public sealed class ShopMarketDisplay : MonoBehaviour
                 continue;
 
             if (child.name == "FreshCatchOnIce" ||
-                child.name == "FreshCatchRuntimeDisplay")
+                child.name == "FreshCatchRuntimeDisplay" ||
+                child.name == "HangingMarketFish" ||
+                child.name == "HangingCord")
                 remove.Add(child.gameObject);
         }
 
         for (int i = 0; i < remove.Count; i++)
             if (remove[i] != null)
+            {
+                remove[i].SetActive(false);
                 Destroy(remove[i]);
+            }
     }
 
     private void FreezeAndPlace(Transform parent, PendingFish pending)
@@ -210,6 +215,18 @@ public sealed class ShopMarketDisplay : MonoBehaviour
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             animator.Rebind();
             animator.Update(0f);
+            // Keep the locally requested straight resting pose (frame 5).
+            if (animator.runtimeAnimatorController != null)
+            {
+                var clips = animator.GetCurrentAnimatorClipInfo(0);
+                if (clips.Length > 0 && clips[0].clip != null && clips[0].clip.length > 0f)
+                {
+                    var clip = clips[0].clip;
+                    animator.Play(animator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0,
+                        Mathf.Clamp01(5f / Mathf.Max(1f, clip.frameRate) / clip.length));
+                    animator.Update(0f);
+                }
+            }
             animator.speed = 0f;
         }
 
@@ -392,7 +409,11 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         node.transform.localScale = size;
         node.GetComponent<Renderer>().sharedMaterial = material;
         Collider collider = node.GetComponent<Collider>();
-        if (collider != null) Destroy(collider);
+        if (collider != null)
+        {
+            collider.enabled = false;
+            Destroy(collider);
+        }
         return node;
     }
 
@@ -418,7 +439,11 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         Material material = new Material(sign);
         material.mainTexture = text.font.material.mainTexture;
         materials.Add(material);
-        node.GetComponent<MeshRenderer>().sharedMaterial = material;
+        var renderer = node.GetComponent<MeshRenderer>();
+        renderer.sharedMaterial = material;
+        // Preserve the local fix: long names stay inside their label boards.
+        float width = renderer.bounds.size.x;
+        if (width > 2.15f) node.transform.localScale = Vector3.one * (2.15f / width);
     }
 
     private void OnDestroy()
