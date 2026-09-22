@@ -9,6 +9,7 @@ public sealed class ShopPreview : MonoBehaviour
 {
     private readonly Dictionary<string,RenderTexture> cache=new Dictionary<string,RenderTexture>();
     private readonly Queue<System.Action> requests=new Queue<System.Action>();
+    private static int studioCount;
     private Camera studio;
     private GameObject stage, model;
     private bool busy;
@@ -27,15 +28,16 @@ public sealed class ShopPreview : MonoBehaviour
         if(cache.TryGetValue(key,out var existing)) {target.texture=existing;target.enabled=true;busy=false;yield break;}
         if(stage==null)
         {
-            stage=new GameObject("InventoryPreviewStudio");stage.transform.position=new Vector3(10000,10000,10000);
+            stage=new GameObject("InventoryPreviewStudio");stage.transform.position=new Vector3(10000+100*studioCount++,10000,10000);
             studio=new GameObject("PreviewCamera").AddComponent<Camera>();studio.transform.SetParent(stage.transform,false);
             studio.clearFlags=CameraClearFlags.SolidColor;studio.backgroundColor=new Color(0.08f,0.18f,0.20f);
             studio.orthographic=true;studio.nearClipPlane=0.01f;studio.farClipPlane=15;studio.cullingMask=1<<30;studio.enabled=false;
         }
+        studio.backgroundColor=gear=="RodAssembly"?new Color(0,0,0,0):new Color(0.08f,0.18f,0.20f);
         if(gear==null)model=FishWorldSize.Create("FishPreview",stage.transform,species,kg);
         else
         {
-            var prefab=gear=="Rod" || gear=="Reel"?Resources.Load<GameObject>("Fishing/FishingRodReel"):null;
+            var prefab=gear=="Rod" || gear=="Reel" || gear=="RodAssembly"?Resources.Load<GameObject>("Fishing/FishingRodReel"):null;
             if(prefab!=null)model=Instantiate(prefab,stage.transform);
             else model=BuildItem(gear);
             model.transform.SetParent(stage.transform,false);
@@ -51,7 +53,7 @@ public sealed class ShopPreview : MonoBehaviour
                 renderer.enabled=gear=="Reel"?reel:!reel;
             }
         }
-        model.transform.localRotation=gear=="Rod"?Quaternion.Euler(0,-90,40):gear=="Reel"?Quaternion.Euler(12,35,-12):Quaternion.Euler(0,-90,0);
+        model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):gear=="Reel"?Quaternion.Euler(12,35,-12):Quaternion.Euler(0,-90,0);
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0){Destroy(model);busy=false;yield break;}
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);

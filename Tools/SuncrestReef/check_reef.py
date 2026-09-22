@@ -6,14 +6,16 @@ root=Path(__file__).resolve().parents[2]
 source=(root/'Assets/_Game/Scripts/Reef/ReefCatalog.cs').read_text()
 weights=list(map(float,re.search(r'new float\[\] \{([^}]+)',source).group(1).split(',')))
 assert len(weights)==8 and sum(weights)==100
+assert weights[4]==0 and sum(w>0 for w in weights)==7
 assert weights[6]==weights[7] and min(weights[6:])>max(weights[:6])
 rng=np.random.default_rng(73191)
 rolls=rng.random(100000)*sum(weights)
 counts=np.bincount(np.searchsorted(np.cumsum(weights),rolls),minlength=8)/1000
 assert np.max(abs(counts-np.array(weights)))<.5
+assert counts[4]==0
 for bait in (0,2,3):
-    boosted=np.array(weights)*[2.5 if bait==2 and i in (1,6,7) else 4 if bait==3 and i in (3,4,5) else 1 for i in range(8)]
-    assert boosted.sum()>0 and (boosted>0).all()
+    boosted=np.array(weights)*[2.5 if bait==2 and i in (1,6,7) else 4 if bait==3 and i in (3,5) else 1 for i in range(8)]
+    assert boosted.sum()>0 and (boosted[np.array(weights)>0]>0).all() and boosted[4]==0
     if bait==2:assert boosted[6:].sum()/boosted.sum()>.48
     if bait==3:assert boosted[3:6].sum()/boosted.sum()>.12
 # Property test for dry-area calibration across different original island sizes.
@@ -40,3 +42,12 @@ assert np.min(np.diff(depth))>=-1e-6 and abs(depth[-1]-6)<1e-6
 assert np.max(np.diff(depth)/.1)<=.101
 assert np.isclose(depth[300],2)
 print('PASS: shared rarity weights, bait effects, half-area targets and shallow shelf properties.')
+
+# The pond remains above the ocean; shoreline rims bury the water disc edge.
+for ground in (5.2,6.0,6.8):
+    def pond_h(q):
+        t=np.clip((q-.70)/.75,0,1)
+        return 2.4+(ground-2.4)*(3*t*t-2*t*t*t)
+    assert pond_h(0)==2.4 and pond_h(1.12)>3.2
+    assert np.isclose(pond_h(1.45),ground)
+print('PASS: retired species never rolls; pond is shallow with a buried surface edge.')

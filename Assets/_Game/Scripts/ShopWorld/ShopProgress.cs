@@ -21,6 +21,11 @@ public sealed class ShopProgress : MonoBehaviour
                 catch { Data=Read(PlayerPrefs.GetString(SaveKey+".backup")); Notice="Recovered the previous shop save."; }
             }
             else Migrate();
+            bool migrated=false;
+            foreach(var fish in Data.bag)if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
+            foreach(var habitat in Data.habitats)foreach(var fish in habitat.fish)
+                if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
+            if(migrated)Save();
             if(!Data.homeMigrated) { Data.MigrateHome(); Save(); Notice="Your habitats now live at Home. Earlier smaller purchases were credited; all fish were preserved."; }
         }
         catch(Exception ex)

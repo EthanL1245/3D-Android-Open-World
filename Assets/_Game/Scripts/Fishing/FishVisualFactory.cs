@@ -56,6 +56,7 @@ public static class FishVisualFactory
         float scale,
         bool allowHero)
     {
+        speciesId=FishCatalog.CanonicalId(speciesId);
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
 
@@ -69,12 +70,7 @@ public static class FishVisualFactory
                 return instance;
             }
         }
-        // Young tuna use the authored yellowfin model at juvenile weight/length.
-        if (allowHero && speciesId == 4)
-        {
-            var juvenile = CreateYellowfinTuna(name, parent, scale);
-            if (juvenile != null) return juvenile;
-        }
+
 
         if (allowHero &&
             speciesId == 0)

@@ -49,7 +49,7 @@ public class FishingInventory : MonoBehaviour
         CaughtFishRecord record =
             new CaughtFishRecord
             {
-                speciesId = speciesId,
+                speciesId = FishCatalog.CanonicalId(speciesId),
                 weightKg = weightKg,
                 caughtUtcTicks =
                     DateTime.UtcNow.Ticks
@@ -116,6 +116,7 @@ public class FishingInventory : MonoBehaviour
                 data.fish != null)
             {
                 fish = data.fish;
+                foreach(var record in fish)record.speciesId=FishCatalog.CanonicalId(record.speciesId);
             }
         }
         catch

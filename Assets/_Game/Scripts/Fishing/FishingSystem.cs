@@ -1569,12 +1569,6 @@ public class FishingSystem : MonoBehaviour
                 angry = 0.03f;
                 break;
 
-            case 4: // Young Tuna
-                calm = 0.16f;
-                irritated = 0.38f;
-                angry = 0.46f;
-                break;
-
             case 3: // Yellowtail
                 calm = 0.28f;
                 irritated = 0.45f;
@@ -3329,6 +3323,8 @@ public class FishingSystem : MonoBehaviour
     private Vector3 FindFishMouthLocalPosition(
         GameObject fish)
     {
+        var authoredMouth=FindDeepChildByName(fish.transform,"AuthoredMouthAnchor");
+        if(authoredMouth!=null)return fish.transform.InverseTransformPoint(authoredMouth.position);
         bool useBoneMouth =
             fish.GetComponent<RedSnapperPresentation>() != null ||
             fish.GetComponent<GoatfishPresentation>() != null ||

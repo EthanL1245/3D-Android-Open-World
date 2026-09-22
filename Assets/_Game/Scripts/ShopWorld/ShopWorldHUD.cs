@@ -161,8 +161,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void ReefFishIndex()
     {
-        Row(ReefCatalog.StarterName, "All eight species • base catch chances below. Specialty bait changes these odds.", "ISLAND INDEX",()=>Open("islands"));
-        foreach(int id in Enumerable.Range(0,FishCatalog.Count).OrderByDescending(ReefCatalog.Weight))
+        Row(ReefCatalog.StarterName, "All seven species • base catch chances below. Specialty bait changes these odds.", "ISLAND INDEX",()=>Open("islands"));
+        foreach(int id in FishCatalog.ActiveIds.OrderByDescending(ReefCatalog.Weight))
         {
             var species=FishCatalog.Get(id);
             Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance", "UNLOCKED",()=>{},false,

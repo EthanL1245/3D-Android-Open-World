@@ -531,66 +531,12 @@ public class FishingHUD : MonoBehaviour
 
     private void CreateRodIcon(Transform parent)
     {
-        GameObject rod =
-            CreatePanel(
-                "RodIcon",
-                parent,
-                new Color(
-                    0.73f,
-                    0.57f,
-                    0.32f,
-                    1f
-                )
-            );
-
-        RectTransform rodRect =
-            rod.GetComponent<RectTransform>();
-
-        rodRect.anchorMin =
-            new Vector2(0.5f, 0.5f);
-
-        rodRect.anchorMax =
-            new Vector2(0.5f, 0.5f);
-
-        rodRect.sizeDelta =
-            new Vector2(8f, 58f);
-
-        rodRect.anchoredPosition =
-            new Vector2(6f, 0f);
-
-        rodRect.localRotation =
-            Quaternion.Euler(
-                0f,
-                0f,
-                -28f
-            );
-
-        GameObject reel =
-            CreatePanel(
-                "ReelIcon",
-                parent,
-                new Color(
-                    0.32f,
-                    0.75f,
-                    0.86f,
-                    1f
-                )
-            );
-
-        RectTransform reelRect =
-            reel.GetComponent<RectTransform>();
-
-        reelRect.anchorMin =
-            new Vector2(0.5f, 0.5f);
-
-        reelRect.anchorMax =
-            new Vector2(0.5f, 0.5f);
-
-        reelRect.sizeDelta =
-            new Vector2(20f, 20f);
-
-        reelRect.anchoredPosition =
-            new Vector2(-6f, -8f);
+        var icon=new GameObject("AuthoredRodIcon",typeof(RectTransform),typeof(RawImage));
+        icon.transform.SetParent(parent,false);
+        var image=icon.GetComponent<RawImage>();image.raycastTarget=false;
+        image.rectTransform.anchorMin=Vector2.zero;image.rectTransform.anchorMax=Vector2.one;
+        image.rectTransform.offsetMin=new Vector2(5,5);image.rectTransform.offsetMax=new Vector2(-5,-5);
+        var preview=icon.AddComponent<ShopPreview>();preview.Attach(image,0,0,"RodAssembly");
     }
 
     private void BuildActionButton()

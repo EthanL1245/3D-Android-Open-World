@@ -142,7 +142,12 @@ public static class SuncrestReefSetup
         if(q<=1f)
         {
             float inland=Mathf.SmoothStep(0,1,Mathf.Clamp01((1f-q)/.43f));
-            return sea+0.04f+inland*(5.2f+1.6f*Mathf.PerlinNoise(x*.019f+80,z*.019f+90));
+            float ground=sea+0.04f+inland*(5.2f+1.6f*Mathf.PerlinNoise(x*.019f+80,z*.019f+90));
+            float pond=PondDistance(x,z);
+            ground=Mathf.Lerp(sea+2.4f,ground,Mathf.SmoothStep(0,1,Mathf.InverseLerp(.70f,1.45f,pond)));
+            Vector3 picnic=PondCenter+new Vector3(PondRadius+8,0,-6);
+            float clearing=Vector2.Distance(new Vector2(x,z),new Vector2(picnic.x,picnic.z));
+            return Mathf.Lerp(sea+5.6f,ground,Mathf.SmoothStep(0,1,Mathf.InverseLerp(4,7,clearing)));
         }
         float distance=(q-1f)*Mathf.Min(rx,rz);
         float depth=distance<30 ? Mathf.Lerp(0,2f,Mathf.SmoothStep(0,1,distance/30f)) :
@@ -166,6 +171,11 @@ public static class SuncrestReefSetup
         {
             float wx=(x/255f-.5f)*size,wz=(z/255f-.5f)*size,h=Height(wx,wz)-sea;
             float green=Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.2f,3.7f,h));
+            float pondBank=1f-Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.05f,1.65f,PondDistance(wx,wz)));
+            // A sandy footpath connects the arrival beach with the pond clearing.
+            float pathCenter=-rx*.12f*Mathf.Clamp01((wz+rz*.76f)/(rz*.84f));
+            float path=(wz>-rz*.78f && wz<rz*.12f)?1f-Mathf.SmoothStep(0,1,Mathf.InverseLerp(1.2f,3f,Mathf.Abs(wx-pathCenter))):0;
+            green*=1f-Mathf.Max(pondBank,path);
             float rock=h<-.8f ? Mathf.PerlinNoise(wx*.037f+90,wz*.037f+80)*.55f:0;
             map[z,x,0]=1-green-rock;map[z,x,1]=green;map[z,x,2]=rock;
         }
@@ -199,15 +209,15 @@ public static class SuncrestReefSetup
     private static void BuildScenery(Transform parent)
     {
         var palm=BuildPalm();var rock=BuildRock();var grasses=BuildGrass();var reefCoral=BuildCoral();
-        int palms=Mathf.Clamp(Mathf.RoundToInt(rx*rz/230f),24,64);
+        int palms=Mathf.Clamp(Mathf.RoundToInt(rx*rz/150f),48,100);
         for(int i=0;i<palms;i++)
         {
-            float a=Rand(0,Mathf.PI*2),r=Rand(.48f,.85f);
+            float a=Rand(0,Mathf.PI*2),r=Mathf.Sqrt(Rand(.015f,.76f));
             Place(palm,parent,new Vector3(Mathf.Cos(a)*rx*r,0,Mathf.Sin(a)*rz*r),Rand(.7f,1.2f));
         }
-        for(int i=0;i<100;i++)
+        for(int i=0;i<220;i++)
         {
-            float a=Rand(0,Mathf.PI*2),r=Rand(.52f,.96f);
+            float a=Rand(0,Mathf.PI*2),r=Mathf.Sqrt(Rand(.02f,.92f));
             Place(grasses,parent,new Vector3(Mathf.Cos(a)*rx*r,0,Mathf.Sin(a)*rz*r),Rand(.6f,1.6f));
         }
         for(int i=0;i<45;i++)
@@ -237,29 +247,104 @@ public static class SuncrestReefSetup
             {
                 var shell=Primitive(PrimitiveType.Sphere,shells.transform,new Vector3(Rand(-.9f,.9f),.06f,Rand(-.7f,.7f)),new Vector3(.14f,.08f,.2f),stone);
                 shell.transform.localRotation=Quaternion.Euler(0,Rand(0,360),Rand(-15,15));
+                Vector3 sp=shell.transform.position;sp.y=terrain.SampleHeight(sp)+terrain.transform.position.y+.035f;shell.transform.position=sp;
             }
         }
-        // A walk-through natural limestone arch is an exploration landmark.
-        var archPosition=new Vector3(rx*.68f,0,rz*.57f);
-        Vector3 ground=Ground(archPosition);
-        for(int i=0;i<7;i++)
+        // Ground each boulder independently on the slope; no disconnected arch stones.
+        var cove=new Vector3(rx*.68f,0,rz*.57f);
+        for(int i=0;i<9;i++)
         {
-            float a=Mathf.PI*i/6;
-            var instance=PrefabUtility.InstantiatePrefab(rock) as GameObject;instance.name="Shell Cove limestone arch";
-            instance.transform.SetParent(parent);instance.transform.position=ground+new Vector3(Mathf.Cos(a)*3.2f,Mathf.Sin(a)*3.5f,0);
-            instance.transform.localScale=new Vector3(1.4f,1.1f,1.3f);
+            float a=i*.7f;Place(rock,parent,cove+new Vector3(Mathf.Cos(a)*4.5f,0,Mathf.Sin(a)*3.5f),Rand(1.0f,1.7f));
         }
+        BuildInterior(parent,palm,rock,grasses);
         Sign(parent,"SUNCREST REEF",new Vector3(0,0,-rz*.76f));
-        Sign(parent,"SHELL COVE",archPosition+new Vector3(-5,0,-4));
-        Sign(parent,"PALM GROVE",new Vector3(-rx*.55f,0,-rz*.22f));
-        Sign(parent,"SHALLOW REEF\nExplore gently. Leave the coral.",new Vector3(rx*.52f,0,-rz*.66f));
+        Sign(parent,"SHELL COVE",cove+new Vector3(-5,0,-4),true);
+        Sign(parent,"PALM GROVE",new Vector3(-rx*.55f,0,-rz*.22f),true);
+        Sign(parent,"SHALLOW REEF",new Vector3(rx*.52f,0,-rz*.66f),true);
     }
+    private static Vector3 PondCenter => new Vector3(-rx*.12f,0,rz*.08f);
+    private static float PondRadius => Mathf.Clamp(rx*.18f,8f,18f);
+    private static float PondDistance(float x,float z)
+    {
+        var p=PondCenter;float a=(x-p.x)/PondRadius,b=(z-p.z)/(PondRadius*.72f);
+        return Mathf.Sqrt(a*a+b*b);
+    }
+    private static void BuildInterior(Transform parent,GameObject palm,GameObject rock,GameObject grasses)
+    {
+        var pond=new GameObject("Palm Pond - shallow garden pool");pond.transform.SetParent(parent,false);
+        pond.transform.position=center+PondCenter+Vector3.up*3.2f;
+        pond.transform.position=new Vector3(pond.transform.position.x,sea+3.2f,pond.transform.position.z);
+        var vertices=new System.Collections.Generic.List<Vector3>{Vector3.zero};
+        var triangles=new System.Collections.Generic.List<int>();
+        for(int i=0;i<=64;i++)
+        {
+            float a=i*Mathf.PI*2/64;
+            vertices.Add(new Vector3(Mathf.Cos(a)*PondRadius*1.12f,0,Mathf.Sin(a)*PondRadius*.72f*1.12f));
+            if(i>0)triangles.AddRange(new[]{0,i+1,i});
+        }
+        pond.AddComponent<MeshFilter>().sharedMesh=MeshAsset("PalmPondWater",vertices,triangles);
+        pond.AddComponent<MeshRenderer>().sharedMaterial=Mat("Pond turquoise",new Color(.08f,.40f,.36f),.94f);
+        // A shallow wading pool: solid terrain remains only 0.8m below its surface.
+        var shrubsRoot=new GameObject("Sea grape shrub");
+        for(int j=0;j<5;j++)
+            Primitive(PrimitiveType.Sphere,shrubsRoot.transform,new Vector3(Mathf.Sin(j*2.4f)*.55f,.65f+(j%2)*.3f,Mathf.Cos(j*2.4f)*.55f),new Vector3(1.2f,.85f,1.1f),leaf);
+        var shrub=SaveProp(shrubsRoot,"SeaGrape",false);
+        for(int i=0;i<100;i++)
+        {
+            float a=Rand(0,Mathf.PI*2),r=Mathf.Sqrt(Rand(.015f,.55f));
+            var p=new Vector3(Mathf.Cos(a)*rx*r,0,Mathf.Sin(a)*rz*r);
+            if(PondDistance(p.x,p.z)<1.5f)continue;
+            // Keep the path passable and retain small clearings between clusters.
+            if(Mathf.Abs(p.x+rx*.12f)<4 && p.z<PondCenter.z)continue;
+            Place(shrub,parent,p,Rand(.7f,1.45f));
+        }
+        for(int i=0;i<32;i++)
+        {
+            float a=i*Mathf.PI*2/32;
+            var p=PondCenter+new Vector3(Mathf.Cos(a)*PondRadius*1.38f,0,Mathf.Sin(a)*PondRadius*.72f*1.38f);
+            if(i%4==0)Place(rock,parent,p,Rand(.55f,.9f));
+            else Place(grasses,parent,p,Rand(1.2f,2f));
+        }
+        for(int i=0;i<12;i++)
+        {
+            float a=i*Mathf.PI*2/12;
+            Place(palm,parent,PondCenter+new Vector3(Mathf.Cos(a)*(PondRadius+9),0,Mathf.Sin(a)*(PondRadius*.72f+9)),Rand(.85f,1.1f));
+        }
+        // One small shaded picnic stop gives the clearing a purpose.
+        var stop=new GameObject("Pondside picnic shelter");stop.transform.SetParent(parent,false);
+        stop.transform.position=Ground(PondCenter+new Vector3(PondRadius+8,0,-6));
+        foreach(float x in new[]{-2.2f,2.2f})foreach(float z in new[]{-1.7f,1.7f})
+        {
+            var local=new Vector3(x,0,z);Vector3 w=stop.transform.TransformPoint(local);
+            float floor=terrain.SampleHeight(w)+terrain.transform.position.y-stop.transform.position.y;
+            Primitive(PrimitiveType.Cylinder,stop.transform,new Vector3(x,(floor+3.1f)/2,z),new Vector3(.17f,(3.1f-floor)/2,.17f),wood);
+        }
+        var canvas=Mat("Sand canvas",new Color(.86f,.77f,.52f));
+        var roof=Primitive(PrimitiveType.Cube,stop.transform,new Vector3(0,3.1f,0),new Vector3(5.2f,.14f,4.2f),canvas);
+        roof.transform.localRotation=Quaternion.Euler(0,0,5);
+        Primitive(PrimitiveType.Cube,stop.transform,new Vector3(0,.85f,0),new Vector3(2.4f,.12f,1.2f),wood);
+        foreach(float x in new[]{-.85f,.85f})
+            Primitive(PrimitiveType.Cube,stop.transform,new Vector3(x,.4f,0),new Vector3(.14f,.8f,.9f),wood);
+        foreach(float z in new[]{-1.05f,1.05f})
+        {
+            Primitive(PrimitiveType.Cube,stop.transform,new Vector3(0,.46f,z),new Vector3(2.5f,.14f,.42f),wood);
+            foreach(float x in new[]{-.85f,.85f})Primitive(PrimitiveType.Cube,stop.transform,new Vector3(x,.20f,z),new Vector3(.18f,.4f,.34f),wood);
+        }
+        var tableCollision=stop.AddComponent<BoxCollider>();tableCollision.center=new Vector3(0,.44f,0);tableCollision.size=new Vector3(2.4f,.88f,1.2f);
+        var box=Primitive(PrimitiveType.Cube,stop.transform,new Vector3(1.6f,.28f,.7f),new Vector3(.65f,.56f,.5f),Mat("Seafoam cooler",new Color(.25f,.52f,.51f)));
+        Primitive(PrimitiveType.Cube,box.transform,new Vector3(0,.52f,0),new Vector3(1.04f,.12f,1.04f),canvas);
+        Sign(parent,"PALM POND",PondCenter+new Vector3(0,0,-PondRadius*.72f-7),true);
+    }
+
     private static Vector3 Ground(Vector3 local)
     {
         Vector3 p=center+local;p.y=terrain.SampleHeight(p)+terrain.transform.position.y;return p;
     }
     private static void Place(GameObject prefab,Transform parent,Vector3 local,float scale)
     {
+        if(PondDistance(local.x,local.z)<1.25f)return;
+        var picnic=PondCenter+new Vector3(PondRadius+8,0,-6);
+        if(Vector3.Distance(local,picnic)<4.2f)return;
         var instance=PrefabUtility.InstantiatePrefab(prefab) as GameObject;
         instance.transform.SetParent(parent);instance.transform.position=Ground(local);
         instance.transform.rotation=Quaternion.Euler(0,Rand(0,360),0);instance.transform.localScale=Vector3.one*scale;
@@ -279,15 +364,15 @@ public static class SuncrestReefSetup
             segment.transform.localRotation=Quaternion.Euler(0,0,-Mathf.Atan(.032f*y)*Mathf.Rad2Deg);
         }
         var vertices=new System.Collections.Generic.List<Vector3>();var triangles=new System.Collections.Generic.List<int>();
-        for(int frond=0;frond<10;frond++)
+        for(int frond=0;frond<12;frond++)
         {
-            float angle=frond*Mathf.PI*.2f;
+            float angle=frond*Mathf.PI/6f;
             Vector3 direction=new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle)),side=Vector3.Cross(Vector3.up,direction);
             for(int step=0;step<20;step++)
             {
                 float t=step/20f;
                 Vector3 p=new Vector3(.82f,7.3f,0)+direction*(t*4.4f)+Vector3.up*(Mathf.Sin(t*Mathf.PI)*.7f-t*t*2.1f);
-                float width=Mathf.Sin((t*.85f+.08f)*Mathf.PI)*.85f*(1-t*.65f);
+                float width=Mathf.Sin((t*.85f+.08f)*Mathf.PI)*1.15f*(1-t*.55f);
                 for(int sign=-1;sign<=1;sign+=2)
                 {
                     int n=vertices.Count;
@@ -371,8 +456,9 @@ public static class SuncrestReefSetup
         var lod=root.AddComponent<LODGroup>();lod.SetLODs(new[]{new LOD(palm ? 0.022f : 0.018f,root.GetComponentsInChildren<Renderer>())});lod.RecalculateBounds();
         var prefab=PrefabUtility.SaveAsPrefabAsset(root,Root+"/"+name+".prefab");Object.DestroyImmediate(root);return prefab;
     }
-    private static void Sign(Transform parent,string words,Vector3 local)
+    private static void Sign(Transform parent,string words,Vector3 local,bool landmark=false)
     {
+        if(landmark)words="SUNCREST REEF\n"+words+"  >";
         var root=new GameObject(words.Replace('\n',' '));root.transform.SetParent(parent);root.transform.position=Ground(local);
         Primitive(PrimitiveType.Cylinder,root.transform,new Vector3(0,.7f,0),new Vector3(.12f,.7f,.12f),wood);
         Primitive(PrimitiveType.Cube,root.transform,new Vector3(0,1.5f,0),new Vector3(3.5f,.72f,.10f),wood);
@@ -382,5 +468,12 @@ public static class SuncrestReefSetup
         if(material==null){material=new Material(Resources.Load<Shader>("Fishing/ShopSign"));material.mainTexture=text.font.material.mainTexture;AssetDatabase.CreateAsset(material,path);}
         label.GetComponent<MeshRenderer>().sharedMaterial=material;
         var fit=label.AddComponent<ShopSign>();fit.area=new Vector2(3.2f,.58f);fit.Fit();
+        if(landmark)root.transform.localScale=Vector3.one*.72f;
+        else
+        {
+            // Main arrival sign has two substantial posts and an island-wide title.
+            Primitive(PrimitiveType.Cylinder,root.transform,new Vector3(-1.45f,.7f,0),new Vector3(.18f,.7f,.18f),wood);
+            Primitive(PrimitiveType.Cylinder,root.transform,new Vector3(1.45f,.7f,0),new Vector3(.18f,.7f,.18f),wood);
+        }
     }
 }

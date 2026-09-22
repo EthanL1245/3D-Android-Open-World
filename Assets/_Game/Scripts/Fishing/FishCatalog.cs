@@ -80,16 +80,7 @@ public static class FishCatalog
             10f,
             92
         ),
-        new FishSpeciesDefinition(
-            "Young Tuna",
-            new Color(0.12f, 0.28f, 0.48f),
-            new Color(0.78f, 0.82f, 0.78f),
-            2.50f,
-            10.00f,
-            0.82f,
-            4f,
-            175
-        ),
+        default, // Retired species ID 4; never reuse saved IDs.
         new FishSpeciesDefinition(
             "Yellowfin Tuna",
             new Color(0.07f, 0.18f, 0.30f),
@@ -123,10 +114,12 @@ public static class FishCatalog
     };
 
     public static int Count => Species.Length;
+    public static readonly int[] ActiveIds = {0,1,2,3,5,6,7};
+    public static int CanonicalId(int id) => id==4 ? YellowfinTunaId : id;
 
     public static FishSpeciesDefinition Get(int id)
     {
-        int index=Mathf.Clamp(id,0,Species.Length-1);
+        int index=Mathf.Clamp(CanonicalId(id),0,Species.Length-1);
         var definition=Species[index];definition.RelativeChance=ReefCatalog.Weight(index);
         return definition;
     }
