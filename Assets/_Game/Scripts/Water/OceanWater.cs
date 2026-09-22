@@ -63,6 +63,7 @@ public class OceanWater : MonoBehaviour
 
     public float GetSurfaceHeight(Vector3 worldPosition)
     {
+        if(PondWater.TrySurface(worldPosition,out float pondHeight))return pondHeight;
         return BaseWaterLevel + EvaluateWaves(worldPosition.x, worldPosition.z, Time.time);
     }
 

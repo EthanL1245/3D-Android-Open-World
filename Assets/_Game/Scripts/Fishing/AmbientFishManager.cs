@@ -50,6 +50,8 @@ public class AmbientFishManager : MonoBehaviour
     public bool Safe(Vector3 position,float clearance=0.6f)
     {
         if(!InReef||oceanWater==null||terrain==null)return false;
+        // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
+        if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
         var p=position-terrain.transform.position;var size=terrain.terrainData.size;
         if(p.x<0||p.z<0||p.x>size.x||p.z>size.z)return false;

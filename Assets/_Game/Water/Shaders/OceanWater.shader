@@ -5,6 +5,7 @@ Shader "OpenWorld/OceanWater"
         _ShallowColor ("Shallow Color", Color) = (0.05, 0.55, 0.72, 1)
         _DeepColor ("Deep Color", Color) = (0.01, 0.10, 0.28, 1)
         _FoamColor ("Foam Color", Color) = (0.86, 0.96, 1.0, 1)
+        _FoamStrength ("Foam Strength", Range(0,1)) = 1
         _Alpha ("Base Alpha", Range(0.1, 0.95)) = 0.72
         _Smoothness ("Smoothness", Range(0, 1)) = 0.82
 
@@ -58,6 +59,7 @@ Shader "OpenWorld/OceanWater"
                 float4 _DeepColor;
                 float4 _FoamColor;
                 float _Alpha;
+                float _FoamStrength;
                 float _Smoothness;
 
                 float _WaveAmplitude1;
@@ -280,6 +282,8 @@ Shader "OpenWorld/OceanWater"
                         normalizedCrest
                     );
 
+                foam *= _FoamStrength;
+
                 float lighting =
                     0.35 + diffuse * 0.65;
 
@@ -314,3 +318,4 @@ Shader "OpenWorld/OceanWater"
         }
     }
 }
+

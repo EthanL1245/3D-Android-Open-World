@@ -161,7 +161,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void ReefFishIndex()
     {
-        Row(ReefCatalog.StarterName, "All seven species • base catch chances below. Specialty bait changes these odds.", "ISLAND INDEX",()=>Open("islands"));
+        Row(ReefCatalog.StarterName, "Seven species • ocean sizes outside; Palm Pond juveniles are 5–12 cm. Specialty bait changes the base odds below.", "ISLAND INDEX",()=>Open("islands"));
         foreach(int id in FishCatalog.ActiveIds.OrderByDescending(ReefCatalog.Weight))
         {
             var species=FishCatalog.Get(id);
@@ -201,7 +201,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         }
         foreach(var record in fish)
         {
-            var f=record;Row(FishCatalog.Get(f.speciesId).Name,$"{f.weightKg:0.00} kg / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m / value {FishCatalog.GetSellValue(f.speciesId,f.weightKg)} coins",fishing.IsHolding(f)?"PUT AWAY":"HOLD",()=>{Close();int index=progress.Data.bag.IndexOf(f);if(index>=0)fishing.HoldFish(index);},fish:f);
+            var f=record;Row(FishCatalog.Get(f.speciesId).Name,$"{FishCatalog.FormatWeight(f.weightKg)} / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m / value {FishCatalog.GetSellValue(f.speciesId,f.weightKg)} coins",fishing.IsHolding(f)?"PUT AWAY":"HOLD",()=>{Close();int index=progress.Data.bag.IndexOf(f);if(index>=0)fishing.HoldFish(index);},fish:f);
         }
     }
     private void EquipmentPage(bool shop)
@@ -239,7 +239,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
         {
             var f=fish; int value=FishCatalog.GetSellValue(f.speciesId,f.weightKg);
-            Row(FishCatalog.Get(f.speciesId).Name,$"{f.weightKg:0.00} kg / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m",$"SELL {value}",()=>Result(progress.Sell(f),$"Sold for {value} coins."),!progress.ReadOnly,fish:f);
+            Row(FishCatalog.Get(f.speciesId).Name,$"{FishCatalog.FormatWeight(f.weightKg)} / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m",$"SELL {value}",()=>Result(progress.Sell(f),$"Sold for {value} coins."),!progress.ReadOnly,fish:f);
         }
     }
     private void SellConfirmation()
@@ -271,9 +271,9 @@ public sealed class ShopWorldHUD : MonoBehaviour
         float kg=0;foreach(var f in owned.fish)kg+=f.weightKg;
         Row(d.name,$"{owned.fish.Count}/{d.fishLimit} fish • {kg:0.00}/{d.totalKg} kg\n"+capacity,"HOME",()=>{},false);
         foreach(var fish in new List<CaughtFishRecord>(owned.fish))
-        {var f=fish;Row(FishCatalog.Get(f.speciesId).Name,$"RESIDENT • {f.weightKg:0.00} kg",progress.Data.BagFull?"BAG FULL":"TO BAG",()=>Result(progress.Withdraw(id,f),"Fish returned to bag."),!progress.ReadOnly && !progress.Data.BagFull,fish:f);}
+        {var f=fish;Row(FishCatalog.Get(f.speciesId).Name,$"RESIDENT • {FishCatalog.FormatWeight(f.weightKg)}",progress.Data.BagFull?"BAG FULL":"TO BAG",()=>Result(progress.Withdraw(id,f),"Fish returned to bag."),!progress.ReadOnly && !progress.Data.BagFull,fish:f);}
         foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
-        {var f=fish;string reason=progress.Data.Admission(id,f);Row(FishCatalog.Get(f.speciesId).Name,$"BAG • {f.weightKg:0.00} kg • "+(reason??"Fits this habitat"),"ADD FISH",()=>Result(progress.Deposit(id,f),"Fish added to habitat."),reason==null && !progress.ReadOnly,fish:f);}
+        {var f=fish;string reason=progress.Data.Admission(id,f);Row(FishCatalog.Get(f.speciesId).Name,$"BAG • {FishCatalog.FormatWeight(f.weightKg)} • "+(reason??"Fits this habitat"),"ADD FISH",()=>Result(progress.Deposit(id,f),"Fish added to habitat."),reason==null && !progress.ReadOnly,fish:f);}
     }
     private void Result(bool ok,string success) { message=ok?success:"Action unavailable. Check coins, ownership, capacity and distance to the shop."; Refresh(false); }
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)

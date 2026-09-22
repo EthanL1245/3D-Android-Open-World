@@ -62,7 +62,7 @@ Pull, reopen the island scene, and run the same **Install Suncrest Reef (One Cli
 
 - Sea bass now uses the explicit atlas shader already used by the supplied rod, with saved prefab texture dependency checks. Its mouth anchor comes from the skinned lip vertices and follows the head bone.
 - Shell Cove is a small landmark within Suncrest Reef. Landmark signs are smaller directional signs labelled with the island name. The disconnected stone arch is replaced by individually grounded shoreline boulders.
-- The interior has a shallow Palm Pond, sandy arrival path, more palms, sea-grape shrubs, grasses, shoreline rocks, and a shaded picnic table/cooler clearing. The pond is a decorative wading pool, not a separate fishing zone.
+- The interior has Palm Pond, sandy arrival path, more palms, sea-grape shrubs, grasses, shoreline rocks, and a shaded picnic table/cooler clearing. Palm Pond is now fishable: 2.5m central depth, gentle transparent ripples, and 5–12cm juvenile catches.
 - Hotbar slot 1 uses one cached snapshot of the actual rod and reel prefab.
 - The seven species probabilities above apply to fishing and ambient fish alike.
 
@@ -71,3 +71,13 @@ Local checks: look for a textured sea bass and a connected line through its full
 ## Sea bass PNG import recovery
 
 The installer now decodes `SeaBassTexture.png` directly and saves `SeaBassAtlas.asset` as a native Unity texture. It does not depend on the PNG's imported texture artifact, which could return null on the Android editor target. The supplied PNG pixels are unchanged. Reinstalling updates the native texture in place, preserving its GUID; the saved fish prefab is checked for its texture dependency. Pull this fix and rerun **Install Suncrest Reef (One Click)**. No manual material assignment or project-cache deletion is needed.
+
+## Pond fishing and grounded scenery
+
+Rerun **Install Suncrest Reef (One Click)** after pulling. The pond uses the ocean's transparent shader with foam disabled and three gentle ripples (2.5cm, 1.3cm and 0.7cm amplitude). A tessellated mesh supports the moving surface. Its centre is 2.5m deep and its bank slopes smoothly into the water.
+
+Aim down at the deeper pond water and cast. Pond bites use the same seven-species odds, but generate 5–12cm juveniles with weights derived from the existing species size tables. They retain these sizes in bags, held views and habitats. Tiny weights display in grams. Ocean catches keep their usual sizes. Swimming, underwater rod stowing, bobbers and fishing depth checks share the pond surface height. Ocean-sized ambient fish cannot enter the pond.
+
+Every reef sign has collidable boards/posts, text on both faces, a reserved approach, and a final clearance pass removing intruding generated props. Bushes have grounded stems and are planted using terrain footprint samples; rocks also sit into the low side of the ground.
+
+Local verification: cast into pond and ocean, catch/hold/store a tiny fish, swim in the deeper pond, walk into sign posts/boards, inspect all sign approaches and shrub bases. Code/data checks cannot substitute for Unity rendering and device testing.

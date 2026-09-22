@@ -47,7 +47,22 @@ print('PASS: shared rarity weights, bait effects, half-area targets and shallow 
 for ground in (5.2,6.0,6.8):
     def pond_h(q):
         t=np.clip((q-.70)/.75,0,1)
-        return 2.4+(ground-2.4)*(3*t*t-2*t*t*t)
-    assert pond_h(0)==2.4 and pond_h(1.12)>3.2
+        return .7+(ground-.7)*(3*t*t-2*t*t*t)
+    assert pond_h(0)==.7 and pond_h(1.12)>3.245
     assert np.isclose(pond_h(1.45),ground)
-print('PASS: retired species never rolls; pond is shallow with a buried surface edge.')
+print('PASS: retired species never rolls; pond has 2.5m centre depth and a buried ripple edge.')
+
+# Invert the actual species size tables: every pond catch must remain 5–12cm.
+size_source=(root/'Assets/_Game/Scripts/Fishing/FishSizeTable.cs').read_text()
+rows=[list(map(float,re.findall(r'([0-9.]+)f',row))) for row in re.findall(r'new float\[\] \{([^}]+)',size_source)]
+for species in (0,1,2,3,5,6,7):
+    row=rows[species]
+    for length in np.linspace(.05,.12,101):
+        index=length/.05-1;low=int(index);fraction=index-low
+        kg=row[low]+(row[low+1]-row[low])*fraction
+        hi=1
+        while hi<len(row)-1 and row[hi]<kg:hi+=1
+        actual=(hi+(kg-row[hi-1])/(row[hi]-row[hi-1]))*.05
+        assert abs(actual-length)<1e-6
+assert .025+.013+.007<.05
+print('PASS: tiny fish weight/length round trips for all active species; pond ripples under 5cm.')

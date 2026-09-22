@@ -124,6 +124,8 @@ public static class FishCatalog
         return definition;
     }
 
+    public static string FormatWeight(float kg) => kg<.1f ? (kg*1000f).ToString("0.0")+" g" : kg.ToString("0.00")+" kg";
+
     public static int RollSpecies() => ReefCatalog.Roll(Random.value);
 
     public static float RollWeight(int speciesId)

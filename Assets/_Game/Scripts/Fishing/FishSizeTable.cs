@@ -14,6 +14,14 @@ public static class FishSizeTable
         new float[] {0.0018190f, 0.0154891f, 0.0542185f, 0.1318890f, 0.2628212f, 0.4616687f, 0.7433545f, 1.1230293f, 1.6160411f, 2.2379122f}, // Parupeneus cyclostomus
         new float[] {0.0016784f, 0.0138047f, 0.0473525f, 0.1135421f, 0.2237502f, 0.3894703f, 0.6222897f, 0.9338736f, 1.3359548f, 1.8403251f}, // Parupeneus spilurus
     };
+    // Inverse of LengthMetres, so tiny pond catches retain their size in every view/save.
+    public static float WeightForLength(int species,float metres)
+    {
+        var row=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
+        float index=Math.Max(0,Math.Min(row.Length-1,metres/.05f-1));
+        int low=(int)Math.Floor(index),high=Math.Min(low+1,row.Length-1);
+        return row[low]+(row[high]-row[low])*(index-low);
+    }
     public static float LengthMetres(int species,float kg)
     {
         var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,species))];

@@ -76,6 +76,7 @@ public class FishingSystem : MonoBehaviour
     private bool rodEquipped = true;
 
     private Vector3 castPoint;
+    private bool pondCast;
     private float stateTimer;
     private float fightTension;
     private float fishHealth;
@@ -171,7 +172,7 @@ public class FishingSystem : MonoBehaviour
         if(hud==null)return;
         bool ready=rodEquipped && !shopMode;
         hud.SetRodSelected(ready);hud.SetActionVisible(ready);hud.SetActionLabel("CAST");
-        hud.SetStatus(ready?"Aim toward open water and cast.":heldRecord!=null?FishCatalog.Get(heldRecord.speciesId).Name+"  "+heldRecord.weightKg.ToString("0.00")+" kg / "+ShopCatalog.FishLength(heldRecord.speciesId,heldRecord.weightKg).ToString("0.00")+" m":"");
+        hud.SetStatus(ready?"Aim toward open water and cast.":heldRecord!=null?FishCatalog.Get(heldRecord.speciesId).Name+"  "+FishCatalog.FormatWeight(heldRecord.weightKg)+" / "+ShopCatalog.FishLength(heldRecord.speciesId,heldRecord.weightKg).ToString("0.00")+" m":"");
     }
     public void ToggleRod()
     {
@@ -503,9 +504,8 @@ public class FishingSystem : MonoBehaviour
                     .Get(record.speciesId)
                     .Name +
                 "  " +
-                record.weightKg
-                    .ToString("0.00") +
-                " kg / " + ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m"
+                FishCatalog.FormatWeight(record.weightKg) +
+                " / " + ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m"
             );
             hud.ShowFightMeters(false);
             hud.SetInventoryOpen(false);
@@ -679,6 +679,7 @@ public class FishingSystem : MonoBehaviour
             hud.SetStatus("Beyond Suncrest Reef. More waters will unlock later.");
             return;
         }
+        pondCast=PondWater.Active!=null && PondWater.Active.Contains(target);
         activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
         StartCoroutine(
             CastRoutine(target)
@@ -783,6 +784,8 @@ public class FishingSystem : MonoBehaviour
                 FishCatalog.RollWeight(
                     hookedSpeciesId
                 );
+
+            if(pondCast)hookedWeightKg=FishSizeTable.WeightForLength(hookedSpeciesId,Random.Range(.05f,.12f));
 
             fishUnconscious = false;
             fishOnShore = false;
@@ -1276,6 +1279,15 @@ public class FishingSystem : MonoBehaviour
         Vector3 forward =
             playerCamera.transform.forward;
 
+        // Intersect the raised pond before testing the distant ocean plane.
+        var pond=PondWater.Active;
+        if(pond!=null && pond.Raycast(new Ray(origin,forward),maximumCastDistance,out Vector3 pondPoint)
+            && Vector3.Distance(origin,pondPoint)>=2f && IsValidFishingWater(pondPoint))
+        {
+            Vector3 delta=pondPoint-origin;
+            if(!Physics.Raycast(origin,delta.normalized,delta.magnitude-.15f,~0,QueryTriggerInteraction.Ignore))
+            {target=pondPoint;return true;}
+        }
         float baseLevel =
             oceanWater.BaseWaterLevel;
 
@@ -1444,7 +1456,7 @@ public class FishingSystem : MonoBehaviour
         return
             Mathf.Clamp01(
                 species.Difficulty *
-                0.74f +
+                (pondCast ? 0.20f : 0.74f) +
                 sizeDifficulty *
                 0.26f
             );
