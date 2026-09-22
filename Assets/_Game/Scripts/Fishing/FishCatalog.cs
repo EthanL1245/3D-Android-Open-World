@@ -126,31 +126,12 @@ public static class FishCatalog
 
     public static FishSpeciesDefinition Get(int id)
     {
-        return Species[
-            Mathf.Clamp(id, 0, Species.Length - 1)
-        ];
+        int index=Mathf.Clamp(id,0,Species.Length-1);
+        var definition=Species[index];definition.RelativeChance=ReefCatalog.Weight(index);
+        return definition;
     }
 
-    public static int RollSpecies()
-    {
-        float total = 0f;
-
-        for (int i = 0; i < Species.Length; i++)
-            total += Species[i].RelativeChance;
-
-        float roll = Random.value * total;
-        float cumulative = 0f;
-
-        for (int i = 0; i < Species.Length; i++)
-        {
-            cumulative += Species[i].RelativeChance;
-
-            if (roll <= cumulative)
-                return i;
-        }
-
-        return 0;
-    }
+    public static int RollSpecies() => ReefCatalog.Roll(Random.value);
 
     public static float RollWeight(int speciesId)
     {

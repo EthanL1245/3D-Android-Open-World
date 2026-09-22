@@ -67,6 +67,8 @@ public class FishingSystem : MonoBehaviour
     private Quaternion heldFishBaseRotation =
         Quaternion.identity;
     private float heldFishFlopOffset;
+    private CharacterController heldFishPlayerController;
+    private float heldFishMovementSwing;
 
     private GameObject unconsciousFishVisual;
     private Transform unconsciousFishMouthMarker;
@@ -672,6 +674,11 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
+        if(ReefZone.Active!=null && !ReefZone.Active.Contains(target))
+        {
+            hud.SetStatus("Beyond Suncrest Reef. More waters will unlock later.");
+            return;
+        }
         activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
         StartCoroutine(
             CastRoutine(target)
@@ -759,16 +766,7 @@ public class FishingSystem : MonoBehaviour
         );
     }
 
-    private int RollBaitSpecies()
-    {
-        if(activeBait<2) return FishCatalog.RollSpecies();
-        float total=0;
-        for(int i=0;i<FishCatalog.Count;i++) total+=FishCatalog.Get(i).RelativeChance*BaitChance(i);
-        float roll=Random.value*total;
-        for(int i=0;i<FishCatalog.Count;i++) { roll-=FishCatalog.Get(i).RelativeChance*BaitChance(i); if(roll<=0) return i; }
-        return 0;
-    }
-    private float BaitChance(int id) => activeBait==2 ? (id==1 || id==6 || id==7 ? 2.5f : 1f) : (id==3 || id==4 || id==5 ? 4f : 1f);
+    private int RollBaitSpecies() => ReefCatalog.Roll(Random.value, activeBait);
 
     private void UpdateWaiting()
     {
@@ -2797,7 +2795,7 @@ public class FishingSystem : MonoBehaviour
         for(int pass=0;pass<4;pass++)
         {
             Bounds b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
-            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.82f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-b.center;
+            rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(new Vector3(0.77f,0.19f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-b.center;
             b=renderers[0].bounds;foreach(var renderer in renderers)b.Encapsulate(renderer.bounds);
             float low=float.PositiveInfinity,high=float.NegativeInfinity;
             for(int i=0;i<8;i++)
@@ -2813,7 +2811,7 @@ public class FishingSystem : MonoBehaviour
         Bounds finalBounds=renderers[0].bounds;
         foreach(var renderer in renderers)finalBounds.Encapsulate(renderer.bounds);
         rodRoot.transform.position+=playerCamera.ViewportToWorldPoint(
-            new Vector3(0.82f,0.40f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-finalBounds.center;
+            new Vector3(0.77f,0.19f,Mathf.Max(0.65f,playerCamera.nearClipPlane + 0.35f)))-finalBounds.center;
     }
 
     private void CreateRodAndLine()
@@ -2825,7 +2823,7 @@ public class FishingSystem : MonoBehaviour
             rodRoot = Instantiate(prefab, playerCamera.transform, false);
             rodRoot.name = "FishingRodViewModel";
             rodRoot.transform.localPosition = new Vector3(0.38f, -0.18f, 0.48f);
-            rodRoot.transform.localRotation = Quaternion.Euler(43f, -6f, -4f);
+            rodRoot.transform.localRotation = Quaternion.Euler(40f, -6f, -4f);
             rodRoot.transform.localScale=Vector3.one*2f;
             rodFitPending=true;
             rodView = rodRoot.GetComponent<FishingRodView>();
@@ -2945,6 +2943,7 @@ public class FishingSystem : MonoBehaviour
 
         heldFishAnchor =
             anchor.transform;
+        heldFishPlayerController = playerCamera.GetComponentInParent<CharacterController>();
     }
 
     private void UpdateHeldFishAnimation()
@@ -2957,7 +2956,17 @@ public class FishingSystem : MonoBehaviour
             heldFishFlopOffset;
 
         var struggle=heldFishVisual.GetComponent<CaughtFishFlop>();
-        float swingGain=1f+(struggle!=null?struggle.SwingBoost*1.5f:0f);
+        Vector3 movement = heldFishPlayerController != null
+            ? heldFishPlayerController.velocity : Vector3.zero;
+        // Ground-stick/gravity must not look like walking while standing still.
+        movement.y = 0f;
+        float movementTarget = Mathf.Clamp01(movement.magnitude / 5f);
+        heldFishMovementSwing = Mathf.Lerp(heldFishMovementSwing, movementTarget,
+            1f - Mathf.Exp(-8f * Time.deltaTime));
+        // Idle is 10% of the old baseline. Body animation remains untouched;
+        // struggles add a modest pendulum impulse that decays with SwingBoost.
+        float swingGain = 0.10f + heldFishMovementSwing * 0.50f
+            + (struggle != null ? struggle.SwingBoost * 0.35f : 0f);
 
         // Swing the MOUTH ATTACHMENT itself like a pendulum. The fish then
         // hangs from that moving point, so the line and fish visibly swing
@@ -2995,10 +3004,8 @@ public class FishingSystem : MonoBehaviour
                 );
         }
 
-        // Restore the stronger whole-fish dangling motion that looked better
-        // before. The mouth is re-pinned after rotation, so this acts like a
-        // fish twisting and swinging beneath the line rather than orbiting
-        // around its body center.
+        // Small idle drift, movement-driven swing, and a brief struggle impulse.
+        // Re-pin the animated mouth after rotating the whole fish.
         heldFishVisual.transform.localRotation =
             heldFishBaseRotation *
             Quaternion.Euler(
@@ -3047,27 +3054,8 @@ public class FishingSystem : MonoBehaviour
         Vector3 mouth =
             heldFishMouthMarker.position;
 
-        Vector3 throughMouth =
-            mouth -
-            top;
-
-        if (throughMouth.sqrMagnitude >
-            0.000001f)
-        {
-            throughMouth.Normalize();
-        }
-        else
-        {
-            throughMouth =
-                -heldFishAnchor.up;
-        }
-
-        // Keep every fish exactly where it is. Only extend the rendered line
-        // farther through the mouth/head so there can be no visible white gap.
-        Vector3 lineEnd =
-            mouth +
-            throughMouth *
-            0.075f;
+        // Follow the animated mouth, with a short overlap to hide the lip gap.
+        Vector3 lineEnd = mouth + (mouth - top).normalized * 0.025f;
 
         heldCatchLine.SetPosition(
             0,
@@ -3150,8 +3138,8 @@ public class FishingSystem : MonoBehaviour
 
         heldCatchLine.useWorldSpace = true;
         heldCatchLine.positionCount = 2;
-        heldCatchLine.startWidth = 0.0055f;
-        heldCatchLine.endWidth = 0.0042f;
+        heldCatchLine.startWidth = 0.0015f;
+        heldCatchLine.endWidth = 0.0010f;
         heldCatchLine.numCapVertices = 6;
 
         if (fishingLine != null &&
@@ -3245,7 +3233,7 @@ public class FishingSystem : MonoBehaviour
                     .AddComponent<CaughtFishFlop>();
         }
 
-        flop.Initialize();
+        flop.ConfigurePlayerHeld();
         flop.PoseUpdated=()=>
         {
             if(heldFishVisual!=null && heldHookPoint!=null && heldFishMouthMarker!=null)
@@ -4005,4 +3993,3 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-

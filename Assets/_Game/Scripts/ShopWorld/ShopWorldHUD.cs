@@ -118,19 +118,20 @@ public sealed class ShopWorldHUD : MonoBehaviour
         dirty=false;
         float position=scroll.verticalNormalizedPosition;
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
-        wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":"FISHING ISLAND")}";
+        wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":"SUNCREST REEF")}";
         feedback.text=progress.ReadOnly ? progress.Notice : message;
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
         foreach(var tab in navigationTabs)tab.SetActive(shopSession==null);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
+        else if(page=="islands") IslandIndex(); else if(page=="reef-fish") ReefFishIndex();
         else HabitatPage(page);
         Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=top?1f:position;
     }
     private void TravelPage()
     {
-        string[] names={"FISHING ISLAND","TIDEGLASS QUAY","HOME"};
-        string[] details={"Wild coast • fishing and exploration","View habitats • buy upgrades • sell your catch","Your garden • aquarium • pond • fish collection"};
+        string[] names={"SUNCREST REEF","TIDEGLASS QUAY","HOME"};
+        string[] details={"Beginner island • beach • shallow reef","View habitats • buy upgrades • sell your catch","Your garden • aquarium • pond • fish collection"};
         Color[] colors={new Color(0.06f,0.30f,0.39f),new Color(0.29f,0.23f,0.13f),new Color(0.12f,0.30f,0.22f)};
         var cards=Panel("Destinations",list,Color.clear);
         cards.AddComponent<LayoutElement>().preferredHeight=280;
@@ -145,6 +146,27 @@ public sealed class ShopWorldHUD : MonoBehaviour
             button.GetComponentInChildren<Text>().resizeTextMaxSize=34;
             button.interactable=travel.Destination!=i;
             if(travel.Destination==i)button.GetComponent<Image>().color=new Color(0.16f,0.22f,0.24f);
+        }
+        Row("ISLANDS & FISH", "Discover regions, unlock status, species and rarity.", "VIEW INDEX",()=>Open("islands"));
+    }
+    private void IslandIndex()
+    {
+        foreach (var zone in ReefCatalog.Zones)
+        {
+            var entry=zone;
+            Row(entry.name,entry.description,entry.Unlocked?"FISH INDEX":"LOCKED",()=>Open("reef-fish"),entry.Unlocked);
+        }
+        Row("MORE HORIZONS", "Additional islands and open-ocean biomes will have their own unlocks and fish indices.", "COMING LATER",()=>{},false);
+        Row("TRAVEL", "Return to destinations", "BACK",()=>Open("travel"));
+    }
+    private void ReefFishIndex()
+    {
+        Row(ReefCatalog.StarterName, "All eight species • base catch chances below. Specialty bait changes these odds.", "ISLAND INDEX",()=>Open("islands"));
+        foreach(int id in Enumerable.Range(0,FishCatalog.Count).OrderByDescending(ReefCatalog.Weight))
+        {
+            var species=FishCatalog.Get(id);
+            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance", "UNLOCKED",()=>{},false,
+                fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
     }
     private void BagPage()

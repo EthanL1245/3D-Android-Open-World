@@ -45,7 +45,7 @@ public static class FishVisualFactory
             parent,
             speciesId,
             scale,
-            false
+            true
         );
     }
 
@@ -58,6 +58,23 @@ public static class FishVisualFactory
     {
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
+
+        if (allowHero && speciesId == 2)
+        {
+            var prefab = Resources.Load<GameObject>("Fishing/SeaBass");
+            if (prefab != null)
+            {
+                var instance = Object.Instantiate(prefab, parent, false);
+                instance.name = name; instance.transform.localScale = Vector3.one * scale;
+                return instance;
+            }
+        }
+        // Young tuna use the authored yellowfin model at juvenile weight/length.
+        if (allowHero && speciesId == 4)
+        {
+            var juvenile = CreateYellowfinTuna(name, parent, scale);
+            if (juvenile != null) return juvenile;
+        }
 
         if (allowHero &&
             speciesId == 0)

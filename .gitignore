@@ -110,3 +110,11 @@ InitTestScene*.unity*
 
 # Unity Android IL2CPP backup output generated next to development APK builds
 /*_BackUpThisFolder_ButDontShipItWithYourGame/
+
+# Local safety snapshots created by the one-click fishing/reef installers
+/HeldFishBackup-*/
+/HeldFishMarketBackup-*/
+/ReefBackups/
+/Assets/_Game/Reef/Backups/
+/Assets/_Game/Reef/Backups.meta
+
