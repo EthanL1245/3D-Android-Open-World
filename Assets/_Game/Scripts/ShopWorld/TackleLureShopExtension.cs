@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,29 +16,9 @@ public sealed class TackleLureShopExtension : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void InstallAfterLoad()
     {
-        var installer=new GameObject("TackleLureShopInstaller");
-        DontDestroyOnLoad(installer);
-        installer.AddComponent<DelayedInstaller>();
-    }
-
-    private sealed class DelayedInstaller : MonoBehaviour
-    {
-        private IEnumerator Start()
-        {
-            for(int i=0;i<120;i++)
-            {
-                var target=FindFirstObjectByType<ShopWorldHUD>();
-                if(target!=null)
-                {
-                    if(target.GetComponent<TackleLureShopExtension>()==null)
-                        target.gameObject.AddComponent<TackleLureShopExtension>();
-                    Destroy(gameObject);
-                    yield break;
-                }
-                yield return null;
-            }
-            Destroy(gameObject);
-        }
+        var target=FindFirstObjectByType<ShopWorldHUD>();
+        if(target!=null && target.GetComponent<TackleLureShopExtension>()==null)
+            target.gameObject.AddComponent<TackleLureShopExtension>();
     }
 
     private void Awake()
@@ -68,7 +47,10 @@ public sealed class TackleLureShopExtension : MonoBehaviour
         RectTransform rows=FindRows();
         if(rows==null)return;
         if(section==null || section.transform.parent!=rows)
+        {
+            if(!tackle && OwnedAlternativeCount()==0)return;
             BuildSection(rows,tackle);
+        }
     }
 
     private bool HasHeading(string caption)
