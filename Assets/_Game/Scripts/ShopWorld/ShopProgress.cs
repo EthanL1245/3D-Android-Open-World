@@ -22,17 +22,19 @@ public sealed class ShopProgress : MonoBehaviour
             }
             else Migrate();
             bool migrated=Data.EnsureCatchStats();
+            migrated|=Data.EnsureLures();
             if(!Data.infiniteWormsMigrated){Data.baitEquipped=0;Data.infiniteWormsMigrated=true;migrated=true;}
             if(Data.baitEquipped==1){Data.baitEquipped=0;migrated=true;}
             foreach(var fish in Data.bag)if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
             foreach(var habitat in Data.habitats)foreach(var fish in habitat.fish)
                 if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
+            ShopCatalog.SetActiveLureVariant(Data.lureEquipped);
             if(migrated)Save();
             if(!Data.homeMigrated) { Data.MigrateHome(); Save(); Notice="Your habitats now live at Home. Earlier smaller purchases were credited; all fish were preserved."; }
         }
         catch(Exception ex)
         {
-            ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
+            ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Data.EnsureLures(); ShopCatalog.SetActiveLureVariant(0); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
             Debug.LogError(Notice+" "+ex.Message);
         }
     }
@@ -44,7 +46,7 @@ public sealed class ShopProgress : MonoBehaviour
         foreach(GearKind kind in Enum.GetValues(typeof(GearKind)))
             if(d.Owned(kind)<0 || d.Owned(kind)>3 || d.Equipped(kind)<0 || d.Equipped(kind)>d.Owned(kind))
                 throw new InvalidOperationException("Invalid saved equipment");
-        if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>ShopCatalog.StarterLure) throw new InvalidOperationException("Invalid saved balance or bait");
+        if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>ShopCatalog.StarterLure || d.lureEquipped<0 || d.lureEquipped>=ShopCatalog.LureVariantCount || d.lureOwnedMask<0) throw new InvalidOperationException("Invalid saved balance, bait, or lure");
         foreach(int amount in d.bait) if(amount<0) throw new InvalidOperationException("Invalid bait quantity");
         foreach(var habitat in d.habitats) if(habitat==null || ShopCatalog.Habitat(habitat.id)==null || habitat.fish==null)
             throw new InvalidOperationException("Invalid saved habitat");
@@ -53,6 +55,7 @@ public sealed class ShopProgress : MonoBehaviour
     private void Migrate()
     {
         Data=new ShopLedger { coins=PlayerPrefs.GetInt("OpenWorld.Coins.v1",0), legacyMigrated=true };
+        Data.EnsureLures();
         string fishJson=PlayerPrefs.GetString("OpenWorld.FishingInventory.v1","");
         if(!string.IsNullOrWhiteSpace(fishJson))
         {
@@ -75,12 +78,14 @@ public sealed class ShopProgress : MonoBehaviour
                 Data.coins+=refunded*AquariumSystem.TankPrice;
             }
         }
+        ShopCatalog.SetActiveLureVariant(Data.lureEquipped);
         Notice=refunded>0 ? $"Moved {rescued} fish to your bag and refunded {refunded*AquariumSystem.TankPrice} coins for old aquariums." : "Welcome to Tideglass Quay. Sell catches to fund your first upgrades.";
         Save();
     }
     public void Save()
     {
         if(ReadOnly) return;
+        ShopCatalog.SetActiveLureVariant(Data.lureEquipped);
         string json=JsonUtility.ToJson(Data);
         if(PlayerPrefs.HasKey(SaveKey)) PlayerPrefs.SetString(SaveKey+".backup",PlayerPrefs.GetString(SaveKey));
         PlayerPrefs.SetString(SaveKey,json); PlayerPrefs.Save(); Changed?.Invoke();
@@ -89,10 +94,19 @@ public sealed class ShopProgress : MonoBehaviour
     public bool CanTrade => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InShop;
     public bool BuyGear(GearKind kind,int tier) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyGear(kind,tier));
     public bool BuyBait(int id) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyBait(id));
+    public bool BuyLure(int variant) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyLure(variant));
+    public bool EquipLure(int variant) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.EquipLure(variant));
     public bool BuyHabitat(string id) => CanTrade && ShopDimensionManager.Instance.Near(id) && Commit(Data.BuyHabitat(id));
     public bool Sell(CaughtFishRecord fish) => CanTrade && ShopDimensionManager.Instance.Near("market") && Commit(Data.Sell(fish,FishCatalog.GetSellValue(fish.speciesId,fish.weightKg)));
     public bool CanManage => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InHome;
     public bool Deposit(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Deposit(id,fish));
     public bool Withdraw(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Withdraw(id,fish));
-    public int TakeBait() { if(ReadOnly) return 0; int id=Data.ConsumeBait(); if(!ShopCatalog.PermanentBait(id)) Save(); return id; }
+    public int TakeBait()
+    {
+        if(ReadOnly) return 0;
+        int id=Data.ConsumeBait();
+        if(id==ShopCatalog.StarterLure)ShopCatalog.SetActiveLureVariant(Data.lureEquipped);
+        if(!ShopCatalog.PermanentBait(id)) Save();
+        return id;
+    }
 }
