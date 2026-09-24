@@ -29,10 +29,17 @@ public static class FishingRules
         return Mathf.Lerp(fish.MinWeightKg,fish.MaxWeightKg,upper*sample);
     }
     public static float WeightAtCastDistance(int species,float distance,float random01)
-        => WeightAtDepth(species,Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance)),random01);
+    {
+        // Premium lures do not change the 5-30 m cast envelope. They only
+        // nudge the sampled fish size upward after a successful lure strike.
+        float sizeBias=ShopCatalog.ActiveLureVariant==2 ? .08f : ShopCatalog.ActiveLureVariant==3 ? .18f : 0f;
+        float sample=Mathf.Lerp(Mathf.Clamp01(random01),1f,sizeBias);
+        return WeightAtDepth(species,Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance)),sample);
+    }
     public static float LureBiteChance(float castDistance,float retrievedFraction)
     {
-        float fullChance=.5f*Mathf.Clamp01(castDistance/30f);
+        float biteMultiplier=ShopCatalog.ActiveLureVariant==1 ? 1.15f : ShopCatalog.ActiveLureVariant==2 ? .95f : ShopCatalog.ActiveLureVariant==3 ? .85f : 1f;
+        float fullChance=Mathf.Clamp01(.5f*Mathf.Clamp01(castDistance/30f)*biteMultiplier);
         return 1f-Mathf.Pow(1f-fullChance,Mathf.Clamp01(retrievedFraction));
     }
     public static int MaxHealth(int species,float kg)
