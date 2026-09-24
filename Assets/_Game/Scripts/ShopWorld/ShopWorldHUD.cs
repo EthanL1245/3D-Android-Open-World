@@ -169,7 +169,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             picture.GetComponent<RawImage>().texture=IslandThumbnail();picture.GetComponent<RawImage>().raycastTarget=false;
         }
         Row("MORE HORIZONS", "Additional islands and open-ocean biomes will have their own unlocks and fish indices.", "COMING LATER",()=>{},false);
-        Row("TRAVEL", "Return to destinations", "BACK",()=>Open("travel"));
+
     }
     private void ReefFishIndex()
     {
@@ -177,7 +177,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         foreach(int id in FishCatalog.ActiveIds.OrderByDescending(ReefCatalog.Weight))
         {
             var species=FishCatalog.Get(id);
-            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance\nOcean: "+FishCatalog.FormatWeight(species.MinWeightKg)+" – "+FishCatalog.FormatWeight(species.MaxWeightKg)+"\nLength: "+ShopCatalog.FishLength(id,species.MinWeightKg).ToString("0.00")+" – "+ShopCatalog.FishLength(id,species.MaxWeightKg).ToString("0.00")+" m (max)", "UNLOCKED",()=>{},false,
+            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance\nOcean: "+FishCatalog.FormatWeight(species.MinWeightKg)+" – "+FishCatalog.FormatWeight(species.MaxWeightKg)+"\nLength: "+ShopCatalog.FishLength(id,species.MinWeightKg).ToString("0.00")+" – "+ShopCatalog.FishLength(id,species.MaxWeightKg).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
                 fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
     }
@@ -220,7 +220,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             foreach(int id in species){int choice=id;Row(FishCatalog.Get(id).Name,$"{progress.Data.bag.Count(f=>f.speciesId==id)} in bag","SELECT",()=>{speciesFilter=choice;bagPicker=null;Refresh(true);});}
             return;
         }
-        if(progress.Data.bag.Count==0) {Row("No catches yet","Your reusable lure is always available. Travel to the island and cast.","TRAVEL",()=>Open("travel"));return;}
+        if(progress.Data.bag.Count==0) {Row("No catches yet","Your infinite worms are always available. Travel to the island and cast.","TRAVEL",()=>Open("travel"));return;}
         IEnumerable<CaughtFishRecord> fish=progress.Data.bag.Where(f=>speciesFilter<0 || f.speciesId==speciesFilter);
         switch(bagSort)
         {
@@ -244,7 +244,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             {
                 int t=tier; GearKind k=kind; bool owned=t<=progress.Data.Owned(k), equipped=t==progress.Data.Equipped(k);
                 if((!shop && !owned) || (shop && owned)) continue;
-                string stats=k==GearKind.Rod?$"{t*18}% more tension control":k==GearKind.Reel?$"{t*22}% faster tiring and retrieval":$"+{ShopCatalog.LineBonus[t]} m range; {t*12}% more line tolerance";
+                string stats=k==GearKind.Rod?$"{t*18}% more tension control":k==GearKind.Reel?$"{t*22}% faster tiring and retrieval":$"40 m line / 30 m maximum cast; {t*12}% more line tolerance";
                 string action=equipped?"EQUIPPED":owned?"EQUIP":$"BUY {ShopCatalog.GearPrice(k,t):N0}";
                 bool can=owned?!equipped:t==progress.Data.Owned(k)+1 && progress.Data.coins>=ShopCatalog.GearPrice(k,t);
                 Row(ShopCatalog.GearName(k,t),stats+(owned?"":" / Requires previous tier"),action,()=>
@@ -256,7 +256,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         }
         for(int i=0;i<4;i++)
         {
-            int id=i; string effect=id==0?"Unlimited uses. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
+            if(i==1)continue; // Worms are now the free, infinite default.
+            int id=i; string effect=id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
             string count=id==0?"Unlimited":$"{progress.Data.bait[id]} remaining";
             if(shop && id>0) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
             if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (id==0 || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
@@ -310,10 +311,10 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
     {
         GameObject row=Panel("Item",list,new Color(0.07f,0.12f,0.14f,1));
-        row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?250:184;
+        row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?340:184;
         var accent=Panel("Accent",row.transform,gold); Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
-        var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,0.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
-        var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,0.55f,(fish!=null || gear!=null?170:22),10,-232,0);
+        var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,page=="reef-fish"?.72f:.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
+        var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,page=="reef-fish"?.75f:.55f,(fish!=null || gear!=null?170:22),10,-232,0);
         var b=ButtonAt(row.transform,action,callback); Rect(b.GetComponent<RectTransform>(),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(-14,0),new Vector2(205,76));
         b.interactable=enabled;
         if(!enabled)b.GetComponent<Image>().color=new Color(0.17f,0.23f,0.24f);

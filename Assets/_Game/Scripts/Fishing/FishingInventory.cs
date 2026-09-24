@@ -43,7 +43,7 @@ public class FishingInventory : MonoBehaviour
 
     public int AddFish(
         int speciesId,
-        float weightKg)
+        float weightKg, bool countAsCatch=false)
     {
         if(IsFull || (shop!=null && shop.ReadOnly)) return -1;
         CaughtFishRecord record =
@@ -56,6 +56,7 @@ public class FishingInventory : MonoBehaviour
             };
 
         fish.Add(record);
+        if(countAsCatch && shop!=null)shop.Data.RecordCatch(record.speciesId,record.weightKg);
         Save();
 
         return fish.Count - 1;

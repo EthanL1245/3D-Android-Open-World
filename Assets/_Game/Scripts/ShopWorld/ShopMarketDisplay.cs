@@ -9,6 +9,13 @@ public sealed class ShopMarketDisplay : MonoBehaviour
 
     private void Start()
     {
+        // Lower the working surface from 1.35 m to 0.80 m, including collision.
+        foreach(Transform child in transform)
+        {
+            if(child.name=="Counter")
+            {var size=child.localScale;size.y=.75f;child.localScale=size;var pos=child.localPosition;pos.y=.375f;child.localPosition=pos;}
+            else if(child.name=="Countertop" || child.name=="CounterInlay")child.localPosition-=Vector3.up*.55f;
+        }
         // Upgrade already-installed Quay scenes at runtime too.
         foreach (Transform child in transform)
         {
@@ -21,6 +28,7 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         }
         var root = new GameObject("FreshCatchOnIce").transform;
         root.SetParent(transform, false);
+        root.localPosition=Vector3.down*.55f;
         Material steel = Surface("Brushed steel trays", new Color(0.36f, 0.46f, 0.49f), 0.65f, 0.75f);
         Material ice = Surface("Crushed blue-white ice", new Color(0.82f, 0.94f, 0.98f), 0.78f, 0f);
         Material chalkboard = Surface("Seafood labels", new Color(0.025f, 0.08f, 0.085f), 0.2f, 0f);

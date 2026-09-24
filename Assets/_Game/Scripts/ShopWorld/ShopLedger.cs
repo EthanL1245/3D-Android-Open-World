@@ -12,6 +12,32 @@ using System.Collections.Generic;
     public int version = 1, coins;
     public int rodOwned, reelOwned, lineOwned, rodEquipped, reelEquipped, lineEquipped, baitEquipped;
     public int[] bait = new int[4];
+    public bool infiniteWormsMigrated;
+    public int catchStatsVersion;
+    public int[] totalCaught;
+    public float[] personalBestKg;
+    public bool EnsureCatchStats()
+    {
+        bool changed=false;
+        if(catchStatsVersion<1)
+        {
+            totalCaught=new int[FishCatalog.Count];personalBestKg=new float[FishCatalog.Count];
+            catchStatsVersion=1;changed=true;
+        }
+        else
+        {
+            if(totalCaught==null || totalCaught.Length<FishCatalog.Count){Array.Resize(ref totalCaught,FishCatalog.Count);changed=true;}
+            if(personalBestKg==null || personalBestKg.Length<FishCatalog.Count){Array.Resize(ref personalBestKg,FishCatalog.Count);changed=true;}
+        }
+        return changed;
+    }
+    public void RecordCatch(int species,float kg)
+    {
+        EnsureCatchStats();species=FishCatalog.CanonicalId(species);
+        if(species<0 || species>=FishCatalog.Count || float.IsNaN(kg) || float.IsInfinity(kg) || kg<=0)return;
+        if(totalCaught[species]<int.MaxValue)totalCaught[species]++;
+        personalBestKg[species]=Math.Max(personalBestKg[species],kg);
+    }
     public List<CaughtFishRecord> bag = new List<CaughtFishRecord>();
     public List<HabitatOwnership> habitats = new List<HabitatOwnership>();
     public bool legacyMigrated;
@@ -65,13 +91,13 @@ using System.Collections.Generic;
     }
     public bool BuyBait(int id)
     {
-        if (id < 1 || id > 3 || bait[id] > 9990 || !Spend(ShopCatalog.BaitPrices[id])) return false;
+        if (id < 2 || id > 3 || bait[id] > 9990 || !Spend(ShopCatalog.BaitPrices[id])) return false;
         bait[id]+=10; baitEquipped=id; return true;
     }
     public int ConsumeBait()
     {
         int id=baitEquipped;
-        if (id < 1 || id > 3 || bait[id] <= 0) { baitEquipped=0; return 0; }
+        if (id < 2 || id > 3 || bait[id] <= 0) { baitEquipped=0; return 0; }
         bait[id]--; if (bait[id]==0) baitEquipped=0; return id;
     }
     public bool BuyHabitat(string id)

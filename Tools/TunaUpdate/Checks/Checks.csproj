@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
  <ItemGroup>
+  <Compile Include="../../../Assets/_Game/Scripts/ShopWorld/ShopLedger.cs"/>
+  <Compile Include="../../../Assets/_Game/Scripts/ShopWorld/ShopCatalog.cs"/>
   <Compile Include="Program.cs"/><Compile Include="UnityStubs.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/Fishing/FishCatalog.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/Fishing/FishSizeTable.cs"/>

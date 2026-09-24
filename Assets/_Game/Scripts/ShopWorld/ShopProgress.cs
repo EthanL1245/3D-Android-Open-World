@@ -21,7 +21,9 @@ public sealed class ShopProgress : MonoBehaviour
                 catch { Data=Read(PlayerPrefs.GetString(SaveKey+".backup")); Notice="Recovered the previous shop save."; }
             }
             else Migrate();
-            bool migrated=false;
+            bool migrated=Data.EnsureCatchStats();
+            if(!Data.infiniteWormsMigrated){Data.baitEquipped=0;Data.infiniteWormsMigrated=true;migrated=true;}
+            if(Data.baitEquipped==1){Data.baitEquipped=0;migrated=true;}
             foreach(var fish in Data.bag)if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
             foreach(var habitat in Data.habitats)foreach(var fish in habitat.fish)
                 if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
@@ -30,7 +32,7 @@ public sealed class ShopProgress : MonoBehaviour
         }
         catch(Exception ex)
         {
-            ReadOnly=true; Data=new ShopLedger(); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
+            ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
             Debug.LogError(Notice+" "+ex.Message);
         }
     }

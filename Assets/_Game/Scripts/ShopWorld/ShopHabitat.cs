@@ -21,6 +21,9 @@ public sealed class ShopHabitat : MonoBehaviour
     }
     private void Start()
     {
+        var definition=ShopCatalog.Habitat(id);
+        if(definition!=null && !definition.pond && definition.swimmable && GetComponent<AquariumAccessStyle>()==null)
+            gameObject.AddComponent<AquariumAccessStyle>();
         progress=FindFirstObjectByType<ShopProgress>();
         if(progress!=null) { progress.Changed+=Refresh; Refresh(); }
     }

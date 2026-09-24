@@ -8,12 +8,14 @@ public class FishingActionButton :
 {
     public bool IsHeld { get; private set; }
 
+    public bool Interactable {get;private set;}=true;
+    public void SetInteractable(bool value){Interactable=value;if(!value)ResetInput();}
     private bool pressedQueued;
     private int pointerId = int.MinValue;
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (pointerId != int.MinValue) return;
+        if (!Interactable || pointerId != int.MinValue) return;
         pointerId = eventData.pointerId;
         IsHeld = true;
         pressedQueued = true;

@@ -12,8 +12,8 @@ The Suncrest Reef installer also installs these tuna when setting up a fresh isl
 ## Controls and behavior
 
 - Top-left **ISLAND / FISH INDEX** opens large island cards and species previews. Menu/Travel remains top-right with its original three destinations and tabs. Bag preview framing is preserved; index previews fit the whole fish.
-- Tap **CAST** once to start the oscillating power bar, then tap again to release. A low reading casts 2 m; peak reaches 45 m with the starter line. Line upgrades extend that maximum.
-- The cast button lights when reachable water is ahead, checking both depth and a sampled flight arc. While charging it reflects the current power's landing spot. You can still attempt a dimmed cast; a collision, land landing, shallow landing or landing outside the unlocked zone retracts it with a message.
+- Tap **CAST** once to start the oscillating power bar, then tap again to release. A low reading casts 5 m; peak reaches 30 m. All lines are 40 m long; line upgrades improve tension tolerance.
+- The cast button is clickable only for a continuous clear range ending at 30 m. Invalid near distances appear grey on the quarter-circle gauge; interior gaps and a blocked maximum disable idle CAST completely. Selecting a grey gauge distance cancels before animation, with no bait used. A red cancel button temporarily replaces Jump.
 - Bait is consumed only after landing in valid water. Failed or interrupted airborne casts spend none. Canceling after a valid landing retains the normal spent-bait behavior.
 - Ocean size increases with depth, reaching the full species range at the outer reef's 6 m depth. Shallow casts favor the lower range. Depth changes size, not species rarity. Palm Pond remains 5–12 cm for every species.
 - Fish have integer HP based on species difficulty, rarity and weight. Holding REEL does cumulative damage; releasing it retains damage dealt and fractional progress. Floating numbers show the actual HP removed. Larger and rarer fish take longer to exhaust. Tension and line breaking still apply.
@@ -30,7 +30,7 @@ The Suncrest Reef installer also installs these tuna when setting up a fresh isl
 | Bigeye Tuna | 4% |
 | Yellowfin Tuna | 2% |
 
-Specialty bait adjusts these base odds. Both tuna receive the same bait multiplier, preserving their 2:1 ratio. Retired Young Tuna never rolls; its old save ID still maps to Yellowfin. Bigeye has a new stable ID (8). Its length/weight curve is a tuna-family gameplay approximation; displayed limits are game catch limits, not claimed biological maxima.
+Infinite worms are the default. Specialty bait adjusts these base odds. Both tuna receive the same bait multiplier, preserving their 2:1 ratio. Retired Young Tuna never rolls; its old save ID still maps to Yellowfin. Bigeye has a new stable ID (8). Its length/weight curve is a tuna-family gameplay approximation; displayed limits are game catch limits, not claimed biological maxima.
 
 ## Verification and local acceptance
 

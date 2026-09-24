@@ -30,11 +30,11 @@ public class FishingSystem : MonoBehaviour
     [Header("Casting")]
     [SerializeField] private float preferredCastDistance = 16f;
     [SerializeField] private float minimumCastDistance = 5f;
-    [SerializeField] private float maximumCastDistance = 28f;
+    [SerializeField] private float maximumCastDistance = 30f;
     [SerializeField] private float castDuration = 0.72f;
 
     [Header("Line + Valid Water")]
-    [SerializeField] private float maximumLineDistance = 36f;
+    [SerializeField] private float maximumLineDistance = 40f;
     [SerializeField] private float minimumFishingDepth = 0.85f;
     [SerializeField] private float deepWaterSafetyRadius = 0.75f;
 
@@ -79,6 +79,9 @@ public class FishingSystem : MonoBehaviour
     private Vector3 castPoint;
     private bool pondCast;
     private float chargeStarted,castHintTimer,castDepth;
+    private bool castRangeAvailable;
+    private float minimumCastPower;
+    private readonly bool[] castSamples=new bool[51];
     private int fishMaxHealth=1,fishHealthPoints=1,pendingDamage;
     private float damageFraction,damageDisplayTimer;
 
@@ -151,7 +154,7 @@ public class FishingSystem : MonoBehaviour
         rodPower=1f+gear.rodEquipped*0.18f;
         reelPower=1f+gear.reelEquipped*0.22f;
         lineGuard=1f+gear.lineEquipped*0.12f;
-        float extension=ShopCatalog.LineBonus[gear.lineEquipped];
+        float extension=0f; // Cast envelope stays 5–30 m and line stays 40 m for every loadout.
         maximumCastDistance=baseCastRange+extension;
         preferredCastDistance=basePreferredRange+extension*0.6f;
         maximumLineDistance=baseLineRange+extension;
@@ -205,7 +208,7 @@ public class FishingSystem : MonoBehaviour
     private void Start()
     {
         shopProgress=GetComponent<ShopProgress>();
-        baseCastRange=Mathf.Max(45f,maximumCastDistance); basePreferredRange=36f; baseLineRange=Mathf.Max(baseCastRange+15f,maximumLineDistance); maximumCastDistance=baseCastRange; maximumLineDistance=baseLineRange;
+        baseCastRange=30f; basePreferredRange=20f; baseLineRange=40f; maximumCastDistance=baseCastRange; maximumLineDistance=baseLineRange;
         if(shopProgress!=null) { shopProgress.Changed+=ApplyShopGear; ApplyShopGear(); }
         ResolveReferences();
 
@@ -297,19 +300,18 @@ public class FishingSystem : MonoBehaviour
 
         if(rodEquipped && (state==FishingState.Idle || state==FishingState.Charging))
         {
-            if(state==FishingState.Charging)
+            if((castHintTimer-=Time.deltaTime)<=0){castHintTimer=.25f;RefreshCastRange();}
+            bool charging=state==FishingState.Charging;
+            // Grey idle CAST never queues input. In mode, grey sectors may be
+            // selected to cancel immediately with feedback, without rod animation.
+            hud.SetActionInteractable(charging || castRangeAvailable);
+            if(charging)
             {
                 float power=FishingRules.CastPower(Time.time-chargeStarted);
-                Vector3 candidate=ProjectCastPoint(power);
-                hud.SetCastPower(true,power,FishingRules.CastDistance(power,maximumCastDistance));
-                if((castHintTimer-=Time.deltaTime)<=0){castHintTimer=.10f;hud.SetCastAvailable(CanLandCast(candidate,true));}
+                hud.SetCastPower(true,power,FishingRules.CastDistance(power,maximumCastDistance),minimumCastPower,castRangeAvailable);
+                hud.SetCastAvailable(castRangeAvailable && power>=minimumCastPower);
             }
-            else if((castHintTimer-=Time.deltaTime)<=0)
-            {
-                castHintTimer=.15f;bool available=false;
-                for(int i=0;i<=24;i++)if(CanLandCast(ProjectCastPoint(i/24f),true)){available=true;break;}
-                hud.SetCastAvailable(available);
-            }
+            else hud.SetCastAvailable(castRangeAvailable);
         }
         FishingActionButton action =
             hud.ActionInput;
@@ -673,8 +675,10 @@ public class FishingSystem : MonoBehaviour
         {
             case FishingState.Idle:
                 if(inventory.IsFull){hud.SetStatus("FISH BAG FULL (50).");return;}
+                RefreshCastRange();if(!castRangeAvailable)return;
                 state=FishingState.Charging;chargeStarted=Time.time;
-                hud.SetStatus("Tap CAST again to release. Peak power casts furthest.");
+                hud.SetCastCancel(true,CancelCastMode);
+                hud.SetStatus("Tap CAST to release. Red casts furthest; grey distances are blocked.");
                 break;
             case FishingState.Charging:
                 TryCast();
@@ -691,7 +695,12 @@ public class FishingSystem : MonoBehaviour
         if(inventory.IsFull) { hud.SetStatus("FISH BAG FULL (50). Sell fish or move them into your Home habitat."); return; }
         if(shopMode) return;
         float power=FishingRules.CastPower(Time.time-chargeStarted);
+        RefreshCastRange();
         Vector3 target=ProjectCastPoint(power);
+        if(!castRangeAvailable || power<minimumCastPower || !CanLandCast(target,true))
+        {FailFishing("That cast distance is blocked. Cast cancelled — no bait used.");return;}
+        hud.SetCastCancel(false,null);
+        hud.SetActionInteractable(true);
         hud.SetCastPower(false,0,0);
         activeBait=0; // Bait is committed only after a successful water landing.
         StartCoroutine(
@@ -1040,7 +1049,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
-                    temperamentTension / (rodPower * lineGuard);
+                    1.12f * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
                     hookedTemperament ==
@@ -1051,7 +1060,7 @@ public class FishingSystem : MonoBehaviour
                             ? 0.78f
                             : 0.96f;
 
-                damageFraction+=Time.deltaTime*10f*moodHealthFactor*reelPower;
+                damageFraction+=Time.deltaTime*8.5f*moodHealthFactor*reelPower;
                 int damage=Mathf.Min(fishHealthPoints,Mathf.FloorToInt(damageFraction));
                 damageFraction-=damage;fishHealthPoints-=damage;pendingDamage+=damage;
                 fishHealth=fishHealthPoints/(float)fishMaxHealth;
@@ -1234,7 +1243,7 @@ public class FishingSystem : MonoBehaviour
         int newIndex =
             inventory.AddFish(
                 hookedSpeciesId,
-                hookedWeightKg
+                hookedWeightKg, true
             );
 
         if(newIndex<0) { FailFishing("FISH BAG FULL (50). Fish released. Sell or house fish to make room."); return; }
@@ -1284,6 +1293,17 @@ public class FishingSystem : MonoBehaviour
         }
     }
 
+    public void CancelCastMode()
+    {
+        if(state!=FishingState.Charging)return;
+        FailFishing("Cast cancelled — no bait used.");
+    }
+    private void RefreshCastRange()
+    {
+        for(int i=0;i<castSamples.Length;i++)
+            castSamples[i]=CanLandCast(ProjectCastPoint(i/(float)(castSamples.Length-1)),true);
+        castRangeAvailable=FishingRules.ContinuousCastRange(castSamples,out minimumCastPower);
+    }
     private Vector3 ProjectCastPoint(float power)
     {
         Vector3 direction=Vector3.ProjectOnPlane(playerCamera.transform.forward,Vector3.up);
@@ -2582,7 +2602,7 @@ public class FishingSystem : MonoBehaviour
 
     private void ResetLine()
     {
-        if(hud!=null){hud.SetCastPower(false,0,0);hud.SetCastAvailable(false);}
+        if(hud!=null){hud.SetCastPower(false,0,0);hud.SetCastCancel(false,null);hud.SetActionInteractable(true);hud.SetCastAvailable(false);}
         castHintTimer=0;
         if(rodView!=null)rodView.ResetMotion();
         if (fishingLine != null)

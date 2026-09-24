@@ -100,9 +100,9 @@ public sealed class ShopPreview : MonoBehaviour
             part(PrimitiveType.Capsule,Vector3.up*0.2f,new Vector3(0.24f,0.25f,0.24f),new Color(0.8f,0.6f,0.65f));
             for(int i=0;i<6;i++)part(PrimitiveType.Capsule,new Vector3((i-2.5f)*0.055f,-0.22f,0),new Vector3(0.035f,0.18f,0.035f),new Color(0.9f,0.7f,0.75f));
         }
-        else if(kind=="Bait1" || kind=="Bait2")
+        else if(kind=="Bait0" || kind=="Bait1" || kind=="Bait2")
         {
-            for(int i=0;i<8;i++)part(PrimitiveType.Sphere,new Vector3(Mathf.Sin(i*0.4f)*0.23f,(i-4)*0.075f,0),Vector3.one*(kind=="Bait1"?0.10f:0.14f),kind=="Bait1"?new Color(0.5f,0.21f,0.16f):new Color(1,0.55f,0.4f));
+            for(int i=0;i<8;i++)part(PrimitiveType.Sphere,new Vector3(Mathf.Sin(i*0.4f)*0.23f,(i-4)*0.075f,0),Vector3.one*(kind!="Bait2"?0.10f:0.14f),kind!="Bait2"?new Color(0.5f,0.21f,0.16f):new Color(1,0.55f,0.4f));
         }
         else part(PrimitiveType.Capsule,Vector3.zero,new Vector3(0.2f,0.35f,0.2f),new Color(0.9f,0.65f,0.15f));
         root.transform.localRotation=Quaternion.Euler(20,0,20);return root;

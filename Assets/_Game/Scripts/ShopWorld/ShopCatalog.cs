@@ -31,13 +31,13 @@ public static class ShopCatalog
     };
     public static readonly string[] RodNames = { "Woodland Rod", "Coastal Carbon", "Offshore Carbon", "Bluewater Elite" };
     public static readonly string[] ReelNames = { "Starter Reel", "Smooth Drag", "Precision Drag", "Deepwater Pro" };
-    public static readonly string[] LineNames = { "Standard Line", "+15 m Extension", "+35 m Extension", "+65 m Extension" };
-    public static readonly string[] BaitNames = { "Reusable Lure", "Worms", "Shrimp", "Squid" };
+    public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
+    public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid" };
     public static readonly int[] BaitPrices = { 0, 35, 90, 180 };
     public static readonly int[] RodPrices = { 0, 180, 650, 1800 };
     public static readonly int[] ReelPrices = { 0, 160, 550, 1500 };
     public static readonly int[] LinePrices = { 0, 100, 400, 1100 };
-    public static readonly float[] LineBonus = { 0, 15, 35, 65 };
+    public static readonly float[] LineBonus = { 0, 0, 0, 0 }; // Fixed 40 m spool; tiers improve tolerance.
     public static HabitatDefinition Habitat(string id) => Array.Find(Habitats, h => h.id == id);
     public static string GearName(GearKind kind, int tier) => (kind == GearKind.Rod ? RodNames : kind == GearKind.Reel ? ReelNames : LineNames)[tier];
     public static int GearPrice(GearKind kind, int tier) => (kind == GearKind.Rod ? RodPrices : kind == GearKind.Reel ? ReelPrices : LinePrices)[tier];

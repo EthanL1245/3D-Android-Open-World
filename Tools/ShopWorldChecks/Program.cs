@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Text.Json;
 
 // Same record fields as Unity's FishingInventory; these tests compile the real
@@ -22,7 +25,7 @@ internal static class Program
         Check(d.Equip(GearKind.Rod,0),"Could not re-equip starter");
         Check(d.BuyBait(2) && d.bait[2]==10,"Bait pack size");
         for(int i=0;i<10;i++)Check(d.ConsumeBait()==2,"Wrong bait consumed");
-        Check(d.baitEquipped==0 && d.ConsumeBait()==0 && d.bait[2]==0,"No free-lure fallback");
+        Check(d.baitEquipped==0 && d.ConsumeBait()==0 && d.bait[2]==0,"No infinite-worm fallback");
         Check(d.BuyHabitat("nano"),"Habitat purchase failed");int coins=d.coins;
         Check(!d.BuyHabitat("nano") && d.coins==coins,"Duplicate habitat charged");
         var heavy=Fish(0.81f);d.bag.Add(heavy);Check(!d.Deposit("nano",heavy) && d.bag.Contains(heavy),"Oversized fish lost");
@@ -39,7 +42,7 @@ internal static class Program
         Check(d.Sell(a,20) && !d.Sell(a,20),"Duplicate sale paid twice");
         Check(Math.Abs(ShopCatalog.FishLength(0,0.5f)-0.3556f)<0.01f,"Mackerel length disagrees with source estimate");
         Check(ShopCatalog.FishLength(0,1000)<=0.55f && ShopCatalog.FishLength(6,1000)<=0.5f,"Extreme saved weights create giant fish");
-        for(int species=0;species<8;species++)
+        for(int species=0;species<FishCatalog.Count;species++)
         {
             float previous=0;
             for(int i=1;i<=200;i++){float length=ShopCatalog.FishLength(species,i*0.1f);Check(length>=previous && !float.IsNaN(length),"Length table not monotone");previous=length;}

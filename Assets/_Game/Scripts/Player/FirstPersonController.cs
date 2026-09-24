@@ -107,13 +107,20 @@ public class FirstPersonController : MonoBehaviour
             foreach(var label in go.GetComponentsInChildren<UnityEngine.UI.Text>())label.rectTransform.localRotation=Quaternion.Euler(0,0,180);
             go.SetActive(false);
         }
-        bool swimming=IsSwimming && !uiBlocked;
+        bool swimming=IsSwimming && !uiBlocked && !castMode;
         swimDownButton.gameObject.SetActive(swimming);
         if(swimLayout!=swimming)
         {
             swimLayout=swimming;
             swimUpRect.anchoredPosition=landJumpPosition+(swimming?Vector2.up*(swimUpRect.sizeDelta.y+14):Vector2.zero);
         }
+    }
+    private bool castMode;
+    public RectTransform JumpControl => jumpButton!=null?jumpButton.GetComponent<RectTransform>():null;
+    public void SetCastMode(bool value)
+    {
+        castMode=value;
+        if(jumpButton!=null)jumpButton.gameObject.SetActive(!value);
     }
     private bool menuOpen;
     public void SetMenuOpen(bool open)
@@ -500,6 +507,7 @@ public class FirstPersonController : MonoBehaviour
 
     private bool ReadJumpPressed()
     {
+        if(castMode)return false;
         bool keyboardPressed =
             Keyboard.current != null &&
             Keyboard.current.spaceKey
@@ -515,6 +523,7 @@ public class FirstPersonController : MonoBehaviour
 
     private bool ReadSwimUpHeld()
     {
+        if(castMode)return false;
         bool keyboardHeld =
             Keyboard.current != null &&
             Keyboard.current.spaceKey
