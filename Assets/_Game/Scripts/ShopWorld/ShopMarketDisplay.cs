@@ -6,12 +6,21 @@ public sealed class ShopMarketDisplay : MonoBehaviour
 {
     private readonly List<Material> materials = new List<Material>();
     private readonly List<Mesh> meshes = new List<Mesh>();
+    private const float CounterDrop = 0.55f;
 
     private void Start()
     {
-        // Preserve the authored market counter height. Earlier runtime code
-        // lowered the display independently and buried the frozen fish inside
-        // already-installed Quay counters.
+        // The authored counter top is 1.35 m high, which is too high for the
+        // first-person character to comfortably see the fish. Lower the whole
+        // working counter assembly together to a roughly 0.80 m top height.
+        // Keep its proportions/collision intact instead of lowering only fish.
+        foreach (Transform child in transform)
+        {
+            if (child.name == "Counter" || child.name == "Countertop" || child.name == "CounterInlay")
+                child.localPosition -= Vector3.up * CounterDrop;
+        }
+
+        // Upgrade already-installed Quay scenes at runtime too.
         foreach (Transform child in transform)
         {
             if (child.name == "SeafoodTray" || child.name == "Ice" ||
@@ -22,9 +31,12 @@ public sealed class ShopMarketDisplay : MonoBehaviour
                 Destroy(child.gameObject);
             }
         }
+
+        // The trays, ice, labels and frozen fish receive the exact same drop as
+        // the counter so they remain sitting on its surface rather than inside it.
         var root = new GameObject("FreshCatchOnIce").transform;
         root.SetParent(transform, false);
-        root.localPosition=Vector3.zero;
+        root.localPosition = Vector3.down * CounterDrop;
         Material steel = Surface("Brushed steel trays", new Color(0.36f, 0.46f, 0.49f), 0.65f, 0.75f);
         Material ice = Surface("Crushed blue-white ice", new Color(0.82f, 0.94f, 0.98f), 0.78f, 0f);
         Material chalkboard = Surface("Seafood labels", new Color(0.025f, 0.08f, 0.085f), 0.2f, 0f);
