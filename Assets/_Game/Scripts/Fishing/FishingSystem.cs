@@ -862,6 +862,14 @@ public class FishingSystem : MonoBehaviour
                     hookedWeightKg
                 );
 
+            if(activeBait==ShopCatalog.StarterLure)
+            {
+                // Keep the existing pointer held: reveal the fight meters now,
+                // and let the same REEL press continue into the fight.
+                StartFight();
+                return;
+            }
+
             state =
                 FishingState.Bite;
 
@@ -869,7 +877,7 @@ public class FishingSystem : MonoBehaviour
 
             hud.SetActionLabel("HOOK!");
             hud.SetStatus(
-                activeBait==ShopCatalog.StarterLure?"BITE! Release REEL, then tap HOOK!":"BITE! Tap HOOK!"
+                "BITE! Tap HOOK!"
             );
     }
 
