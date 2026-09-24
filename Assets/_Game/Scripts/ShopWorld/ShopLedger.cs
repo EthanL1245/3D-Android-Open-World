@@ -12,10 +12,33 @@ using System.Collections.Generic;
     public int version = 1, coins;
     public int rodOwned, reelOwned, lineOwned, rodEquipped, reelEquipped, lineEquipped, baitEquipped;
     public int[] bait = new int[4];
+    public int lureOwnedMask = 1;
+    public int lureEquipped;
     public bool infiniteWormsMigrated;
     public int catchStatsVersion;
     public int[] totalCaught;
     public float[] personalBestKg;
+
+    public bool EnsureLures()
+    {
+        bool changed=false;
+        if((lureOwnedMask&1)==0){lureOwnedMask|=1;changed=true;}
+        if(lureEquipped<0 || lureEquipped>=ShopCatalog.LureVariantCount || !OwnsLure(lureEquipped))
+        {lureEquipped=0;changed=true;}
+        return changed;
+    }
+    public bool OwnsLure(int variant) => variant>=0 && variant<ShopCatalog.LureVariantCount && (lureOwnedMask&(1<<variant))!=0;
+    public bool BuyLure(int variant)
+    {
+        if(variant<=0 || variant>=ShopCatalog.LureVariantCount || OwnsLure(variant) || !Spend(ShopCatalog.LurePrices[variant]))return false;
+        lureOwnedMask|=1<<variant;lureEquipped=variant;baitEquipped=ShopCatalog.StarterLure;return true;
+    }
+    public bool EquipLure(int variant)
+    {
+        if(!OwnsLure(variant))return false;
+        lureEquipped=variant;baitEquipped=ShopCatalog.StarterLure;return true;
+    }
+
     public bool EnsureCatchStats()
     {
         bool changed=false;
