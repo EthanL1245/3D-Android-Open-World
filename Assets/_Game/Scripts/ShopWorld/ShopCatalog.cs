@@ -20,7 +20,43 @@ public sealed class HabitatDefinition
 public static class ShopCatalog
 {
     public const int StarterLure=4;
+    public const int LureVariantCount=4;
+
+    public static readonly string[] LureNames =
+    {
+        "Starter Lure",
+        "Reef Minnow",
+        "Crimson Shad",
+        "Deep Flash"
+    };
+
+    public static readonly int[] LurePrices =
+    {
+        0,
+        350,
+        750,
+        1400
+    };
+
+    public static readonly string[] LureDescriptions =
+    {
+        "Balanced permanent lure. Strong Sea Bass and Red Snapper focus.",
+        "Quick-strike minnow. Highest Sea Bass odds and 15% more strike chance.",
+        "Red Snapper specialist. Slightly favors larger fish on long retrieves.",
+        "Deep-water flash lure. Slower strikes, larger fish, and the strongest tuna secondary odds."
+    };
+
+    public static int ActiveLureVariant { get; private set; }
+
     public static bool PermanentBait(int id)=>id==0 || id==StarterLure;
+    public static bool IsLure(int id)=>id==StarterLure;
+
+    public static void SetActiveLureVariant(int variant)
+    {
+        ActiveLureVariant=Math.Max(0,Math.Min(LureVariantCount-1,variant));
+        BaitNames[StarterLure]=LureNames[ActiveLureVariant];
+    }
+
     public static readonly HabitatDefinition[] Habitats = {
         new HabitatDefinition("nano", "Tidepool Cabinet", 250, 3, 0.8f, 1.8f, 2.2f, 1.2f, 1.4f),
         new HabitatDefinition("reef", "Reef Gallery", 700, 6, 4f, 14f, 4.8f, 2.2f, 2.8f),
