@@ -16,7 +16,7 @@ public static class ReefCatalog
     }
     public static readonly Zone[] Zones = {
         new Zone(StarterId, StarterName, "A palm-lined beginner island, sandy coves and a broad shallow reef.", true,
-            new float[] {18,11,13,6,0,2,25,25})
+            new float[] {20,11,13,6,0,2,22,22,4})
     };
     public static Zone Starter => Zones[0];
     public static float Weight(int species) => species>=0 && species<Starter.weights.Length ? Starter.weights[species] : 0f;
@@ -28,6 +28,6 @@ public static class ReefCatalog
         for(int i=0;i<Starter.weights.Length;i++) {pick-=Weight(i)*BaitMultiplier(i,bait);if(pick<0)return i;}
         return Starter.weights.Length-1;
     }
-    private static float BaitMultiplier(int id,int bait) => bait==2 ? (id==1 || id==6 || id==7 ? 2.5f:1f) : bait==3 ? (id==3 || id==5 ? 4f:1f):1f;
+    private static float BaitMultiplier(int id,int bait) => bait==2 ? (id==1 || id==6 || id==7 ? 2.5f:1f) : bait==3 ? (id==3 || id==5 || id==8 ? 4f:1f):1f;
 }
 

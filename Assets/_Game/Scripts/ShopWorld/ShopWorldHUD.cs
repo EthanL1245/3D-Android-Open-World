@@ -22,7 +22,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private bool dirty;
     private string shopSession, bagPicker;
     private int bagSort, speciesFilter=-1;
-    private GameObject menuShortcut;
+    private GameObject menuShortcut, indexShortcut;
+    private Texture2D islandThumbnail;
     private readonly List<GameObject> navigationTabs=new List<GameObject>();
     private static readonly string[] SortNames={"Newest first","Heaviest first","Lightest first","Highest value","Species name"};
     private ShopPreview previews;
@@ -38,14 +39,14 @@ public sealed class ShopWorldHUD : MonoBehaviour
         previews=gameObject.AddComponent<ShopPreview>();
         Build(); progress.Changed+=RefreshSoon; message=progress.Notice; MenuOpen=false;
     }
-    private void OnDestroy() { if(progress!=null) progress.Changed-=RefreshSoon; MenuOpen=false; }
+    private void OnDestroy() { if(progress!=null) progress.Changed-=RefreshSoon; MenuOpen=false;if(islandThumbnail!=null)Destroy(islandThumbnail); }
     private void RefreshSoon() => dirty=true;
     private void Update()
     {
         if(root==null) return;
         if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)
         { if(MenuOpen) Close(); else Open("travel"); }
-        menuShortcut.SetActive(!MenuOpen);
+        menuShortcut.SetActive(!MenuOpen);indexShortcut.SetActive(!MenuOpen);
         if(shopSession==null && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
         string nearest=travel.Nearest();
         nearbyButton.SetActive(!MenuOpen && nearest!=null && !travel.Traveling);
@@ -87,6 +88,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         Button menu=ButtonAt(root.transform,"MENU / TRAVEL",()=>Open("travel"));
         menuShortcut=menu.gameObject;
         Rect(menu.GetComponent<RectTransform>(),new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-24,-20),new Vector2(260,64));
+        indexShortcut=ButtonAt(root.transform,"ISLAND / FISH INDEX",()=>Open("islands")).gameObject;
+        Rect(indexShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(24,-20),new Vector2(290,76));
         nearbyButton=ButtonAt(root.transform,"OPEN",()=>Open(travel.Nearest()??"travel")).gameObject;
         nearLabel=nearbyButton.GetComponentInChildren<Text>();
         Rect(nearbyButton.GetComponent<RectTransform>(),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0,130),new Vector2(300,58));
@@ -121,7 +124,9 @@ public sealed class ShopWorldHUD : MonoBehaviour
         wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":"SUNCREST REEF")}";
         feedback.text=progress.ReadOnly ? progress.Notice : message;
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
-        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null);
+        bool index=page=="islands" || page=="reef-fish";
+        if(index)heading.text=page=="islands"?"ISLAND INDEX":"SUNCREST REEF • FISH INDEX";
+        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !index);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
         else if(page=="islands") IslandIndex(); else if(page=="reef-fish") ReefFishIndex();
@@ -147,27 +152,53 @@ public sealed class ShopWorldHUD : MonoBehaviour
             button.interactable=travel.Destination!=i;
             if(travel.Destination==i)button.GetComponent<Image>().color=new Color(0.16f,0.22f,0.24f);
         }
-        Row("ISLANDS & FISH", "Discover regions, unlock status, species and rarity.", "VIEW INDEX",()=>Open("islands"));
+
     }
     private void IslandIndex()
     {
         foreach (var zone in ReefCatalog.Zones)
         {
             var entry=zone;
-            Row(entry.name,entry.description,entry.Unlocked?"FISH INDEX":"LOCKED",()=>Open("reef-fish"),entry.Unlocked);
+            var card=ButtonAt(list,entry.name+(entry.Unlocked?"\nUNLOCKED":"\nLOCKED")+" • BEACH / REEF / PALM POND\n\n"+entry.description+"\n\nOPEN FISH INDEX →",()=>Open("reef-fish"));
+            card.gameObject.AddComponent<LayoutElement>().preferredHeight=290;
+            card.interactable=entry.Unlocked;
+            var label=card.GetComponentInChildren<Text>();label.alignment=TextAnchor.MiddleLeft;
+            Anchor(label.rectTransform,.29f,0,1,1,20,18,-22,-18);
+            var picture=new GameObject("Island preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(card.transform,false);
+            Anchor(picture.GetComponent<RectTransform>(),0,0,.29f,1,18,20,0,-20);
+            picture.GetComponent<RawImage>().texture=IslandThumbnail();picture.GetComponent<RawImage>().raycastTarget=false;
         }
         Row("MORE HORIZONS", "Additional islands and open-ocean biomes will have their own unlocks and fish indices.", "COMING LATER",()=>{},false);
         Row("TRAVEL", "Return to destinations", "BACK",()=>Open("travel"));
     }
     private void ReefFishIndex()
     {
-        Row(ReefCatalog.StarterName, "Seven species • ocean sizes outside; Palm Pond juveniles are 5–12 cm. Specialty bait changes the base odds below.", "ISLAND INDEX",()=>Open("islands"));
+        Row(ReefCatalog.StarterName, "Eight species • deeper water favors bigger fish. Palm Pond juveniles: 5–12 cm. In-game ocean ranges below; specialty bait modifies base odds.", "ISLAND INDEX",()=>Open("islands"));
         foreach(int id in FishCatalog.ActiveIds.OrderByDescending(ReefCatalog.Weight))
         {
             var species=FishCatalog.Get(id);
-            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance", "UNLOCKED",()=>{},false,
+            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance\nOcean: "+FishCatalog.FormatWeight(species.MinWeightKg)+" – "+FishCatalog.FormatWeight(species.MaxWeightKg)+"\nLength: "+ShopCatalog.FishLength(id,species.MinWeightKg).ToString("0.00")+" – "+ShopCatalog.FishLength(id,species.MaxWeightKg).ToString("0.00")+" m (max)", "UNLOCKED",()=>{},false,
                 fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
+    }
+    private Texture2D IslandThumbnail()
+    {
+        if(islandThumbnail!=null)return islandThumbnail;
+        const int w=192,h=160;islandThumbnail=new Texture2D(w,h,TextureFormat.RGBA32,false);
+        var pixels=new Color[w*h];
+        for(int y=0;y<h;y++)for(int x=0;x<w;x++)
+        {
+            float u=(x-w*.5f)/(w*.40f),v=(y-h*.5f)/(h*.38f);
+            float radius=u*u+v*v+.07f*Mathf.Sin(v*14)*Mathf.Cos(u*9);
+            Color c=Color.Lerp(new Color(.025f,.28f,.39f),new Color(.13f,.65f,.65f),Mathf.Clamp01(1.5f-radius));
+            if(radius<1)c=new Color(.87f,.77f,.49f);
+            if(radius<.64f)c=new Color(.29f,.48f,.19f);
+            if(u*u*3+(v+.04f)*(v+.04f)*7<.21f)c=new Color(.12f,.57f,.57f);
+            if(radius>.70f && radius<1.35f)c*=.95f+.05f*Mathf.Sin(radius*75);
+            if(radius<.60f && radius>.27f && Mathf.Sin(x*.30f)*Mathf.Cos(y*.28f)>.80f)c=new Color(.12f,.32f,.16f);
+            pixels[y*w+x]=c;
+        }
+        islandThumbnail.SetPixels(pixels);islandThumbnail.Apply(false,true);return islandThumbnail;
     }
     private void BagPage()
     {
@@ -279,7 +310,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
     {
         GameObject row=Panel("Item",list,new Color(0.07f,0.12f,0.14f,1));
-        row.AddComponent<LayoutElement>().preferredHeight=184;
+        row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?250:184;
         var accent=Panel("Accent",row.transform,gold); Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
         var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,0.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
         var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,0.55f,(fish!=null || gear!=null?170:22),10,-232,0);
@@ -291,7 +322,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             var picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(row.transform,false);
             Rect(picture.GetComponent<RectTransform>(),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(14,0),new Vector2(140,140));
             var image=picture.GetComponent<RawImage>();image.raycastTarget=false;
-            previews.Attach(image,fish!=null?fish.speciesId:0,fish!=null?fish.weightKg:1,gear);
+            previews.Attach(image,fish!=null?fish.speciesId:0,fish!=null?fish.weightKg:1,gear,page=="reef-fish");
         }
     }
     private GameObject Panel(string name,Transform parent,Color color)

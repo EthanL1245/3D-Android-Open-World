@@ -29,7 +29,64 @@ public class FishingHUD : MonoBehaviour
     private Text catchText;
     private float catchPanelTimer;
 
+    private GameObject castPanel;
+    private Image castFill;
+    private Text castCaption;
+    private readonly Text[] damageLabels=new Text[8];
+    private readonly float[] damageLife=new float[8];
+    private int nextDamage;
     private Font font;
+
+    public void SetCastAvailable(bool available)
+    {
+        if(actionButtonObject==null)return;
+        actionButtonObject.GetComponent<Image>().color=available?new Color(.04f,.55f,.58f,.95f):new Color(.10f,.17f,.19f,.85f);
+        actionButtonObject.GetComponent<Outline>().effectColor=available?new Color(.4f,1f,.86f):new Color(.25f,.32f,.34f,.65f);
+    }
+    public void SetCastPower(bool visible,float power,float distance)
+    {
+        if(castPanel==null && visible)
+        {
+            castPanel=CreatePanel("CastPower",root.transform,new Color(.02f,.07f,.09f,.94f));
+            var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=new Vector2(.5f,0);r.pivot=new Vector2(.5f,0);
+            r.anchoredPosition=new Vector2(0,136);r.sizeDelta=new Vector2(500,96);
+            castCaption=CreateText("PowerCaption",castPanel.transform,"",23,TextAnchor.MiddleCenter);
+            var c=castCaption.rectTransform;c.anchorMin=new Vector2(0,.45f);c.anchorMax=Vector2.one;c.offsetMin=c.offsetMax=Vector2.zero;
+            var bg=CreatePanel("PowerTrack",castPanel.transform,new Color(.15f,.23f,.25f));
+            var b=bg.GetComponent<RectTransform>();b.anchorMin=new Vector2(0,0);b.anchorMax=new Vector2(1,.4f);b.offsetMin=new Vector2(14,10);b.offsetMax=new Vector2(-14,0);
+            castFill=CreatePanel("Power",bg.transform,Color.cyan).GetComponent<Image>();castFill.raycastTarget=false;
+        }
+        if(castPanel==null)return;
+        castPanel.SetActive(visible);
+        if(!visible)return;
+        SetBarWidth(castFill.rectTransform,power);
+        castFill.color=Color.Lerp(new Color(.15f,.55f,.8f),new Color(.4f,1f,.4f),power);
+        castCaption.text=$"POWER {Mathf.RoundToInt(power*100)}% / {distance:0} m • TAP CAST";
+    }
+    public void ShowDamage(int amount,Vector3 screenPoint)
+    {
+        int i=nextDamage++%damageLabels.Length;
+        if(damageLabels[i]==null)
+        {
+            damageLabels[i]=CreateText("ReelDamage",root.transform,"",32,TextAnchor.MiddleCenter);
+            var r=damageLabels[i].rectTransform;r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(160,60);
+        }
+        if(screenPoint.z<=0)screenPoint=new Vector3(Screen.width*.5f,Screen.height*.5f,1);
+        var canvas=root.GetComponentInParent<Canvas>();
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(root.GetComponent<RectTransform>(),screenPoint,canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,out var local);
+        damageLabels[i].rectTransform.anchoredPosition=local+new Vector2(Random.Range(-35f,35f),25);
+        damageLabels[i].text="−"+amount;damageLabels[i].color=new Color(1,.85f,.35f,1);damageLabels[i].gameObject.SetActive(true);damageLife[i]=.9f;
+    }
+    private void UpdateDamage()
+    {
+        for(int i=0;i<damageLabels.Length;i++)if(damageLife[i]>0 && damageLabels[i]!=null)
+        {
+            damageLife[i]-=Time.deltaTime;
+            damageLabels[i].rectTransform.anchoredPosition+=Vector2.up*(Time.deltaTime*75f);
+            var color=damageLabels[i].color;color.a=Mathf.Clamp01(damageLife[i]/.4f);damageLabels[i].color=color;
+            if(damageLife[i]<=0)damageLabels[i].gameObject.SetActive(false);
+        }
+    }
 
     public FishingActionButton ActionInput => actionInput;
 
@@ -51,6 +108,7 @@ public class FishingHUD : MonoBehaviour
 
     private void Update()
     {
+        UpdateDamage();
         if (catchPanelTimer <= 0f)
             return;
 
@@ -133,7 +191,7 @@ public class FishingHUD : MonoBehaviour
 
     public void SetFightMeters(
         float tension,
-        float health)
+        float health, int maxHealth=100)
     {
         tension =
             Mathf.Clamp01(tension);
@@ -188,12 +246,7 @@ public class FishingHUD : MonoBehaviour
 
         if (progressLabel != null)
         {
-            progressLabel.text =
-                "HEALTH " +
-                Mathf.RoundToInt(
-                    health * 100f
-                ) +
-                "%";
+            progressLabel.text = $"HP {Mathf.RoundToInt(health*maxHealth)}/{maxHealth}";
         }
     }
 
@@ -739,7 +792,7 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0f, 1f);
 
         textRect.sizeDelta =
-            new Vector2(110f, 34f);
+            new Vector2(160f, 34f);
 
         textRect.anchoredPosition =
             new Vector2(
@@ -772,11 +825,11 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0f, 1f);
 
         bgRect.sizeDelta =
-            new Vector2(490f, 28f);
+            new Vector2(435f, 28f);
 
         bgRect.anchoredPosition =
             new Vector2(
-                135f,
+                190f,
                 position.y - 3f
             );
 

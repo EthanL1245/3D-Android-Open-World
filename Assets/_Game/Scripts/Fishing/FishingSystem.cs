@@ -7,6 +7,7 @@ public class FishingSystem : MonoBehaviour
     private enum FishingState
     {
         Idle,
+        Charging,
         Casting,
         Waiting,
         Bite,
@@ -77,6 +78,10 @@ public class FishingSystem : MonoBehaviour
 
     private Vector3 castPoint;
     private bool pondCast;
+    private float chargeStarted,castHintTimer,castDepth;
+    private int fishMaxHealth=1,fishHealthPoints=1,pendingDamage;
+    private float damageFraction,damageDisplayTimer;
+
     private float stateTimer;
     private float fightTension;
     private float fishHealth;
@@ -200,7 +205,7 @@ public class FishingSystem : MonoBehaviour
     private void Start()
     {
         shopProgress=GetComponent<ShopProgress>();
-        baseCastRange=maximumCastDistance; basePreferredRange=preferredCastDistance; baseLineRange=maximumLineDistance;
+        baseCastRange=Mathf.Max(45f,maximumCastDistance); basePreferredRange=36f; baseLineRange=Mathf.Max(baseCastRange+15f,maximumLineDistance); maximumCastDistance=baseCastRange; maximumLineDistance=baseLineRange;
         if(shopProgress!=null) { shopProgress.Changed+=ApplyShopGear; ApplyShopGear(); }
         ResolveReferences();
 
@@ -218,7 +223,7 @@ public class FishingSystem : MonoBehaviour
 
         terrain = Terrain.activeTerrain;
 
-        minimumFishingDepth = 0.85f;
+        minimumFishingDepth = 0.6f;
         deepWaterSafetyRadius = 0.75f;
 
         GrantYellowfinPreviewOnce();
@@ -290,6 +295,22 @@ public class FishingSystem : MonoBehaviour
         if (hud == null)
             return;
 
+        if(rodEquipped && (state==FishingState.Idle || state==FishingState.Charging))
+        {
+            if(state==FishingState.Charging)
+            {
+                float power=FishingRules.CastPower(Time.time-chargeStarted);
+                Vector3 candidate=ProjectCastPoint(power);
+                hud.SetCastPower(true,power,FishingRules.CastDistance(power,maximumCastDistance));
+                if((castHintTimer-=Time.deltaTime)<=0){castHintTimer=.10f;hud.SetCastAvailable(CanLandCast(candidate,true));}
+            }
+            else if((castHintTimer-=Time.deltaTime)<=0)
+            {
+                castHintTimer=.15f;bool available=false;
+                for(int i=0;i<=24;i++)if(CanLandCast(ProjectCastPoint(i/24f),true)){available=true;break;}
+                hud.SetCastAvailable(available);
+            }
+        }
         FishingActionButton action =
             hud.ActionInput;
 
@@ -651,6 +672,11 @@ public class FishingSystem : MonoBehaviour
         switch (state)
         {
             case FishingState.Idle:
+                if(inventory.IsFull){hud.SetStatus("FISH BAG FULL (50).");return;}
+                state=FishingState.Charging;chargeStarted=Time.time;
+                hud.SetStatus("Tap CAST again to release. Peak power casts furthest.");
+                break;
+            case FishingState.Charging:
                 TryCast();
                 break;
 
@@ -664,23 +690,10 @@ public class FishingSystem : MonoBehaviour
     {
         if(inventory.IsFull) { hud.SetStatus("FISH BAG FULL (50). Sell fish or move them into your Home habitat."); return; }
         if(shopMode) return;
-        if (!TryGetCastPoint(
-                out Vector3 target))
-        {
-            hud.SetStatus(
-                "Aim toward open water."
-            );
-
-            return;
-        }
-
-        if(ReefZone.Active!=null && !ReefZone.Active.Contains(target))
-        {
-            hud.SetStatus("Beyond Suncrest Reef. More waters will unlock later.");
-            return;
-        }
-        pondCast=PondWater.Active!=null && PondWater.Active.Contains(target);
-        activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
+        float power=FishingRules.CastPower(Time.time-chargeStarted);
+        Vector3 target=ProjectCastPoint(power);
+        hud.SetCastPower(false,0,0);
+        activeBait=0; // Bait is committed only after a successful water landing.
         StartCoroutine(
             CastRoutine(target)
         );
@@ -742,14 +755,28 @@ public class FishingSystem : MonoBehaviour
                 ) *
                 4.0f;
 
-            bobber.transform.position =
-                point;
+            Vector3 previousPoint=bobber.transform.position;
+            Vector3 segment=point-previousPoint;
+            if(segment.sqrMagnitude>.000001f && Physics.Raycast(previousPoint,segment.normalized,segment.magnitude,~0,QueryTriggerInteraction.Ignore))
+            {
+                FailFishing("Cast hit land or an obstacle. Retracted - no bait used.");
+                yield break;
+            }
+            bobber.transform.position = point;
 
             SetLinePositions();
 
             yield return null;
         }
 
+        if(!CanLandCast(target))
+        {
+            FailFishing("Cast landed on land, shallow or locked water. Retracted - no bait used.");
+            yield break;
+        }
+        pondCast=PondWater.Active!=null && PondWater.Active.Contains(target);
+        TryGetTerrainWaterDepth(target,out _,out _,out castDepth);
+        activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
         if (rodView != null) rodView.SetCastPose(1f);
         castPoint = target;
         SnapBobberToSurface();
@@ -781,9 +808,7 @@ public class FishingSystem : MonoBehaviour
                 RollBaitSpecies();
 
             hookedWeightKg =
-                FishCatalog.RollWeight(
-                    hookedSpeciesId
-                );
+                FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value);
 
             if(pondCast)hookedWeightKg=FishSizeTable.WeightForLength(hookedSpeciesId,Random.Range(.05f,.12f));
 
@@ -846,7 +871,9 @@ public class FishingSystem : MonoBehaviour
         state = FishingState.Fighting;
 
         fightTension = 0.24f;
-        fishHealth = 1f;
+        fishMaxHealth=FishingRules.MaxHealth(hookedSpeciesId,hookedWeightKg);
+        fishHealthPoints=fishMaxHealth;fishHealth=1f;
+        damageFraction=0;pendingDamage=0;damageDisplayTimer=0;
         lineBreakTimer = 0f;
         fightTime = 0f;
         surgeAmount = 0f;
@@ -904,7 +931,7 @@ public class FishingSystem : MonoBehaviour
         hud.ShowFightMeters(true);
         hud.SetFightMeters(
             fightTension,
-            fishHealth
+            fishHealth, fishMaxHealth
         );
     }
 
@@ -1015,13 +1042,6 @@ public class FishingSystem : MonoBehaviour
                     ) *
                     temperamentTension / (rodPower * lineGuard);
 
-                float healthRate =
-                    Mathf.Lerp(
-                        0.125f,
-                        0.058f,
-                        effectiveDifficulty
-                    );
-
                 float moodHealthFactor =
                     hookedTemperament ==
                         FishTemperament.Calm
@@ -1031,10 +1051,10 @@ public class FishingSystem : MonoBehaviour
                             ? 0.78f
                             : 0.96f;
 
-                fishHealth -=
-                    Time.deltaTime *
-                    healthRate *
-                    moodHealthFactor * reelPower;
+                damageFraction+=Time.deltaTime*10f*moodHealthFactor*reelPower;
+                int damage=Mathf.Min(fishHealthPoints,Mathf.FloorToInt(damageFraction));
+                damageFraction-=damage;fishHealthPoints-=damage;pendingDamage+=damage;
+                fishHealth=fishHealthPoints/(float)fishMaxHealth;
             }
             else
             {
@@ -1057,6 +1077,12 @@ public class FishingSystem : MonoBehaviour
                     fishHealth
                 );
 
+            damageDisplayTimer+=Time.deltaTime;
+            if(pendingDamage>0 && (damageDisplayTimer>=.35f || fishHealthPoints==0))
+            {
+                hud.ShowDamage(pendingDamage,playerCamera.WorldToScreenPoint(bobber.transform.position));
+                pendingDamage=0;damageDisplayTimer=0;
+            }
             if (fishHealth <= 0f)
             {
                 fishHealth = 0f;
@@ -1121,7 +1147,7 @@ public class FishingSystem : MonoBehaviour
 
             hud.SetFightMeters(
                 fightTension,
-                fishHealth
+                fishHealth, fishMaxHealth
             );
 
             UpdateBobberIndicator();
@@ -1151,7 +1177,7 @@ public class FishingSystem : MonoBehaviour
 
         hud.SetFightMeters(
             fightTension,
-            fishHealth
+            fishHealth, fishMaxHealth
         );
 
         if (!fishUnconscious)
@@ -1258,97 +1284,28 @@ public class FishingSystem : MonoBehaviour
         }
     }
 
-    private bool TryGetCastPoint(
-        out Vector3 target)
+    private Vector3 ProjectCastPoint(float power)
     {
-        target = Vector3.zero;
-
-        Vector3 origin =
-            playerCamera.transform.position;
-
-        if (oceanWater.IsPointUnderwater(
-                origin))
+        Vector3 direction=Vector3.ProjectOnPlane(playerCamera.transform.forward,Vector3.up);
+        if(direction.sqrMagnitude<.001f)direction=transform.forward;
+        Vector3 target=playerCamera.transform.position+direction.normalized*FishingRules.CastDistance(power,maximumCastDistance);
+        TryGetTerrainWaterDepth(target,out float ground,out float water,out _);
+        target.y=Mathf.Max(ground+.08f,water+.06f);
+        return target;
+    }
+    private bool CanLandCast(Vector3 target,bool checkFlight=false)
+    {
+        if((ReefZone.Active!=null && !ReefZone.Active.Contains(target)) || !IsValidFishingWater(target))return false;
+        if(checkFlight && rodTip!=null)
         {
-            hud.SetStatus(
-                "Surface before casting."
-            );
-
-            return false;
-        }
-
-        Vector3 forward =
-            playerCamera.transform.forward;
-
-        // Intersect the raised pond before testing the distant ocean plane.
-        var pond=PondWater.Active;
-        if(pond!=null && pond.Raycast(new Ray(origin,forward),maximumCastDistance,out Vector3 pondPoint)
-            && Vector3.Distance(origin,pondPoint)>=2f && IsValidFishingWater(pondPoint))
-        {
-            Vector3 delta=pondPoint-origin;
-            if(!Physics.Raycast(origin,delta.normalized,delta.magnitude-.15f,~0,QueryTriggerInteraction.Ignore))
-            {target=pondPoint;return true;}
-        }
-        float baseLevel =
-            oceanWater.BaseWaterLevel;
-
-        float distance =
-            preferredCastDistance;
-
-        if (forward.y < -0.035f)
-        {
-            float t =
-                (baseLevel - origin.y) /
-                forward.y;
-
-            if (t > 0f)
+            Vector3 start=rodTip.position,previous=start;
+            for(int i=1;i<=8;i++)
             {
-                distance =
-                    Mathf.Clamp(
-                        t,
-                        minimumCastDistance,
-                        maximumCastDistance
-                    );
+                float t=i/8f;Vector3 point=Vector3.Lerp(start,target,t)+Vector3.up*(Mathf.Sin(t*Mathf.PI)*4f);
+                if(Physics.Linecast(previous,point,~0,QueryTriggerInteraction.Ignore))return false;
+                previous=point;
             }
         }
-
-        Vector3 horizontal =
-            Vector3.ProjectOnPlane(
-                forward,
-                Vector3.up
-            );
-
-        if (horizontal.sqrMagnitude <
-            0.001f)
-        {
-            horizontal =
-                transform.forward;
-        }
-
-        horizontal.Normalize();
-
-        Vector3 candidate =
-            origin +
-            horizontal * distance;
-
-        float surface =
-            oceanWater.GetSurfaceHeight(
-                candidate
-            );
-
-        candidate.y =
-            surface + 0.06f;
-
-        if (!IsValidFishingWater(
-                candidate))
-        {
-            hud.SetStatus(
-                "Cast into deeper open water."
-            );
-
-            return false;
-        }
-
-        target = candidate;
         return true;
     }
 
@@ -1730,9 +1687,9 @@ public class FishingSystem : MonoBehaviour
             default:
                 return
                     new Color(
-                        0.96f,
-                        0.72f,
-                        0.10f,
+                        0.62f,
+                        0.43f,
+                        0.035f,
                         0.94f
                     );
         }
@@ -2625,6 +2582,9 @@ public class FishingSystem : MonoBehaviour
 
     private void ResetLine()
     {
+        if(hud!=null){hud.SetCastPower(false,0,0);hud.SetCastAvailable(false);}
+        castHintTimer=0;
+        if(rodView!=null)rodView.ResetMotion();
         if (fishingLine != null)
             fishingLine.enabled = false;
 

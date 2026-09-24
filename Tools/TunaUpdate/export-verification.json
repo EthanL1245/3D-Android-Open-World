@@ -1,0 +1,16 @@
+{
+  "BigeyeTuna": {
+    "vertices": 753,
+    "bones": 5,
+    "max_motion": 1.9270775318145752,
+    "uv_layers": 1,
+    "weighted_vertices": 753
+  },
+  "YellowfinTuna": {
+    "vertices": 749,
+    "bones": 5,
+    "max_motion": 2.4018036127090454,
+    "uv_layers": 1,
+    "weighted_vertices": 749
+  }
+}

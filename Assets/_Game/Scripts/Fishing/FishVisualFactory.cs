@@ -60,6 +60,15 @@ public static class FishVisualFactory
         FishSpeciesDefinition species =
             FishCatalog.Get(speciesId);
 
+        if(allowHero && speciesId==FishCatalog.BigeyeTunaId)
+        {
+            var prefab=Resources.Load<GameObject>("Fishing/BigeyeTuna");
+            if(prefab!=null)
+            {
+                var instance=Object.Instantiate(prefab,parent,false);instance.name=name;
+                instance.transform.localScale=Vector3.one*scale;return instance;
+            }
+        }
         if (allowHero && speciesId == 2)
         {
             var prefab = Resources.Load<GameObject>("Fishing/SeaBass");

@@ -1,0 +1,26 @@
+{
+  "BigeyeTuna": {
+    "fps": 24,
+    "source_vertices": 479,
+    "frames": [
+      1,
+      5,
+      10,
+      15,
+      20
+    ],
+    "max_motion": 1.9270769953727722
+  },
+  "YellowfinTuna": {
+    "fps": 24,
+    "source_vertices": 477,
+    "frames": [
+      1,
+      5,
+      10,
+      15,
+      20
+    ],
+    "max_motion": 2.4018020629882812
+  }
+}

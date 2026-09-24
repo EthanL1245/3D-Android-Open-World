@@ -5,16 +5,17 @@ import numpy as np
 root=Path(__file__).resolve().parents[2]
 source=(root/'Assets/_Game/Scripts/Reef/ReefCatalog.cs').read_text()
 weights=list(map(float,re.search(r'new float\[\] \{([^}]+)',source).group(1).split(',')))
-assert len(weights)==8 and sum(weights)==100
-assert weights[4]==0 and sum(w>0 for w in weights)==7
-assert weights[6]==weights[7] and min(weights[6:])>max(weights[:6])
+assert len(weights)==9 and sum(weights)==100
+assert weights[4]==0 and sum(w>0 for w in weights)==8
+assert weights[6]==weights[7] and min(weights[6:8])>max(weights[:6])
+assert weights[0]==20 and weights[8]==weights[5]*2 and all(w==int(w) for w in weights)
 rng=np.random.default_rng(73191)
 rolls=rng.random(100000)*sum(weights)
-counts=np.bincount(np.searchsorted(np.cumsum(weights),rolls),minlength=8)/1000
+counts=np.bincount(np.searchsorted(np.cumsum(weights),rolls),minlength=9)/1000
 assert np.max(abs(counts-np.array(weights)))<.5
 assert counts[4]==0
 for bait in (0,2,3):
-    boosted=np.array(weights)*[2.5 if bait==2 and i in (1,6,7) else 4 if bait==3 and i in (3,5) else 1 for i in range(8)]
+    boosted=np.array(weights)*[2.5 if bait==2 and i in (1,6,7) else 4 if bait==3 and i in (3,5,8) else 1 for i in range(9)]
     assert boosted.sum()>0 and (boosted[np.array(weights)>0]>0).all() and boosted[4]==0
     if bait==2:assert boosted[6:].sum()/boosted.sum()>.48
     if bait==3:assert boosted[3:6].sum()/boosted.sum()>.12
@@ -55,7 +56,7 @@ print('PASS: retired species never rolls; pond has 2.5m centre depth and a burie
 # Invert the actual species size tables: every pond catch must remain 5–12cm.
 size_source=(root/'Assets/_Game/Scripts/Fishing/FishSizeTable.cs').read_text()
 rows=[list(map(float,re.findall(r'([0-9.]+)f',row))) for row in re.findall(r'new float\[\] \{([^}]+)',size_source)]
-for species in (0,1,2,3,5,6,7):
+for species in (0,1,2,3,5,6,7,8):
     row=rows[species]
     for length in np.linspace(.05,.12,101):
         index=length/.05-1;low=int(index);fraction=index-low

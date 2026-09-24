@@ -46,6 +46,7 @@ public static class SuncrestReefSetup
         {
             EditorUtility.DisplayProgressBar("Suncrest Reef","Importing authored sea bass...",0.05f);
             SeaBassImporter.Install();
+        TunaModelSetup.InstallModels();
             var terrainMaterial=old.materialTemplate;
             var previous=Object.FindFirstObjectByType<ReefZone>();
             sea=water.BaseWaterLevel;

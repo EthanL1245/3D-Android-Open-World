@@ -9,28 +9,29 @@ public static class SeaBassImporter
 {
     private const string Folder="Assets/_Game/Reef/Source";
     public const string PrefabPath="Assets/Resources/Fishing/SeaBass.prefab";
-    public static void Install()
+    public static void Install() => InstallModel("SeaBass",PrefabPath);
+    public static void InstallModel(string assetName,string prefabPath)
     {
-        const string fbx=Folder+"/SeaBass.fbx", png=Folder+"/SeaBassTexture.png";
+        string fbx=Folder+"/"+assetName+".fbx", png=Folder+"/"+assetName+"Texture.png";
         AssetDatabase.ImportAsset(fbx,ImportAssetOptions.ForceSynchronousImport);
         var importer=AssetImporter.GetAtPath(fbx) as ModelImporter;
-        if(importer==null)throw new InvalidOperationException("SeaBass.fbx was not imported.");
+        if(importer==null)throw new InvalidOperationException("Fish FBX was not imported.");
         importer.importAnimation=true;importer.animationType=ModelImporterAnimationType.Generic;
         importer.importCameras=false;importer.importLights=false;
         importer.materialImportMode=ModelImporterMaterialImportMode.None;
         importer.optimizeGameObjects=false;importer.isReadable=true;importer.SaveAndReimport();
         var take=importer.defaultClipAnimations.OrderByDescending(c=>c.lastFrame-c.firstFrame).FirstOrDefault();
-        if(take==null)throw new InvalidOperationException("Sea bass authored animation take is missing.");
+        if(take==null)throw new InvalidOperationException("Fish authored animation take is missing.");
         take.name="Swim";take.loopTime=true;take.loopPose=true;
         importer.clipAnimations=new[]{take};importer.SaveAndReimport();
         var clip=AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>().First(c=>c.name=="Swim");
-        string controllerPath=Folder+"/SeaBass.controller";
+        string controllerPath=Folder+"/"+assetName+".controller";
         var controller=AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
         if(controller==null)controller=AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
         var machine=controller.layers[0].stateMachine;
         var state=machine.states.Select(s=>s.state).FirstOrDefault(s=>s.name=="Swim")??machine.AddState("Swim");
         state.motion=clip;machine.defaultState=state;EditorUtility.SetDirty(controller);
-        string matPath=Folder+"/SeaBass.mat";
+        string matPath=Folder+"/"+assetName+".mat";
         var material=AssetDatabase.LoadAssetAtPath<Material>(matPath);
         if(material==null)
         {
@@ -41,12 +42,12 @@ public static class SeaBassImporter
         // Explicit atlas sampling uses the same verified shader as the authored rod.
         material.shader=Resources.Load<Shader>("Fishing/FishingEquipment");
         if(material.shader==null)throw new InvalidOperationException("FishingEquipment shader missing.");
-        var atlas=BuildAtlas(png);
+        var atlas=BuildAtlas(png,assetName);
         material.SetTexture("_BaseMap",atlas);
         material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);
         material.SetColor("_BaseColor",Color.white);material.SetFloat("_Smoothness",0.4f);material.SetFloat("_Metallic",0.06f);
         EditorUtility.SetDirty(material);
-        var root=new GameObject("SeaBass");
+        var root=new GameObject(assetName);
         try
         {
             var visual=new GameObject("Visual");visual.transform.SetParent(root.transform,false);
@@ -61,7 +62,7 @@ public static class SeaBassImporter
             animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
             var head=model.GetComponentsInChildren<Transform>(true).FirstOrDefault(t=>t.name=="Bone");
             var tail=model.GetComponentsInChildren<Transform>(true).FirstOrDefault(t=>t.name=="Bone.004");
-            if(head==null||tail==null)throw new InvalidOperationException("Sea bass five-bone rig is missing.");
+            if(head==null||tail==null)throw new InvalidOperationException("Fish five-bone rig is missing.");
             var forward=(head.position-tail.position).normalized;
             var up=Vector3.ProjectOnPlane(model.transform.up,forward).normalized;
             if(up.sqrMagnitude<0.01f)up=Vector3.up;
@@ -77,7 +78,7 @@ public static class SeaBassImporter
             var points=new System.Collections.Generic.List<Vector3>();
             foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>())
             {
-                if(skin.sharedMesh.uv.Length==0)throw new InvalidOperationException("Sea bass UV0 missing.");
+                if(skin.sharedMesh.uv.Length==0)throw new InvalidOperationException("Fish UV0 missing.");
                 // Evaluate skinning explicitly in world space. This avoids FBX
                 // unit-scale ambiguity when baking a scaled renderer hierarchy.
                 var mesh=skin.sharedMesh;var vertices=mesh.vertices;var weights=mesh.boneWeights;
@@ -92,7 +93,7 @@ public static class SeaBassImporter
                     points.Add(root.transform.InverseTransformPoint(world));
                 }
             }
-            if(points.Count==0)throw new InvalidOperationException("Sea bass skinned mesh missing.");
+            if(points.Count==0)throw new InvalidOperationException("Fish skinned mesh missing.");
             float front=points.Max(p=>p.z),back=points.Min(p=>p.z);
             var lips=points.Where(p=>p.z>=front-(front-back)*.012f).ToArray();
             Vector3 lip=Vector3.zero;foreach(var p in lips)lip+=p;lip/=lips.Length;
@@ -100,34 +101,34 @@ public static class SeaBassImporter
             mouth.SetParent(head,false);mouth.position=root.transform.TransformPoint(lip);
             if(!AssetDatabase.IsValidFolder("Assets/Resources"))AssetDatabase.CreateFolder("Assets","Resources");
             if(!AssetDatabase.IsValidFolder("Assets/Resources/Fishing"))AssetDatabase.CreateFolder("Assets/Resources","Fishing");
-            var saved=PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
+            var saved=PrefabUtility.SaveAsPrefabAsset(root,prefabPath);
             AssetDatabase.SaveAssets();
-            if(saved==null || !AssetDatabase.GetDependencies(PrefabPath,true).Contains(AssetDatabase.GetAssetPath(atlas)))
-                throw new InvalidOperationException("Saved sea bass prefab lost its texture dependency.");
+            if(saved==null || !AssetDatabase.GetDependencies(prefabPath,true).Contains(AssetDatabase.GetAssetPath(atlas)))
+                throw new InvalidOperationException("Saved fish prefab lost its texture dependency.");
             foreach(var renderer in saved.GetComponentsInChildren<Renderer>(true))
                 foreach(var mat in renderer.sharedMaterials)
                     if(mat==null || mat.GetTexture("_BaseMap")!=atlas)
-                        throw new InvalidOperationException("Saved sea bass material is missing the authored atlas.");
+                        throw new InvalidOperationException("Saved fish material is missing the authored atlas.");
         }
         finally { UnityEngine.Object.DestroyImmediate(root); }
         AssetDatabase.SaveAssets();
     }
     // Decode the supplied PNG without depending on its TextureImporter artifact.
     // Native assets retain their GUID across reinstalls and are build dependencies.
-    private static Texture2D BuildAtlas(string png)
+    private static Texture2D BuildAtlas(string png,string assetName)
     {
         string source=Path.GetFullPath(Path.Combine(Application.dataPath,"..",png));
-        if(!File.Exists(source))throw new FileNotFoundException("Sea bass source PNG is missing. Pull the complete update.",source);
+        if(!File.Exists(source))throw new FileNotFoundException("Fish source PNG is missing. Pull the complete update.",source);
         byte[] bytes=File.ReadAllBytes(source);
         var decoded=new Texture2D(2,2,TextureFormat.RGBA32,true,false);
         try
         {
             if(!ImageConversion.LoadImage(decoded,bytes,false) || decoded.width<2 || decoded.height<2)
-                throw new InvalidOperationException("Cannot decode sea bass PNG: "+source+" ("+bytes.Length+" bytes). Pull the source PNG again.");
-            decoded.name="SeaBass Authored Atlas";
+                throw new InvalidOperationException("Cannot decode fish PNG: "+source+" ("+bytes.Length+" bytes). Pull the source PNG again.");
+            decoded.name=assetName+" Authored Atlas";
             decoded.wrapMode=TextureWrapMode.Repeat;decoded.filterMode=FilterMode.Trilinear;
             decoded.anisoLevel=2;decoded.Apply(true,false);
-            string path=Folder+"/SeaBassAtlas.asset";
+            string path=Folder+"/"+assetName+"Atlas.asset";
             var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             if(atlas==null)
             {
@@ -138,8 +139,8 @@ public static class SeaBassImporter
             EditorUtility.SetDirty(atlas);AssetDatabase.SaveAssets();
             var saved=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             if(saved==null || saved.width<2 || saved.height<2)
-                throw new InvalidOperationException("Could not save the decoded sea bass atlas at "+path);
-            Debug.Log("Sea bass atlas ready: "+saved.width+" x "+saved.height+" from the supplied PNG.");
+                throw new InvalidOperationException("Could not save the decoded fish atlas at "+path);
+            Debug.Log("Fish atlas ready: "+saved.width+" x "+saved.height+" from the supplied PNG.");
             return saved;
         }
         finally {if(decoded!=null)UnityEngine.Object.DestroyImmediate(decoded);}
@@ -147,7 +148,7 @@ public static class SeaBassImporter
     private static Bounds BoundsOf(GameObject root)
     {
         var renderers=root.GetComponentsInChildren<Renderer>();
-        if(renderers.Length==0)throw new InvalidOperationException("Sea bass mesh missing.");
+        if(renderers.Length==0)throw new InvalidOperationException("Fish mesh missing.");
         var bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);return bounds;
     }
 }

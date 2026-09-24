@@ -15,15 +15,15 @@ public sealed class ShopPreview : MonoBehaviour
     private bool busy;
     private Material itemMaterial;
     private RenderTexture rendering;
-    public void Attach(RawImage target,int species,float kg,string gear=null)
+    public void Attach(RawImage target,int species,float kg,string gear=null,bool fitWholeFish=false)
     {
         target.enabled=false; // A RawImage with no texture is a white rectangle.
-        string key=gear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture));
+        string key=(fitWholeFish?"index:":"")+(gear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
         if(cache.TryGetValue(key,out var ready)) {target.texture=ready;target.enabled=ready.IsCreated();if(target.enabled)return;cache.Remove(key);Destroy(ready);}
-        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,gear));else busy=false;});
+        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,gear,fitWholeFish));else busy=false;});
     }
     private void Update() { if(!busy && requests.Count>0) {busy=true;requests.Dequeue()();} }
-    private IEnumerator Render(RawImage target,string key,int species,float kg,string gear)
+    private IEnumerator Render(RawImage target,string key,int species,float kg,string gear,bool fitWholeFish)
     {
         if(cache.TryGetValue(key,out var existing)) {target.texture=existing;target.enabled=true;busy=false;yield break;}
         if(stage==null)
@@ -57,7 +57,7 @@ public sealed class ShopPreview : MonoBehaviour
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0){Destroy(model);busy=false;yield break;}
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
-        if(gear==null)
+        if(gear==null && !fitWholeFish)
         {
 
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);

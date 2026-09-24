@@ -34,6 +34,7 @@ public struct FishSpeciesDefinition
 
 public static class FishCatalog
 {
+    public const int BigeyeTunaId = 8;
     public const int RedSnapperId = 1;
     public const int YellowfinTunaId = 5;
     public const int YellowGoatfishId = 6;
@@ -110,11 +111,12 @@ public static class FishCatalog
             0.43f,
             14.0f,
             44
-        )
+        ),
+        new FishSpeciesDefinition("Bigeye Tuna",new Color(.1f,.22f,.32f),new Color(.75f,.8f,.8f),3f,40f,.86f,4f,220)
     };
 
     public static int Count => Species.Length;
-    public static readonly int[] ActiveIds = {0,1,2,3,5,6,7};
+    public static readonly int[] ActiveIds = {0,1,2,3,5,6,7,8};
     public static int CanonicalId(int id) => id==4 ? YellowfinTunaId : id;
 
     public static FishSpeciesDefinition Get(int id)
