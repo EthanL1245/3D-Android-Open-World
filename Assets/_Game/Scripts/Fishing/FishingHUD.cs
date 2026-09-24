@@ -32,9 +32,6 @@ public class FishingHUD : MonoBehaviour
     private GameObject castPanel;
     private CastPowerGauge castGauge;
     private GameObject cancelCast;
-    private Text baitCaption;
-    private ShopProgress baitProgress;
-    private float baitRefreshTimer;
     private FirstPersonController castPlayer;
     private Text castCaption;
     private readonly Text[] damageLabels=new Text[8];
@@ -50,21 +47,23 @@ public class FishingHUD : MonoBehaviour
     }
     public void SetActionInteractable(bool value)
     {if(actionInput!=null)actionInput.SetInteractable(value);}
-    public void SetCastPower(bool visible,float power,float distance,float minimumPower=0,bool rangeAvailable=true)
+    public void SetCastPower(bool visible,float power,float distance,bool[] validSamples=null,bool rangeAvailable=true)
     {
         if(castPanel==null && visible)
         {
             castPanel=new GameObject("QuarterCircleCastGauge",typeof(RectTransform),typeof(CastPowerGauge));
             castPanel.transform.SetParent(actionButtonObject.transform,false);
-            var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(310,310);
+            var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(410,410);
             castGauge=castPanel.GetComponent<CastPowerGauge>();castGauge.raycastTarget=false;
-            castCaption=CreateText("CastDistance",castPanel.transform,"",25,TextAnchor.MiddleCenter);
-            var c=castCaption.rectTransform;c.anchorMin=c.anchorMax=new Vector2(.5f,.5f);c.sizeDelta=new Vector2(280,48);c.anchoredPosition=new Vector2(0,-181);
+            var captionBox=CreatePanel("GaugeCaption",castPanel.transform,new Color(.02f,.07f,.09f,.96f));
+            captionBox.GetComponent<Image>().raycastTarget=false;
+            var c=captionBox.GetComponent<RectTransform>();c.anchorMin=c.anchorMax=new Vector2(.5f,.5f);c.sizeDelta=new Vector2(330,56);c.anchoredPosition=new Vector2(-55,238);
+            castCaption=CreateText("CastDistance",captionBox.transform,"",29,TextAnchor.MiddleCenter);StretchFullScreen(castCaption.rectTransform);
         }
         if(castPanel==null)return;castPanel.SetActive(visible);
         if(!visible)return;
-        castGauge.Set(power,minimumPower,rangeAvailable);
-        castCaption.text=$"{distance:0.0} m"+(!rangeAvailable || power<minimumPower?" • BLOCKED":"");
+        castGauge.Set(power,validSamples,rangeAvailable);
+        castCaption.text=$"{distance:0.0} m"+(!rangeAvailable || !FishingRules.IsCastPowerAvailable(validSamples,power)?" • BLOCKED":"");
     }
     public void SetCastCancel(bool visible,System.Action callback)
     {
@@ -75,13 +74,13 @@ public class FishingHUD : MonoBehaviour
         if(cancelCast==null && visible && jump!=null)
         {
             cancelCast=CreatePanel("CancelCast",jump.parent,new Color(.72f,.09f,.07f,.96f));
-            var r=cancelCast.GetComponent<RectTransform>();r.anchorMin=jump.anchorMin;r.anchorMax=jump.anchorMax;r.pivot=jump.pivot;r.sizeDelta=jump.sizeDelta;r.anchoredPosition=jump.anchoredPosition;
+            var r=cancelCast.GetComponent<RectTransform>();r.anchorMin=jump.anchorMin;r.anchorMax=jump.anchorMax;r.pivot=jump.pivot;r.sizeDelta=jump.sizeDelta;r.anchoredPosition=castPlayer.JumpRestPosition;
             var text=CreateText("Cancel",cancelCast.transform,"CANCEL\nCAST",26,TextAnchor.MiddleCenter);StretchFullScreen(text.rectTransform);
             cancelCast.AddComponent<Button>();
         }
         if(visible && cancelCast!=null && jump!=null)
         {
-            var r=cancelCast.GetComponent<RectTransform>();r.anchorMin=jump.anchorMin;r.anchorMax=jump.anchorMax;r.pivot=jump.pivot;r.sizeDelta=jump.sizeDelta;r.anchoredPosition=jump.anchoredPosition;
+            var r=cancelCast.GetComponent<RectTransform>();r.anchorMin=jump.anchorMin;r.anchorMax=jump.anchorMax;r.pivot=jump.pivot;r.sizeDelta=jump.sizeDelta;r.anchoredPosition=castPlayer.JumpRestPosition;
         }
         castPlayer.SetCastMode(visible);
         if(cancelCast!=null)
@@ -89,14 +88,6 @@ public class FishingHUD : MonoBehaviour
             cancelCast.SetActive(visible);var b=cancelCast.GetComponent<Button>();b.onClick.RemoveAllListeners();
             if(callback!=null)b.onClick.AddListener(()=>callback());
         }
-    }
-    private void RefreshBait()
-    {
-        if(baitCaption==null)return;
-        if(baitProgress==null)baitProgress=system.GetComponent<ShopProgress>();
-        int id=baitProgress!=null?baitProgress.Data.baitEquipped:0;
-        if(id==1)id=0;
-        baitCaption.text="BAIT • "+ShopCatalog.BaitNames[id].ToUpperInvariant()+"\n"+(id==0?"∞  UNLIMITED":baitProgress.Data.bait[id]+" REMAINING");
     }
     public void ShowDamage(int amount,Vector3 screenPoint)
     {
@@ -144,7 +135,6 @@ public class FishingHUD : MonoBehaviour
     private void Update()
     {
         UpdateDamage();
-        if((baitRefreshTimer-=Time.deltaTime)<=0){baitRefreshTimer=.25f;RefreshBait();}
         if (catchPanelTimer <= 0f)
             return;
 
@@ -483,11 +473,6 @@ public class FishingHUD : MonoBehaviour
         BuildFightPanel();
         BuildInventory();
         BuildCatchPanel();
-        var baitPanel=CreatePanel("EquippedBait",root.transform,new Color(.025f,.09f,.11f,.92f));
-        var br=baitPanel.GetComponent<RectTransform>();br.anchorMin=br.anchorMax=br.pivot=new Vector2(1,0);br.anchoredPosition=new Vector2(-22,24);br.sizeDelta=new Vector2(285,100);
-        baitPanel.GetComponent<Image>().raycastTarget=false;
-        baitCaption=CreateText("BaitAndCount",baitPanel.transform,"",24,TextAnchor.MiddleCenter);StretchFullScreen(baitCaption.rectTransform);
-
         root.transform.SetAsLastSibling();
     }
 
@@ -664,7 +649,7 @@ public class FishingHUD : MonoBehaviour
 
         rect.anchoredPosition =
             new Vector2(
-                -180f,
+                -225f,
                 400f
             );
 

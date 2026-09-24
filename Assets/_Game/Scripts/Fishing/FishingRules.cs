@@ -5,20 +5,20 @@ public static class FishingRules
 {
     public static float CastPower(float elapsed) => 1f-Mathf.Sqrt(1f-Mathf.PingPong(Mathf.Max(0,elapsed)/1.25f,1f));
     public static float CastDistance(float power,float maximum) => Mathf.Lerp(5f,maximum,Mathf.Clamp01(power));
-    // Only an invalid prefix is allowed. A hole after the first valid sample
-    // blocks the entire range, including an invalid maximum endpoint.
+    // Any continuous interval is usable; gaps and either end can be blocked.
     public static bool ContinuousCastRange(bool[] samples,out float minimumPower)
     {
         minimumPower=1f;
         if(samples==null || samples.Length<2)return false;
-        int first=-1;
-        for(int i=0;i<samples.Length;i++)
-        {
-            if(samples[i]){if(first<0)first=i;}
-            else if(first>=0)return false;
-        }
-        if(first<0 || first==samples.Length-1)return false;
-        minimumPower=first/(float)(samples.Length-1);return true;
+        for(int i=0;i<samples.Length-1;i++)if(samples[i] && samples[i+1])
+        {minimumPower=i/(float)(samples.Length-1);return true;}
+        return false;
+    }
+    public static bool IsCastPowerAvailable(bool[] samples,float power)
+    {
+        if(samples==null || samples.Length<2)return false;
+        int i=Mathf.Clamp((int)(Mathf.Clamp01(power)*(samples.Length-1)),0,samples.Length-2);
+        return samples[i] && samples[i+1];
     }
     public static float WeightAtDepth(int species,float depth,float random01)
     {

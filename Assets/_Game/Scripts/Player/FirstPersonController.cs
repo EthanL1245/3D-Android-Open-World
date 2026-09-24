@@ -92,8 +92,16 @@ public class FirstPersonController : MonoBehaviour
     private RectTransform swimUpRect;
     private Vector2 landJumpPosition;
     private bool swimLayout;
+    private FishingSystem swimmingFishing;
     private void LateUpdate()
     {
+        // Stow before rendering, even if movement entered swimming after the
+        // fishing Update ran this frame. This also restores the swim controls.
+        if(IsSwimming)
+        {
+            if(swimmingFishing==null)swimmingFishing=GetComponent<FishingSystem>();
+            if(swimmingFishing!=null)swimmingFishing.OnPlayerSwimming();
+        }
         if(jumpButton==null)return;
         if(swimDownButton==null)
         {
@@ -116,6 +124,7 @@ public class FirstPersonController : MonoBehaviour
         }
     }
     private bool castMode;
+    public Vector2 JumpRestPosition => swimUpRect!=null?landJumpPosition:JumpControl!=null?JumpControl.anchoredPosition:Vector2.zero;
     public RectTransform JumpControl => jumpButton!=null?jumpButton.GetComponent<RectTransform>():null;
     public void SetCastMode(bool value)
     {

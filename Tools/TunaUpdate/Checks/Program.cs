@@ -29,15 +29,16 @@ class Program {
   Check(FishingRules.CastDistance(0,30)==5 && FishingRules.CastDistance(1,30)==30,"Close/far endpoints");
   Check(FishingRules.ContinuousCastRange(new[]{true,true,true},out float allMin) && allMin==0,"All water enabled");
   Check(FishingRules.ContinuousCastRange(new[]{false,false,true,true,true},out float min) && min==.5f,"Invalid prefix greyed");
-  Check(!FishingRules.ContinuousCastRange(new[]{true,false,true,true},out _),"Interior gap disables everything");
-  Check(!FishingRules.ContinuousCastRange(new[]{true,true,false},out _),"Blocked max disables");
+  Check(FishingRules.ContinuousCastRange(new[]{true,false,true,true},out _),"Valid interval beyond gap is usable");
+  Check(FishingRules.ContinuousCastRange(new[]{true,true,false},out _),"Blocked max does not disable nearer interval");
   Check(!FishingRules.ContinuousCastRange(new[]{false,false,false},out _),"All land disables");
   Check(!FishingRules.ContinuousCastRange(new[]{false,false,true},out _),"Single endpoint is not a continuous range");
   for(int bits=0;bits<256;bits++){
    var samples=Enumerable.Range(0,8).Select(i=>(bits&(1<<i))!=0).ToArray();
    int first=Array.IndexOf(samples,true);
-   bool expected=first>=0 && first<7 && samples.Skip(first).All(x=>x);
+   bool expected=Enumerable.Range(0,7).Any(i=>samples[i] && samples[i+1]);
    Check(FishingRules.ContinuousCastRange(samples,out _)==expected,"Exhaustive range topology");
+   for(int i=0;i<7;i++)Check(FishingRules.IsCastPowerAvailable(samples,(i+.5f)/7)==(samples[i] && samples[i+1]),"Gauge interval mask matches cast eligibility");
   }
   float early=FishingRules.CastPower(.2f)-FishingRules.CastPower(.1f),late=FishingRules.CastPower(1.24f)-FishingRules.CastPower(1.14f);
   Check(late>3*early,"Needle speeds up near red");

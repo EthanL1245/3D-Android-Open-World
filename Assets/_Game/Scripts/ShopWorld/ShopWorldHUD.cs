@@ -22,7 +22,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private bool dirty;
     private string shopSession, bagPicker;
     private int bagSort, speciesFilter=-1;
-    private GameObject menuShortcut, indexShortcut;
+    private GameObject menuShortcut, indexShortcut, baitShortcut;
+    private RawImage baitPicture;
+    private Text baitQuantity, baitName;
+    private ShopPreview baitPreview;
+    private int shownBait=-1,shownBaitQuantity=-1;
     private Texture2D islandThumbnail;
     private readonly List<GameObject> navigationTabs=new List<GameObject>();
     private static readonly string[] SortNames={"Newest first","Heaviest first","Lightest first","Highest value","Species name"};
@@ -46,7 +50,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(root==null) return;
         if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)
         { if(MenuOpen) Close(); else Open("travel"); }
-        menuShortcut.SetActive(!MenuOpen);indexShortcut.SetActive(!MenuOpen);
+        menuShortcut.SetActive(!MenuOpen);indexShortcut.SetActive(!MenuOpen);baitShortcut.SetActive(!MenuOpen);RefreshBaitShortcut();
         if(shopSession==null && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
         string nearest=travel.Nearest();
         nearbyButton.SetActive(!MenuOpen && nearest!=null && !travel.Traveling);
@@ -90,6 +94,14 @@ public sealed class ShopWorldHUD : MonoBehaviour
         Rect(menu.GetComponent<RectTransform>(),new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-24,-20),new Vector2(260,64));
         indexShortcut=ButtonAt(root.transform,"ISLAND / FISH INDEX",()=>Open("islands")).gameObject;
         Rect(indexShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(24,-20),new Vector2(290,76));
+        baitShortcut=ButtonAt(root.transform,"",()=>Open("bait")).gameObject;
+        Rect(baitShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(24,-108),new Vector2(176,180));
+        baitQuantity=baitShortcut.GetComponentInChildren<Text>();Anchor(baitQuantity.rectTransform,0,0,1,.25f,6,4,-6,0);
+        baitQuantity.resizeTextMaxSize=36;baitQuantity.fontSize=36;
+        baitName=Label(baitShortcut.transform,"WORMS",20,Color.white);baitName.alignment=TextAnchor.MiddleCenter;Anchor(baitName.rectTransform,0,.81f,1,1,6,0,-6,-4);
+        var picture=new GameObject("EquippedBaitPicture",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(baitShortcut.transform,false);
+        baitPicture=picture.GetComponent<RawImage>();baitPicture.raycastTarget=false;Anchor(baitPicture.rectTransform,0,.25f,1,.81f,30,0,-30,0);
+        baitPreview=gameObject.AddComponent<ShopPreview>();RefreshBaitShortcut();
         nearbyButton=ButtonAt(root.transform,"OPEN",()=>Open(travel.Nearest()??"travel")).gameObject;
         nearLabel=nearbyButton.GetComponentInChildren<Text>();
         Rect(nearbyButton.GetComponent<RectTransform>(),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0,130),new Vector2(300,58));
@@ -126,9 +138,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
         bool index=page=="islands" || page=="reef-fish";
         if(index)heading.text=page=="islands"?"ISLAND INDEX":"SUNCREST REEF • FISH INDEX";
-        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !index);
+        if(page=="bait")heading.text="CHOOSE BAIT";
+        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !index && page!="bait");
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
+        else if(page=="bait") BaitPage(false);
         else if(page=="islands") IslandIndex(); else if(page=="reef-fish") ReefFishIndex();
         else HabitatPage(page);
         Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=top?1f:position;
@@ -254,10 +268,28 @@ public sealed class ShopWorldHUD : MonoBehaviour
                 },can && !progress.ReadOnly,gear:k.ToString());
             }
         }
+        if(shop)BaitPage(true);
+    }
+    private void RefreshBaitShortcut()
+    {
+        if(baitShortcut==null || progress==null)return;
+        int id=progress.Data.baitEquipped;if(id==1)id=0;
+        int quantity=id==0?-1:progress.Data.bait[id];
+        if(shownBait!=id)
+        {
+            shownBait=id;shownBaitQuantity=int.MinValue;
+            baitName.text=ShopCatalog.BaitNames[id].ToUpperInvariant();
+            baitPreview.Attach(baitPicture,0,1,"Bait"+id);
+        }
+        if(shownBaitQuantity!=quantity){shownBaitQuantity=quantity;baitQuantity.text=id==0?"∞":quantity.ToString();}
+    }
+    private void BaitPage(bool shop)
+    {
         for(int i=0;i<4;i++)
         {
             if(i==1)continue; // Worms are now the free, infinite default.
-            int id=i; string effect=id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
+            int id=i;if(!shop && id!=0 && progress.Data.bait[id]<=0)continue;
+            string effect=id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
             string count=id==0?"Unlimited":$"{progress.Data.bait[id]} remaining";
             if(shop && id>0) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
             if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (id==0 || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);

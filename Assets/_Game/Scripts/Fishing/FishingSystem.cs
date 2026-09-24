@@ -279,20 +279,8 @@ public class FishingSystem : MonoBehaviour
         if(heldRecord!=null && inventory!=null && !System.Linq.Enumerable.Contains(inventory.Fish,heldRecord))
         {ClearHeldFish();RefreshHandHud();}
         UpdateHeldFishAnimation();
-        // If the player submerges while the rod is equipped, put the
-        // entire fishing setup away immediately. Nothing snaps and nothing is
-        // lost: active casting/fighting state is simply cancelled and the rod,
-        // bobber and line return to their stored/unequipped state.
-        if (rodEquipped &&
-            playerCamera != null &&
-            oceanWater != null &&
-            oceanWater.IsPointUnderwater(
-                playerCamera.transform.position
-            ))
-        {
-            UnequipHands();
-            return;
-        }
+        if(rodEquipped && MustStowForSwimming())
+        {UnequipHands();return;}
 
         if(shopMode || ShopWorldHUD.MenuOpen) return;
         if (hud == null)
@@ -308,8 +296,8 @@ public class FishingSystem : MonoBehaviour
             if(charging)
             {
                 float power=FishingRules.CastPower(Time.time-chargeStarted);
-                hud.SetCastPower(true,power,FishingRules.CastDistance(power,maximumCastDistance),minimumCastPower,castRangeAvailable);
-                hud.SetCastAvailable(castRangeAvailable && power>=minimumCastPower);
+                hud.SetCastPower(true,power,FishingRules.CastDistance(power,maximumCastDistance),castSamples,castRangeAvailable);
+                hud.SetCastAvailable(castRangeAvailable && FishingRules.IsCastPowerAvailable(castSamples,power));
             }
             else hud.SetCastAvailable(castRangeAvailable);
         }
@@ -391,19 +379,19 @@ public class FishingSystem : MonoBehaviour
         gameplayCanvas = canvas;
     }
 
+    public void OnPlayerSwimming()
+    {if(rodEquipped)UnequipHands();}
+    private bool MustStowForSwimming()
+    {
+        var controller=GetComponent<FirstPersonController>();
+        return (controller!=null && controller.IsSwimming) ||
+            (playerCamera!=null && oceanWater!=null && oceanWater.IsPointUnderwater(playerCamera.transform.position));
+    }
     public void EquipRod()
     {
         if(shopMode)return;
 
-        if (playerCamera != null &&
-            oceanWater != null &&
-            oceanWater.IsPointUnderwater(
-                playerCamera.transform.position
-            ))
-        {
-            UnequipHands();
-            return;
-        }
+        if(MustStowForSwimming()){UnequipHands();return;}
 
         CancelFishing();
 
@@ -668,8 +656,8 @@ public class FishingSystem : MonoBehaviour
 
     private void HandleActionPressed()
     {
-        if (!rodEquipped)
-            return;
+        if (!rodEquipped)return;
+        if(MustStowForSwimming()){UnequipHands();return;}
 
         switch (state)
         {
@@ -697,7 +685,7 @@ public class FishingSystem : MonoBehaviour
         float power=FishingRules.CastPower(Time.time-chargeStarted);
         RefreshCastRange();
         Vector3 target=ProjectCastPoint(power);
-        if(!castRangeAvailable || power<minimumCastPower || !CanLandCast(target,true))
+        if(!castRangeAvailable || !FishingRules.IsCastPowerAvailable(castSamples,power) || !CanLandCast(target,true))
         {FailFishing("That cast distance is blocked. Cast cancelled — no bait used.");return;}
         hud.SetCastCancel(false,null);
         hud.SetActionInteractable(true);
@@ -2547,13 +2535,8 @@ public class FishingSystem : MonoBehaviour
         float lineDistance =
             GetCurrentLineDistance();
 
-        float catchDistance =
-            GetRemainingCatchDistance();
-
         string distanceText =
-            "DIST " +
-            catchDistance.ToString("0.0") +
-            " m   LINE " +
+            "LINE " +
             lineDistance.ToString("0.0") +
             "/" +
             maximumLineDistance.ToString("0") +
