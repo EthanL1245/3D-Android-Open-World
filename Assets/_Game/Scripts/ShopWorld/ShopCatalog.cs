@@ -19,6 +19,8 @@ public sealed class HabitatDefinition
 
 public static class ShopCatalog
 {
+    public const int StarterLure=4;
+    public static bool PermanentBait(int id)=>id==0 || id==StarterLure;
     public static readonly HabitatDefinition[] Habitats = {
         new HabitatDefinition("nano", "Tidepool Cabinet", 250, 3, 0.8f, 1.8f, 2.2f, 1.2f, 1.4f),
         new HabitatDefinition("reef", "Reef Gallery", 700, 6, 4f, 14f, 4.8f, 2.2f, 2.8f),
@@ -32,8 +34,8 @@ public static class ShopCatalog
     public static readonly string[] RodNames = { "Woodland Rod", "Coastal Carbon", "Offshore Carbon", "Bluewater Elite" };
     public static readonly string[] ReelNames = { "Starter Reel", "Smooth Drag", "Precision Drag", "Deepwater Pro" };
     public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
-    public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid" };
-    public static readonly int[] BaitPrices = { 0, 35, 90, 180 };
+    public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Starter Lure" };
+    public static readonly int[] BaitPrices = { 0, 35, 90, 180, 0 };
     public static readonly int[] RodPrices = { 0, 180, 650, 1800 };
     public static readonly int[] ReelPrices = { 0, 160, 550, 1500 };
     public static readonly int[] LinePrices = { 0, 100, 400, 1100 };

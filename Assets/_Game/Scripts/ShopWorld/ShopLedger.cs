@@ -97,6 +97,7 @@ using System.Collections.Generic;
     public int ConsumeBait()
     {
         int id=baitEquipped;
+        if(id==ShopCatalog.StarterLure)return id;
         if (id < 2 || id > 3 || bait[id] <= 0) { baitEquipped=0; return 0; }
         bait[id]--; if (bait[id]==0) baitEquipped=0; return id;
     }

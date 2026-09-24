@@ -28,6 +28,13 @@ public static class FishingRules
         float sample=Mathf.Pow(Mathf.Clamp01(random01),Mathf.Lerp(3.5f,.65f,deep));
         return Mathf.Lerp(fish.MinWeightKg,fish.MaxWeightKg,upper*sample);
     }
+    public static float WeightAtCastDistance(int species,float distance,float random01)
+        => WeightAtDepth(species,Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance)),random01);
+    public static float LureBiteChance(float castDistance,float retrievedFraction)
+    {
+        float fullChance=.5f*Mathf.Clamp01(castDistance/30f);
+        return 1f-Mathf.Pow(1f-fullChance,Mathf.Clamp01(retrievedFraction));
+    }
     public static int MaxHealth(int species,float kg)
     {
         var fish=FishCatalog.Get(species);

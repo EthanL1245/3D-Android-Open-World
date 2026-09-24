@@ -138,7 +138,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
         bool index=page=="islands" || page=="reef-fish";
         if(index)heading.text=page=="islands"?"ISLAND INDEX":"SUNCREST REEF • FISH INDEX";
-        if(page=="bait")heading.text="CHOOSE BAIT";
+        if(page=="bait")heading.text="BAIT / LURES";
         foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !index && page!="bait");
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
@@ -187,11 +187,12 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void ReefFishIndex()
     {
-        Row(ReefCatalog.StarterName, "Eight species • deeper water favors bigger fish. Palm Pond juveniles: 5–12 cm. In-game ocean ranges below; specialty bait modifies base odds.", "ISLAND INDEX",()=>Open("islands"));
-        foreach(int id in FishCatalog.ActiveIds.OrderByDescending(ReefCatalog.Weight))
+        int equipped=progress.Data.baitEquipped;
+        Row(ReefCatalog.StarterName, ShopCatalog.BaitNames[equipped]+" equipped • odds below apply when a fish bites. "+(equipped==ShopCatalog.StarterLure?"Longer casts favor bigger fish; bites only while reeling.":"Deeper water favors bigger fish.")+" Palm Pond: 5–12 cm.", "ISLAND INDEX",()=>Open("islands"));
+        foreach(int id in FishCatalog.ActiveIds.OrderByDescending(id=>ReefCatalog.EquippedChance(id,equipped)))
         {
             var species=FishCatalog.Get(id);
-            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.Weight(id).ToString("0")+"% base chance\nOcean: "+FishCatalog.FormatWeight(species.MinWeightKg)+" – "+FishCatalog.FormatWeight(species.MaxWeightKg)+"\nLength: "+ShopCatalog.FishLength(id,species.MinWeightKg).ToString("0.00")+" – "+ShopCatalog.FishLength(id,species.MaxWeightKg).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
+            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.EquippedChance(id,equipped).ToString("0")+"% equipped chance\nOcean: "+FishCatalog.FormatWeight(species.MinWeightKg)+" – "+FishCatalog.FormatWeight(species.MaxWeightKg)+"\nLength: "+ShopCatalog.FishLength(id,species.MinWeightKg).ToString("0.00")+" – "+ShopCatalog.FishLength(id,species.MaxWeightKg).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
                 fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
     }
@@ -274,25 +275,25 @@ public sealed class ShopWorldHUD : MonoBehaviour
     {
         if(baitShortcut==null || progress==null)return;
         int id=progress.Data.baitEquipped;if(id==1)id=0;
-        int quantity=id==0?-1:progress.Data.bait[id];
+        int quantity=ShopCatalog.PermanentBait(id)?-1:progress.Data.bait[id];
         if(shownBait!=id)
         {
             shownBait=id;shownBaitQuantity=int.MinValue;
             baitName.text=ShopCatalog.BaitNames[id].ToUpperInvariant();
             baitPreview.Attach(baitPicture,0,1,"Bait"+id);
         }
-        if(shownBaitQuantity!=quantity){shownBaitQuantity=quantity;baitQuantity.text=id==0?"∞":quantity.ToString();}
+        if(shownBaitQuantity!=quantity){shownBaitQuantity=quantity;baitQuantity.text=ShopCatalog.PermanentBait(id)?"∞":quantity.ToString();}
     }
     private void BaitPage(bool shop)
     {
-        for(int i=0;i<4;i++)
+        for(int i=0;i<ShopCatalog.BaitNames.Length;i++)
         {
             if(i==1)continue; // Worms are now the free, infinite default.
-            int id=i;if(!shop && id!=0 && progress.Data.bait[id]<=0)continue;
-            string effect=id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
-            string count=id==0?"Unlimited":$"{progress.Data.bait[id]} remaining";
-            if(shop && id>0) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
-            if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (id==0 || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
+            int id=i;if(!shop && !ShopCatalog.PermanentBait(id) && progress.Data.bait[id]<=0)continue;
+            string effect=id==ShopCatalog.StarterLure?"Permanent lure. Rare-fish focus. Hold REEL for bites; longer casts favor larger fish.":id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
+            string count=ShopCatalog.PermanentBait(id)?"Unlimited":$"{progress.Data.bait[id]} remaining";
+            if(shop && !ShopCatalog.PermanentBait(id)) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
+            if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (ShopCatalog.PermanentBait(id) || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
         }
     }
     private void MarketPage()

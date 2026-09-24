@@ -21,13 +21,19 @@ public static class ReefCatalog
     public static Zone Starter => Zones[0];
     public static float Weight(int species) => species>=0 && species<Starter.weights.Length ? Starter.weights[species] : 0f;
     public static string Rarity(int id) => Weight(id)>=18 ? "Common" : Weight(id)>=10 ? "Uncommon" : Weight(id)>=4 ? "Rare" : "Very rare";
+    // Whole-percent tables are shared by the roll and equipped index.
+    private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2};
+    private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12};
+    private static readonly float[] LureOdds={4,5,5,24,0,18,4,4,36};
+    public static float EquippedChance(int species,int bait)
+    {
+        var weights=bait==4?LureOdds:bait==2?ShrimpOdds:bait==3?SquidOdds:Starter.weights;
+        return species>=0 && species<weights.Length?weights[species]:0;
+    }
     public static int Roll(float random01, int bait = 0)
     {
-        float total=0; for(int i=0;i<Starter.weights.Length;i++) total+=Weight(i)*BaitMultiplier(i,bait);
-        float pick=Mathf.Clamp01(random01)*total;
-        for(int i=0;i<Starter.weights.Length;i++) {pick-=Weight(i)*BaitMultiplier(i,bait);if(pick<0)return i;}
+        float pick=Mathf.Clamp01(random01)*100f;
+        for(int i=0;i<Starter.weights.Length;i++){pick-=EquippedChance(i,bait);if(pick<0)return i;}
         return Starter.weights.Length-1;
     }
-    private static float BaitMultiplier(int id,int bait) => bait==2 ? (id==1 || id==6 || id==7 ? 2.5f:1f) : bait==3 ? (id==3 || id==5 || id==8 ? 4f:1f):1f;
 }
-

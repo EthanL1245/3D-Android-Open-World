@@ -53,11 +53,11 @@ public class FishingHUD : MonoBehaviour
         {
             castPanel=new GameObject("QuarterCircleCastGauge",typeof(RectTransform),typeof(CastPowerGauge));
             castPanel.transform.SetParent(actionButtonObject.transform,false);
-            var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(410,410);
+            var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(470,470);
             castGauge=castPanel.GetComponent<CastPowerGauge>();castGauge.raycastTarget=false;
             var captionBox=CreatePanel("GaugeCaption",castPanel.transform,new Color(.02f,.07f,.09f,.96f));
             captionBox.GetComponent<Image>().raycastTarget=false;
-            var c=captionBox.GetComponent<RectTransform>();c.anchorMin=c.anchorMax=new Vector2(.5f,.5f);c.sizeDelta=new Vector2(330,56);c.anchoredPosition=new Vector2(-55,238);
+            var c=captionBox.GetComponent<RectTransform>();c.anchorMin=c.anchorMax=new Vector2(.5f,.5f);c.sizeDelta=new Vector2(330,56);c.anchoredPosition=new Vector2(-95,268);
             castCaption=CreateText("CastDistance",captionBox.transform,"",29,TextAnchor.MiddleCenter);StretchFullScreen(castCaption.rectTransform);
         }
         if(castPanel==null)return;castPanel.SetActive(visible);

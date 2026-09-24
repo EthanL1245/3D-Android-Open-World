@@ -44,7 +44,7 @@ public sealed class ShopProgress : MonoBehaviour
         foreach(GearKind kind in Enum.GetValues(typeof(GearKind)))
             if(d.Owned(kind)<0 || d.Owned(kind)>3 || d.Equipped(kind)<0 || d.Equipped(kind)>d.Owned(kind))
                 throw new InvalidOperationException("Invalid saved equipment");
-        if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>3) throw new InvalidOperationException("Invalid saved balance or bait");
+        if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>ShopCatalog.StarterLure) throw new InvalidOperationException("Invalid saved balance or bait");
         foreach(int amount in d.bait) if(amount<0) throw new InvalidOperationException("Invalid bait quantity");
         foreach(var habitat in d.habitats) if(habitat==null || ShopCatalog.Habitat(habitat.id)==null || habitat.fish==null)
             throw new InvalidOperationException("Invalid saved habitat");
@@ -94,5 +94,5 @@ public sealed class ShopProgress : MonoBehaviour
     public bool CanManage => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InHome;
     public bool Deposit(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Deposit(id,fish));
     public bool Withdraw(string id,CaughtFishRecord fish) => CanManage && ShopDimensionManager.Instance.Near(id) && Commit(Data.Withdraw(id,fish));
-    public int TakeBait() { if(ReadOnly) return 0; int id=Data.ConsumeBait(); if(id!=0) Save(); return id; }
+    public int TakeBait() { if(ReadOnly) return 0; int id=Data.ConsumeBait(); if(!ShopCatalog.PermanentBait(id)) Save(); return id; }
 }

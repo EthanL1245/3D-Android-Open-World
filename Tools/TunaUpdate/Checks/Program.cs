@@ -21,7 +21,7 @@ class Program {
   Check(ReefCatalog.Weight(6)==22 && ReefCatalog.Weight(7)==22,"Equal goatfish redistribution");
   var counts=new int[FishCatalog.Count];for(int i=0;i<100000;i++)counts[ReefCatalog.Roll((i+.5f)/100000)]++;
   for(int id=0;id<counts.Length;id++)Check(Math.Abs(counts[id]-1000*ReefCatalog.Weight(id))<=1,"Roll distribution "+id);
-  for(int bait=0;bait<4;bait++){
+  for(int bait=0;bait<5;bait++){
    var baitCounts=new int[FishCatalog.Count];for(int i=0;i<100000;i++)baitCounts[ReefCatalog.Roll((i+.5f)/100000,bait)]++;
    Check(baitCounts[4]==0,"Retired fish excluded");Check(Math.Abs(baitCounts[8]-2*baitCounts[5])<=2,"Tuna ratio with bait");
   }
@@ -40,6 +40,27 @@ class Program {
    Check(FishingRules.ContinuousCastRange(samples,out _)==expected,"Exhaustive range topology");
    for(int i=0;i<7;i++)Check(FishingRules.IsCastPowerAvailable(samples,(i+.5f)/7)==(samples[i] && samples[i+1]),"Gauge interval mask matches cast eligibility");
   }
+  Check(FishingRules.LureBiteChance(30,0)==0,"No movement means no bite chance");
+  Check(Math.Abs(FishingRules.LureBiteChance(30,1)-.5f)<.00001f,"Full maximum retrieve has 50% bite chance");
+  foreach(int slices in new[]{1,2,10,100,1000}){
+   double noBite=1;for(int i=0;i<slices;i++)noBite*=1-FishingRules.LureBiteChance(30,1f/slices);
+   Check(Math.Abs((1-noBite)-.5)<.0001,"Retrieve partition/reel-speed invariant");
+  }
+  for(int bait=0;bait<5;bait++){
+   float total=0;for(int id=0;id<FishCatalog.Count;id++){
+    float chance=ReefCatalog.EquippedChance(id,bait);total+=chance;
+    Check(chance>=0 && chance==(int)chance,"Equipped odds are whole percentages");
+   }
+   Check(total==100,"Every equipped table sums to 100");
+  }
+  Check(ReefCatalog.EquippedChance(3,4)+ReefCatalog.EquippedChance(5,4)+ReefCatalog.EquippedChance(8,4)==78,"Lure rare fish bias");
+  foreach(int species in FishCatalog.ActiveIds)for(int q=0;q<=10;q++){
+   float last=0;for(int distance=5;distance<=30;distance++){
+    float kg=FishingRules.WeightAtCastDistance(species,distance,q/10f);Check(kg>=last-.0001f,"Lure size increases with original cast distance");last=kg;
+   }
+  }
+  var lureSave=new ShopLedger{baitEquipped=ShopCatalog.StarterLure};
+  for(int i=0;i<100;i++)Check(lureSave.ConsumeBait()==4 && lureSave.baitEquipped==4,"Permanent lure never consumed");
   float early=FishingRules.CastPower(.2f)-FishingRules.CastPower(.1f),late=FishingRules.CastPower(1.24f)-FishingRules.CastPower(1.14f);
   Check(late>3*early,"Needle speeds up near red");
   var save=new ShopLedger();save.bag.Add(new CaughtFishRecord{speciesId=0,weightKg=1});

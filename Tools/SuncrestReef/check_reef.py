@@ -14,11 +14,12 @@ rolls=rng.random(100000)*sum(weights)
 counts=np.bincount(np.searchsorted(np.cumsum(weights),rolls),minlength=9)/1000
 assert np.max(abs(counts-np.array(weights)))<.5
 assert counts[4]==0
-for bait in (0,2,3):
-    boosted=np.array(weights)*[2.5 if bait==2 and i in (1,6,7) else 4 if bait==3 and i in (3,5,8) else 1 for i in range(9)]
-    assert boosted.sum()>0 and (boosted[np.array(weights)>0]>0).all() and boosted[4]==0
-    if bait==2:assert boosted[6:].sum()/boosted.sum()>.48
-    if bait==3:assert boosted[3:6].sum()/boosted.sum()>.12
+for table in ('ShrimpOdds','SquidOdds','LureOdds'):
+    odds=np.array(list(map(float,re.search(table+r'=\{([^}]+)',source).group(1).split(','))))
+    assert odds.sum()==100 and (odds>=0).all() and np.equal(odds,np.floor(odds)).all()
+    assert odds[4]==0 and odds[8]==2*odds[5]
+    if table=='ShrimpOdds':assert odds[6]+odds[7]>48
+    if table=='LureOdds':assert odds[3]+odds[5]+odds[8]==78
 # Property test for dry-area calibration across different original island sizes.
 for original_area in (10000,50000,150000):
     target=original_area*.5;r=math.sqrt(target/(math.pi*.78));size=max(600,2*r+520)

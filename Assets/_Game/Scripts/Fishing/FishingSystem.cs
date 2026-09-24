@@ -147,6 +147,8 @@ public class FishingSystem : MonoBehaviour
     private float rodPower=1f, reelPower=1f, lineGuard=1f;
     private float baseCastRange, basePreferredRange, baseLineRange;
     private int activeBait;
+    private float originalCastDistance,lureLength,lureRetrieved;
+    private Vector3 castOrigin,lureStart,lureEnd;
     private void ApplyShopGear()
     {
         if(shopProgress==null) return;
@@ -313,7 +315,7 @@ public class FishingSystem : MonoBehaviour
         switch (state)
         {
             case FishingState.Waiting:
-                UpdateWaiting();
+                UpdateWaiting(action!=null && action.IsHeld);
                 break;
 
             case FishingState.Bite:
@@ -338,7 +340,7 @@ public class FishingSystem : MonoBehaviour
                 bobber.activeSelf;
 
             bool reeling =
-                fighting &&
+                (fighting || (state==FishingState.Waiting && activeBait==ShopCatalog.StarterLure)) &&
                 action != null &&
                 action.IsHeld;
 
@@ -690,6 +692,8 @@ public class FishingSystem : MonoBehaviour
         hud.SetCastCancel(false,null);
         hud.SetActionInteractable(true);
         hud.SetCastPower(false,0,0);
+        castOrigin=playerCamera.transform.position;
+        originalCastDistance=Vector3.ProjectOnPlane(target-castOrigin,Vector3.up).magnitude;
         activeBait=0; // Bait is committed only after a successful water landing.
         StartCoroutine(
             CastRoutine(target)
@@ -785,6 +789,11 @@ public class FishingSystem : MonoBehaviour
                 maximumBiteDelay
             ) * (activeBait==1 ? 0.65f : activeBait==2 ? 0.8f : 1f);
 
+        if(activeBait==ShopCatalog.StarterLure)
+        {
+            BeginLureRetrieve();hud.SetActionLabel("REEL");
+            hud.SetStatus("Hold REEL to work the lure. No bites while resting.");yield break;
+        }
         hud.SetActionLabel("WAIT");
         hud.SetStatus(
             "Waiting for a bite..."
@@ -793,21 +802,54 @@ public class FishingSystem : MonoBehaviour
 
     private int RollBaitSpecies() => ReefCatalog.Roll(Random.value, activeBait);
 
-    private void UpdateWaiting()
+    private void BeginLureRetrieve()
     {
-        stateTimer -= Time.deltaTime;
-
-        SnapBobberToSurface();
-
-        if (stateTimer <= 0f)
+        lureStart=castPoint;lureEnd=castPoint;lureRetrieved=0;
+        Vector3 end=castOrigin;end.y=lureStart.y;
+        // Stop at the first shoreline. Normalize bite opportunity over the
+        // usable water retrieve so a full 30 m cast still has a 50% chance.
+        for(int i=1;i<=120;i++)
         {
+            Vector3 probe=Vector3.Lerp(lureStart,end,i/120f);
+            TryGetTerrainWaterDepth(probe,out _,out _,out float depth);
+            if(depth<.08f)break;
+            lureEnd=probe;
+        }
+        lureLength=Mathf.Max(.01f,Vector3.ProjectOnPlane(lureStart-lureEnd,Vector3.up).magnitude);
+    }
+    private void UpdateWaiting(bool reeling)
+    {
+        SnapBobberToSurface();
+        if(activeBait!=ShopCatalog.StarterLure)
+        {
+            stateTimer-=Time.deltaTime;if(stateTimer<=0)BeginBite();return;
+        }
+        if(!reeling)return;
+        float step=Mathf.Min(lureLength-lureRetrieved,2.4f*reelPower*Time.deltaTime);
+        if(step<=0){FailFishing("Lure retrieved. Cast again.");return;}
+        lureRetrieved+=step;
+        castPoint=Vector3.Lerp(lureStart,lureEnd,lureRetrieved/lureLength);
+        SnapBobberToSurface();
+        if(Random.value<FishingRules.LureBiteChance(originalCastDistance,step/lureLength))
+        {BeginBite();return;}
+        if(lureRetrieved>=lureLength)FailFishing("Lure retrieved. No bite this time — cast again.");
+    }
+    private void BeginBite()
+    {
             hookedSpeciesId =
                 RollBaitSpecies();
 
             hookedWeightKg =
-                FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value);
+                activeBait==ShopCatalog.StarterLure
+                    ? FishingRules.WeightAtCastDistance(hookedSpeciesId,originalCastDistance,Random.value)
+                    : FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value);
 
-            if(pondCast)hookedWeightKg=FishSizeTable.WeightForLength(hookedSpeciesId,Random.Range(.05f,.12f));
+            if(pondCast)
+            {
+                var species=FishCatalog.Get(hookedSpeciesId);
+                float size=activeBait==ShopCatalog.StarterLure?Mathf.InverseLerp(species.MinWeightKg,species.MaxWeightKg,hookedWeightKg):Random.value;
+                hookedWeightKg=FishSizeTable.WeightForLength(hookedSpeciesId,Mathf.Lerp(.05f,.12f,size));
+            }
 
             fishUnconscious = false;
             fishOnShore = false;
@@ -827,9 +869,8 @@ public class FishingSystem : MonoBehaviour
 
             hud.SetActionLabel("HOOK!");
             hud.SetStatus(
-                "BITE! Tap HOOK!"
+                activeBait==ShopCatalog.StarterLure?"BITE! Release REEL, then tap HOOK!":"BITE! Tap HOOK!"
             );
-        }
     }
 
     private void UpdateBite()
@@ -2382,8 +2423,8 @@ public class FishingSystem : MonoBehaviour
         // Fixed pixel size: distance from the bobber never changes readability.
         bobberIndicatorRect.sizeDelta =
             new Vector2(
-                360f,
-                92f
+                270f,
+                72f
             );
 
         bobberIndicatorBackground =

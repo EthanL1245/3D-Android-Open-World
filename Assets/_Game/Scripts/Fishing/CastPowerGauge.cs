@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-// One UI mesh: a top-to-right quarter arc and a moving white needle.
+// One UI mesh: a left-to-top quarter arc and a moving white needle.
 public sealed class CastPowerGauge : MaskableGraphic
 {
     private float power;
@@ -19,12 +19,12 @@ public sealed class CastPowerGauge : MaskableGraphic
                 t<.33f?Color.Lerp(new Color(.12f,.85f,.3f),Color.yellow,t/.33f):
                 t<.67f?Color.Lerp(Color.yellow,new Color(1,.42f,.04f),(t-.33f)/.34f):
                 Color.Lerp(new Color(1,.42f,.04f),new Color(.95f,.06f,.04f),(t-.67f)/.33f);
-            Quad(vh,i/(float)segments,(i+1f)/segments,156,188,shade);
+            Quad(vh,i/(float)segments,(i+1f)/segments,180,218,shade);
         }
-        Quad(vh,Mathf.Max(0,power-.014f),Mathf.Min(1,power+.014f),148,199,Color.white);
+        Quad(vh,Mathf.Max(0,power-.014f),Mathf.Min(1,power+.014f),171,229,Color.white);
     }
     private static Vector2 Point(float t,float radius)
-    {float angle=Mathf.Lerp(90,0,t)*Mathf.Deg2Rad;return new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;}
+    {float angle=Mathf.Lerp(180,90,t)*Mathf.Deg2Rad;return new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;}
     private static void Quad(VertexHelper vh,float a,float b,float inner,float outer,Color color)
     {
         int start=vh.currentVertCount;

@@ -90,7 +90,14 @@ public sealed class ShopPreview : MonoBehaviour
             var renderer=go.GetComponent<Renderer>();renderer.sharedMaterial=itemMaterial;
             var props=new MaterialPropertyBlock();props.SetColor("_BaseColor",color);renderer.SetPropertyBlock(props);
         };
-        if(kind=="Line")
+        if(kind=="Bait4")
+        {
+            part(PrimitiveType.Capsule,Vector3.zero,new Vector3(.2f,.42f,.16f),new Color(.82f,.89f,.94f));
+            part(PrimitiveType.Sphere,new Vector3(0,.28f,-.04f),new Vector3(.19f,.2f,.17f),new Color(.85f,.15f,.08f));
+            part(PrimitiveType.Cylinder,new Vector3(0,-.5f,0),new Vector3(.025f,.12f,.025f),Color.gray);
+            for(int i=-1;i<=1;i++)part(PrimitiveType.Sphere,new Vector3(i*.065f,-.59f,0),Vector3.one*.07f,Color.gray);
+        }
+        else if(kind=="Line")
         {
             part(PrimitiveType.Cylinder,Vector3.zero,new Vector3(0.65f,0.2f,0.65f),new Color(0.65f,0.83f,0.86f));
             foreach(int side in new[]{-1,1})part(PrimitiveType.Cylinder,Vector3.up*side*0.21f,new Vector3(0.85f,0.025f,0.85f),Color.gray);
