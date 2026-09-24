@@ -24,10 +24,28 @@ public static class ReefCatalog
     // Whole-percent tables are shared by the roll and equipped index.
     private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2};
     private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12};
-    private static readonly float[] LureOdds={4,5,5,24,0,18,4,4,36};
+
+    // Lure tables deliberately make Sea Bass + Red Snapper the majority catch.
+    // Tuna remain more likely than either Goatfish species, but are secondary.
+    // Indexes: Mackerel, Snapper, Sea Bass, Yellowtail, retired, Yellowfin,
+    // Yellow Goatfish, Black Spot Goatfish, Bigeye Tuna.
+    private static readonly float[][] LureOdds=
+    {
+        new float[] {4,18,36,24,0,5,4,4,5},   // Starter Lure
+        new float[] {4,20,42,18,0,5,3,3,5},   // Reef Minnow
+        new float[] {4,42,28,13,0,5,3,3,2},   // Crimson Shad
+        new float[] {3,24,34,18,0,8,3,3,7}    // Deep Flash
+    };
+
     public static float EquippedChance(int species,int bait)
     {
-        var weights=bait==4?LureOdds:bait==2?ShrimpOdds:bait==3?SquidOdds:Starter.weights;
+        float[] weights;
+        if(bait==ShopCatalog.StarterLure)
+        {
+            int lure=Mathf.Clamp(ShopCatalog.ActiveLureVariant,0,LureOdds.Length-1);
+            weights=LureOdds[lure];
+        }
+        else weights=bait==2?ShrimpOdds:bait==3?SquidOdds:Starter.weights;
         return species>=0 && species<weights.Length?weights[species]:0;
     }
     public static int Roll(float random01, int bait = 0)
