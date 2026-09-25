@@ -4,15 +4,16 @@ using UnityEngine;
 
 /// <summary>
 /// Keeps the permanent retrieval lure aimed at the player's CURRENT position.
-/// FishingSystem owns lure speed, bites and fight transition. This helper only
-/// refreshes the retrieve path and immediately returns a lure once reeling can
-/// no longer reduce its distance to the player.
+/// FishingSystem owns lure speed, bites and fight transition. Player movement is
+/// never treated as failed reel progress: walking backward can increase the
+/// player-to-lure distance even while the lure itself is moving correctly.
 /// </summary>
 [DefaultExecutionOrder(-1000)]
 public sealed class LureRetrieveFollowPlayer : MonoBehaviour
 {
     private const float PickupDistance = 1.15f;
     private const float MinimumWaterDepth = 0.08f;
+    private const float BlockedReelGraceSeconds = 0.35f;
 
     private FishingSystem fishing;
     private OceanWater oceanWater;
@@ -31,9 +32,7 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
     private FieldInfo oceanWaterField;
 
     private MethodInfo failFishingMethod;
-
-    private bool checkProgressThisFrame;
-    private float distanceBeforeFishingUpdate;
+    private float blockedReelTimer;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -55,9 +54,11 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
 
     private void Update()
     {
-        checkProgressThisFrame = false;
         if (!IsActiveLureRetrieve())
+        {
+            blockedReelTimer = 0f;
             return;
+        }
 
         Vector3 current = (Vector3)castPointField.GetValue(fishing);
         Vector3 player = fishing.transform.position;
@@ -72,9 +73,6 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
         }
 
         bool reeling = IsReeling();
-        distanceBeforeFishingUpdate = horizontalDistance;
-        checkProgressThisFrame = reeling;
-
         Vector3 desiredDirection = toPlayer / horizontalDistance;
         float reelPower = Mathf.Max(0.01f, (float)reelPowerField.GetValue(fishing));
         float frameStep = 2.4f * reelPower * Time.deltaTime;
@@ -89,13 +87,20 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
 
         if (direction.sqrMagnitude < 0.0001f)
         {
-            // Resting at the shoreline is allowed. The instant the player
-            // actually tries to REEL and there is no water route that gets the
-            // lure closer, cancel and return it rather than forcing a walk-up.
+            // A single terrain/water sampling frame must never eat the lure.
+            // Only a sustained, genuinely blocked shoreline path may return it.
             if (reeling)
             {
-                PickUpLure("Lure reached shore and returned to your tackle.");
-                return;
+                blockedReelTimer += Time.deltaTime;
+                if (blockedReelTimer >= BlockedReelGraceSeconds)
+                {
+                    PickUpLure("Lure reached shore and returned to your tackle.");
+                    return;
+                }
+            }
+            else
+            {
+                blockedReelTimer = 0f;
             }
 
             lureLengthField.SetValue(fishing, 0.01f);
@@ -103,9 +108,12 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
             return;
         }
 
+        blockedReelTimer = 0f;
+
         // FishingSystem moves by Lerp(lureStart,lureEnd,step/lureLength).
-        // Keep that existing 2.4 m/s feel, but refresh the heading every frame
-        // toward the player's live position.
+        // Refresh the heading every frame toward the player's live position.
+        // Crucially, whether the PLAYER moved toward/away from the lure has no
+        // bearing on whether retrieval itself is considered valid.
         lureLengthField.SetValue(fishing, originalDistance);
         lureEndField.SetValue(
             fishing,
@@ -115,32 +123,16 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
     private void LateUpdate()
     {
         if (!IsActiveLureRetrieve())
-        {
-            checkProgressThisFrame = false;
             return;
-        }
 
+        // Catch the frame in which FishingSystem's actual lure movement crosses
+        // the pickup radius. Do not compare before/after distance to the player;
+        // walking backward can make that distance grow during a valid retrieve.
         Vector3 current = (Vector3)castPointField.GetValue(fishing);
         Vector3 delta = fishing.transform.position - current;
         delta.y = 0f;
-        float distanceAfter = delta.magnitude;
-
-        if (distanceAfter <= PickupDistance)
-        {
+        if (delta.magnitude <= PickupDistance)
             PickUpLure("Lure returned. Cast again.");
-            return;
-        }
-
-        // If a held REEL input produced effectively no closer approach this
-        // frame, the lure has met shoreline/terrain geometry that prevents a
-        // useful retrieve. Return it immediately instead of stranding it.
-        if (checkProgressThisFrame &&
-            distanceAfter >= distanceBeforeFishingUpdate - 0.002f)
-        {
-            PickUpLure("Lure can’t reel any closer here — returned to your tackle.");
-        }
-
-        checkProgressThisFrame = false;
     }
 
     private bool IsReeling()
@@ -162,7 +154,6 @@ public sealed class LureRetrieveFollowPlayer : MonoBehaviour
         for (int i = 0; i < angles.Length; i++)
         {
             Vector3 direction = Quaternion.AngleAxis(angles[i], Vector3.up) * desiredDirection;
-            // Never choose a detour that fails to make horizontal progress.
             if (Vector3.Dot(direction.normalized, desiredDirection) <= 0.12f)
                 continue;
 
