@@ -4,9 +4,9 @@ using UnityEngine;
 
 /// <summary>
 /// Replaces the visible bobber with the authored lipless crankbait whenever a
-/// permanent lure is being cast/retrieved. FishingSystem remains authoritative
-/// for casting, bites and fights. The lure's authored transform and animation
-/// are never rotated, flipped, rescaled or procedurally wobbled here.
+/// permanent lure is being cast/retrieved. The authored model, hook placement
+/// and animation remain intact; only the entire lure assembly is aimed so the
+/// line pulls from the head and the body trails behind during retrieve.
 /// </summary>
 [DefaultExecutionOrder(900)]
 public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
@@ -33,7 +33,10 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
     private Renderer[] bobberRenderers;
 
     private bool showingLure;
+    private bool wasReeling;
     private float sinkDepth;
+    private Quaternion authoredRootRotation = Quaternion.identity;
+    private Vector3 localHeadDirection = Vector3.forward;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -74,7 +77,11 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             return;
 
         if (!showingLure)
+        {
             showingLure = true;
+            lureRoot.transform.rotation = authoredRootRotation;
+            wasReeling = false;
+        }
 
         SetBobberRenderers(false);
         lureRoot.SetActive(true);
@@ -99,15 +106,53 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
                 position.y += Mathf.Sin(Time.time * 2.6f) * 0.012f;
         }
 
-        // Translation is required to put the lure at the cast/retrieve point.
-        // Deliberately do NOT write rotation or scale. The prefab keeps the exact
-        // orientation and size produced by the authored import.
+        if (reeling)
+        {
+            Vector3 towardPlayer = fishing.transform.position - position;
+            towardPlayer.y = 0f;
+
+            if (towardPlayer.sqrMagnitude > 0.0001f)
+            {
+                Vector3 authoredHeadWorld = authoredRootRotation * localHeadDirection;
+                Quaternion targetRotation =
+                    Quaternion.FromToRotation(authoredHeadWorld, towardPlayer.normalized) *
+                    authoredRootRotation;
+
+                // Snap immediately when REEL first goes down so the head points
+                // at the player from the very first retrieve frame. After that,
+                // track smoothly as the player walks around while reeling.
+                if (!wasReeling)
+                {
+                    lureRoot.transform.rotation = targetRotation;
+                }
+                else
+                {
+                    float rotateT = 1f - Mathf.Exp(-18f * Time.deltaTime);
+                    lureRoot.transform.rotation = Quaternion.Slerp(
+                        lureRoot.transform.rotation,
+                        targetRotation,
+                        rotateT);
+                }
+            }
+        }
+
+        wasReeling = reeling;
+
+        // Put the LINE-TIE/HEAD itself at FishingSystem's logical lure point.
+        // Because LineAttach is not necessarily at the prefab root, first place
+        // the root, then offset the whole rigid lure so its head lands exactly on
+        // the line endpoint. The belly/tail/hooks therefore trail behind the head.
         lureRoot.transform.position = position;
+        if (lineAttach != null)
+        {
+            Vector3 headOffset = lineAttach.position - lureRoot.transform.position;
+            lureRoot.transform.position -= headOffset;
+        }
 
         bobber.transform.position = position;
 
-        // Use the supplied animation exactly. No hook/body bones are touched by
-        // this presentation component and no extra procedural wobble is added.
+        // Use the supplied lure/hook animation exactly. No child bones or hook
+        // transforms are procedurally edited here.
         if (lureAnimator != null)
             lureAnimator.speed = reeling ? 1f : 0f;
 
@@ -115,7 +160,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             ? fishingLineField.GetValue(fishing) as LineRenderer
             : null;
         if (line != null && line.enabled && line.positionCount >= 2)
-            line.SetPosition(1, lineAttach != null ? lineAttach.position : lureRoot.transform.position);
+            line.SetPosition(1, lineAttach != null ? lineAttach.position : position);
     }
 
     private bool ShouldShowLure(string state, GameObject bobber)
@@ -153,10 +198,8 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         lureRoot = Instantiate(prefab);
         lureRoot.name = "ActiveLiplessCrankbait";
+        authoredRootRotation = lureRoot.transform.rotation;
 
-        // Keep the imported LineAttach exactly where the importer put it. Do not
-        // reparent or reset it, because doing so would shift the string away from
-        // the authored lure head.
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
         if (lineAttach == null)
         {
@@ -164,6 +207,8 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             lineAttach = attach.transform;
             lineAttach.SetParent(lureRoot.transform, false);
         }
+
+        localHeadDirection = MeasureLocalHeadDirection();
 
         lureAnimator = lureRoot.GetComponentInChildren<Animator>(true);
         if (lureAnimator != null)
@@ -177,14 +222,53 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         return true;
     }
 
+    private Vector3 MeasureLocalHeadDirection()
+    {
+        if (lureRoot == null || lineAttach == null)
+            return Vector3.forward;
+
+        Renderer[] renderers = lureRoot.GetComponentsInChildren<Renderer>(true);
+        Renderer body = null;
+        float largestVolume = -1f;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null) continue;
+
+            Vector3 size = renderer.bounds.size;
+            float volume = Mathf.Abs(size.x * size.y * size.z);
+            if (volume > largestVolume)
+            {
+                largestVolume = volume;
+                body = renderer;
+            }
+        }
+
+        if (body == null)
+            return Vector3.forward;
+
+        Vector3 bodyToHeadWorld = lineAttach.position - body.bounds.center;
+        if (bodyToHeadWorld.sqrMagnitude < 0.000001f)
+            return Vector3.forward;
+
+        Vector3 local = lureRoot.transform.InverseTransformDirection(bodyToHeadWorld.normalized);
+        return local.sqrMagnitude > 0.0001f ? local.normalized : Vector3.forward;
+    }
+
     private void StopShowingLure()
     {
         if (!showingLure)
             return;
 
         showingLure = false;
+        wasReeling = false;
         sinkDepth = 0f;
-        if (lureRoot != null) lureRoot.SetActive(false);
+        if (lureRoot != null)
+        {
+            lureRoot.transform.rotation = authoredRootRotation;
+            lureRoot.SetActive(false);
+        }
         if (lureAnimator != null) lureAnimator.speed = 0f;
         SetBobberRenderers(true);
     }
