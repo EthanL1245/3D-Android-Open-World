@@ -2,10 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Runs immediately after LiplessCrankbaitWorldPresentation and doubles only the
-/// lure's authored retrieve animation while REEL is held. The presentation script
-/// remains authoritative for when the lure is visible/paused and for line/head
-/// movement; this component only changes Animator.speed from 1x to 2x during an
-/// active retrieve.
+/// equipped crankbait's authored retrieve animation while REEL is held.
 /// </summary>
 [DefaultExecutionOrder(950)]
 public sealed class LiplessCrankbaitRetrieveAnimationSpeed : MonoBehaviour
@@ -34,21 +31,31 @@ public sealed class LiplessCrankbaitRetrieveAnimationSpeed : MonoBehaviour
         if (hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld)
             return;
 
-        if (lureRoot == null)
-        {
-            lureRoot = GameObject.Find("ActiveLiplessCrankbait");
-            if (lureRoot != null)
-                lureAnimator = lureRoot.GetComponentInChildren<Animator>(true);
-        }
+        if (lureRoot == null || !lureRoot.activeInHierarchy)
+            FindActiveCrankbait();
 
         if (lureRoot == null || !lureRoot.activeInHierarchy || lureAnimator == null)
             return;
 
-        // LiplessCrankbaitWorldPresentation (execution order 900) sets 1x while
-        // retrieving and 0x while resting. We run afterward and only promote the
-        // active retrieve to 2x, leaving the resting/fight transition untouched.
+        // WorldPresentation sets 1x while retrieving and 0x while resting.
+        // We run afterward and promote only the active retrieve to 2x.
         if (lureAnimator.speed > 0f)
             lureAnimator.speed = 2f;
+    }
+
+    private void FindActiveCrankbait()
+    {
+        lureRoot = GameObject.Find("ActiveLiplessCrankbait"); // legacy name
+        if (lureRoot == null)
+        {
+            for (int i = 0; i < ShopCatalog.LureNames.Length; i++)
+            {
+                string objectName = "Active_" + ShopCatalog.LureNames[i].Replace(" ", string.Empty);
+                lureRoot = GameObject.Find(objectName);
+                if (lureRoot != null) break;
+            }
+        }
+        lureAnimator = lureRoot != null ? lureRoot.GetComponentInChildren<Animator>(true) : null;
     }
 
     private void OnDisable()
