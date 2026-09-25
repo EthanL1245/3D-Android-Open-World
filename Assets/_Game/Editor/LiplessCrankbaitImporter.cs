@@ -20,9 +20,8 @@ public static class LiplessCrankbaitImporter
     private const string ControllerPath = Root + "/LiplessCrankbaitGreenStriped.controller";
     private const string PrefabPath = "Assets/Resources/Fishing/LiplessCrankbaitGreenStriped.prefab";
     private const string BlenderPrefsKey = "OpenWorld.Goatfish.BlenderExecutable";
-    private const float TargetLengthMetres = 0.16f;
 
-    [MenuItem("Tools/Open World/Install Lipless Crankbait (One Click)")]
+    [MenuItem("Tools/Open World/Reimport Lipless Crankbait EXACT (One Click)")]
     public static void InstallOneClick()
     {
         if (EditorApplication.isPlaying)
@@ -47,8 +46,8 @@ public static class LiplessCrankbaitImporter
         {
             Import(zipPath);
             EditorUtility.DisplayDialog(
-                "Lipless Crankbait Installed",
-                "Installed the animated crankbait. Its nose/line tie is the fishing-line attachment, its rear trails during retrieve, and the authored animation plays while reeling.",
+                "Lipless Crankbait Reimported",
+                "Reimported the authored lure exactly. No Unity-side rotation, scale, recentering, flipping, or orientation correction was applied.",
                 "OK");
         }
         catch (Exception exception)
@@ -80,7 +79,7 @@ public static class LiplessCrankbaitImporter
         EditorUtility.DisplayProgressBar("Lipless Crankbait", "Extracting authored model...", 0.10f);
         Extract(zipPath, blendPath);
 
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Exporting Blender animation to FBX...", 0.28f);
+        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Exporting authored animation to FBX...", 0.28f);
         ExportBlend(ResolveBlenderExecutable(), blendPath, Path.GetFullPath(FbxPath));
         AssetDatabase.Refresh();
 
@@ -88,7 +87,7 @@ public static class LiplessCrankbaitImporter
         ConfigureTexture();
         ConfigureFbx();
 
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Building realistic lure prefab...", 0.78f);
+        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Building exact authored lure prefab...", 0.78f);
         BuildPrefab();
 
         AssetDatabase.SaveAssets();
@@ -156,6 +155,8 @@ os.makedirs(os.path.dirname(out_path), exist_ok=True)
 if os.path.exists(out_path):
     os.remove(out_path)
 
+# These are the normal Blender-to-FBX coordinate-system settings only. The
+# importer performs no additional rotation, scale, translation or axis fix.
 bpy.ops.export_scene.fbx(
     filepath=out_path,
     use_selection=True,
@@ -264,11 +265,22 @@ if not os.path.exists(out_path):
         {
             GameObject visual = PrefabUtility.InstantiatePrefab(source) as GameObject;
             if (visual == null) visual = UnityEngine.Object.Instantiate(source);
+            if (visual == null) throw new InvalidOperationException("Could not instantiate the crankbait FBX.");
+
             if (PrefabUtility.IsPartOfPrefabInstance(visual))
                 PrefabUtility.UnpackPrefabInstance(visual, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
 
+            // Capture the imported FBX root transform before parenting. The exact
+            // position, rotation and scale are restored verbatim afterward.
+            Vector3 authoredPosition = visual.transform.localPosition;
+            Quaternion authoredRotation = visual.transform.localRotation;
+            Vector3 authoredScale = visual.transform.localScale;
+
             visual.name = "AuthoredModel";
             visual.transform.SetParent(root.transform, false);
+            visual.transform.localPosition = authoredPosition;
+            visual.transform.localRotation = authoredRotation;
+            visual.transform.localScale = authoredScale;
 
             foreach (Camera camera in visual.GetComponentsInChildren<Camera>(true))
                 UnityEngine.Object.DestroyImmediate(camera);
@@ -284,22 +296,14 @@ if not os.path.exists(out_path):
                 renderer.receiveShadows = true;
             }
 
-            // Inspection of the supplied STL/Blend shows the nose/line eye at
-            // source -Y and the rear hook/tail at +Y. -90 degrees around X maps
-            // source -Y to Unity +Z, so +Z is always the lure's forward/nose.
-            visual.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
-
-            Bounds bounds = CalculateBounds(root.transform);
-            float length = Mathf.Max(0.0001f, bounds.size.z);
-            visual.transform.localScale *= TargetLengthMetres / length;
-
-            bounds = CalculateBounds(root.transform);
-            Vector3 nose = new Vector3(bounds.center.x, bounds.center.y, bounds.max.z);
-            visual.transform.position += root.transform.position - nose;
-
+            // Do NOT rotate, flip, resize, recenter, pivot-shift or otherwise
+            // modify the authored model. The only extra transform is a marker for
+            // the fishing line. It is a child marker and changes no model data.
             GameObject attach = new GameObject("LineAttach");
-            attach.transform.SetParent(root.transform, false);
-            attach.transform.localPosition = Vector3.zero;
+            attach.transform.SetParent(visual.transform, false);
+            attach.transform.localPosition = FindAuthoredNoseLocalPosition(visual.transform);
+            attach.transform.localRotation = Quaternion.identity;
+            attach.transform.localScale = Vector3.one;
 
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null) animator = visual.AddComponent<Animator>();
@@ -314,6 +318,39 @@ if not os.path.exists(out_path):
         {
             UnityEngine.Object.DestroyImmediate(root);
         }
+    }
+
+    // The supplied Blend has its head/line-tie at the negative local-Y end.
+    // This computes a marker there without moving or rotating the actual model.
+    private static Vector3 FindAuthoredNoseLocalPosition(Transform visual)
+    {
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0) return Vector3.zero;
+
+        bool found = false;
+        Vector3 min = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+        Vector3 max = new Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+
+        for (int r = 0; r < renderers.Length; r++)
+        {
+            Bounds bounds = renderers[r].bounds;
+            Vector3 bmin = bounds.min;
+            Vector3 bmax = bounds.max;
+            for (int i = 0; i < 8; i++)
+            {
+                Vector3 world = new Vector3(
+                    (i & 1) == 0 ? bmin.x : bmax.x,
+                    (i & 2) == 0 ? bmin.y : bmax.y,
+                    (i & 4) == 0 ? bmin.z : bmax.z);
+                Vector3 local = visual.InverseTransformPoint(world);
+                min = Vector3.Min(min, local);
+                max = Vector3.Max(max, local);
+                found = true;
+            }
+        }
+
+        if (!found) return Vector3.zero;
+        return new Vector3((min.x + max.x) * 0.5f, min.y, (min.z + max.z) * 0.5f);
     }
 
     private static Material BuildMaterial()
@@ -341,15 +378,6 @@ if not os.path.exists(out_path):
         state.motion = clip;
         controller.layers[0].stateMachine.defaultState = state;
         return controller;
-    }
-
-    private static Bounds CalculateBounds(Transform root)
-    {
-        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length == 0) return new Bounds(root.position, Vector3.one);
-        Bounds result = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++) result.Encapsulate(renderers[i].bounds);
-        return result;
     }
 
     private static string FindZip()
