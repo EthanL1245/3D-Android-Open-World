@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -16,12 +15,17 @@ public static class LiplessCrankbaitImporter
     private const string Source = Root + "/Source";
     private const string TexturePath = Source + "/LiplessCrankbaitGreenStriped.jpg";
     private const string FbxPath = Source + "/LiplessCrankbaitGreenStriped.fbx";
-    private const string MaterialPath = Root + "/LiplessCrankbaitGreenStriped.mat";
+    private const string BodyMaterialPath = Root + "/LiplessCrankbaitGreenStriped.mat";
+    private const string HookMaterialPath = Root + "/LiplessCrankbaitHooks.mat";
     private const string ControllerPath = Root + "/LiplessCrankbaitGreenStriped.controller";
     private const string PrefabPath = "Assets/Resources/Fishing/LiplessCrankbaitGreenStriped.prefab";
-    private const string BlenderPrefsKey = "OpenWorld.Goatfish.BlenderExecutable";
 
-    [MenuItem("Tools/Open World/Reimport Lipless Crankbait EXACT (One Click)")]
+    // The old import normalized the authored model to 0.16 m and the game later
+    // doubled it. Keep that intended visible size, but apply it once to the whole
+    // lure (body + both treble hooks) so it can never become person-sized again.
+    private const float TargetOverallLengthMetres = 0.32f;
+
+    [MenuItem("Tools/Open World/Reimport Lipless Crankbait FIXED (One Click)")]
     public static void InstallOneClick()
     {
         if (EditorApplication.isPlaying)
@@ -36,7 +40,7 @@ public static class LiplessCrankbaitImporter
             string downloads = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
             zipPath = EditorUtility.OpenFilePanel(
-                "Choose Lipless Crankbait Green Striped.zip",
+                "Choose Lipless Crankbait Green Striped FBX ZIP",
                 Directory.Exists(downloads) ? downloads : string.Empty,
                 "zip");
         }
@@ -47,7 +51,7 @@ public static class LiplessCrankbaitImporter
             Import(zipPath);
             EditorUtility.DisplayDialog(
                 "Lipless Crankbait Reimported",
-                "Reimported the authored lure exactly. No Unity-side rotation, scale, recentering, flipping, or orientation correction was applied.",
+                "Imported the supplied FBX directly (no Blender re-export), fixed the body/hook animation pairing, normalized the complete lure to 32 cm end-to-end, kept the authored orientation, attached the line to the body nose, and made the shell render correctly from both sides.",
                 "OK");
         }
         catch (Exception exception)
@@ -67,27 +71,20 @@ public static class LiplessCrankbaitImporter
     private static void Import(string zipPath)
     {
         if (!File.Exists(zipPath))
-            throw new FileNotFoundException("Lipless Crankbait Green Striped.zip was not found.", zipPath);
+            throw new FileNotFoundException("The crankbait ZIP was not found.", zipPath);
 
         EnsureFolderRecursive(Source);
         EnsureFolderRecursive("Assets/Resources/Fishing");
 
-        string library = Path.GetFullPath("Library/LiplessCrankbaitImport");
-        Directory.CreateDirectory(library);
-        string blendPath = Path.Combine(library, "Lipless Crankbait Green Striped.blend");
-
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Extracting authored model...", 0.10f);
-        Extract(zipPath, blendPath);
-
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Exporting authored animation to FBX...", 0.28f);
-        ExportBlend(ResolveBlenderExecutable(), blendPath, Path.GetFullPath(FbxPath));
+        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Extracting the supplied FBX directly...", 0.12f);
+        ExtractDirectFbx(zipPath);
         AssetDatabase.Refresh();
 
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Importing texture and animation...", 0.52f);
+        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Importing authored mesh and animations...", 0.38f);
         ConfigureTexture();
         ConfigureFbx();
 
-        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Building exact authored lure prefab...", 0.78f);
+        EditorUtility.DisplayProgressBar("Lipless Crankbait", "Rebuilding lure with correct hooks and scale...", 0.70f);
         BuildPrefab();
 
         AssetDatabase.SaveAssets();
@@ -95,120 +92,37 @@ public static class LiplessCrankbaitImporter
         Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
     }
 
-    private static void Extract(string zipPath, string blendPath)
+    private static void ExtractDirectFbx(string zipPath)
     {
         using FileStream stream = File.OpenRead(zipPath);
         using ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
-        ZipArchiveEntry blend = archive.Entries.FirstOrDefault(e =>
-            e.FullName.EndsWith(".blend", StringComparison.OrdinalIgnoreCase));
+        ZipArchiveEntry fbx = archive.Entries.FirstOrDefault(e =>
+            e.FullName.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase));
         ZipArchiveEntry texture = archive.Entries.FirstOrDefault(e =>
         {
             string ext = Path.GetExtension(e.FullName).ToLowerInvariant();
             return ext == ".jpg" || ext == ".jpeg" || ext == ".png";
         });
 
-        if (blend == null || texture == null)
-            throw new InvalidDataException("The crankbait ZIP must contain its Blender file and texture image.");
+        if (fbx == null)
+            throw new InvalidDataException(
+                "Use the new FBX ZIP. It must contain Lipless Crankbait Green Striped.fbx. The importer intentionally no longer re-exports the Blend file because that was changing the model hierarchy/transforms.");
+        if (texture == null)
+            throw new InvalidDataException("The crankbait ZIP must also contain its texture image.");
 
-        using (Stream input = blend.Open())
-        using (FileStream output = File.Create(blendPath))
-            input.CopyTo(output);
-
+        WriteEntry(fbx, FbxPath);
         WriteEntry(texture, TexturePath);
-    }
-
-    private static void ExportBlend(string blender, string blendPath, string destinationFbx)
-    {
-        string scriptFolder = Path.GetFullPath("Library/LiplessCrankbaitImport");
-        Directory.CreateDirectory(scriptFolder);
-        string scriptPath = Path.Combine(scriptFolder, "ExportLiplessCrankbait.py");
-
-        string python =
-@"import bpy
-import os
-import sys
-
-args = sys.argv
-out_path = args[args.index('--') + 1]
-allowed = {'MESH', 'CURVE', 'ARMATURE', 'EMPTY'}
-
-for obj in bpy.context.view_layer.objects:
-    try:
-        obj.hide_viewport = False
-        obj.hide_render = False
-        obj.hide_set(False)
-        obj.select_set(obj.type in allowed)
-    except Exception:
-        pass
-
-selected = [o for o in bpy.context.scene.objects if o.type in allowed]
-if not selected:
-    raise RuntimeError('No exportable crankbait objects were found in the Blend file.')
-
-try:
-    bpy.context.view_layer.objects.active = next((o for o in selected if o.type == 'MESH'), selected[0])
-except Exception:
-    pass
-
-os.makedirs(os.path.dirname(out_path), exist_ok=True)
-if os.path.exists(out_path):
-    os.remove(out_path)
-
-# These are the normal Blender-to-FBX coordinate-system settings only. The
-# importer performs no additional rotation, scale, translation or axis fix.
-bpy.ops.export_scene.fbx(
-    filepath=out_path,
-    use_selection=True,
-    apply_unit_scale=True,
-    add_leaf_bones=False,
-    bake_anim=True,
-    bake_anim_use_all_bones=True,
-    bake_anim_use_nla_strips=True,
-    bake_anim_use_all_actions=True,
-    bake_anim_force_startend_keying=True,
-    bake_anim_simplify_factor=0.0,
-    axis_forward='-Z',
-    axis_up='Y',
-    path_mode='AUTO'
-)
-
-if not os.path.exists(out_path):
-    raise RuntimeError('FBX export did not produce an output file.')
-";
-        File.WriteAllText(scriptPath, python);
-
-        ProcessStartInfo info = new ProcessStartInfo
-        {
-            FileName = blender,
-            Arguments = "--background " + Quote(blendPath) + " --python " + Quote(scriptPath) + " -- " + Quote(destinationFbx),
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        using Process process = Process.Start(info);
-        if (process == null) throw new InvalidOperationException("Blender could not be started.");
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-        if (!process.WaitForExit(120000))
-        {
-            try { process.Kill(); } catch { }
-            throw new TimeoutException("Blender took more than 2 minutes to export the crankbait.");
-        }
-        if (process.ExitCode != 0 || !File.Exists(destinationFbx))
-        {
-            Debug.LogError("Crankbait Blender output:\n" + output + "\n\nCrankbait Blender errors:\n" + error);
-            throw new InvalidOperationException("Blender opened the crankbait source but could not export the FBX.");
-        }
     }
 
     private static void ConfigureTexture()
     {
-        AssetDatabase.ImportAsset(TexturePath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+        AssetDatabase.ImportAsset(TexturePath,
+            ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
         TextureImporter importer = AssetImporter.GetAtPath(TexturePath) as TextureImporter;
-        if (importer == null) throw new InvalidOperationException("Could not import the crankbait texture.");
+        if (importer == null)
+            throw new InvalidOperationException("Could not import the crankbait texture.");
+
         importer.sRGBTexture = true;
         importer.mipmapEnabled = true;
         importer.wrapMode = TextureWrapMode.Clamp;
@@ -221,9 +135,11 @@ if not os.path.exists(out_path):
 
     private static void ConfigureFbx()
     {
-        AssetDatabase.ImportAsset(FbxPath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+        AssetDatabase.ImportAsset(FbxPath,
+            ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
         ModelImporter importer = AssetImporter.GetAtPath(FbxPath) as ModelImporter;
-        if (importer == null) throw new InvalidOperationException("Could not import the crankbait FBX.");
+        if (importer == null)
+            throw new InvalidOperationException("Could not import the supplied crankbait FBX.");
 
         importer.importAnimation = true;
         importer.animationType = ModelImporterAnimationType.Generic;
@@ -232,8 +148,14 @@ if not os.path.exists(out_path):
         importer.materialImportMode = ModelImporterMaterialImportMode.None;
         importer.importNormals = ModelImporterNormals.Import;
         importer.importTangents = ModelImporterTangents.CalculateMikk;
+        importer.preserveHierarchy = true;
+        importer.globalScale = 1f;
+        importer.useFileScale = true;
         importer.SaveAndReimport();
 
+        // The supplied FBX contains three simultaneously-authored object actions
+        // (body, belly hook, tail hook). Keep all of them loopable; BuildController
+        // combines the three matching clips instead of incorrectly choosing only one.
         ModelImporterClipAnimation[] clips = importer.defaultClipAnimations;
         if (clips != null && clips.Length > 0)
         {
@@ -250,65 +172,73 @@ if not os.path.exists(out_path):
     private static void BuildPrefab()
     {
         GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath);
-        if (source == null) throw new InvalidOperationException("Crankbait FBX could not be loaded.");
+        if (source == null)
+            throw new InvalidOperationException("The supplied crankbait FBX could not be loaded after import.");
 
-        Material material = BuildMaterial();
         AnimationClip[] clips = AssetDatabase.LoadAllAssetsAtPath(FbxPath)
             .OfType<AnimationClip>()
             .Where(c => c != null && !c.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(c => c.length)
             .ToArray();
-        RuntimeAnimatorController controller = clips.Length > 0 ? BuildController(clips[0]) : null;
+
+        RuntimeAnimatorController controller = BuildController(clips);
+        BuildMaterials(out Material bodyMaterial, out Material hookMaterial);
 
         GameObject root = new GameObject("LiplessCrankbaitGreenStriped");
         try
         {
             GameObject visual = PrefabUtility.InstantiatePrefab(source) as GameObject;
             if (visual == null) visual = UnityEngine.Object.Instantiate(source);
-            if (visual == null) throw new InvalidOperationException("Could not instantiate the crankbait FBX.");
+            if (visual == null)
+                throw new InvalidOperationException("Could not instantiate the supplied crankbait FBX.");
 
             if (PrefabUtility.IsPartOfPrefabInstance(visual))
-                PrefabUtility.UnpackPrefabInstance(visual, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                PrefabUtility.UnpackPrefabInstance(
+                    visual, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
 
-            // Capture the imported FBX root transform before parenting. The exact
-            // position, rotation and scale are restored verbatim afterward.
-            Vector3 authoredPosition = visual.transform.localPosition;
-            Quaternion authoredRotation = visual.transform.localRotation;
-            Vector3 authoredScale = visual.transform.localScale;
-
+            // Keep every authored child position/rotation/scale exactly as it exists
+            // in the supplied FBX. Only the outer wrapper is uniformly size-normalized.
             visual.name = "AuthoredModel";
             visual.transform.SetParent(root.transform, false);
-            visual.transform.localPosition = authoredPosition;
-            visual.transform.localRotation = authoredRotation;
-            visual.transform.localScale = authoredScale;
 
             foreach (Camera camera in visual.GetComponentsInChildren<Camera>(true))
                 UnityEngine.Object.DestroyImmediate(camera);
             foreach (Light light in visual.GetComponentsInChildren<Light>(true))
                 UnityEngine.Object.DestroyImmediate(light);
 
-            foreach (Renderer renderer in visual.GetComponentsInChildren<Renderer>(true))
+            Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+                throw new InvalidOperationException("The supplied FBX contains no renderable lure mesh.");
+
+            Renderer bodyRenderer = FindBodyRenderer(renderers);
+            for (int r = 0; r < renderers.Length; r++)
             {
+                Renderer renderer = renderers[r];
+                Material selected = renderer == bodyRenderer ? bodyMaterial : hookMaterial;
                 Material[] slots = new Material[Mathf.Max(1, renderer.sharedMaterials.Length)];
-                for (int i = 0; i < slots.Length; i++) slots[i] = material;
+                for (int i = 0; i < slots.Length; i++) slots[i] = selected;
                 renderer.sharedMaterials = slots;
                 renderer.shadowCastingMode = ShadowCastingMode.On;
                 renderer.receiveShadows = true;
             }
 
-            // Do NOT rotate, flip, resize, recenter, pivot-shift or otherwise
-            // modify the authored model. The only extra transform is a marker for
-            // the fishing line. It is a child marker and changes no model data.
+            // Line tie follows the actual BODY mesh nose, not the total bounds of
+            // the lure (which previously let a treble hook become the attachment).
             GameObject attach = new GameObject("LineAttach");
-            attach.transform.SetParent(visual.transform, false);
-            attach.transform.localPosition = FindAuthoredNoseLocalPosition(visual.transform);
+            attach.transform.SetParent(bodyRenderer.transform, false);
+            attach.transform.localPosition = FindBodyNose(bodyRenderer);
             attach.transform.localRotation = Quaternion.identity;
             attach.transform.localScale = Vector3.one;
 
             Animator animator = visual.GetComponent<Animator>();
             if (animator == null) animator = visual.AddComponent<Animator>();
             animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             if (controller != null) animator.runtimeAnimatorController = controller;
+
+            // The source FBX is roughly several metres across because of its Blender
+            // object scales. Uniformly scale the OUTER wrapper only. This preserves
+            // hook/body placement, animation, proportions, and orientation exactly.
+            NormalizeOverallSize(root.transform, renderers, TargetOverallLengthMetres);
 
             if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) != null)
                 AssetDatabase.DeleteAsset(PrefabPath);
@@ -320,64 +250,176 @@ if not os.path.exists(out_path):
         }
     }
 
-    // The supplied Blend has its head/line-tie at the negative local-Y end.
-    // This computes a marker there without moving or rotating the actual model.
-    private static Vector3 FindAuthoredNoseLocalPosition(Transform visual)
+    private static Renderer FindBodyRenderer(Renderer[] renderers)
     {
-        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length == 0) return Vector3.zero;
-
-        bool found = false;
-        Vector3 min = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
-        Vector3 max = new Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
-
-        for (int r = 0; r < renderers.Length; r++)
+        Renderer best = renderers[0];
+        float bestScore = -1f;
+        for (int i = 0; i < renderers.Length; i++)
         {
-            Bounds bounds = renderers[r].bounds;
-            Vector3 bmin = bounds.min;
-            Vector3 bmax = bounds.max;
-            for (int i = 0; i < 8; i++)
+            Vector3 size = renderers[i].bounds.size;
+            float score = Mathf.Max(size.x, size.y, size.z) *
+                          Mathf.Max(0.000001f, size.x * size.y * size.z);
+            if (score > bestScore)
             {
-                Vector3 world = new Vector3(
-                    (i & 1) == 0 ? bmin.x : bmax.x,
-                    (i & 2) == 0 ? bmin.y : bmax.y,
-                    (i & 4) == 0 ? bmin.z : bmax.z);
-                Vector3 local = visual.InverseTransformPoint(world);
-                min = Vector3.Min(min, local);
-                max = Vector3.Max(max, local);
-                found = true;
+                bestScore = score;
+                best = renderers[i];
+            }
+        }
+        return best;
+    }
+
+    private static Vector3 FindBodyNose(Renderer bodyRenderer)
+    {
+        Mesh mesh = null;
+        MeshFilter filter = bodyRenderer.GetComponent<MeshFilter>();
+        if (filter != null) mesh = filter.sharedMesh;
+        if (mesh == null && bodyRenderer is SkinnedMeshRenderer skinned)
+            mesh = skinned.sharedMesh;
+
+        if (mesh == null || mesh.vertexCount == 0)
+        {
+            Bounds fallback = bodyRenderer.localBounds;
+            return new Vector3(fallback.center.x, fallback.min.y, fallback.center.z);
+        }
+
+        Vector3[] vertices = mesh.vertices;
+        Bounds bounds = mesh.bounds;
+        float threshold = bounds.min.y + Mathf.Max(0.00001f, bounds.size.y * 0.04f);
+        Vector3 sum = Vector3.zero;
+        int count = 0;
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            if (vertices[i].y <= threshold)
+            {
+                sum += vertices[i];
+                count++;
             }
         }
 
-        if (!found) return Vector3.zero;
-        return new Vector3((min.x + max.x) * 0.5f, min.y, (min.z + max.z) * 0.5f);
+        return count > 0
+            ? sum / count
+            : new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
     }
 
-    private static Material BuildMaterial()
+    private static void NormalizeOverallSize(
+        Transform root,
+        Renderer[] renderers,
+        float targetMetres)
     {
-        if (AssetDatabase.LoadAssetAtPath<Material>(MaterialPath) != null)
-            AssetDatabase.DeleteAsset(MaterialPath);
-        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-        if (shader == null) throw new InvalidOperationException("URP/Lit shader was not found.");
-        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
-        Material material = new Material(shader) { name = "Lipless Crankbait Green Striped" };
-        material.SetTexture("_BaseMap", texture);
-        material.SetColor("_BaseColor", Color.white);
-        material.SetFloat("_Metallic", 0.12f);
-        material.SetFloat("_Smoothness", 0.48f);
-        AssetDatabase.CreateAsset(material, MaterialPath);
-        return material;
+        bool found = false;
+        Bounds total = default;
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (!found)
+            {
+                total = renderers[i].bounds;
+                found = true;
+            }
+            else total.Encapsulate(renderers[i].bounds);
+        }
+
+        if (!found) return;
+        Vector3 size = total.size;
+        float longest = Mathf.Max(size.x, Mathf.Max(size.y, size.z));
+        if (longest <= 0.00001f || float.IsNaN(longest) || float.IsInfinity(longest)) return;
+
+        float scale = targetMetres / longest;
+        root.localScale = Vector3.one * scale;
     }
 
-    private static RuntimeAnimatorController BuildController(AnimationClip clip)
+    private static void BuildMaterials(out Material body, out Material hooks)
+    {
+        if (AssetDatabase.LoadAssetAtPath<Material>(BodyMaterialPath) != null)
+            AssetDatabase.DeleteAsset(BodyMaterialPath);
+        if (AssetDatabase.LoadAssetAtPath<Material>(HookMaterialPath) != null)
+            AssetDatabase.DeleteAsset(HookMaterialPath);
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null)
+            throw new InvalidOperationException("URP/Lit shader was not found.");
+
+        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
+
+        body = new Material(shader) { name = "Lipless Crankbait Green Striped" };
+        body.SetTexture("_BaseMap", texture);
+        body.SetColor("_BaseColor", Color.white);
+        SetIfPresent(body, "_Metallic", 0.08f);
+        SetIfPresent(body, "_Smoothness", 0.42f);
+        MakeOpaqueDoubleSided(body);
+        AssetDatabase.CreateAsset(body, BodyMaterialPath);
+
+        hooks = new Material(shader) { name = "Lipless Crankbait Treble Hooks" };
+        hooks.SetColor("_BaseColor", new Color(0.42f, 0.44f, 0.46f, 1f));
+        SetIfPresent(hooks, "_Metallic", 0.82f);
+        SetIfPresent(hooks, "_Smoothness", 0.58f);
+        MakeOpaqueDoubleSided(hooks);
+        AssetDatabase.CreateAsset(hooks, HookMaterialPath);
+    }
+
+    private static void MakeOpaqueDoubleSided(Material material)
+    {
+        SetIfPresent(material, "_Surface", 0f);
+        SetIfPresent(material, "_AlphaClip", 0f);
+        SetIfPresent(material, "_Cull", 0f);
+        material.doubleSidedGI = true;
+        material.renderQueue = -1;
+    }
+
+    private static void SetIfPresent(Material material, string property, float value)
+    {
+        if (material.HasProperty(property)) material.SetFloat(property, value);
+    }
+
+    private static RuntimeAnimatorController BuildController(AnimationClip[] clips)
     {
         if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(ControllerPath) != null)
             AssetDatabase.DeleteAsset(ControllerPath);
+
+        if (clips == null || clips.Length == 0) return null;
+
+        // The FBX has 9 stacks because Blender exported every action against every
+        // object. The three diagonal pairs are the authored simultaneous animation:
+        // hook A -> its own action, body -> its own action, hook B -> its own action.
+        AnimationClip hookA = FindClip(clips, "BézierCurve|BézierCurveAction");
+        AnimationClip body = FindClip(clips, "BézierCurve.001|BézierCurve.001Action");
+        AnimationClip hookB = FindClip(clips, "BézierCurve.002|BézierCurve.002Action");
+
+        List<AnimationClip> selected = new List<AnimationClip>();
+        if (hookA != null) selected.Add(hookA);
+        if (body != null) selected.Add(body);
+        if (hookB != null) selected.Add(hookB);
+
+        // Defensive fallback for a future FBX exporter that names clips differently.
+        if (selected.Count == 0) selected.Add(clips.OrderByDescending(c => c.length).First());
+
         AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
-        AnimatorState state = controller.layers[0].stateMachine.AddState("Retrieve");
-        state.motion = clip;
-        controller.layers[0].stateMachine.defaultState = state;
+        while (controller.layers.Length < selected.Count)
+            controller.AddLayer("Retrieve Part " + (controller.layers.Length + 1));
+
+        AnimatorControllerLayer[] layers = controller.layers;
+        for (int i = 0; i < selected.Count; i++)
+        {
+            layers[i].name = i == 0 ? "Retrieve Base" : "Retrieve Part " + (i + 1);
+            layers[i].defaultWeight = 1f;
+            layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
+            AnimatorState state = layers[i].stateMachine.AddState("Retrieve");
+            state.motion = selected[i];
+            layers[i].stateMachine.defaultState = state;
+        }
+        controller.layers = layers;
         return controller;
+    }
+
+    private static AnimationClip FindClip(AnimationClip[] clips, string exactName)
+    {
+        AnimationClip exact = clips.FirstOrDefault(c =>
+            string.Equals(c.name, exactName, StringComparison.OrdinalIgnoreCase));
+        if (exact != null) return exact;
+
+        string compact = exactName.Replace(" ", string.Empty);
+        return clips.FirstOrDefault(c =>
+            c.name.Replace(" ", string.Empty)
+                .IndexOf(compact, StringComparison.OrdinalIgnoreCase) >= 0);
     }
 
     private static string FindZip()
@@ -389,6 +431,7 @@ if not os.path.exists(out_path):
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
             Path.GetFullPath(".")
         };
+
         foreach (string folder in folders)
         {
             if (!Directory.Exists(folder)) continue;
@@ -396,7 +439,9 @@ if not os.path.exists(out_path):
                 .Where(file =>
                 {
                     string name = Path.GetFileNameWithoutExtension(file)
-                        .Replace(" ", string.Empty).Replace("_", string.Empty).Replace("-", string.Empty)
+                        .Replace(" ", string.Empty)
+                        .Replace("_", string.Empty)
+                        .Replace("-", string.Empty)
                         .ToLowerInvariant();
                     return name.Contains("liplesscrankbaitgreenstriped");
                 })
@@ -405,37 +450,6 @@ if not os.path.exists(out_path):
             if (!string.IsNullOrWhiteSpace(match)) return match;
         }
         return null;
-    }
-
-    private static string ResolveBlenderExecutable()
-    {
-        string saved = EditorPrefs.GetString(BlenderPrefsKey, string.Empty);
-        if (!string.IsNullOrWhiteSpace(saved) && File.Exists(saved)) return saved;
-
-        List<string> candidates = new List<string>();
-        foreach (string baseFolder in new[]
-        {
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
-        })
-        {
-            string blenderRoot = Path.Combine(baseFolder, "Blender Foundation");
-            if (!Directory.Exists(blenderRoot)) continue;
-            candidates.AddRange(Directory.GetFiles(blenderRoot, "blender.exe", SearchOption.AllDirectories));
-        }
-
-        string found = candidates.OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(found))
-        {
-            EditorPrefs.SetString(BlenderPrefsKey, found);
-            return found;
-        }
-
-        string selected = EditorUtility.OpenFilePanel("Locate Blender", string.Empty, "exe");
-        if (string.IsNullOrWhiteSpace(selected) || !File.Exists(selected))
-            throw new FileNotFoundException("Blender.exe is required to import the authored crankbait animation.");
-        EditorPrefs.SetString(BlenderPrefsKey, selected);
-        return selected;
     }
 
     private static void WriteEntry(ZipArchiveEntry entry, string assetPath)
@@ -454,13 +468,9 @@ if not os.path.exists(out_path):
         for (int i = 1; i < parts.Length; i++)
         {
             string next = current + "/" + parts[i];
-            if (!AssetDatabase.IsValidFolder(next)) AssetDatabase.CreateFolder(current, parts[i]);
+            if (!AssetDatabase.IsValidFolder(next))
+                AssetDatabase.CreateFolder(current, parts[i]);
             current = next;
         }
-    }
-
-    private static string Quote(string value)
-    {
-        return "\"" + value.Replace("\"", "\\\"") + "\"";
     }
 }
