@@ -25,6 +25,11 @@ public sealed class FishingDamagePresentation : MonoBehaviour
         criticalQueued=true;
     }
 
+    public static void ClearPendingCritical()
+    {
+        criticalQueued=false;
+    }
+
     private void Awake()
     {
         hud=GetComponent<FishingHUD>();
