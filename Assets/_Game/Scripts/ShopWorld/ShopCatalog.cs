@@ -20,22 +20,25 @@ public sealed class HabitatDefinition
 public static class ShopCatalog
 {
     public const int StarterLure=4;
-    public const int LureVariantCount=4;
+    public const int LureVariantCount=5;
     public const int NeonBreachLureVariant=0;
     public const int FireShadLureVariant=2;
+    public const int BloodyBaitLureVariant=4;
 
     public static readonly string[] LureNames =
     {
         "Neon Breach Crankbait",
         "Reef Minnow",
         "Fire Shad Crankbait",
-        "Deep Flash"
+        "Deep Flash",
+        "Bloody Bait Crankbait"
     };
 
     // Every permanent crankbait has the same shop price. Variant 0 may already
     // be owned by legacy/starter saves, but its catalog price is still 500.
     public static readonly int[] LurePrices =
     {
+        500,
         500,
         500,
         500,
@@ -47,7 +50,8 @@ public static class ShopCatalog
         "Balanced permanent crankbait. Strong Sea Bass and Red Snapper focus.",
         "Quick-strike minnow. Highest Sea Bass odds and 15% more strike chance.",
         "Red Snapper specialist crankbait. Strongly favors Red Snapper while keeping the same tuna odds.",
-        "Deep-water flash lure. Slower strikes, larger fish, and the strongest tuna secondary odds."
+        "Deep-water flash lure. Slower strikes, larger fish, and the strongest tuna secondary odds.",
+        "Blue-and-red permanent crankbait. Uses the same balanced fishing behavior as Neon Breach."
     };
 
     public static int ActiveLureVariant { get; private set; }
@@ -68,6 +72,7 @@ public static class ShopCatalog
             case 1:return "Fishing/ReefMinnowCrankbait";
             case 2:return "Fishing/FireShadCrankbait";
             case 3:return "Fishing/DeepFlashCrankbait";
+            case 4:return "Fishing/BloodyBaitCrankbait";
             default:return "Fishing/LiplessCrankbaitGreenStriped";
         }
     }
