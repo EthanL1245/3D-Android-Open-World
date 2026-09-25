@@ -34,10 +34,19 @@ public sealed class ShopPreview : MonoBehaviour
             studio.orthographic=true;studio.nearClipPlane=0.01f;studio.farClipPlane=15;studio.cullingMask=1<<30;studio.enabled=false;
         }
         studio.backgroundColor=gear=="RodAssembly"?new Color(0,0,0,0):new Color(0.08f,0.18f,0.20f);
+        bool lurePreview=gear!=null && gear.StartsWith("Lure",System.StringComparison.Ordinal);
         if(gear==null)model=FishWorldSize.Create("FishPreview",stage.transform,species,kg);
         else
         {
-            var prefab=gear=="Rod" || gear=="Reel" || gear=="RodAssembly"?Resources.Load<GameObject>("Fishing/FishingRodReel"):null;
+            GameObject prefab=null;
+            if(gear=="Rod" || gear=="Reel" || gear=="RodAssembly")
+                prefab=Resources.Load<GameObject>("Fishing/FishingRodReel");
+            else if(lurePreview)
+            {
+                int variant=0;
+                if(gear.Length>4)int.TryParse(gear.Substring(4),out variant);
+                prefab=Resources.Load<GameObject>(ShopCatalog.LurePrefabResource(variant));
+            }
             if(prefab!=null)model=Instantiate(prefab,stage.transform);
             else model=BuildItem(gear);
             model.transform.SetParent(stage.transform,false);
@@ -53,7 +62,13 @@ public sealed class ShopPreview : MonoBehaviour
                 renderer.enabled=gear=="Reel"?reel:!reel;
             }
         }
-        model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):gear=="Reel"?Quaternion.Euler(12,35,-12):Quaternion.Euler(0,-90,0);
+        model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"
+            ? Quaternion.Euler(0,-90,40)
+            : gear=="Reel"
+                ? Quaternion.Euler(12,35,-12)
+                : lurePreview
+                    ? Quaternion.Euler(0,-90,90)
+                    : Quaternion.Euler(0,-90,0);
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0){Destroy(model);busy=false;yield break;}
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
