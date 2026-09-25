@@ -116,9 +116,9 @@ public sealed class ShopPreview : MonoBehaviour
             float halfFov=studio.fieldOfView*Mathf.Deg2Rad*0.5f;
             float required=Mathf.Max(bounds.extents.y/Mathf.Tan(halfFov),bounds.extents.x/Mathf.Tan(halfFov));
             float distance=(required+bounds.extents.z)*1.38f;
-            Vector3 target=bounds.center;
-            studio.transform.position=target+Vector3.up*(bounds.size.y*0.075f)+Vector3.back*distance;
-            studio.transform.LookAt(target,Vector3.up);
+            Vector3 previewTarget=bounds.center;
+            studio.transform.position=previewTarget+Vector3.up*(bounds.size.y*0.075f)+Vector3.back*distance;
+            studio.transform.LookAt(previewTarget,Vector3.up);
         }
         else
         {
