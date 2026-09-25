@@ -21,12 +21,14 @@ public static class ShopCatalog
 {
     public const int StarterLure=4;
     public const int LureVariantCount=4;
+    public const int NeonBreachLureVariant=0;
+    public const int FireShadLureVariant=2;
 
     public static readonly string[] LureNames =
     {
-        "Starter Lure",
+        "Neon Breach Crankbait",
         "Reef Minnow",
-        "Crimson Shad",
+        "Fire Shad Crankbait",
         "Deep Flash"
     };
 
@@ -40,9 +42,9 @@ public static class ShopCatalog
 
     public static readonly string[] LureDescriptions =
     {
-        "Balanced permanent lure. Strong Sea Bass and Red Snapper focus.",
+        "Balanced permanent crankbait. Strong Sea Bass and Red Snapper focus.",
         "Quick-strike minnow. Highest Sea Bass odds and 15% more strike chance.",
-        "Red Snapper specialist. Slightly favors larger fish on long retrieves.",
+        "Red Snapper specialist crankbait. Strongly favors Red Snapper while keeping the same tuna odds.",
         "Deep-water flash lure. Slower strikes, larger fish, and the strongest tuna secondary odds."
     };
 
@@ -55,6 +57,24 @@ public static class ShopCatalog
     {
         ActiveLureVariant=Math.Max(0,Math.Min(LureVariantCount-1,variant));
         BaitNames[StarterLure]=LureNames[ActiveLureVariant];
+    }
+
+    // Gameplay prefab. Unmodelled legacy variants keep using Neon Breach until
+    // they receive their own authored model; Fire Shad has its dedicated prefab.
+    public static string LurePrefabResource(int variant)
+    {
+        return variant==FireShadLureVariant
+            ? "Fishing/FireShadCrankbait"
+            : "Fishing/LiplessCrankbaitGreenStriped";
+    }
+
+    // ShopPreview keys are deliberately variant-specific so the rendered 2D
+    // snapshots cannot reuse the old generic Bait4 placeholder cache entry.
+    public static string LurePreviewKey(int variant)
+    {
+        if(variant==NeonBreachLureVariant)return "Lure0";
+        if(variant==FireShadLureVariant)return "Lure2";
+        return "Bait4";
     }
 
     public static readonly HabitatDefinition[] Habitats = {
@@ -70,7 +90,7 @@ public static class ShopCatalog
     public static readonly string[] RodNames = { "Woodland Rod", "Coastal Carbon", "Offshore Carbon", "Bluewater Elite" };
     public static readonly string[] ReelNames = { "Starter Reel", "Smooth Drag", "Precision Drag", "Deepwater Pro" };
     public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
-    public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Starter Lure" };
+    public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Neon Breach Crankbait" };
     public static readonly int[] BaitPrices = { 0, 35, 90, 180, 0 };
     public static readonly int[] RodPrices = { 0, 180, 650, 1800 };
     public static readonly int[] ReelPrices = { 0, 160, 550, 1500 };
