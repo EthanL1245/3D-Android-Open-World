@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -28,11 +27,7 @@ public static class FishingReelFinalImporter
     private const string TexturePath = Source + "/FishingReelFinalTexture.png";
     private const string MaterialPath = Generated + "/FishingReelFinal.mat";
     private const string BlenderPrefsKey = "OpenWorld.Goatfish.BlenderExecutable";
-    private const string AutoSessionKey = "OpenWorld.AutoImport.FishingReelFinal.20260925.v2";
-
-    private const string BlendSha = "13466bc6a343133255adb5a7811050944317dd33577791688300400f406c7f9a";
-    private const string StlSha = "1090311c9fef288b549920478ccd931405495186dfc4b1c48d9f3078f92e50da";
-    private const string TextureSha = "97c5f04b05374cb9812acd0abb8436702a9689105ab51f7a3a2c8a3ddf193f3";
+    private const string AutoSessionKey = "OpenWorld.AutoImport.FishingReelFinal.20260925.v3";
     private const uint ExpectedTriangles = 1772;
 
     private static readonly string[] ReelParts =
@@ -176,28 +171,79 @@ public static class FishingReelFinalImporter
     private static void ExtractAndValidate(string zipPath, string blendPath, out byte[] textureBytes)
     {
         if (!File.Exists(zipPath)) throw new FileNotFoundException("Fishing Reel Final ZIP was not found.", zipPath);
+
         using FileStream stream = File.OpenRead(zipPath);
         using ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read);
-        ZipArchiveEntry blend = archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".blend", StringComparison.OrdinalIgnoreCase));
-        ZipArchiveEntry stl = archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".stl", StringComparison.OrdinalIgnoreCase));
-        ZipArchiveEntry texture = archive.Entries.FirstOrDefault(e =>
-        {
-            string ext = Path.GetExtension(e.FullName).ToLowerInvariant();
-            return ext == ".png" || ext == ".jpg" || ext == ".jpeg";
-        });
+
+        ZipArchiveEntry blend = FindNamedEntry(archive, "Fishing Reel Final.blend");
+        ZipArchiveEntry stl = FindNamedEntry(archive, "Fishing Reel Final.stl");
+        ZipArchiveEntry texture = FindNamedEntry(archive, "Fishing Reel Textures.png");
+
+        // Some zip tools slightly alter the visible casing/spaces while preserving the
+        // correct files. Fall back by extension only when there is exactly one candidate.
+        blend ??= SingleEntryWithExtension(archive, ".blend");
+        stl ??= SingleEntryWithExtension(archive, ".stl");
+        texture ??= SingleImageEntry(archive);
+
         if (blend == null || stl == null || texture == null)
             throw new InvalidDataException("The ZIP must contain Fishing Reel Final.blend, Fishing Reel Final.stl and Fishing Reel Textures.png.");
 
         byte[] blendBytes = ReadAll(blend);
         byte[] stlBytes = ReadAll(stl);
         textureBytes = ReadAll(texture);
-        if (!HashEquals(blendBytes, BlendSha) || !HashEquals(stlBytes, StlSha) || !HashEquals(textureBytes, TextureSha))
-            throw new InvalidDataException("Choose the exact Fishing Reel Final(1).zip supplied for this update.");
+
+        // Do not lock the user's source files to hashes generated on another machine.
+        // Validate the actual content instead: Blender header, exact STL triangle count,
+        // image signature, then the exported object names/geometry below.
+        if (blendBytes.Length < 12 ||
+            blendBytes[0] != (byte)'B' || blendBytes[1] != (byte)'L' || blendBytes[2] != (byte)'E' ||
+            blendBytes[3] != (byte)'N' || blendBytes[4] != (byte)'D' || blendBytes[5] != (byte)'E' || blendBytes[6] != (byte)'R')
+            throw new InvalidDataException("The reel .blend entry is not a valid Blender file.");
+
         if (stlBytes.Length < 84 || BitConverter.ToUInt32(stlBytes, 80) != ExpectedTriangles)
             throw new InvalidDataException("The supplied reel STL does not match the expected 1772-triangle revision.");
 
+        if (!LooksLikeImage(textureBytes))
+            throw new InvalidDataException("Fishing Reel Textures.png is not a valid PNG/JPEG image.");
+
         Directory.CreateDirectory(Path.GetDirectoryName(blendPath));
         File.WriteAllBytes(blendPath, blendBytes);
+    }
+
+    private static ZipArchiveEntry FindNamedEntry(ZipArchive archive, string expectedName)
+    {
+        string normalizedExpected = Normalize(expectedName);
+        return archive.Entries.FirstOrDefault(entry =>
+            !string.IsNullOrEmpty(entry.Name) && Normalize(entry.Name) == normalizedExpected);
+    }
+
+    private static ZipArchiveEntry SingleEntryWithExtension(ZipArchive archive, string extension)
+    {
+        ZipArchiveEntry[] matches = archive.Entries
+            .Where(entry => !string.IsNullOrEmpty(entry.Name) &&
+                            string.Equals(Path.GetExtension(entry.Name), extension, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        return matches.Length == 1 ? matches[0] : null;
+    }
+
+    private static ZipArchiveEntry SingleImageEntry(ZipArchive archive)
+    {
+        ZipArchiveEntry[] matches = archive.Entries.Where(entry =>
+        {
+            if (string.IsNullOrEmpty(entry.Name)) return false;
+            string ext = Path.GetExtension(entry.Name).ToLowerInvariant();
+            return ext == ".png" || ext == ".jpg" || ext == ".jpeg";
+        }).ToArray();
+        return matches.Length == 1 ? matches[0] : null;
+    }
+
+    private static bool LooksLikeImage(byte[] bytes)
+    {
+        if (bytes == null || bytes.Length < 8) return false;
+        bool png = bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
+                   bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A;
+        bool jpeg = bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
+        return png || jpeg;
     }
 
     private static void ExportGeometryJson(string blender, string blendPath, string jsonPath)
@@ -450,6 +496,12 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         foreach (string folder in folders)
         {
             if (!Directory.Exists(folder)) continue;
+
+            // Always prefer the exact file name the user supplied. This avoids an
+            // older similarly named ZIP being selected just because it was modified later.
+            string exact = Path.Combine(folder, PackageName);
+            if (File.Exists(exact)) return exact;
+
             string match = Directory.GetFiles(folder, "*.zip", SearchOption.TopDirectoryOnly)
                 .Where(file => Normalize(Path.GetFileNameWithoutExtension(file)).Contains("fishingreelfinal"))
                 .OrderByDescending(File.GetLastWriteTimeUtc)
@@ -494,13 +546,6 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         using MemoryStream output = new MemoryStream();
         input.CopyTo(output);
         return output.ToArray();
-    }
-
-    private static bool HashEquals(byte[] bytes, string expected)
-    {
-        using SHA256 sha = SHA256.Create();
-        string actual = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", string.Empty).ToLowerInvariant();
-        return actual == expected;
     }
 
     private static void WriteBytesIfChanged(string absolutePath, byte[] bytes)
