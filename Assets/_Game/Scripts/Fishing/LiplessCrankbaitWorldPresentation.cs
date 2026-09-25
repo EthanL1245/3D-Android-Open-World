@@ -136,7 +136,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         wasReeling = reeling;
 
         // Put the line-tie/head itself at FishingSystem's logical lure point.
-        // Both Neon Breach and Fire Shad use the same LineAttach contract.
+        // Every crankbait variant uses the same LineAttach contract.
         lureRoot.transform.position = position;
         if (lineAttach != null)
         {
@@ -203,8 +203,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         GameObject prefab = Resources.Load<GameObject>(resource);
         if (prefab == null && desiredVariant!=ShopCatalog.NeonBreachLureVariant)
         {
-            // Keep fishing functional before the local Fire Shad one-click import
-            // has been run, but make the missing authored prefab obvious in Console.
             Debug.LogWarning("Missing lure prefab '"+resource+"'. Falling back to Neon Breach until its model is imported.");
             prefab=Resources.Load<GameObject>(ShopCatalog.LurePrefabResource(ShopCatalog.NeonBreachLureVariant));
         }
@@ -213,7 +211,10 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         lureRoot = Instantiate(prefab);
         loadedVariant=desiredVariant;
-        lureRoot.name = "Active_"+ShopCatalog.LureNames[desiredVariant].Replace(" ",string.Empty);
+        // Keep one stable runtime name. LiplessCrankbaitRetrieveAnimationSpeed
+        // deliberately finds this object and promotes its active retrieve from
+        // 1x to the approved 2x animation speed for every lure variant.
+        lureRoot.name = "ActiveLiplessCrankbait";
         authoredRootRotation = lureRoot.transform.rotation;
 
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
