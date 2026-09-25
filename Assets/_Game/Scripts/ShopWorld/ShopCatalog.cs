@@ -22,9 +22,7 @@ public static class ShopCatalog
     public const int StarterLure=4;
     public const int LureVariantCount=4;
     public const int NeonBreachLureVariant=0;
-    public const int ReefMinnowLureVariant=1;
     public const int FireShadLureVariant=2;
-    public const int DeepFlashLureVariant=3;
 
     public static readonly string[] LureNames =
     {
@@ -34,12 +32,14 @@ public static class ShopCatalog
         "Deep Flash"
     };
 
+    // Every permanent crankbait has the same shop price. Variant 0 may already
+    // be owned by legacy/starter saves, but its catalog price is still 500.
     public static readonly int[] LurePrices =
     {
-        0,
-        350,
-        750,
-        1400
+        500,
+        500,
+        500,
+        500
     };
 
     public static readonly string[] LureDescriptions =
@@ -63,21 +63,20 @@ public static class ShopCatalog
 
     public static string LurePrefabResource(int variant)
     {
-        switch(Math.Max(0,Math.Min(LureVariantCount-1,variant)))
+        switch(variant)
         {
-            case ReefMinnowLureVariant: return "Fishing/ReefMinnowCrankbait";
-            case FireShadLureVariant: return "Fishing/FireShadCrankbait";
-            case DeepFlashLureVariant: return "Fishing/DeepFlashCrankbait";
-            default: return "Fishing/LiplessCrankbaitGreenStriped";
+            case 1:return "Fishing/ReefMinnowCrankbait";
+            case 2:return "Fishing/FireShadCrankbait";
+            case 3:return "Fishing/DeepFlashCrankbait";
+            default:return "Fishing/LiplessCrankbaitGreenStriped";
         }
     }
 
-    // Every permanent lure now gets a real model snapshot rather than Bait4's
-    // procedural placeholder. Variant-specific keys also keep preview caches apart.
+    // Every lure gets its own preview cache key so ShopPreview always renders
+    // the correct authored prefab instead of reusing the old placeholder.
     public static string LurePreviewKey(int variant)
     {
-        int clamped=Math.Max(0,Math.Min(LureVariantCount-1,variant));
-        return "Lure"+clamped;
+        return "Lure"+Math.Max(0,Math.Min(LureVariantCount-1,variant));
     }
 
     public static readonly HabitatDefinition[] Habitats = {
