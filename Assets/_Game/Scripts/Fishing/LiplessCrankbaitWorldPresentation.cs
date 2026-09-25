@@ -13,6 +13,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
     private const string PrefabResource = "Fishing/LiplessCrankbaitGreenStriped";
     private const float RetrieveDepth = 0.20f;
     private const float FloatDepth = 0.015f;
+    private const float WorldScaleMultiplier = 2f;
 
     private FishingSystem fishing;
     private ShopProgress shopProgress;
@@ -130,25 +131,25 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             heading,
             1f - Mathf.Exp(-response * Time.deltaTime));
 
-        // Lipless crankbaits vibrate rapidly while being worked. Because the
-        // prefab origin is the nose/line tie, this wobble makes the rear and
-        // hooks visibly trail behind rather than leading the motion.
+        // The prefab origin is the authored head/line tie. Pull that point toward
+        // the player and let the rear body and treble hooks trail. LookRotation's
+        // up vector keeps the supplied model right-side-up; the authored Animator
+        // remains responsible for its lure/hook swing instead of us touching bones.
         float vibration = reeling ? Mathf.Sin(Time.time * 31f) : 0f;
-        Quaternion wobble = Quaternion.Euler(
-            reeling ? 5f + Mathf.Sin(Time.time * 17f) * 1.5f : -1.5f,
-            reeling ? vibration * 4.0f : 0f,
-            reeling ? Mathf.Sin(Time.time * 27f + 0.8f) * 7.0f : Mathf.Sin(Time.time * 2.2f) * 1.5f);
+        Quaternion pullMotion = Quaternion.Euler(
+            reeling ? 3.0f + Mathf.Sin(Time.time * 17f) * 1.0f : -1.0f,
+            reeling ? vibration * 2.5f : 0f,
+            reeling ? Mathf.Sin(Time.time * 27f + 0.8f) * 4.5f : Mathf.Sin(Time.time * 2.2f) * 1.2f);
 
         lureRoot.transform.position = position;
-        lureRoot.transform.rotation = smoothRotation * wobble;
+        lureRoot.transform.rotation = smoothRotation * pullMotion;
 
-        // Keep FishingSystem's invisible logical bobber at the lure nose for
-        // line-distance/fight handoff consistency. Next Update will still do
-        // its normal authoritative surface/path calculations.
+        // FishingSystem's invisible logical bobber lives at the same head point,
+        // so distance/retrieval/fight handoff and the visible string agree exactly.
         bobber.transform.position = position;
 
         if (lureAnimator != null)
-            lureAnimator.speed = reeling ? 1.35f : 0f;
+            lureAnimator.speed = reeling ? 1f : 0f;
 
         LineRenderer line = fishingLineField != null
             ? fishingLineField.GetValue(fishing) as LineRenderer
@@ -208,9 +209,30 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         lureRoot = Instantiate(prefab);
         lureRoot.name = "ActiveLiplessCrankbait";
+        lureRoot.transform.localScale *= WorldScaleMultiplier;
+
+        // Older generated prefabs and the current importer both define the root
+        // origin as the visible lure head/line eye. Re-anchor LineAttach there so
+        // scaling and the supplied animation can never leave a gap in the string.
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
-        if (lineAttach == null) lineAttach = lureRoot.transform;
+        if (lineAttach == null)
+        {
+            GameObject attach = new GameObject("LineAttach");
+            lineAttach = attach.transform;
+        }
+        lineAttach.SetParent(lureRoot.transform, false);
+        lineAttach.localPosition = Vector3.zero;
+        lineAttach.localRotation = Quaternion.identity;
+        lineAttach.localScale = Vector3.one;
+
         lureAnimator = lureRoot.GetComponentInChildren<Animator>(true);
+        if (lureAnimator != null)
+        {
+            lureAnimator.applyRootMotion = false;
+            lureAnimator.speed = 0f;
+            lureAnimator.Update(0f);
+        }
+
         lureRoot.SetActive(false);
         return true;
     }
