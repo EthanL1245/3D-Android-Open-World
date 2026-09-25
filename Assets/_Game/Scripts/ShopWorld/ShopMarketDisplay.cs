@@ -6,63 +6,104 @@ public sealed class ShopMarketDisplay : MonoBehaviour
 {
     private readonly List<Material> materials = new List<Material>();
     private readonly List<Mesh> meshes = new List<Mesh>();
-    private const float CounterDrop = 0.55f;
+
+    // Exact local heights for the lowered market counter. Keeping these absolute
+    // makes the display idempotent and prevents old runtime fixes from stacking.
+    private const float CounterTopY = 0.80f;
+    private const float CounterSurfaceTopY = 0.86f;
+    private const float TrayCenterY = 0.91f;
+    private const float IceCenterY = 1.00f;
+    private const float FishBottomY = 1.08f;
 
     private void Start()
     {
-        // The authored counter top is 1.35 m high, which is too high for the
-        // first-person character to comfortably see the fish. Lower the whole
-        // working counter assembly together to a roughly 0.80 m top height.
-        // Keep its proportions/collision intact instead of lowering only fish.
-        foreach (Transform child in transform)
-        {
-            if (child.name == "Counter" || child.name == "Countertop" || child.name == "CounterInlay")
-                child.localPosition -= Vector3.up * CounterDrop;
-        }
+        NormalizeCounter();
 
-        // Upgrade already-installed Quay scenes at runtime too.
+        // Upgrade already-installed Quay scenes at runtime too. Delete every old
+        // market-display version before building one authoritative frozen display.
+        var remove = new List<GameObject>();
         foreach (Transform child in transform)
         {
             if (child.name == "SeafoodTray" || child.name == "Ice" ||
                 child.name == "HangingMarketFish" || child.name == "HangingCord" ||
                 child.name == "FreshCatchOnIce")
-            {
-                child.gameObject.SetActive(false);
-                Destroy(child.gameObject);
-            }
+                remove.Add(child.gameObject);
+        }
+        foreach (GameObject child in remove)
+        {
+            child.SetActive(false);
+            Destroy(child);
         }
 
-        // The trays, ice, labels and frozen fish receive the exact same drop as
-        // the counter so they remain sitting on its surface rather than inside it.
+        // All dimensions below are already in the lowered counter's coordinate
+        // system. Do NOT apply a second display-root drop.
         var root = new GameObject("FreshCatchOnIce").transform;
         root.SetParent(transform, false);
-        root.localPosition = Vector3.down * CounterDrop;
-        Material steel = Surface("Brushed steel trays", new Color(0.36f, 0.46f, 0.49f), 0.65f, 0.75f);
-        Material ice = Surface("Crushed blue-white ice", new Color(0.82f, 0.94f, 0.98f), 0.78f, 0f);
+        root.localPosition = Vector3.zero;
+        root.localRotation = Quaternion.identity;
+        root.localScale = Vector3.one;
+
+        Material steel = Surface("Brushed steel trays", new Color(0.40f, 0.50f, 0.53f), 0.72f, 0.78f);
+        Material ice = Surface("Crushed blue-white ice", new Color(0.88f, 0.97f, 1f), 0.70f, 0f);
         Material chalkboard = Surface("Seafood labels", new Color(0.025f, 0.08f, 0.085f), 0.2f, 0f);
+
         int[] species = { 0, FishCatalog.RedSnapperId, 3 };
         for (int tray = 0; tray < species.Length; tray++)
         {
             float x = (tray - 1) * 3.3f;
-            Box(root, "Steel tray", new Vector3(x, 1.46f, -1.5f), new Vector3(2.95f, 0.10f, 1.55f), steel);
-            Box(root, "Front rim", new Vector3(x, 1.56f, -2.25f), new Vector3(2.95f, 0.18f, 0.06f), steel);
-            Box(root, "Back rim", new Vector3(x, 1.56f, -0.75f), new Vector3(2.95f, 0.18f, 0.06f), steel);
+
+            // Shallow metal tray sitting immediately above the 0.86 m counter.
+            Box(root, "Steel tray", new Vector3(x, TrayCenterY, -1.5f), new Vector3(2.95f, 0.10f, 1.55f), steel);
+            Box(root, "Front rim", new Vector3(x, 1.00f, -2.25f), new Vector3(2.95f, 0.18f, 0.06f), steel);
+            Box(root, "Back rim", new Vector3(x, 1.00f, -0.75f), new Vector3(2.95f, 0.18f, 0.06f), steel);
             for (int side = -1; side <= 1; side += 2)
-                Box(root, "Side rim", new Vector3(x + side * 1.445f, 1.56f, -1.5f), new Vector3(0.06f, 0.18f, 1.5f), steel);
-            Box(root, "Ice bed", new Vector3(x, 1.55f, -1.5f), new Vector3(2.8f, 0.1f, 1.4f), ice);
+                Box(root, "Side rim", new Vector3(x + side * 1.445f, 1.00f, -1.5f), new Vector3(0.06f, 0.18f, 1.5f), steel);
+
+            // Give the ice real visible thickness instead of hiding it under fish.
+            Box(root, "Ice bed", new Vector3(x, IceCenterY, -1.5f), new Vector3(2.8f, 0.16f, 1.4f), ice);
             BuildCrushedIce(root, x, tray, ice);
+
             for (int fish = 0; fish < 3; fish++)
-                PlaceFish(root, species[tray], new Vector3(x + (fish - 1) * 0.87f, 1.61f, -1.5f), fish);
-            Box(root, "Label board", new Vector3(x, 1.29f, -2.48f), new Vector3(2.4f, 0.34f, 0.055f), chalkboard);
-            Label(root, FishCatalog.Get(species[tray]).Name.ToUpperInvariant(), new Vector3(x, 1.29f, -2.515f));
+                PlaceFish(root, species[tray], new Vector3(x + (fish - 1) * 0.82f, FishBottomY, -1.5f), fish);
+
+            Box(root, "Label board", new Vector3(x, 0.67f, -2.48f), new Vector3(2.4f, 0.34f, 0.055f), chalkboard);
+            Label(root, FishCatalog.Get(species[tray]).Name.ToUpperInvariant(), new Vector3(x, 0.67f, -2.515f));
+        }
+    }
+
+    private void NormalizeCounter()
+    {
+        foreach (Transform child in transform)
+        {
+            Vector3 position = child.localPosition;
+            Vector3 scale = child.localScale;
+            if (child.name == "Counter")
+            {
+                // Keep the front counter above the deck rather than extending
+                // below it after lowering the working surface.
+                scale.y = 0.75f;
+                position.y = 0.375f;
+                child.localScale = scale;
+                child.localPosition = position;
+            }
+            else if (child.name == "Countertop")
+            {
+                position.y = CounterTopY;
+                child.localPosition = position;
+            }
+            else if (child.name == "CounterInlay")
+            {
+                position.y = 0.45f;
+                child.localPosition = position;
+            }
         }
     }
 
     private void PlaceFish(Transform parent, int species, Vector3 position, int index)
     {
         GameObject fish = FishVisualFactory.CreateFish("Fresh " + FishCatalog.Get(species).Name, parent, species, 1f);
-        // Disable every procedural swimmer/flopper, as well as both Unity
-        // animation systems. Sample a fixed pose once before sizing/placement.
+
+        // Freeze one authored pose. Market fish are display food, never swimmers.
         foreach (var behaviour in fish.GetComponentsInChildren<MonoBehaviour>(true)) behaviour.enabled = false;
         foreach (var animation in fish.GetComponentsInChildren<Animation>(true)) animation.enabled = false;
         foreach (var animator in fish.GetComponentsInChildren<Animator>(true))
@@ -86,16 +127,24 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         }
         foreach (var collider in fish.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
         foreach (var body in fish.GetComponentsInChildren<Rigidbody>(true))
-        { body.isKinematic = true; body.useGravity = false; }
-        FishWorldSize.SetLength(fish, 0.80f + index * 0.05f);
-        // Lie on the side, snout-to-tail along the counter depth, in tidy rows.
-        fish.transform.localRotation = Quaternion.Euler(0f, index % 2 == 0 ? 10f : -10f, 90f);
-        var renderers = fish.GetComponentsInChildren<Renderer>();
+        {
+            body.isKinematic = true;
+            body.useGravity = false;
+        }
+
+        // Smaller retail-display fish leave the ice clearly visible around them.
+        FishWorldSize.SetLength(fish, 0.62f + index * 0.035f);
+        fish.transform.localRotation = Quaternion.Euler(0f, index % 2 == 0 ? 8f : -8f, 90f);
+
+        Renderer[] renderers = fish.GetComponentsInChildren<Renderer>(true);
         if (renderers.Length == 0) return;
         Bounds bounds = renderers[0].bounds;
-        foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
-        fish.transform.position += parent.TransformPoint(position) -
-            new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+
+        // Put the lowest rendered point directly onto the top of the crushed ice.
+        Vector3 target = parent.TransformPoint(position);
+        Vector3 correction = new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, target.z - bounds.center.z);
+        fish.transform.position += correction;
     }
 
     private void BuildCrushedIce(Transform parent, float x, int seed, Material material)
@@ -108,8 +157,11 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         for (int row = 0; row < 5; row++)
         for (int col = 0; col < 12; col++)
         {
-            Vector3 center = new Vector3(x - 1.27f + col * 0.23f, 1.59f, -2.06f + row * 0.28f);
-            Vector3 size = new Vector3(0.13f + (float)random.NextDouble() * 0.09f, 0.06f + (float)random.NextDouble() * 0.08f, 0.15f);
+            Vector3 center = new Vector3(x - 1.27f + col * 0.23f, 1.085f, -2.06f + row * 0.28f);
+            Vector3 size = new Vector3(
+                0.13f + (float)random.NextDouble() * 0.09f,
+                0.07f + (float)random.NextDouble() * 0.09f,
+                0.15f);
             Quaternion rotation = Quaternion.Euler((float)random.NextDouble() * 30f, (float)random.NextDouble() * 180f, 20f);
             for (int face = 0; face < 6; face++)
             {
@@ -117,7 +169,10 @@ public sealed class ShopMarketDisplay : MonoBehaviour
                 for (int corner = 0; corner < 4; corner++)
                 {
                     int c = faces[face * 4 + corner];
-                    vertices.Add(center + rotation * Vector3.Scale(size, new Vector3((c & 1) == 0 ? -0.5f : 0.5f, (c & 2) == 0 ? -0.5f : 0.5f, (c & 4) == 0 ? -0.5f : 0.5f)));
+                    vertices.Add(center + rotation * Vector3.Scale(size, new Vector3(
+                        (c & 1) == 0 ? -0.5f : 0.5f,
+                        (c & 2) == 0 ? -0.5f : 0.5f,
+                        (c & 4) == 0 ? -0.5f : 0.5f)));
                 }
                 triangles.AddRange(new[] {start, start + 1, start + 2, start, start + 2, start + 3});
             }
@@ -153,10 +208,11 @@ public sealed class ShopMarketDisplay : MonoBehaviour
         var text = node.AddComponent<TextMesh>(); text.text = caption; text.fontSize = 64;
         text.characterSize = 0.035f; text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.color = new Color(0.95f, 0.96f, 0.89f);
-        var material = new Material(Resources.Load<Shader>("Fishing/ShopSign"));
+        var signShader = Resources.Load<Shader>("Fishing/ShopSign");
+        if (signShader == null) signShader = Shader.Find("Universal Render Pipeline/Unlit");
+        var material = new Material(signShader);
         material.mainTexture = text.font.material.mainTexture; materials.Add(material);
         var renderer = node.GetComponent<MeshRenderer>(); renderer.sharedMaterial = material;
-        // Fit every species name within its board.
         float width = renderer.bounds.size.x;
         if (width > 2.15f) node.transform.localScale = Vector3.one * (2.15f / width);
     }
