@@ -18,6 +18,7 @@ public sealed class LureRodFlexPresentation : MonoBehaviour
     private FieldInfo castPointField;
     private FieldInfo bobberField;
     private FieldInfo rodViewField;
+    private FieldInfo fishingLineField;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -57,12 +58,23 @@ public sealed class LureRodFlexPresentation : MonoBehaviour
             0f,
             false,
             Time.deltaTime);
+
+        // FishingSystem positioned the line earlier in the frame, before this
+        // LateUpdate-only lure bend moved the visual rod tip. Re-anchor the line
+        // after the bend so it always begins at the current visible RodTip.
+        LineRenderer fishingLine = fishingLineField.GetValue(fishing) as LineRenderer;
+        if (fishingLine != null && fishingLine.enabled &&
+            fishingLine.positionCount >= 2 && rodView.RodTip != null)
+        {
+            fishingLine.SetPosition(0, rodView.RodTip.position);
+        }
     }
 
     private bool IsRetrievingLure()
     {
         if (fishing == null || stateField == null || activeBaitField == null ||
-            castPointField == null || bobberField == null || rodViewField == null)
+            castPointField == null || bobberField == null || rodViewField == null ||
+            fishingLineField == null)
             return false;
 
         object state = stateField.GetValue(fishing);
@@ -92,9 +104,10 @@ public sealed class LureRodFlexPresentation : MonoBehaviour
         castPointField = type.GetField("castPoint", flags);
         bobberField = type.GetField("bobber", flags);
         rodViewField = type.GetField("rodView", flags);
+        fishingLineField = type.GetField("fishingLine", flags);
 
         if (stateField == null || activeBaitField == null || castPointField == null ||
-            bobberField == null || rodViewField == null)
+            bobberField == null || rodViewField == null || fishingLineField == null)
         {
             Debug.LogError(
                 "LureRodFlexPresentation could not bind to FishingSystem. Lure rod flex is disabled.");
