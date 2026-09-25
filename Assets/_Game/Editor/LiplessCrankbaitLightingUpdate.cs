@@ -19,21 +19,35 @@ using UnityEngine;
 public static class LiplessCrankbaitLightingUpdate
 {
     private const string PrefabPath = "Assets/Resources/Fishing/LiplessCrankbaitGreenStriped.prefab";
-    private const string TempFolder = "Assets/_Game/Fishing/LiplessCrankbait/LightingImportTemp";
-    private const string TempFbxPath = TempFolder + "/LiplessCrankbaitGreenStripedLighting.fbx";
+
+    // Keep the lighting-source FBX as a stable imported source asset. The previous
+    // version created it in a temporary Assets folder, reimported it several times,
+    // then deleted it while Unity's FBX importer was still finishing work. That is
+    // what caused the SourceAssetDB / infinite-import-loop errors shown in Console.
+    internal const string LightingSourceFolder = "Assets/_Game/Fishing/LiplessCrankbait/LightingSource";
+    internal const string LightingSourceFbxPath = LightingSourceFolder + "/LiplessCrankbaitGreenStripedLighting.fbx";
+
+    private const string LegacyTempFolder = "Assets/_Game/Fishing/LiplessCrankbait/LightingImportTemp";
+    private const string LegacyTempFbxPath = LegacyTempFolder + "/LiplessCrankbaitGreenStripedLighting.fbx";
     private const string LightingRigName = "AuthoredLightingRig";
 
-    // This is the exact FBX from "Lipless Crankbait Green Striped w lighting.zip"
-    // supplied for this update. Prefer it even when the older lure ZIP is still
-    // sitting beside it in Downloads.
+    // Exact FBX from "Lipless Crankbait Green Striped w lighting.zip" supplied
+    // for this update. This prevents accidentally applying an older lure ZIP.
     private const string ExpectedLightingFbxSha256 =
         "6efa7134b83d180fd11d9bf0ed4ce3353cf6615d7f54f80ff14f39cc657ab968";
 
-    // Layer 30 is unused in this project. The gameplay camera and URP renderers
-    // already render all layers. Putting only the lure renderers on this layer lets
-    // the two authored directional lights affect the lure without relighting the
-    // entire island every time the lure turns toward the player.
+    // Layer 30 is unused in this project. Only the lure is moved to this layer, so
+    // the two Blender-authored lights illuminate the lure rather than the world.
     private const int LureLightingLayer = 30;
+
+    [InitializeOnLoadMethod]
+    private static void CleanupFailedPreviousImporterAfterScriptReload()
+    {
+        // Delay until the current script/domain reload has settled. This removes
+        // the broken temporary source left by the old implementation before Unity
+        // can keep retrying that stale FBX on later refreshes/builds.
+        EditorApplication.delayCall += CleanupLegacyTempImport;
+    }
 
     [MenuItem("Tools/Open World/Apply Lipless Crankbait NEW LIGHTING (One Click)")]
     public static void ApplyOneClick()
@@ -43,6 +57,8 @@ public static class LiplessCrankbaitLightingUpdate
             EditorUtility.DisplayDialog("Lipless Crankbait Lighting", "Exit Play Mode first.", "OK");
             return;
         }
+
+        CleanupLegacyTempImport();
 
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         if (prefab == null)
@@ -71,14 +87,24 @@ public static class LiplessCrankbaitLightingUpdate
             EditorUtility.DisplayProgressBar("Crankbait lighting", "Verifying the new lighting FBX...", 0.12f);
             ExtractVerifiedLightingFbx(zipPath);
 
-            EditorUtility.DisplayProgressBar("Crankbait lighting", "Importing the two authored lights...", 0.40f);
-            ConfigureLightingSource();
+            EditorUtility.DisplayProgressBar("Crankbait lighting", "Importing the authored lighting once...", 0.42f);
 
-            EditorUtility.DisplayProgressBar("Crankbait lighting", "Applying lighting without touching lure movement...", 0.72f);
-            ApplyLightingToExistingPrefab();
+            // ONE synchronous import only. Import settings are supplied by the
+            // AssetPostprocessor below before Unity reads the FBX, so there is no
+            // SaveAndReimport/Refresh/Delete cycle and therefore no import loop.
+            AssetDatabase.ImportAsset(
+                LightingSourceFbxPath,
+                ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
+
+            GameObject lightingSource = AssetDatabase.LoadAssetAtPath<GameObject>(LightingSourceFbxPath);
+            if (lightingSource == null)
+                throw new InvalidOperationException(
+                    "Unity did not finish importing the lighting FBX. Check the first FBX error in Console; the working lure prefab has not been changed.");
+
+            EditorUtility.DisplayProgressBar("Crankbait lighting", "Applying lighting without touching lure movement...", 0.74f);
+            ApplyLightingToExistingPrefab(lightingSource);
 
             AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
 
             EditorUtility.DisplayDialog(
@@ -96,10 +122,10 @@ public static class LiplessCrankbaitLightingUpdate
         }
         finally
         {
-            // The imported FBX is only a source from which we copy light settings;
-            // the finished prefab has no dependency on this temporary asset.
-            if (AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(TempFbxPath) != null)
-                AssetDatabase.DeleteAsset(TempFbxPath);
+            // IMPORTANT: do not delete LightingSourceFbxPath here. Unity's model
+            // importer may still have dependency bookkeeping to finish even after
+            // a synchronous import returns. Keeping the small source asset prevents
+            // the SourceAssetDB race that broke the previous implementation.
             EditorUtility.ClearProgressBar();
         }
     }
@@ -109,61 +135,63 @@ public static class LiplessCrankbaitLightingUpdate
         if (!File.Exists(zipPath))
             throw new FileNotFoundException("The lighting ZIP was not found.", zipPath);
 
-        EnsureFolderRecursive(TempFolder);
+        EnsureFolderRecursive(LightingSourceFolder);
 
-        using FileStream stream = File.OpenRead(zipPath);
-        using ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read);
-        ZipArchiveEntry fbx = archive.Entries.FirstOrDefault(e =>
-            e.FullName.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase));
+        byte[] bytes;
+        using (FileStream stream = File.OpenRead(zipPath))
+        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+        {
+            ZipArchiveEntry fbx = archive.Entries.FirstOrDefault(e =>
+                e.FullName.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase));
 
-        if (fbx == null)
-            throw new InvalidDataException("The selected ZIP does not contain a crankbait FBX.");
+            if (fbx == null)
+                throw new InvalidDataException("The selected ZIP does not contain a crankbait FBX.");
 
-        string hash;
-        using (Stream input = fbx.Open())
-        using (SHA256 sha = SHA256.Create())
-            hash = BitConverter.ToString(sha.ComputeHash(input)).Replace("-", string.Empty).ToLowerInvariant();
+            using Stream source = fbx.Open();
+            using MemoryStream memory = new MemoryStream();
+            source.CopyTo(memory);
+            bytes = memory.ToArray();
+        }
 
+        string hash = Sha256(bytes);
         if (!string.Equals(hash, ExpectedLightingFbxSha256, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException(
                 "That is not the supplied 'w lighting' crankbait FBX. Choose 'Lipless Crankbait Green Striped w lighting.zip' so the existing animation/line setup cannot accidentally be replaced by a different model revision.");
 
-        string absolute = Path.GetFullPath(TempFbxPath);
+        string absolute = Path.GetFullPath(LightingSourceFbxPath);
         Directory.CreateDirectory(Path.GetDirectoryName(absolute));
-        using Stream source = fbx.Open();
-        using FileStream output = File.Create(absolute);
-        source.CopyTo(output);
-        AssetDatabase.Refresh();
+
+        // Avoid touching the file timestamp when the exact source is already
+        // present. Rewriting an unchanged FBX is another common way to cause the
+        // AssetDatabase to schedule unnecessary duplicate imports.
+        bool write = true;
+        if (File.Exists(absolute))
+        {
+            try
+            {
+                byte[] existing = File.ReadAllBytes(absolute);
+                write = !string.Equals(Sha256(existing), hash, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                write = true;
+            }
+        }
+
+        if (write)
+            File.WriteAllBytes(absolute, bytes);
     }
 
-    private static void ConfigureLightingSource()
+    private static string Sha256(byte[] bytes)
     {
-        AssetDatabase.ImportAsset(
-            TempFbxPath,
-            ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
-
-        ModelImporter importer = AssetImporter.GetAtPath(TempFbxPath) as ModelImporter;
-        if (importer == null)
-            throw new InvalidOperationException("Unity could not import the lighting FBX.");
-
-        // We are deliberately NOT importing/replacing animation from this FBX.
-        // Animation remains whatever is already proven to work in the live lure.
-        importer.importAnimation = false;
-        importer.importCameras = false;
-        importer.importLights = true;
-        importer.materialImportMode = ModelImporterMaterialImportMode.None;
-        importer.preserveHierarchy = true;
-        importer.globalScale = 1f;
-        importer.useFileScale = true;
-        importer.SaveAndReimport();
+        using SHA256 sha = SHA256.Create();
+        return BitConverter.ToString(sha.ComputeHash(bytes))
+            .Replace("-", string.Empty)
+            .ToLowerInvariant();
     }
 
-    private static void ApplyLightingToExistingPrefab()
+    private static void ApplyLightingToExistingPrefab(GameObject source)
     {
-        GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>(TempFbxPath);
-        if (source == null)
-            throw new InvalidOperationException("The imported lighting FBX could not be loaded.");
-
         Light[] authoredLights = source.GetComponentsInChildren<Light>(true);
         if (authoredLights.Length != 2)
             throw new InvalidOperationException(
@@ -208,9 +236,9 @@ public static class LiplessCrankbaitLightingUpdate
             rig.localRotation = Quaternion.identity;
             rig.localScale = Vector3.one;
 
-            // Isolate the Blender-authored Sun lights to the lure itself. The world
-            // lights can still illuminate the lure normally because their default
-            // culling mask includes this otherwise-unused layer.
+            // Isolate the Blender-authored Sun lights to the lure itself. Existing
+            // world lights still illuminate the lure normally because their normal
+            // culling masks include this otherwise-unused layer.
             Renderer[] lureRenderers = root.GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < lureRenderers.Length; i++)
             {
@@ -226,8 +254,8 @@ public static class LiplessCrankbaitLightingUpdate
                 lightObject.layer = LureLightingLayer;
                 lightObject.transform.SetParent(rig, false);
 
-                // Directional-light position is irrelevant. Copy only its exact
-                // authored orientation relative to the FBX root.
+                // Directional-light position is irrelevant. Preserve the exact
+                // orientation Unity imported from the supplied FBX.
                 lightObject.transform.localPosition = Vector3.zero;
                 lightObject.transform.localRotation =
                     Quaternion.Inverse(source.transform.rotation) * sourceLight.transform.rotation;
@@ -247,7 +275,7 @@ public static class LiplessCrankbaitLightingUpdate
             }
 
             // Hard guarantees: line attachment, root scale and Animator/controller
-            // must be byte-for-byte-equivalent values after this lighting-only edit.
+            // must remain unchanged after this lighting-only edit.
             if (lineAttach.parent != lineParent ||
                 lineAttach.localPosition != linePosition ||
                 lineAttach.localRotation != lineRotation ||
@@ -267,6 +295,39 @@ public static class LiplessCrankbaitLightingUpdate
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
+    }
+
+    private static void CleanupLegacyTempImport()
+    {
+        bool changed = false;
+
+        // Prefer AssetDatabase deletion when the failed import was registered.
+        if (AssetDatabase.IsValidFolder(LegacyTempFolder))
+        {
+            changed = AssetDatabase.DeleteAsset(LegacyTempFolder);
+        }
+        else
+        {
+            string absoluteFolder = Path.GetFullPath(LegacyTempFolder);
+            string absoluteFbx = Path.GetFullPath(LegacyTempFbxPath);
+            string fbxMeta = absoluteFbx + ".meta";
+            string folderMeta = absoluteFolder + ".meta";
+
+            try
+            {
+                if (File.Exists(absoluteFbx)) { File.Delete(absoluteFbx); changed = true; }
+                if (File.Exists(fbxMeta)) { File.Delete(fbxMeta); changed = true; }
+                if (Directory.Exists(absoluteFolder)) { Directory.Delete(absoluteFolder, true); changed = true; }
+                if (File.Exists(folderMeta)) { File.Delete(folderMeta); changed = true; }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning("Could not completely clean the old crankbait lighting temp import: " + exception.Message);
+            }
+        }
+
+        if (changed)
+            AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
     }
 
     private static string FindLightingZip()
@@ -291,7 +352,6 @@ public static class LiplessCrankbaitLightingUpdate
                 .ThenByDescending(File.GetLastWriteTimeUtc)
                 .ToArray();
 
-            // Prefer the exact uploaded FBX by content hash, not merely by filename.
             for (int i = 0; i < candidates.Length; i++)
                 if (ZipContainsExpectedLightingFbx(candidates[i]))
                     return candidates[i];
@@ -311,8 +371,9 @@ public static class LiplessCrankbaitLightingUpdate
             if (fbx == null) return false;
 
             using Stream input = fbx.Open();
-            using SHA256 sha = SHA256.Create();
-            string hash = BitConverter.ToString(sha.ComputeHash(input)).Replace("-", string.Empty).ToLowerInvariant();
+            using MemoryStream memory = new MemoryStream();
+            input.CopyTo(memory);
+            string hash = Sha256(memory.ToArray());
             return string.Equals(hash, ExpectedLightingFbxSha256, StringComparison.OrdinalIgnoreCase);
         }
         catch
@@ -361,5 +422,33 @@ public static class LiplessCrankbaitLightingUpdate
                 AssetDatabase.CreateFolder(current, parts[i]);
             current = next;
         }
+    }
+}
+
+/// <summary>
+/// Supplies the lighting-source FBX import settings BEFORE Unity reads the model.
+/// This replaces the old ImportAsset -> SaveAndReimport sequence that caused the
+/// editor to detect an infinite import loop.
+/// </summary>
+internal sealed class LiplessCrankbaitLightingSourcePostprocessor : AssetPostprocessor
+{
+    private void OnPreprocessModel()
+    {
+        if (!string.Equals(
+                assetPath,
+                LiplessCrankbaitLightingUpdate.LightingSourceFbxPath,
+                StringComparison.OrdinalIgnoreCase))
+            return;
+
+        ModelImporter importer = assetImporter as ModelImporter;
+        if (importer == null) return;
+
+        importer.importAnimation = false;
+        importer.importCameras = false;
+        importer.importLights = true;
+        importer.materialImportMode = ModelImporterMaterialImportMode.None;
+        importer.preserveHierarchy = true;
+        importer.globalScale = 1f;
+        importer.useFileScale = true;
     }
 }
