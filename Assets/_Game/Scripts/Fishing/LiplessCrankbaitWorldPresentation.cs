@@ -3,15 +3,14 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Replaces the visible bobber with the authored lipless crankbait whenever a
-/// permanent lure is being cast/retrieved. The authored model, hook placement
-/// and animation remain intact; only the entire lure assembly is aimed so the
-/// line pulls from the head and the body trails behind during retrieve.
+/// Replaces the visible bobber with the equipped authored crankbait whenever a
+/// permanent lure is being cast/retrieved. Every crankbait uses the same proven
+/// line attachment, retrieve-facing behavior and animation logic; only the
+/// selected visual prefab changes.
 /// </summary>
 [DefaultExecutionOrder(900)]
 public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 {
-    private const string PrefabResource = "Fishing/LiplessCrankbaitGreenStriped";
     private const float RetrieveDepth = 0.20f;
     private const float FloatDepth = 0.015f;
 
@@ -31,6 +30,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
     private Transform lineAttach;
     private Animator lureAnimator;
     private Renderer[] bobberRenderers;
+    private int loadedVariant=-1;
 
     private bool showingLure;
     private bool wasReeling;
@@ -118,9 +118,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
                     Quaternion.FromToRotation(authoredHeadWorld, towardPlayer.normalized) *
                     authoredRootRotation;
 
-                // Snap immediately when REEL first goes down so the head points
-                // at the player from the very first retrieve frame. After that,
-                // track smoothly as the player walks around while reeling.
                 if (!wasReeling)
                 {
                     lureRoot.transform.rotation = targetRotation;
@@ -138,10 +135,8 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         wasReeling = reeling;
 
-        // Put the LINE-TIE/HEAD itself at FishingSystem's logical lure point.
-        // Because LineAttach is not necessarily at the prefab root, first place
-        // the root, then offset the whole rigid lure so its head lands exactly on
-        // the line endpoint. The belly/tail/hooks therefore trail behind the head.
+        // Put the line-tie/head itself at FishingSystem's logical lure point.
+        // Both Neon Breach and Fire Shad use the same LineAttach contract.
         lureRoot.transform.position = position;
         if (lineAttach != null)
         {
@@ -151,8 +146,8 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         bobber.transform.position = position;
 
-        // Use the supplied lure/hook animation exactly. No child bones or hook
-        // transforms are procedurally edited here.
+        // The shared retrieve-speed presentation applies the current 2x retrieve
+        // animation after this component. This value is the normal base state.
         if (lureAnimator != null)
             lureAnimator.speed = reeling ? 1f : 0f;
 
@@ -189,15 +184,36 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
     private bool EnsureLure()
     {
-        if (lureRoot != null)
+        int desiredVariant=shopProgress!=null
+            ? Mathf.Clamp(shopProgress.Data.lureEquipped,0,ShopCatalog.LureVariantCount-1)
+            : Mathf.Clamp(ShopCatalog.ActiveLureVariant,0,ShopCatalog.LureVariantCount-1);
+
+        if (lureRoot != null && loadedVariant == desiredVariant)
             return true;
 
-        GameObject prefab = Resources.Load<GameObject>(PrefabResource);
+        if (lureRoot != null)
+        {
+            Destroy(lureRoot);
+            lureRoot=null;
+            lineAttach=null;
+            lureAnimator=null;
+        }
+
+        string resource=ShopCatalog.LurePrefabResource(desiredVariant);
+        GameObject prefab = Resources.Load<GameObject>(resource);
+        if (prefab == null && desiredVariant!=ShopCatalog.NeonBreachLureVariant)
+        {
+            // Keep fishing functional before the local Fire Shad one-click import
+            // has been run, but make the missing authored prefab obvious in Console.
+            Debug.LogWarning("Missing lure prefab '"+resource+"'. Falling back to Neon Breach until its model is imported.");
+            prefab=Resources.Load<GameObject>(ShopCatalog.LurePrefabResource(ShopCatalog.NeonBreachLureVariant));
+        }
         if (prefab == null)
             return false;
 
         lureRoot = Instantiate(prefab);
-        lureRoot.name = "ActiveLiplessCrankbait";
+        loadedVariant=desiredVariant;
+        lureRoot.name = "Active_"+ShopCatalog.LureNames[desiredVariant].Replace(" ",string.Empty);
         authoredRootRotation = lureRoot.transform.rotation;
 
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
