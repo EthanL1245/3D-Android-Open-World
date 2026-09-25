@@ -28,13 +28,14 @@ public static class ReefCatalog
     // Indexes: Mackerel, Snapper, Sea Bass, Yellowtail, retired, Yellowfin,
     // Yellow Goatfish, Black Spot Goatfish, Bigeye Tuna.
     //
-    // Fire Shad replaces Crimson Shad and pushes more of its non-tuna pool into
-    // Red Snapper. Yellowfin and Bigeye stay EXACTLY at Crimson Shad's old 6%/5%.
+    // Fire Shad works like Neon Breach but moves only the NON-TUNA catch pool
+    // strongly toward Red Snapper. Yellowfin stays 6% and Bigeye stays 6%,
+    // exactly matching Neon Breach as requested.
     private static readonly float[][] LureOdds=
     {
         new float[] {4,21,36,19,0,6,4,4,6},   // Neon Breach Crankbait
         new float[] {4,20,42,16,0,6,3,3,6},   // Reef Minnow
-        new float[] {4,52,21,6,0,6,3,3,5},    // Fire Shad Crankbait
+        new float[] {4,45,22,9,0,6,4,4,6},    // Fire Shad Crankbait
         new float[] {3,24,34,16,0,9,3,3,8}    // Deep Flash
     };
 
