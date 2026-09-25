@@ -82,8 +82,11 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else if(reelPreview)
         {
-            // The user-provided Blender reference is authoritative for reel icons:
-            // reel mount/foot above the spool, spool low-left/center, handle to the right.
+            // Match the supplied Blender reference rather than showing a flat
+            // side/front view: mounting bar horizontal at the top, curved foot
+            // descending toward the body, spool in the lower-left/front and the
+            // handle extending toward the lower-right. A small yaw exposes the
+            // same three-quarter depth seen in the reference screenshot.
             OrientReelLikeReference(model);
         }
         else
@@ -96,17 +99,35 @@ public sealed class ShopPreview : MonoBehaviour
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
         if(gear==null && !fitWholeFish)
         {
+            studio.orthographic=true;
             studio.orthographicSize=0.26f;
             Vector3 head=new Vector3(bounds.min.x+0.18f,bounds.center.y,bounds.center.z);
             studio.transform.position=head+Vector3.back*5;
+            studio.transform.rotation=Quaternion.identity;
+        }
+        else if(reelPreview)
+        {
+            // Reels deliberately use a perspective camera because the supplied
+            // Blender reference is a 3D perspective view, not an orthographic
+            // catalog cutout. Keep the camera slightly above the spool so the
+            // top/side surfaces read the same way while world X stays horizontal.
+            studio.orthographic=false;
+            studio.fieldOfView=30f;
+            float halfFov=studio.fieldOfView*Mathf.Deg2Rad*0.5f;
+            float required=Mathf.Max(bounds.extents.y/Mathf.Tan(halfFov),bounds.extents.x/Mathf.Tan(halfFov));
+            float distance=(required+bounds.extents.z)*1.38f;
+            Vector3 target=bounds.center;
+            studio.transform.position=target+Vector3.up*(bounds.size.y*0.075f)+Vector3.back*distance;
+            studio.transform.LookAt(target,Vector3.up);
         }
         else
         {
-            float margin=lurePreview?0.66f:reelPreview?0.72f:0.58f;
+            studio.orthographic=true;
+            float margin=lurePreview?0.66f:0.58f;
             studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
+            studio.transform.rotation=Quaternion.identity;
         }
-        studio.transform.rotation=Quaternion.identity;
         var texture=new RenderTexture(192,192,16){name="Inventory "+key};texture.Create();rendering=texture;
         studio.targetTexture=texture;studio.enabled=true;
         yield return new WaitForEndOfFrame();
@@ -136,19 +157,23 @@ public sealed class ShopPreview : MonoBehaviour
         Renderer spoolRenderer=spool!=null?spool.GetComponent<Renderer>():null;
         Renderer handleRenderer=handle!=null?handle.GetComponent<Renderer>():null;
         if(mount==null || spoolRenderer==null || handleRenderer==null)
-        {reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+        {reel.transform.localRotation=Quaternion.Euler(0,-22,0);return;}
 
         Vector3 centre=spoolRenderer.bounds.center;
         Vector3 sourceUp=mount.position-centre;
-        if(sourceUp.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+        if(sourceUp.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(0,-22,0);return;}
         sourceUp.Normalize();
         Vector3 sourceRight=Vector3.ProjectOnPlane(handleRenderer.bounds.center-centre,sourceUp);
-        if(sourceRight.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+        if(sourceRight.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(0,-22,0);return;}
         sourceRight.Normalize();
         Vector3 sourceForward=Vector3.Cross(sourceRight,sourceUp).normalized;
         Quaternion sourceBasis=Quaternion.LookRotation(sourceForward,sourceUp);
         Quaternion targetBasis=Quaternion.LookRotation(Vector3.forward,Vector3.up);
-        reel.transform.rotation=(targetBasis*Quaternion.Inverse(sourceBasis))*reel.transform.rotation;
+        Quaternion aligned=(targetBasis*Quaternion.Inverse(sourceBasis))*reel.transform.rotation;
+        // The screenshot is slightly three-quarter rather than square-on. Yawing
+        // around world up preserves the horizontal mounting bar while revealing
+        // the spool/body depth and keeping the handle on the right.
+        reel.transform.rotation=Quaternion.AngleAxis(-22f,Vector3.up)*aligned;
     }
 
     private static void OrientLureSideProfile(GameObject lure)
