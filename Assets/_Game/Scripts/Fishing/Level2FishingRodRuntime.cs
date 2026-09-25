@@ -71,8 +71,10 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     private void LateUpdate()
     {
         if(progress==null || fishing==null)return;
+        EnsureShopCleanup();
         rodPowerField.SetValue(fishing,1f);
         ApplyVisual(progress.Data.rodEquipped>=1?1:0);
+        ClearRodTint();
         ApplyDamageBonus();
     }
 
@@ -147,6 +149,15 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         if(view!=null)view.InitializePose();
         appliedTier=tier;
         warnedMissing=false;
+    }
+
+    private void ClearRodTint()
+    {
+        GameObject rodRoot=rodRootField.GetValue(fishing) as GameObject;
+        if(rodRoot==null)return;
+        Transform blank=FindDeepChild(rodRoot.transform,"RodBlank");
+        MeshRenderer renderer=blank!=null?blank.GetComponent<MeshRenderer>():null;
+        if(renderer!=null)renderer.SetPropertyBlock(null);
     }
 
     private static Transform FindDeepChild(Transform root,string name)
