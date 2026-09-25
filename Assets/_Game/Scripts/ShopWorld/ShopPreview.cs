@@ -17,10 +17,11 @@ public sealed class ShopPreview : MonoBehaviour
     private RenderTexture rendering;
     public void Attach(RawImage target,int species,float kg,string gear=null,bool fitWholeFish=false)
     {
-        target.enabled=false; // A RawImage with no texture is a white rectangle.
-        string key=(fitWholeFish?"index:":"")+(gear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
+        target.enabled=false;
+        string resolvedGear=ResolveGearKey(target,gear);
+        string key=(fitWholeFish?"index:":"")+(resolvedGear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
         if(cache.TryGetValue(key,out var ready)) {target.texture=ready;target.enabled=ready.IsCreated();if(target.enabled)return;cache.Remove(key);Destroy(ready);}
-        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,gear,fitWholeFish));else busy=false;});
+        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,resolvedGear,fitWholeFish));else busy=false;});
     }
     private void Update() { if(!busy && requests.Count>0) {busy=true;requests.Dequeue()();} }
     private IEnumerator Render(RawImage target,string key,int species,float kg,string gear,bool fitWholeFish)
@@ -35,12 +36,20 @@ public sealed class ShopPreview : MonoBehaviour
         }
         studio.backgroundColor=gear=="RodAssembly"?new Color(0,0,0,0):new Color(0.08f,0.18f,0.20f);
         bool lurePreview=gear!=null && gear.StartsWith("Lure",System.StringComparison.Ordinal);
+        bool reelPreview=gear!=null && gear.StartsWith("Reel",System.StringComparison.Ordinal);
         if(gear==null)model=FishWorldSize.Create("FishPreview",stage.transform,species,kg);
         else
         {
             GameObject prefab=null;
-            if(gear=="Rod" || gear=="Reel" || gear=="RodAssembly")
+            if(gear=="Rod" || gear=="RodAssembly")
                 prefab=Resources.Load<GameObject>("Fishing/FishingRodReel");
+            else if(reelPreview)
+            {
+                int tier=0;
+                if(gear.Length>4)int.TryParse(gear.Substring(4),out tier);
+                prefab=Resources.Load<GameObject>(ShopCatalog.ReelPrefabResource(tier));
+                if(prefab==null && tier>0)prefab=Resources.Load<GameObject>(ShopCatalog.ReelPrefabResource(0));
+            }
             else if(lurePreview)
             {
                 int variant=0;
@@ -54,39 +63,32 @@ public sealed class ShopPreview : MonoBehaviour
         foreach(var behaviour in model.GetComponentsInChildren<MonoBehaviour>())behaviour.enabled=false;
         foreach(var collider in model.GetComponentsInChildren<Collider>())collider.enabled=false;
         foreach(var t in model.GetComponentsInChildren<Transform>())t.gameObject.layer=30;
-        if(gear=="Rod" || gear=="Reel")
+        if(gear=="Rod" || reelPreview)
         {
             foreach(var renderer in model.GetComponentsInChildren<Renderer>())
             {
                 bool reel=false;for(var t=renderer.transform;t!=null && t!=model.transform;t=t.parent)if(t.name=="ReelMount")reel=true;
-                renderer.enabled=gear=="Reel"?reel:!reel;
+                renderer.enabled=reelPreview?reel:!reel;
             }
         }
 
         if(lurePreview)
         {
-            // Keep icons static and use the exact catalog orientation requested:
-            // broad side profile, nose/head on the left, tail on the right, and
-            // the belly hook hanging downward. This is computed from LineAttach +
-            // the two hook positions so all four authored models frame identically.
             foreach(var animator in model.GetComponentsInChildren<Animator>(true))
             {
-                animator.applyRootMotion=false;
-                animator.speed=0f;
-                animator.Update(0f);
-                animator.enabled=false;
+                animator.applyRootMotion=false;animator.speed=0f;animator.Update(0f);animator.enabled=false;
             }
             OrientLureSideProfile(model);
         }
+        else if(reelPreview)
+        {
+            // The user-provided Blender reference is authoritative for reel icons:
+            // reel mount/foot above the spool, spool low-left/center, handle to the right.
+            OrientReelLikeReference(model);
+        }
         else
         {
-            model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"
-                ? Quaternion.Euler(0,-90,40)
-                : gear=="Reel"
-                    // Match the supplied Blender reference: mounting bar level,
-                    // spool toward the lower-left/front and handle extending right.
-                    ? Quaternion.Euler(8,35,0)
-                    : Quaternion.Euler(0,-90,0);
+            model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,-90,0);
         }
 
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
@@ -94,27 +96,59 @@ public sealed class ShopPreview : MonoBehaviour
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
         if(gear==null && !fitWholeFish)
         {
-            bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
-            // Common world-size frame: small fish fit; larger bodies extend off the right edge.
             studio.orthographicSize=0.26f;
             Vector3 head=new Vector3(bounds.min.x+0.18f,bounds.center.y,bounds.center.z);
             studio.transform.position=head+Vector3.back*5;
         }
         else
         {
-            // Lure hooks and the tall reel/handle need a little extra breathing room.
-            float margin=lurePreview?0.66f:gear=="Reel"?0.64f:0.58f;
+            float margin=lurePreview?0.66f:reelPreview?0.72f:0.58f;
             studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
         }
         studio.transform.rotation=Quaternion.identity;
         var texture=new RenderTexture(192,192,16){name="Inventory "+key};texture.Create();rendering=texture;
         studio.targetTexture=texture;studio.enabled=true;
-        // Let the normal render pipeline draw this camera once (also works with URP).
         yield return new WaitForEndOfFrame();
         studio.enabled=false;studio.targetTexture=null;Destroy(model);model=null;
         cache[key]=texture;rendering=null;if(target!=null){target.texture=texture;target.enabled=true;}
         busy=false;
+    }
+
+    private static string ResolveGearKey(RawImage target,string gear)
+    {
+        if(gear!="Reel" || target==null)return gear;
+        Transform row=target.transform;
+        for(int i=0;i<8 && row!=null;i++,row=row.parent)
+        {
+            Text[] labels=row.GetComponentsInChildren<Text>(true);
+            if(labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
+            if(row.GetComponent<LayoutElement>()!=null)break;
+        }
+        return "Reel0";
+    }
+
+    private static void OrientReelLikeReference(GameObject reel)
+    {
+        Transform mount=FindDeepChild(reel.transform,"ReelMount");
+        Transform spool=FindDeepChild(reel.transform,"Spool");
+        Transform handle=FindDeepChild(reel.transform,"Handle");
+        Renderer spoolRenderer=spool!=null?spool.GetComponent<Renderer>():null;
+        Renderer handleRenderer=handle!=null?handle.GetComponent<Renderer>():null;
+        if(mount==null || spoolRenderer==null || handleRenderer==null)
+        {reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+
+        Vector3 centre=spoolRenderer.bounds.center;
+        Vector3 sourceUp=mount.position-centre;
+        if(sourceUp.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+        sourceUp.Normalize();
+        Vector3 sourceRight=Vector3.ProjectOnPlane(handleRenderer.bounds.center-centre,sourceUp);
+        if(sourceRight.sqrMagnitude<0.000001f){reel.transform.localRotation=Quaternion.Euler(8,35,0);return;}
+        sourceRight.Normalize();
+        Vector3 sourceForward=Vector3.Cross(sourceRight,sourceUp).normalized;
+        Quaternion sourceBasis=Quaternion.LookRotation(sourceForward,sourceUp);
+        Quaternion targetBasis=Quaternion.LookRotation(Vector3.forward,Vector3.up);
+        reel.transform.rotation=(targetBasis*Quaternion.Inverse(sourceBasis))*reel.transform.rotation;
     }
 
     private static void OrientLureSideProfile(GameObject lure)
@@ -125,8 +159,7 @@ public sealed class ShopPreview : MonoBehaviour
             .Where(r=>r!=null && r.enabled && !IsUnderLightingRig(r.transform,lure.transform)).ToArray();
         if(lineAttach==null || renderers.Length<2)return;
 
-        Renderer body=renderers[0];
-        float bodyScore=-1f;
+        Renderer body=renderers[0];float bodyScore=-1f;
         for(int i=0;i<renderers.Length;i++)
         {
             Vector3 size=renderers[i].bounds.size;
@@ -134,37 +167,21 @@ public sealed class ShopPreview : MonoBehaviour
             if(score>bodyScore){bodyScore=score;body=renderers[i];}
         }
 
-        Vector3 centre=body.bounds.center;
-        Vector3 head=lineAttach.position-centre;
-        if(head.sqrMagnitude<0.000001f)return;
-        head.Normalize();
-
-        Renderer bellyHook=null;
-        Vector3 belly=Vector3.zero;
-        float bestPerpendicular=-1f;
+        Vector3 centre=body.bounds.center;Vector3 head=lineAttach.position-centre;
+        if(head.sqrMagnitude<0.000001f)return;head.Normalize();
+        Renderer bellyHook=null;Vector3 belly=Vector3.zero;float bestPerpendicular=-1f;
         for(int i=0;i<renderers.Length;i++)
         {
-            Renderer candidate=renderers[i];
-            if(candidate==body)continue;
+            Renderer candidate=renderers[i];if(candidate==body)continue;
             Vector3 fromBody=candidate.bounds.center-centre;
             Vector3 perpendicular=fromBody-Vector3.Dot(fromBody,head)*head;
             float score=perpendicular.sqrMagnitude;
-            if(score>bestPerpendicular)
-            {
-                bestPerpendicular=score;
-                bellyHook=candidate;
-                belly=perpendicular;
-            }
+            if(score>bestPerpendicular){bestPerpendicular=score;bellyHook=candidate;belly=perpendicular;}
         }
-        if(bellyHook==null || belly.sqrMagnitude<0.000001f)return;
-        belly.Normalize();
-
-        // Source basis: forward = nose, up = opposite the belly-hook direction.
-        // Target basis: nose points screen-left and belly points screen-down.
+        if(bellyHook==null || belly.sqrMagnitude<0.000001f)return;belly.Normalize();
         Quaternion sourceBasis=Quaternion.LookRotation(head,-belly);
         Quaternion targetBasis=Quaternion.LookRotation(Vector3.left,Vector3.up);
-        Quaternion delta=targetBasis*Quaternion.Inverse(sourceBasis);
-        lure.transform.rotation=delta*lure.transform.rotation;
+        lure.transform.rotation=(targetBasis*Quaternion.Inverse(sourceBasis))*lure.transform.rotation;
     }
 
     private static bool IsUnderLightingRig(Transform transform,Transform root)
@@ -225,8 +242,7 @@ public sealed class ShopPreview : MonoBehaviour
     }
     public void Clear()
     {
-        Suspend();
-        foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();
+        Suspend();foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();
     }
     private void OnDestroy(){Clear();if(stage!=null)Destroy(stage);if(itemMaterial!=null)Destroy(itemMaterial);}
 }
