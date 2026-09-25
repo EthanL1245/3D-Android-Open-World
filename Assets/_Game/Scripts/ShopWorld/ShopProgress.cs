@@ -95,7 +95,10 @@ public sealed class ShopProgress : MonoBehaviour
     public bool BuyGear(GearKind kind,int tier) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyGear(kind,tier));
     public bool BuyBait(int id) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyBait(id));
     public bool BuyLure(int variant) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.BuyLure(variant));
-    public bool EquipLure(int variant) => CanTrade && ShopDimensionManager.Instance.Near("gear") && Commit(Data.EquipLure(variant));
+    // Equipping an already-owned lure is loadout management, just like selecting
+    // owned bait from the BAIT / LURES shortcut. It must keep working after a
+    // restart and does not require standing at the tackle counter.
+    public bool EquipLure(int variant) => !ReadOnly && Commit(Data.EquipLure(variant));
     public bool BuyHabitat(string id) => CanTrade && ShopDimensionManager.Instance.Near(id) && Commit(Data.BuyHabitat(id));
     public bool Sell(CaughtFishRecord fish) => CanTrade && ShopDimensionManager.Instance.Near("market") && Commit(Data.Sell(fish,FishCatalog.GetSellValue(fish.speciesId,fish.weightKg)));
     public bool CanManage => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InHome;
