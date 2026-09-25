@@ -44,6 +44,7 @@ public sealed class LureGraphicOverride : MonoBehaviour
         int variant=Mathf.Clamp(progress.Data.lureEquipped,0,ShopCatalog.LureVariantCount-1);
         ShopCatalog.SetActiveLureVariant(variant);
         string key=ShopCatalog.LurePreviewKey(variant);
+        string expectedTextureName="Inventory "+key;
         bool lureIsEquipped=progress.Data.baitEquipped==ShopCatalog.StarterLure;
 
         RawImage[] images=hud.GetComponentsInChildren<RawImage>(true);
@@ -56,13 +57,20 @@ public sealed class LureGraphicOverride : MonoBehaviour
             bool genericLureRow=string.Equals(image.name,"3D item preview",StringComparison.Ordinal) && ParentMentionsLure(image.transform.parent);
             if(!equippedShortcut && !genericLureRow)continue;
 
-            int id=image.GetInstanceID();
-            if(applied.TryGetValue(id,out string oldKey) && oldKey==key && image.texture!=null && image.enabled)continue;
+            bool correct=image.texture!=null && string.Equals(image.texture.name,expectedTextureName,StringComparison.Ordinal);
+            if(correct)
+            {
+                image.enabled=true;
+                applied[image.GetInstanceID()]=key;
+                continue;
+            }
 
-            // Hide the legacy Bait4 image immediately. ShopPreview renders on an
-            // end-of-frame coroutine, so without this line the old placeholder was
-            // visible for the first frame the BAIT/LURES page was opened.
+            // The base HUD may already have queued its legacy Bait4 render. Keep
+            // the RawImage hidden until the requested real-lure RenderTexture is
+            // actually attached, so that old symbol never flashes for one frame.
             image.enabled=false;
+            int id=image.GetInstanceID();
+            if(applied.TryGetValue(id,out string oldKey) && oldKey==key)continue;
             applied[id]=key;
             Preview().Attach(image,0,1f,key);
         }
