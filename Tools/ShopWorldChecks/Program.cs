@@ -16,13 +16,16 @@ internal static class Program
     private static CaughtFishRecord Fish(float kg,int species=0) => new CaughtFishRecord { speciesId=species,weightKg=kg,caughtUtcTicks=DateTime.UtcNow.Ticks };
     private static void Main()
     {
-        var d=new ShopLedger { coins=179 };
-        Check(!d.BuyGear(GearKind.Rod,1) && d.coins==179,"Unaffordable purchase changed balance");
-        d.coins=180; Check(d.BuyGear(GearKind.Rod,1) && d.coins==0 && d.rodEquipped==1,"Exact-price upgrade failed");
+        var d=new ShopLedger { coins=1999 };d.EnsureGearOwnership();
+        Check(!d.BuyGear(GearKind.Rod,1) && d.coins==1999,"Unaffordable purchase changed balance");
+        d.coins=2000; Check(d.BuyGear(GearKind.Rod,1) && d.coins==0 && d.rodEquipped==1,"Exact-price upgrade failed");
         Check(!d.BuyGear(GearKind.Rod,1),"Duplicate gear purchase");
-        d.coins=10000;Check(!d.BuyGear(GearKind.Rod,3),"Skipped prerequisite");
+        var direct=new ShopLedger {coins=6000};direct.EnsureGearOwnership();
+        Check(direct.BuyGear(GearKind.Rod,2) && direct.coins==0 && direct.rodEquipped==2,"Direct Level 3 rod purchase incorrectly required Level 2");
+        Check(direct.OwnsGear(GearKind.Rod,1) && direct.OwnsGear(GearKind.Rod,2),"Direct higher-tier purchase did not keep equipment ownership consistent");
         Check(!d.Equip(GearKind.Reel,3),"Equipped unowned item");
         Check(d.Equip(GearKind.Rod,0),"Could not re-equip starter");
+        d.coins=10000;
         Check(d.BuyBait(2) && d.bait[2]==10,"Bait pack size");
         for(int i=0;i<10;i++)Check(d.ConsumeBait()==2,"Wrong bait consumed");
         Check(d.baitEquipped==0 && d.ConsumeBait()==0 && d.bait[2]==0,"No infinite-worm fallback");
