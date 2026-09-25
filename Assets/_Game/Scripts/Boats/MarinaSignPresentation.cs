@@ -93,8 +93,9 @@ public sealed class MarinaSignPresentation : MonoBehaviour
 
         float signWidth=Vector3.Distance(sign.TransformPoint(new Vector3(-.5f,0,0)),sign.TransformPoint(new Vector3(.5f,0,0)));
         float signHeight=Vector3.Distance(sign.TransformPoint(new Vector3(0,-.5f,0)),sign.TransformPoint(new Vector3(0,.5f,0)));
-        float worldScale=Mathf.Min(signWidth*.88f/size.x,signHeight*.62f/size.y)*.001f;
-        SetWorldScale(worldScale);
+        float factor=Mathf.Min(signWidth*.88f/size.x,signHeight*.62f/size.y);
+        float currentWorldScale=Mathf.Max(.000001f,Mathf.Abs(label.lossyScale.x));
+        SetWorldScale(currentWorldScale*factor);
         fitted=true;
     }
 
