@@ -23,6 +23,15 @@ internal static class Program
         var direct=new ShopLedger {coins=6000};direct.EnsureGearOwnership();
         Check(direct.BuyGear(GearKind.Rod,2) && direct.coins==0 && direct.rodEquipped==2,"Direct Level 3 rod purchase incorrectly required Level 2");
         Check(direct.OwnsGear(GearKind.Rod,1) && direct.OwnsGear(GearKind.Rod,2),"Direct higher-tier purchase did not keep equipment ownership consistent");
+
+        var reels=new ShopLedger {coins=6000};reels.EnsureGearOwnership();
+        Check(ShopCatalog.MaxReelTier==2 && ShopCatalog.ReelNames[2]=="Level 3 Fishing Reel","Level 3 reel catalog entry missing");
+        Check(ShopCatalog.ReelPrices[1]==1500 && ShopCatalog.ReelPrices[2]==4500,"Reel upgrade prices changed unexpectedly");
+        Check(ShopCatalog.ReelPrefabResource(2)=="Fishing/FishingRodReelLevel3","Level 3 reel prefab resource mismatch");
+        Check(reels.BuyGear(GearKind.Reel,1) && reels.coins==4500 && reels.reelEquipped==1,"Level 2 reel purchase failed");
+        Check(reels.BuyGear(GearKind.Reel,2) && reels.coins==0 && reels.reelEquipped==2,"Level 3 reel purchase failed");
+        Check(reels.OwnsGear(GearKind.Reel,0) && reels.OwnsGear(GearKind.Reel,1) && reels.OwnsGear(GearKind.Reel,2),"Reel ownership progression incomplete");
+
         Check(!d.Equip(GearKind.Reel,3),"Equipped unowned item");
         Check(d.Equip(GearKind.Rod,0),"Could not re-equip starter");
         d.coins=10000;
