@@ -37,12 +37,20 @@ public sealed class ShopPreview : MonoBehaviour
         studio.backgroundColor=gear=="RodAssembly"?new Color(0,0,0,0):new Color(0.08f,0.18f,0.20f);
         bool lurePreview=gear!=null && gear.StartsWith("Lure",System.StringComparison.Ordinal);
         bool reelPreview=gear!=null && gear.StartsWith("Reel",System.StringComparison.Ordinal);
+        bool rodPreview=gear!=null && gear.StartsWith("Rod",System.StringComparison.Ordinal) && gear!="RodAssembly";
         if(gear==null)model=FishWorldSize.Create("FishPreview",stage.transform,species,kg);
         else
         {
             GameObject prefab=null;
-            if(gear=="Rod" || gear=="RodAssembly")
+            if(gear=="RodAssembly")
                 prefab=Resources.Load<GameObject>("Fishing/FishingRodReel");
+            else if(rodPreview)
+            {
+                int tier=0;
+                if(gear.Length>3)int.TryParse(gear.Substring(3),out tier);
+                prefab=Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(tier));
+                if(prefab==null && tier>0)prefab=Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(0));
+            }
             else if(reelPreview)
             {
                 int tier=0;
@@ -63,7 +71,7 @@ public sealed class ShopPreview : MonoBehaviour
         foreach(var behaviour in model.GetComponentsInChildren<MonoBehaviour>())behaviour.enabled=false;
         foreach(var collider in model.GetComponentsInChildren<Collider>())collider.enabled=false;
         foreach(var t in model.GetComponentsInChildren<Transform>())t.gameObject.layer=30;
-        if(gear=="Rod" || reelPreview)
+        if(rodPreview || reelPreview)
         {
             foreach(var renderer in model.GetComponentsInChildren<Renderer>())
             {
@@ -82,16 +90,11 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else if(reelPreview)
         {
-            // Match the supplied Blender reference rather than showing a flat
-            // side/front view: mounting bar horizontal at the top, curved foot
-            // descending toward the body, spool in the lower-left/front and the
-            // handle extending toward the lower-right. A small yaw exposes the
-            // same three-quarter depth seen in the reference screenshot.
             OrientReelLikeReference(model);
         }
         else
         {
-            model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,-90,0);
+            model.transform.localRotation=rodPreview || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,-90,0);
         }
 
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
@@ -107,10 +110,6 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else if(reelPreview)
         {
-            // Reels deliberately use a perspective camera because the supplied
-            // Blender reference is a 3D perspective view, not an orthographic
-            // catalog cutout. Keep the camera slightly above the spool so the
-            // top/side surfaces read the same way while world X stays horizontal.
             studio.orthographic=false;
             studio.fieldOfView=30f;
             float halfFov=studio.fieldOfView*Mathf.Deg2Rad*0.5f;
@@ -123,7 +122,7 @@ public sealed class ShopPreview : MonoBehaviour
         else
         {
             studio.orthographic=true;
-            float margin=lurePreview?0.66f:0.58f;
+            float margin=lurePreview?0.66f:rodPreview?0.62f:0.58f;
             studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
             studio.transform.rotation=Quaternion.identity;
@@ -138,15 +137,17 @@ public sealed class ShopPreview : MonoBehaviour
 
     private static string ResolveGearKey(RawImage target,string gear)
     {
-        if(gear!="Reel" || target==null)return gear;
+        if((gear!="Reel" && gear!="Rod") || target==null)return gear;
+        bool reel=gear=="Reel";
         Transform row=target.transform;
         for(int i=0;i<8 && row!=null;i++,row=row.parent)
         {
             Text[] labels=row.GetComponentsInChildren<Text>(true);
-            if(labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
+            if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
+            if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod1";
             if(row.GetComponent<LayoutElement>()!=null)break;
         }
-        return "Reel0";
+        return reel?"Reel0":"Rod0";
     }
 
     private static void OrientReelLikeReference(GameObject reel)
@@ -170,9 +171,6 @@ public sealed class ShopPreview : MonoBehaviour
         Quaternion sourceBasis=Quaternion.LookRotation(sourceForward,sourceUp);
         Quaternion targetBasis=Quaternion.LookRotation(Vector3.forward,Vector3.up);
         Quaternion aligned=(targetBasis*Quaternion.Inverse(sourceBasis))*reel.transform.rotation;
-        // The screenshot is slightly three-quarter rather than square-on. Yawing
-        // around world up preserves the horizontal mounting bar while revealing
-        // the spool/body depth and keeping the handle on the right.
         reel.transform.rotation=Quaternion.AngleAxis(-22f,Vector3.up)*aligned;
     }
 
