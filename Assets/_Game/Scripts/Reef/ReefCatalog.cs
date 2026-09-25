@@ -25,16 +25,16 @@ public static class ReefCatalog
     private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2};
     private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12};
 
-    // Lure tables make Sea Bass + Red Snapper the main catches. Tuna get a
-    // small bump taken directly from Yellowtail, and Red Snapper remains above
-    // Yellowtail on every lure. Each tuna also remains above either Goatfish.
     // Indexes: Mackerel, Snapper, Sea Bass, Yellowtail, retired, Yellowfin,
     // Yellow Goatfish, Black Spot Goatfish, Bigeye Tuna.
+    //
+    // Fire Shad replaces Crimson Shad and pushes more of its non-tuna pool into
+    // Red Snapper. Yellowfin and Bigeye stay EXACTLY at Crimson Shad's old 6%/5%.
     private static readonly float[][] LureOdds=
     {
-        new float[] {4,21,36,19,0,6,4,4,6},   // Starter Lure
+        new float[] {4,21,36,19,0,6,4,4,6},   // Neon Breach Crankbait
         new float[] {4,20,42,16,0,6,3,3,6},   // Reef Minnow
-        new float[] {4,42,28,9,0,6,3,3,5},    // Crimson Shad
+        new float[] {4,52,21,6,0,6,3,3,5},    // Fire Shad Crankbait
         new float[] {3,24,34,16,0,9,3,3,8}    // Deep Flash
     };
 
