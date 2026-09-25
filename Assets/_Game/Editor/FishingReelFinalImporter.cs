@@ -13,9 +13,10 @@ using Process = System.Diagnostics.Process;
 using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
 /// <summary>
-/// Applies the user's corrected Fishing Reel Final body/UV/texture to the existing
-/// FishingRodReel prefab while preserving every gameplay transform, the authored
-/// reeling animation, rod geometry, rod tip, reel mount, and FishingRodView setup.
+/// Replaces only the visible reel meshes/texture while preserving the existing
+/// FishingRodReel hierarchy, animated transforms, clip, reel mount and rod tip.
+/// Blender itself is the authority on whether the supplied .blend can be opened;
+/// compressed .blend files are valid and must not be rejected by a raw header check.
 /// </summary>
 public static class FishingReelFinalImporter
 {
@@ -27,7 +28,7 @@ public static class FishingReelFinalImporter
     private const string TexturePath = Source + "/FishingReelFinalTexture.png";
     private const string MaterialPath = Generated + "/FishingReelFinal.mat";
     private const string BlenderPrefsKey = "OpenWorld.Goatfish.BlenderExecutable";
-    private const string AutoSessionKey = "OpenWorld.AutoImport.FishingReelFinal.20260925.v3";
+    private const string AutoSessionKey = "OpenWorld.AutoImport.FishingReelFinal.20260925.v4";
     private const uint ExpectedTriangles = 1772;
 
     private static readonly string[] ReelParts =
@@ -35,11 +36,8 @@ public static class FishingReelFinalImporter
         "ReelFootAndBody", "Rotor", "ReelHousing", "Spool", "Handle"
     };
 
-    [Serializable]
-    private sealed class GeometryFile { public GeometryPart[] parts; }
-
-    [Serializable]
-    private sealed class GeometryPart
+    [Serializable] private sealed class GeometryFile { public GeometryPart[] parts; }
+    [Serializable] private sealed class GeometryPart
     {
         public string name;
         public float[] position;
@@ -51,10 +49,11 @@ public static class FishingReelFinalImporter
 
     private readonly struct TransformSnapshot
     {
-        public readonly Transform parent;
-        public readonly Vector3 position;
-        public readonly Quaternion rotation;
-        public readonly Vector3 scale;
+        private readonly Transform parent;
+        private readonly Vector3 position;
+        private readonly Quaternion rotation;
+        private readonly Vector3 scale;
+
         public TransformSnapshot(Transform t)
         {
             parent = t.parent;
@@ -62,6 +61,7 @@ public static class FishingReelFinalImporter
             rotation = t.localRotation;
             scale = t.localScale;
         }
+
         public bool Matches(Transform t) =>
             t.parent == parent &&
             Vector3.Distance(t.localPosition, position) < 0.000001f &&
@@ -80,21 +80,21 @@ public static class FishingReelFinalImporter
             if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) == null) return;
             string package = FindPackage();
             if (string.IsNullOrWhiteSpace(package)) return;
-            if (!TryResolveBlender(false, out string blender))
-            {
-                Debug.Log("Corrected reel package found. Use Tools/Open World/Apply Corrected Fishing Reel (One Click) if Blender has not been located yet.");
-                return;
-            }
+            if (!TryResolveBlender(false, out string blender)) return;
+
             try
             {
                 Apply(package, blender);
-                Debug.Log("Automatically applied the corrected Fishing Reel Final model and texture without changing reel mechanics or animation.");
+                Debug.Log("Corrected Fishing Reel Final model + texture applied. Existing mechanics and animation were preserved.");
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
             }
-            finally { EditorUtility.ClearProgressBar(); }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
         };
     }
 
@@ -128,15 +128,18 @@ public static class FishingReelFinalImporter
             EditorGUIUtility.PingObject(Selection.activeObject);
             EditorUtility.DisplayDialog(
                 "Corrected Fishing Reel Applied",
-                "The new Fishing Reel Final model + texture are installed. Existing reel animation, reel mount, rod, rod tip, gameplay behavior and mechanics were preserved exactly.",
+                "The corrected reel model and texture are installed. Existing animation, reel mount, rod, rod tip and fishing mechanics were preserved.",
                 "OK");
         }
         catch (Exception e)
         {
             Debug.LogException(e);
-            EditorUtility.DisplayDialog("Corrected Fishing Reel Failed", e.Message + "\n\nThe existing prefab was left intact if validation failed. See Console for details.", "OK");
+            EditorUtility.DisplayDialog("Corrected Fishing Reel Failed", e.Message + "\n\nThe existing prefab is left intact when validation fails. See Console for details.", "OK");
         }
-        finally { EditorUtility.ClearProgressBar(); }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
+        }
     }
 
     private static void Apply(string zipPath, string blender)
@@ -149,8 +152,8 @@ public static class FishingReelFinalImporter
         string blendPath = Path.Combine(library, "Fishing Reel Final.blend");
         string jsonPath = Path.Combine(library, "FishingReelFinalGeometry.json");
 
-        EditorUtility.DisplayProgressBar("Corrected Fishing Reel", "Validating supplied model + texture...", 0.08f);
-        ExtractAndValidate(zipPath, blendPath, out byte[] textureBytes);
+        EditorUtility.DisplayProgressBar("Corrected Fishing Reel", "Reading supplied package...", 0.08f);
+        ExtractAndValidatePackage(zipPath, blendPath, out byte[] textureBytes);
 
         EditorUtility.DisplayProgressBar("Corrected Fishing Reel", "Reading corrected Blender geometry and UVs...", 0.30f);
         ExportGeometryJson(blender, blendPath, jsonPath);
@@ -168,43 +171,36 @@ public static class FishingReelFinalImporter
         AssetDatabase.Refresh();
     }
 
-    private static void ExtractAndValidate(string zipPath, string blendPath, out byte[] textureBytes)
+    private static void ExtractAndValidatePackage(string zipPath, string blendPath, out byte[] textureBytes)
     {
-        if (!File.Exists(zipPath)) throw new FileNotFoundException("Fishing Reel Final ZIP was not found.", zipPath);
+        if (!File.Exists(zipPath))
+            throw new FileNotFoundException("Fishing Reel Final ZIP was not found.", zipPath);
 
         using FileStream stream = File.OpenRead(zipPath);
         using ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read);
 
-        ZipArchiveEntry blend = FindNamedEntry(archive, "Fishing Reel Final.blend");
-        ZipArchiveEntry stl = FindNamedEntry(archive, "Fishing Reel Final.stl");
-        ZipArchiveEntry texture = FindNamedEntry(archive, "Fishing Reel Textures.png");
-
-        // Some zip tools slightly alter the visible casing/spaces while preserving the
-        // correct files. Fall back by extension only when there is exactly one candidate.
-        blend ??= SingleEntryWithExtension(archive, ".blend");
-        stl ??= SingleEntryWithExtension(archive, ".stl");
-        texture ??= SingleImageEntry(archive);
+        ZipArchiveEntry blend = FindNamedEntry(archive, "Fishing Reel Final.blend") ?? SingleEntryWithExtension(archive, ".blend");
+        ZipArchiveEntry stl = FindNamedEntry(archive, "Fishing Reel Final.stl") ?? SingleEntryWithExtension(archive, ".stl");
+        ZipArchiveEntry texture = FindNamedEntry(archive, "Fishing Reel Textures.png") ?? SingleImageEntry(archive);
 
         if (blend == null || stl == null || texture == null)
-            throw new InvalidDataException("The ZIP must contain Fishing Reel Final.blend, Fishing Reel Final.stl and Fishing Reel Textures.png.");
+            throw new InvalidDataException("The ZIP must contain one .blend, one .stl, and the reel texture image.");
 
         byte[] blendBytes = ReadAll(blend);
         byte[] stlBytes = ReadAll(stl);
         textureBytes = ReadAll(texture);
 
-        // Do not lock the user's source files to hashes generated on another machine.
-        // Validate the actual content instead: Blender header, exact STL triangle count,
-        // image signature, then the exported object names/geometry below.
-        if (blendBytes.Length < 12 ||
-            blendBytes[0] != (byte)'B' || blendBytes[1] != (byte)'L' || blendBytes[2] != (byte)'E' ||
-            blendBytes[3] != (byte)'N' || blendBytes[4] != (byte)'D' || blendBytes[5] != (byte)'E' || blendBytes[6] != (byte)'R')
-            throw new InvalidDataException("The reel .blend entry is not a valid Blender file.");
+        // Important: Blender can save .blend files compressed, so a compressed valid
+        // file will NOT begin with the literal BLENDER header. Do not pre-reject it.
+        // Blender is invoked immediately afterward and is the reliable file validator.
+        if (blendBytes.Length == 0)
+            throw new InvalidDataException("The supplied reel .blend file is empty.");
 
         if (stlBytes.Length < 84 || BitConverter.ToUInt32(stlBytes, 80) != ExpectedTriangles)
             throw new InvalidDataException("The supplied reel STL does not match the expected 1772-triangle revision.");
 
         if (!LooksLikeImage(textureBytes))
-            throw new InvalidDataException("Fishing Reel Textures.png is not a valid PNG/JPEG image.");
+            throw new InvalidDataException("The supplied reel texture is not a valid PNG/JPEG image.");
 
         Directory.CreateDirectory(Path.GetDirectoryName(blendPath));
         File.WriteAllBytes(blendPath, blendBytes);
@@ -248,6 +244,7 @@ public static class FishingReelFinalImporter
 
     private static void ExportGeometryJson(string blender, string blendPath, string jsonPath)
     {
+        if (File.Exists(jsonPath)) File.Delete(jsonPath);
         string scriptPath = Path.Combine(Path.GetDirectoryName(jsonPath), "ExportFishingReelFinal.py");
         string python =
 @"import bpy, json, os, sys
@@ -294,7 +291,8 @@ for source_name,target_name in name_map.items():
     finally:
         eval_obj.to_mesh_clear()
 os.makedirs(os.path.dirname(out_path),exist_ok=True)
-with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separators=(',',':'))
+with open(out_path,'w',encoding='utf-8') as f:
+    json.dump({'parts':parts},f,separators=(',',':'))
 ";
         File.WriteAllText(scriptPath, python);
 
@@ -307,6 +305,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
+
         using Process process = Process.Start(info);
         if (process == null) throw new InvalidOperationException("Blender could not be started.");
         string output = process.StandardOutput.ReadToEnd();
@@ -319,7 +318,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         if (process.ExitCode != 0 || !File.Exists(jsonPath))
         {
             Debug.LogError("Corrected reel Blender output:\n" + output + "\n\nErrors:\n" + error);
-            throw new InvalidOperationException("Blender could not export the corrected reel geometry. The full error is in the Console.");
+            throw new InvalidOperationException("Blender could not open/export the supplied reel .blend file. The full Blender error is in the Console.");
         }
     }
 
@@ -327,17 +326,23 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
     {
         if (file == null || file.parts == null || file.parts.Length != ReelParts.Length)
             throw new InvalidDataException("Corrected reel geometry did not contain exactly five reel parts.");
+
         var names = new HashSet<string>(file.parts.Select(p => p.name));
-        if (!names.SetEquals(ReelParts)) throw new InvalidDataException("Corrected reel part names do not match the existing animated reel hierarchy.");
+        if (!names.SetEquals(ReelParts))
+            throw new InvalidDataException("Corrected reel part names do not match the existing animated reel hierarchy.");
+
         long triangles = 0;
         foreach (GeometryPart part in file.parts)
         {
-            if (part.position == null || part.position.Length != 3 || part.vertices == null || part.vertices.Length == 0 || part.vertices.Length % 3 != 0 ||
-                part.normals == null || part.normals.Length != part.vertices.Length || part.uv == null || part.uv.Length != part.vertices.Length / 3 * 2 ||
+            if (part.position == null || part.position.Length != 3 ||
+                part.vertices == null || part.vertices.Length == 0 || part.vertices.Length % 3 != 0 ||
+                part.normals == null || part.normals.Length != part.vertices.Length ||
+                part.uv == null || part.uv.Length != part.vertices.Length / 3 * 2 ||
                 part.triangles == null || part.triangles.Length == 0 || part.triangles.Length % 3 != 0)
                 throw new InvalidDataException("Invalid corrected reel mesh data for " + part.name + ".");
             triangles += part.triangles.Length / 3;
         }
+
         if (triangles != ExpectedTriangles)
             throw new InvalidDataException("Corrected reel geometry contains " + triangles + " triangles; expected " + ExpectedTriangles + ".");
     }
@@ -358,12 +363,11 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             AnimationClip originalClip = animation.clip;
             var targets = new Dictionary<string, Transform>();
             var snapshots = new Dictionary<string, TransformSnapshot>();
+
             foreach (string name in ReelParts)
             {
                 Transform t = reel.Find(name);
-                MeshFilter filter = t != null ? t.GetComponent<MeshFilter>() : null;
-                MeshRenderer renderer = t != null ? t.GetComponent<MeshRenderer>() : null;
-                if (t == null || filter == null || renderer == null)
+                if (t == null || t.GetComponent<MeshFilter>() == null || t.GetComponent<MeshRenderer>() == null)
                     throw new InvalidOperationException("Existing reel is missing animated visual part: " + name);
                 targets[name] = t;
                 snapshots[name] = new TransformSnapshot(t);
@@ -373,7 +377,6 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             foreach (GeometryPart part in geometry.parts)
             {
                 Transform target = targets[part.name];
-                MeshFilter filter = target.GetComponent<MeshFilter>();
                 Mesh mesh = BuildMesh(part, target.localPosition);
                 string path = Generated + "/" + part.name + ".asset";
                 Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
@@ -388,8 +391,10 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
                     Object.DestroyImmediate(mesh);
                     EditorUtility.SetDirty(existing);
                 }
-                filter.sharedMesh = existing;
+
+                MeshFilter filter = target.GetComponent<MeshFilter>();
                 MeshRenderer renderer = target.GetComponent<MeshRenderer>();
+                filter.sharedMesh = existing;
                 renderer.sharedMaterial = material;
                 EditorUtility.SetDirty(filter);
                 EditorUtility.SetDirty(renderer);
@@ -406,7 +411,10 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             if (saved == null) throw new InvalidOperationException("Unity could not save the corrected FishingRodReel prefab.");
         }
-        finally { PrefabUtility.UnloadPrefabContents(root); }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
     }
 
     private static Mesh BuildMesh(GeometryPart part, Vector3 preservedTargetPosition)
@@ -417,6 +425,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         var uv = new Vector2[count];
         Vector3 authoredOrigin = new Vector3(part.position[0], part.position[1], part.position[2]);
         Vector3 offset = authoredOrigin - preservedTargetPosition;
+
         for (int i = 0; i < count; i++)
         {
             int v = i * 3;
@@ -425,6 +434,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             normals[i] = new Vector3(part.normals[v], part.normals[v + 1], part.normals[v + 2]);
             uv[i] = new Vector2(part.uv[u], part.uv[u + 1]);
         }
+
         Mesh mesh = new Mesh { name = part.name + "_Corrected" };
         if (count > 65535) mesh.indexFormat = IndexFormat.UInt32;
         mesh.vertices = vertices;
@@ -439,9 +449,13 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
     private static Material BuildMaterial()
     {
         Shader shader = AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/FishingEquipment.shader");
-        if (shader == null || ShaderUtil.ShaderHasError(shader)) throw new InvalidOperationException("FishingEquipment shader is missing or has errors.");
+        if (shader == null || ShaderUtil.ShaderHasError(shader))
+            throw new InvalidOperationException("FishingEquipment shader is missing or has errors.");
+
         Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
-        if (texture == null) throw new InvalidOperationException("Corrected Fishing Reel texture did not import.");
+        if (texture == null)
+            throw new InvalidOperationException("Corrected Fishing Reel texture did not import.");
+
         Material material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
         if (material == null)
         {
@@ -480,7 +494,8 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
     private static Transform FindDeepChild(Transform root, string name)
     {
         Transform[] all = root.GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < all.Length; i++) if (all[i] != null && all[i].name == name) return all[i];
+        for (int i = 0; i < all.Length; i++)
+            if (all[i] != null && all[i].name == name) return all[i];
         return null;
     }
 
@@ -493,12 +508,10 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
             Path.GetFullPath(".")
         };
+
         foreach (string folder in folders)
         {
             if (!Directory.Exists(folder)) continue;
-
-            // Always prefer the exact file name the user supplied. This avoids an
-            // older similarly named ZIP being selected just because it was modified later.
             string exact = Path.Combine(folder, PackageName);
             if (File.Exists(exact)) return exact;
 
@@ -511,12 +524,14 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         return null;
     }
 
-    private static string Normalize(string value) => new string(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+    private static string Normalize(string value) =>
+        new string(value.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
     private static bool TryResolveBlender(bool allowDialog, out string blender)
     {
         blender = EditorPrefs.GetString(BlenderPrefsKey, string.Empty);
         if (!string.IsNullOrWhiteSpace(blender) && File.Exists(blender)) return true;
+
         var candidates = new List<string>();
         foreach (string baseFolder in new[]
         {
@@ -525,14 +540,17 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         })
         {
             string root = Path.Combine(baseFolder, "Blender Foundation");
-            if (Directory.Exists(root)) candidates.AddRange(Directory.GetFiles(root, "blender.exe", SearchOption.AllDirectories));
+            if (Directory.Exists(root))
+                candidates.AddRange(Directory.GetFiles(root, "blender.exe", SearchOption.AllDirectories));
         }
+
         blender = candidates.OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(blender))
         {
             EditorPrefs.SetString(BlenderPrefsKey, blender);
             return true;
         }
+
         if (!allowDialog) return false;
         blender = EditorUtility.OpenFilePanel("Locate Blender", string.Empty, "exe");
         if (string.IsNullOrWhiteSpace(blender) || !File.Exists(blender)) return false;
