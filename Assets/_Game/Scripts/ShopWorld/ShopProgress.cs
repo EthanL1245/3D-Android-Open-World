@@ -23,6 +23,7 @@ public sealed class ShopProgress : MonoBehaviour
             else Migrate();
             bool migrated=Data.EnsureCatchStats();
             migrated|=Data.EnsureLures();
+            migrated|=Data.EnsureGearOwnership();
             if(!Data.infiniteWormsMigrated){Data.baitEquipped=0;Data.infiniteWormsMigrated=true;migrated=true;}
             if(Data.baitEquipped==1){Data.baitEquipped=0;migrated=true;}
             foreach(var fish in Data.bag)if(fish.speciesId==4){fish.speciesId=FishCatalog.YellowfinTunaId;migrated=true;}
@@ -34,7 +35,7 @@ public sealed class ShopProgress : MonoBehaviour
         }
         catch(Exception ex)
         {
-            ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Data.EnsureLures(); ShopCatalog.SetActiveLureVariant(0); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
+            ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Data.EnsureLures(); Data.EnsureGearOwnership(); ShopCatalog.SetActiveLureVariant(0); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
             Debug.LogError(Notice+" "+ex.Message);
         }
     }
@@ -44,7 +45,7 @@ public sealed class ShopProgress : MonoBehaviour
         var d=JsonUtility.FromJson<ShopLedger>(json);
         if(d==null || d.version!=1 || d.bag==null || d.habitats==null || d.bait==null || d.bait.Length!=4) throw new InvalidOperationException("Invalid save");
         foreach(GearKind kind in Enum.GetValues(typeof(GearKind)))
-            if(d.Owned(kind)<0 || d.Owned(kind)>3 || d.Equipped(kind)<0 || d.Equipped(kind)>d.Owned(kind))
+            if(d.Owned(kind)<0 || d.Owned(kind)>3 || d.Equipped(kind)<0 || d.Equipped(kind)>3)
                 throw new InvalidOperationException("Invalid saved equipment");
         if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>ShopCatalog.StarterLure || d.lureEquipped<0 || d.lureEquipped>=ShopCatalog.LureVariantCount || d.lureOwnedMask<0) throw new InvalidOperationException("Invalid saved balance, bait, or lure");
         foreach(int amount in d.bait) if(amount<0) throw new InvalidOperationException("Invalid bait quantity");
@@ -56,6 +57,7 @@ public sealed class ShopProgress : MonoBehaviour
     {
         Data=new ShopLedger { coins=PlayerPrefs.GetInt("OpenWorld.Coins.v1",0), legacyMigrated=true };
         Data.EnsureLures();
+        Data.EnsureGearOwnership();
         string fishJson=PlayerPrefs.GetString("OpenWorld.FishingInventory.v1","");
         if(!string.IsNullOrWhiteSpace(fishJson))
         {
