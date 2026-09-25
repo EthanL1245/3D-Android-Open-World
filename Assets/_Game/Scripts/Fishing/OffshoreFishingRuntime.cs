@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -48,80 +47,21 @@ public sealed class OffshoreFishingRuntime : MonoBehaviour
 }
 
 /// <summary>
-/// Keeps the Fish Index honest about the much larger open-ocean ceiling and fixes
-/// the legacy Bait4 placeholder before it can appear on the first BAIT/LURES open.
+/// Keeps the Fish Index honest about the much larger open-ocean size ceiling.
 /// </summary>
 [DefaultExecutionOrder(1250)]
 public sealed class OffshoreFishingHudRuntime : MonoBehaviour
 {
     private ShopWorldHUD hud;
-    private ShopProgress progress;
-    private ShopPreview preview;
     private float nextIndexScan;
-    private readonly Dictionary<RawImage,int> lurePreviewVariant=new Dictionary<RawImage,int>();
 
-    private void Awake()
-    {
-        hud=GetComponent<ShopWorldHUD>();
-        progress=FindFirstObjectByType<ShopProgress>();
-        if(progress!=null)ShopCatalog.SetActiveLureVariant(progress.Data.lureEquipped);
-    }
+    private void Awake(){hud=GetComponent<ShopWorldHUD>();}
 
     private void LateUpdate()
     {
-        if(hud==null || progress==null)return;
-
-        // Prime this before any preview request. Previously ActiveLureVariant was
-        // first synchronized later by TackleLureShopExtension, allowing one frame
-        // of the old generic Bait4 capsule on the first menu open.
-        ShopCatalog.SetActiveLureVariant(progress.Data.lureEquipped);
-        RepairEquippedLurePreview();
-
-        if(!ShopWorldHUD.MenuOpen || Time.unscaledTime<nextIndexScan)return;
+        if(hud==null || !ShopWorldHUD.MenuOpen || Time.unscaledTime<nextIndexScan)return;
         nextIndexScan=Time.unscaledTime+.12f;
-        RepairBaseLureRowPreview();
         RepairFishIndex();
-    }
-
-    private void RepairEquippedLurePreview()
-    {
-        if(progress.Data.baitEquipped!=ShopCatalog.StarterLure)return;
-        foreach(RawImage raw in hud.GetComponentsInChildren<RawImage>(true))
-            if(raw!=null && raw.name=="EquippedBaitPicture")
-                ForceLurePreview(raw,progress.Data.lureEquipped);
-    }
-
-    private void RepairBaseLureRowPreview()
-    {
-        if(!HasHeading("BAIT / LURES"))return;
-        foreach(RawImage raw in hud.GetComponentsInChildren<RawImage>(true))
-        {
-            if(raw==null || raw.name=="EquippedBaitPicture")continue;
-            GameObject row=FindRow(raw.transform);
-            if(row==null)continue;
-
-            bool legacyBaseLureRow=false;
-            foreach(Text text in row.GetComponentsInChildren<Text>(true))
-            {
-                if(text!=null && text.text!=null && text.text.IndexOf("Permanent lure. Rare-fish focus.",StringComparison.OrdinalIgnoreCase)>=0)
-                {legacyBaseLureRow=true;break;}
-            }
-            if(legacyBaseLureRow)ForceLurePreview(raw,progress.Data.lureEquipped);
-        }
-    }
-
-    private void ForceLurePreview(RawImage raw,int variant)
-    {
-        variant=Mathf.Clamp(variant,0,ShopCatalog.LureVariantCount-1);
-        if(lurePreviewVariant.TryGetValue(raw,out int shown) && shown==variant && raw.texture!=null && raw.enabled)return;
-        if(preview==null)
-        {
-            ShopPreview[] previews=GetComponents<ShopPreview>();
-            preview=previews.Length>0?previews[0]:gameObject.AddComponent<ShopPreview>();
-        }
-        lurePreviewVariant[raw]=variant;
-        raw.enabled=false;
-        preview.Attach(raw,0,1f,ShopCatalog.LurePreviewKey(variant));
     }
 
     private void RepairFishIndex()
@@ -166,13 +106,6 @@ public sealed class OffshoreFishingHudRuntime : MonoBehaviour
             foreach(Text text in layout.GetComponentsInChildren<Text>(true))
                 if(text!=null && string.Equals(text.text,species,StringComparison.OrdinalIgnoreCase))return layout.gameObject;
         }
-        return null;
-    }
-
-    private static GameObject FindRow(Transform start)
-    {
-        for(Transform t=start;t!=null;t=t.parent)
-            if(t.GetComponent<LayoutElement>()!=null)return t.gameObject;
         return null;
     }
 }
