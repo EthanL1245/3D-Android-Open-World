@@ -13,6 +13,10 @@ public sealed class BoatSystem : MonoBehaviour
     public BoatData[] Catalog;
     public BoatController ActiveBoat {get;private set;}
     public bool PlacementMode {get;private set;}
+
+    private const float PlacementDistance=18f;
+    private const float DefaultNoticeSeconds=4f;
+
     private ShopProgress progress;
     private FirstPersonController controls;
     private BoatPassenger passenger;
@@ -25,26 +29,34 @@ public sealed class BoatSystem : MonoBehaviour
     private bool valid;
     private Vector3 target;
     private Quaternion heading;
+    private float statusUntil;
+    private bool placementStatus;
+
     private BoatData Selected => Catalog!=null?Array.Find(Catalog,b=>b!=null && b.ID==progress.Data.boatEquipped):null;
     private bool OnIsland => ShopDimensionManager.Instance==null || (!ShopDimensionManager.Instance.InDimension && !ShopDimensionManager.Instance.Traveling);
     private bool NearMarina => OnIsland && MarinaCounter!=null && Vector3.Distance(transform.position,MarinaCounter.position)<6;
+
     private void Awake()
     {
         progress=GetComponent<ShopProgress>();controls=GetComponent<FirstPersonController>();
         passenger=GetComponent<BoatPassenger>();view=GetComponentInChildren<Camera>();
     }
+
     private void Start(){BuildUI();}
+
     public void BindSlot(GameObject slot)
     {
         slotImage=slot.GetComponent<Image>();
         var button=slot.GetComponent<Button>()??slot.AddComponent<Button>();button.onClick.AddListener(TogglePlacement);
         slotLabel=Label(slot.transform,"BOAT",20,new Vector2(0,0),new Vector2(100,65));
     }
+
     public void TogglePlacement()
     {
         if(PlacementMode){CancelPlacement();return;}
         if(!OnIsland || controls.BoatUIBlocked || passenger.Driving)return;
         if(Selected==null){Notice("Buy a permanent boat at Suncrest Marina.");return;}
+
         GetComponent<FishingSystem>()?.UnequipHands();
         PlacementMode=true;
         ghost=Instantiate(Selected.Prefab);ghost.name="Boat Placement Preview";
@@ -58,47 +70,63 @@ public sealed class BoatSystem : MonoBehaviour
         ghostMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");ghostMaterial.renderQueue=3000;
         foreach(var r in ghost.GetComponentsInChildren<Renderer>())r.sharedMaterial=ghostMaterial;
         ghost.SetActive(false);
-        Notice("Aim at open water. Green: place. Red: shore or obstruction. Slot 2 cancels.");
+        Notice("Aim at open water. Green: place. Red: shore or obstruction. Slot 2 cancels.",0f,true);
     }
+
     public void CancelPlacement()
     {
         PlacementMode=false;valid=false;
         if(ghost!=null)Destroy(ghost);if(ghostMaterial!=null)Destroy(ghostMaterial);
+        ghost=null;ghostMaterial=null;
         if(place!=null)place.gameObject.SetActive(false);
+        if(placementStatus)ClearNotice();
     }
+
     private void Update()
     {
         if(place==null)return;
+
+        if(!placementStatus && status!=null && statusUntil>0f && Time.unscaledTime>=statusUntil)
+            ClearNotice();
+
         bool otherMenu=ShopWorldHUD.MenuOpen || (controls.BoatUIBlocked && !shop.activeSelf);
         if(!OnIsland || otherMenu){CancelPlacement();if(shop.activeSelf)CloseShop();}
         if(shop.activeSelf && !NearMarina)CloseShop();
         if(slotLabel!=null){slotLabel.text=Selected!=null?Selected.name.ToUpperInvariant():"BOAT";slotImage.color=PlacementMode?new Color(.05f,.45f,.35f,.95f):new Color(.05f,.07f,.09f,.72f);}
+
         bool board=passenger.Boat==null && ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4;
         bool helm=passenger.Boat!=null && (passenger.Driving || Vector3.Distance(transform.position,passenger.Boat.DriverSeat.position)<2.5f);
         interact.gameObject.SetActive(!otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
         interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?"LEAVE HELM":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
+
         if(Keyboard.current!=null && Keyboard.current.digit2Key.wasPressedThisFrame && !shop.activeSelf && !otherMenu)TogglePlacement();
         if(Keyboard.current!=null && Keyboard.current.eKey.wasPressedThisFrame && interact.gameObject.activeSelf)Interact();
         if(!PlacementMode)return;
         if(controls.BoatUIBlocked || passenger.Driving){CancelPlacement();return;}
+
+        // Placement intentionally stays close to the player. This keeps the ghost
+        // easy to judge and prevents dropping a boat a long distance offshore.
         Ray ray=view.ViewportPointToRay(new Vector3(.5f,.5f));
-        bool hitWater=Physics.Raycast(ray,out var hit,35,1<<LayerMask.NameToLayer("Water"),QueryTriggerInteraction.Collide);
+        bool hitWater=Physics.Raycast(ray,out var hit,PlacementDistance,1<<LayerMask.NameToLayer("Water"),QueryTriggerInteraction.Collide);
         valid=false;
-        ghost.SetActive(hitWater);
-        if(hitWater)
+        if(ghost!=null)ghost.SetActive(hitWater);
+        if(hitWater && ghost!=null)
         {
             target=hit.point;target.y=Water.GetSurfaceHeight(target);
             heading=Quaternion.Euler(0,view.transform.eulerAngles.y,0);
             ghost.transform.SetPositionAndRotation(target,heading);
             valid=BoatClearance.Valid(Selected,target,heading,Water,ActiveBoat!=null?ActiveBoat.transform:null,transform);
+
             // Do not place through a rock/wall before the water hit.
             foreach(var obstruction in Physics.RaycastAll(ray,hit.distance,~(1<<LayerMask.NameToLayer("Water")),QueryTriggerInteraction.Ignore))
                 if(!obstruction.transform.IsChildOf(transform) && !(ActiveBoat!=null && obstruction.transform.IsChildOf(ActiveBoat.transform)))valid=false;
-            ghostMaterial.SetColor("_BaseColor",valid?new Color(.1f,.9f,.35f,.6f):new Color(1,.12f,.12f,.6f));
+
+            if(ghostMaterial!=null)ghostMaterial.SetColor("_BaseColor",valid?new Color(.1f,.9f,.35f,.6f):new Color(1,.12f,.12f,.6f));
         }
         place.gameObject.SetActive(true);place.interactable=valid;
         if(Mouse.current!=null && Mouse.current.leftButton.wasPressedThisFrame && (EventSystem.current==null || !EventSystem.current.IsPointerOverGameObject()))Place();
     }
+
     private void Place()
     {
         if(!PlacementMode || !valid || Selected==null || !OnIsland)return;
@@ -106,23 +134,36 @@ public sealed class BoatSystem : MonoBehaviour
         if(!BoatClearance.Valid(Selected,target,heading,Water,ActiveBoat!=null?ActiveBoat.transform:null,transform))return;
         if(ActiveBoat!=null && ActiveBoat.Data!=Selected){ActiveBoat.gameObject.SetActive(false);Destroy(ActiveBoat.gameObject);ActiveBoat=null;}
         if(ActiveBoat==null)ActiveBoat=Instantiate(Selected.Prefab,target,heading).GetComponent<BoatController>();
-        else {var body=ActiveBoat.GetComponent<Rigidbody>();body.position=target;body.rotation=heading;body.linearVelocity=Vector3.zero;body.angularVelocity=Vector3.zero;}
-        ActiveBoat.Initialize(Selected,Water);CancelPlacement();Notice("Boat ready. Step aboard; use DRIVE BOAT at the seat. Leave helm to walk and fish.");
+        else
+        {
+            var body=ActiveBoat.GetComponent<Rigidbody>();
+            body.position=target;body.rotation=heading;body.linearVelocity=Vector3.zero;body.angularVelocity=Vector3.zero;
+        }
+        ActiveBoat.Initialize(Selected,Water);
+        CancelPlacement();
+        Notice("Boat ready. Step aboard; use DRIVE BOAT at the seat. Leave helm to walk and fish.",4.5f);
     }
+
     public void BeforeTeleport()
     {
-        CancelPlacement();CloseShop();passenger.Detach();
+        CancelPlacement();CloseShop();passenger.Detach();ClearNotice();
         if(ActiveBoat!=null){ActiveBoat.gameObject.SetActive(false);Destroy(ActiveBoat.gameObject);ActiveBoat=null;}
     }
+
     private void Interact()
     {
         if(passenger.Boat!=null){passenger.ToggleHelm();return;}
         if(ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4)
-        {if(!passenger.BoardFromWater(ActiveBoat))Notice("Boat is full.");return;}
+        {
+            if(!passenger.BoardFromWater(ActiveBoat))Notice("Boat is full.");
+            return;
+        }
         if(!NearMarina)return;
         CancelPlacement();GetComponent<FishingSystem>()?.PrepareForMenu();shop.SetActive(true);controls.SetUIBlocked(true);RefreshShop();
     }
+
     private void CloseShop(){if(shop!=null && shop.activeSelf){shop.SetActive(false);controls.SetUIBlocked(false);}}
+
     private void RefreshShop()
     {
         foreach(Transform child in shop.transform)Destroy(child.gameObject);
@@ -141,7 +182,22 @@ public sealed class BoatSystem : MonoBehaviour
         }
         MakeButton(shop.transform,"CLOSE",new Vector2(0,-235),new Vector2(220,55),CloseShop);
     }
-    private void Notice(string text){if(status!=null)status.text=text;}
+
+    private void Notice(string text,float seconds=DefaultNoticeSeconds,bool placementOnly=false)
+    {
+        if(status==null)return;
+        status.text=text;
+        placementStatus=placementOnly;
+        statusUntil=placementOnly?0f:Time.unscaledTime+Mathf.Max(.25f,seconds);
+    }
+
+    private void ClearNotice()
+    {
+        if(status!=null)status.text=string.Empty;
+        placementStatus=false;
+        statusUntil=0f;
+    }
+
     private void BuildUI()
     {
         var root=new GameObject("BoatHUD",typeof(RectTransform),typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster));
@@ -154,12 +210,14 @@ public sealed class BoatSystem : MonoBehaviour
         shop=new GameObject("Marina Inventory",typeof(RectTransform),typeof(Image));shop.transform.SetParent(root.transform,false);
         shop.GetComponent<RectTransform>().sizeDelta=new Vector2(700,570);shop.GetComponent<Image>().color=new Color(.035f,.1f,.13f,.98f);shop.SetActive(false);
     }
+
     private static Text Label(Transform parent,string text,int size,Vector2 position,Vector2 dimensions)
     {
         var go=new GameObject("Label",typeof(RectTransform),typeof(Text));go.transform.SetParent(parent,false);
         var t=go.GetComponent<Text>();t.font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");t.fontSize=size;t.text=text;t.alignment=TextAnchor.MiddleCenter;t.color=new Color(.95f,.95f,.86f);t.raycastTarget=false;
         t.rectTransform.sizeDelta=dimensions;t.rectTransform.anchoredPosition=position;return t;
     }
+
     private static Button MakeButton(Transform parent,string text,Vector2 position,Vector2 dimensions,UnityEngine.Events.UnityAction action)
     {
         var go=new GameObject(text,typeof(RectTransform),typeof(Image),typeof(Button));go.transform.SetParent(parent,false);
@@ -167,5 +225,6 @@ public sealed class BoatSystem : MonoBehaviour
         go.GetComponent<Image>().color=new Color(.07f,.3f,.34f,.97f);
         Label(go.transform,text,24,Vector2.zero,dimensions-new Vector2(16,8));var button=go.GetComponent<Button>();button.onClick.AddListener(action);return button;
     }
+
     private void OnDestroy(){CancelPlacement();if(ActiveBoat!=null)Destroy(ActiveBoat.gameObject);}
 }
