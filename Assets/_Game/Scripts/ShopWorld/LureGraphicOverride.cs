@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Replaces legacy Bait4 placeholder pictures with snapshots of the actual
-/// equipped crankbait prefab. TackleLureShopExtension already renders each lure
-/// row by variant; this also covers the top-left equipped-bait shortcut and the
-/// generic selected-lure row created by ShopWorldHUD.
+/// crankbait prefab. TackleLureShopExtension already renders each lure row by
+/// variant; this additionally covers the top-left equipped-bait shortcut and
+/// any generic lure row created by ShopWorldHUD.
 /// </summary>
 [DefaultExecutionOrder(1200)]
 public sealed class LureGraphicOverride : MonoBehaviour
@@ -35,15 +35,11 @@ public sealed class LureGraphicOverride : MonoBehaviour
     private void LateUpdate()
     {
         if(hud==null || progress==null || preview==null)return;
-        if(progress.Data.baitEquipped!=ShopCatalog.StarterLure)
-        {
-            applied.Clear();
-            return;
-        }
 
         int variant=Mathf.Clamp(progress.Data.lureEquipped,0,ShopCatalog.LureVariantCount-1);
         ShopCatalog.SetActiveLureVariant(variant);
         string key=ShopCatalog.LurePreviewKey(variant);
+        bool lureIsEquipped=progress.Data.baitEquipped==ShopCatalog.StarterLure;
 
         RawImage[] images=hud.GetComponentsInChildren<RawImage>(true);
         for(int i=0;i<images.Length;i++)
@@ -51,8 +47,8 @@ public sealed class LureGraphicOverride : MonoBehaviour
             RawImage image=images[i];
             if(image==null)continue;
 
-            bool equippedShortcut=string.Equals(image.name,"EquippedBaitPicture",StringComparison.Ordinal);
-            bool genericLureRow=!equippedShortcut && string.Equals(image.name,"3D item preview",StringComparison.Ordinal) && ParentMentionsLure(image.transform.parent);
+            bool equippedShortcut=lureIsEquipped && string.Equals(image.name,"EquippedBaitPicture",StringComparison.Ordinal);
+            bool genericLureRow=string.Equals(image.name,"3D item preview",StringComparison.Ordinal) && ParentMentionsLure(image.transform.parent);
             if(!equippedShortcut && !genericLureRow)continue;
 
             int id=image.GetInstanceID();
