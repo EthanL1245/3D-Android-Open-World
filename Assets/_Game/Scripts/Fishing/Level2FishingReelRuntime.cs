@@ -4,12 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Keeps the two-reel catalog authoritative at runtime without disturbing the
-/// existing fishing state machine. Any legacy placeholder reel tier is migrated
-/// to the real Level 2 reel. Level 2 uses the same mechanics/animation as the
-/// starter reel, with a 1.20x reeling multiplier and its own visual prefab.
+/// Runtime support for all three fishing reels. Reel upgrades keep the starter
+/// reel's mechanics, hierarchy and authored animation; only the visible five reel
+/// meshes/materials and the reeling-speed multiplier change.
+/// Starter = 1.00x, Level 2 = 1.20x, Level 3 = 1.40x.
 /// </summary>
-[DefaultExecutionOrder(950)]
+[DefaultExecutionOrder(-420)]
 public sealed class Level2FishingReelRuntime : MonoBehaviour
 {
     private static readonly string[] ReelParts={"ReelFootAndBody","Rotor","ReelHousing","Spool","Handle"};
@@ -18,7 +18,7 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
     private FieldInfo reelPowerField;
     private FieldInfo rodRootField;
     private int appliedTier=-1;
-    private bool warnedMissing;
+    private int warnedTier=-1;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -57,17 +57,23 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
         Apply();
     }
 
-    private void LateUpdate()
-    {
-        if(progress==null || fishing==null)return;
-        reelPowerField.SetValue(fishing,progress.Data.reelEquipped>=1?1.20f:1f);
-        ApplyVisual(progress.Data.reelEquipped>=1?1:0);
-    }
+    // This runs before FishingSystem.Update so lure retrieval, fish fighting and
+    // visible reel animation all read the exact tier multiplier in the same frame.
+    private void Update(){Apply();}
 
     private void Apply()
     {
-        reelPowerField.SetValue(fishing,progress.Data.reelEquipped>=1?1.20f:1f);
-        ApplyVisual(progress.Data.reelEquipped>=1?1:0);
+        if(progress==null || fishing==null || reelPowerField==null || rodRootField==null)return;
+        int tier=Mathf.Clamp(progress.Data.reelEquipped,0,ShopCatalog.MaxReelTier);
+        reelPowerField.SetValue(fishing,ReelMultiplier(tier));
+        ApplyVisual(tier);
+    }
+
+    private static float ReelMultiplier(int tier)
+    {
+        if(tier>=2)return 1.40f;
+        if(tier==1)return 1.20f;
+        return 1f;
     }
 
     private void ApplyVisual(int tier)
@@ -78,10 +84,11 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
         GameObject sourcePrefab=Resources.Load<GameObject>(ShopCatalog.ReelPrefabResource(tier));
         if(sourcePrefab==null)
         {
-            if(tier>0 && !warnedMissing)
+            if(tier>0 && warnedTier!=tier)
             {
-                warnedMissing=true;
-                Debug.LogWarning("Level 2 reel model is not installed yet. Run Tools > Open World > Import Level 2 Fishing Reel (One Click). The starter visual is being used temporarily.");
+                warnedTier=tier;
+                string level=tier==2?"Level 3":"Level 2";
+                Debug.LogWarning(level+" reel model is not installed yet. Run Tools > Open World > Import "+level+" Fishing Reel (One Click). The previous visual is being used temporarily.");
             }
             return;
         }
@@ -106,7 +113,8 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
                 targetRenderer.SetPropertyBlock(null);
             }
         }
-        appliedTier=tier;warnedMissing=false;
+        appliedTier=tier;
+        warnedTier=-1;
     }
 
     private static Transform FindDeepChild(Transform root,string name)
@@ -116,14 +124,14 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
     }
 }
 
-/// <summary>Removes the retired placeholder reel rows and corrects the Level 2 description.</summary>
+/// <summary>Hides retired reel rows and presents the exact reel-speed bonuses.</summary>
 public sealed class ReelShopCleanup : MonoBehaviour
 {
     private float nextScan;
     private void LateUpdate()
     {
         if(!ShopWorldHUD.MenuOpen || Time.unscaledTime<nextScan)return;
-        nextScan=Time.unscaledTime+0.08f;
+        nextScan=Time.unscaledTime+0.05f;
         Text[] texts=GetComponentsInChildren<Text>(true);
         foreach(Text text in texts)
         {
@@ -137,6 +145,8 @@ public sealed class ReelShopCleanup : MonoBehaviour
             }
             if(value.Contains("22% faster tiring and retrieval"))
                 text.text=value.Replace("22% faster tiring and retrieval","20% faster reeling").Replace(" / Requires previous tier",string.Empty);
+            else if(value.Contains("44% faster tiring and retrieval"))
+                text.text=value.Replace("44% faster tiring and retrieval","40% faster reeling").Replace(" / Requires previous tier",string.Empty);
         }
     }
 
