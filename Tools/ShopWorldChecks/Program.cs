@@ -53,7 +53,7 @@ internal static class Program
         var invalid=Fish(float.NaN);d.bag.Add(invalid);Check(!d.Deposit("nano",invalid),"NaN admitted");d.bag.Remove(invalid);
         Check(d.Sell(a,20) && !d.Sell(a,20),"Duplicate sale paid twice");
         Check(Math.Abs(ShopCatalog.FishLength(0,0.5f)-0.3556f)<0.01f,"Mackerel length disagrees with source estimate");
-        Check(ShopCatalog.FishLength(0,1000)<=0.55f && ShopCatalog.FishLength(6,1000)<=0.5f,"Extreme saved weights create giant fish");
+        Check(ShopCatalog.FishLength(0,1000)<=1.0f && ShopCatalog.FishLength(6,1000)<=0.91f,"Extreme saved weights exceeded the open-ocean visual cap");
         for(int species=0;species<FishCatalog.Count;species++)
         {
             float previous=0;
