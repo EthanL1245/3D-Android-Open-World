@@ -88,7 +88,7 @@ public sealed class FishingLineShopPresentation : MonoBehaviour
                 int separator=text.text.IndexOf(" m line / 30 m maximum cast;",System.StringComparison.Ordinal);
                 if(separator>=0)
                 {
-                    string suffix=text.text.Substring(separator+2); // keep "line / ..." and all existing tolerance text
+                    string suffix=text.text.Substring(separator+3); // starts at "line / ..."
                     text.text=(40+tier*5)+" m "+suffix;
                 }
             }
