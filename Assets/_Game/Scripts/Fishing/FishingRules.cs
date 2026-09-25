@@ -3,6 +3,12 @@ using UnityEngine;
 // Shared, deterministic tuning. Depth affects size; region/bait affect species odds.
 public static class FishingRules
 {
+    // Updated by LureShallowWaterBiteGuard immediately before FishingSystem.Update.
+    // Keeping this gate in the actual bite-probability function makes the shallow
+    // water rule authoritative: even if another caller asks for a lure bite chance,
+    // it receives zero while the lure is in less than 1 m of water.
+    public static bool LureBiteAllowed { get; set; } = true;
+
     public static float CastPower(float elapsed) => 1f-Mathf.Sqrt(1f-Mathf.PingPong(Mathf.Max(0,elapsed)/1.25f,1f));
     public static float CastDistance(float power,float maximum) => Mathf.Lerp(5f,maximum,Mathf.Clamp01(power));
     // Any continuous interval is usable; gaps and either end can be blocked.
@@ -38,6 +44,7 @@ public static class FishingRules
     }
     public static float LureBiteChance(float castDistance,float retrievedFraction)
     {
+        if(!LureBiteAllowed)return 0f;
         float biteMultiplier=ShopCatalog.ActiveLureVariant==1 ? 1.15f : ShopCatalog.ActiveLureVariant==2 ? .95f : ShopCatalog.ActiveLureVariant==3 ? .85f : 1f;
         float fullChance=Mathf.Clamp01(.5f*Mathf.Clamp01(castDistance/30f)*biteMultiplier);
         return 1f-Mathf.Pow(1f-fullChance,Mathf.Clamp01(retrievedFraction));
