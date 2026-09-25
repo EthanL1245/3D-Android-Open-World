@@ -137,12 +137,12 @@ public sealed class TackleLureShopExtension : MonoBehaviour
         Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
         accent.GetComponent<Image>().raycastTarget=false;
 
-        GameObject picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));
+        GameObject picture=new GameObject("Lure item preview",typeof(RectTransform),typeof(RawImage));
         picture.transform.SetParent(row.transform,false);
         Rect(picture.GetComponent<RectTransform>(),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(14,0),new Vector2(140,140));
         RawImage raw=picture.GetComponent<RawImage>();
         raw.raycastTarget=false;
-        preview.Attach(raw,0,1f,"Bait4");
+        preview.Attach(raw,0,1f,ShopCatalog.LurePreviewKey(variant));
 
         Text name=CreateText(row.transform,ShopCatalog.LureNames[variant],31,Color.white,TextAnchor.MiddleLeft);
         Anchor(name.rectTransform,0,.5f,1,1,170,0,-232,-10);
