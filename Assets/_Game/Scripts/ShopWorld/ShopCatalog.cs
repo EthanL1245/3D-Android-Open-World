@@ -22,7 +22,9 @@ public static class ShopCatalog
     public const int StarterLure=4;
     public const int LureVariantCount=4;
     public const int NeonBreachLureVariant=0;
+    public const int ReefMinnowLureVariant=1;
     public const int FireShadLureVariant=2;
+    public const int DeepFlashLureVariant=3;
 
     public static readonly string[] LureNames =
     {
@@ -59,22 +61,23 @@ public static class ShopCatalog
         BaitNames[StarterLure]=LureNames[ActiveLureVariant];
     }
 
-    // Gameplay prefab. Unmodelled legacy variants keep using Neon Breach until
-    // they receive their own authored model; Fire Shad has its dedicated prefab.
     public static string LurePrefabResource(int variant)
     {
-        return variant==FireShadLureVariant
-            ? "Fishing/FireShadCrankbait"
-            : "Fishing/LiplessCrankbaitGreenStriped";
+        switch(Math.Max(0,Math.Min(LureVariantCount-1,variant)))
+        {
+            case ReefMinnowLureVariant: return "Fishing/ReefMinnowCrankbait";
+            case FireShadLureVariant: return "Fishing/FireShadCrankbait";
+            case DeepFlashLureVariant: return "Fishing/DeepFlashCrankbait";
+            default: return "Fishing/LiplessCrankbaitGreenStriped";
+        }
     }
 
-    // ShopPreview keys are deliberately variant-specific so the rendered 2D
-    // snapshots cannot reuse the old generic Bait4 placeholder cache entry.
+    // Every permanent lure now gets a real model snapshot rather than Bait4's
+    // procedural placeholder. Variant-specific keys also keep preview caches apart.
     public static string LurePreviewKey(int variant)
     {
-        if(variant==NeonBreachLureVariant)return "Lure0";
-        if(variant==FireShadLureVariant)return "Lure2";
-        return "Bait4";
+        int clamped=Math.Max(0,Math.Min(LureVariantCount-1,variant));
+        return "Lure"+clamped;
     }
 
     public static readonly HabitatDefinition[] Habitats = {
