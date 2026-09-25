@@ -1,225 +1,442 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Fresh catch is a static counter display. No hanging rigs or live animation.
+// Static Fresh Catch Market display. This component is already serialized on the
+// FRESH CATCH MARKET object in the generated Tideglass scene, so keep all market
+// presentation through this one code path instead of competing runtime builders.
 public sealed class ShopMarketDisplay : MonoBehaviour
 {
     private readonly List<Material> materials = new List<Material>();
     private readonly List<Mesh> meshes = new List<Mesh>();
+    private Coroutine rebuildRoutine;
 
-    // Exact local heights for the lowered market counter. Keeping these absolute
-    // makes the display idempotent and prevents old runtime fixes from stacking.
     private const float CounterTopY = 0.80f;
-    private const float CounterSurfaceTopY = 0.86f;
-    private const float TrayCenterY = 0.91f;
-    private const float IceCenterY = 1.00f;
-    private const float FishBottomY = 1.08f;
+    private const float TrayY = 0.91f;
+    private const float IceY = 1.01f;
+    private const float FishBottomY = 1.10f;
 
     private void Start()
     {
-        NormalizeCounter();
+        RebuildNow();
+    }
 
-        // Upgrade already-installed Quay scenes at runtime too. Delete every old
-        // market-display version before building one authoritative frozen display.
-        var remove = new List<GameObject>();
-        foreach (Transform child in transform)
-        {
-            if (child.name == "SeafoodTray" || child.name == "Ice" ||
-                child.name == "HangingMarketFish" || child.name == "HangingCord" ||
-                child.name == "FreshCatchOnIce")
-                remove.Add(child.gameObject);
-        }
-        foreach (GameObject child in remove)
-        {
-            child.SetActive(false);
-            Destroy(child);
-        }
+    public void RebuildNow()
+    {
+        if (!isActiveAndEnabled)
+            enabled = true;
 
-        // All dimensions below are already in the lowered counter's coordinate
-        // system. Do NOT apply a second display-root drop.
+        if (rebuildRoutine != null)
+            StopCoroutine(rebuildRoutine);
+
+        rebuildRoutine = StartCoroutine(RebuildRoutine());
+    }
+
+    private IEnumerator RebuildRoutine()
+    {
+        NormalizeExistingCounterDisplay();
+        RemoveOldRuntimeRoots();
+
+        // Destroy is deferred until the end of the frame. Waiting prevents an
+        // older runtime display from overlapping or deleting the replacement.
+        yield return null;
+
         var root = new GameObject("FreshCatchOnIce").transform;
         root.SetParent(transform, false);
         root.localPosition = Vector3.zero;
         root.localRotation = Quaternion.identity;
         root.localScale = Vector3.one;
 
-        Material steel = Surface("Brushed steel trays", new Color(0.40f, 0.50f, 0.53f), 0.72f, 0.78f);
-        Material ice = Surface("Crushed blue-white ice", new Color(0.88f, 0.97f, 1f), 0.70f, 0f);
-        Material chalkboard = Surface("Seafood labels", new Color(0.025f, 0.08f, 0.085f), 0.2f, 0f);
+        Material iceMaterial = Surface(
+            "Fresh Catch crushed ice",
+            new Color(0.88f, 0.97f, 1f),
+            0.72f,
+            0f);
+        Material boardMaterial = Surface(
+            "Fresh Catch labels",
+            new Color(0.025f, 0.08f, 0.085f),
+            0.20f,
+            0f);
 
         int[] species = { 0, FishCatalog.RedSnapperId, 3 };
+        var pending = new List<PendingFish>();
+
+        // These X positions come directly from the user's generated
+        // TideglassShopWorld.unity: the three authored SeafoodTray centers are
+        // -3.1, 0 and +3.1. Build on those exact trays instead of guessing.
         for (int tray = 0; tray < species.Length; tray++)
         {
-            float x = (tray - 1) * 3.3f;
+            float x = (tray - 1) * 3.10f;
 
-            // Shallow metal tray sitting immediately above the 0.86 m counter.
-            Box(root, "Steel tray", new Vector3(x, TrayCenterY, -1.5f), new Vector3(2.95f, 0.10f, 1.55f), steel);
-            Box(root, "Front rim", new Vector3(x, 1.00f, -2.25f), new Vector3(2.95f, 0.18f, 0.06f), steel);
-            Box(root, "Back rim", new Vector3(x, 1.00f, -0.75f), new Vector3(2.95f, 0.18f, 0.06f), steel);
-            for (int side = -1; side <= 1; side += 2)
-                Box(root, "Side rim", new Vector3(x + side * 1.445f, 1.00f, -1.5f), new Vector3(0.06f, 0.18f, 1.5f), steel);
+            BuildCrushedIce(root, x, tray, iceMaterial);
 
-            // Give the ice real visible thickness instead of hiding it under fish.
-            Box(root, "Ice bed", new Vector3(x, IceCenterY, -1.5f), new Vector3(2.8f, 0.16f, 1.4f), ice);
-            BuildCrushedIce(root, x, tray, ice);
+            for (int n = 0; n < 3; n++)
+            {
+                GameObject fish = FishVisualFactory.CreateFish(
+                    "Fresh " + FishCatalog.Get(species[tray]).Name + " " + (n + 1),
+                    root,
+                    species[tray],
+                    1f);
 
-            for (int fish = 0; fish < 3; fish++)
-                PlaceFish(root, species[tray], new Vector3(x + (fish - 1) * 0.82f, FishBottomY, -1.5f), fish);
+                if (fish != null)
+                {
+                    fish.SetActive(true);
+                    pending.Add(new PendingFish
+                    {
+                        fish = fish,
+                        targetLocal = new Vector3(
+                            x + (n - 1) * 0.68f,
+                            FishBottomY,
+                            -1.50f),
+                        desiredLength = 0.46f + n * 0.035f,
+                        index = n
+                    });
+                }
+            }
 
-            Box(root, "Label board", new Vector3(x, 0.67f, -2.48f), new Vector3(2.4f, 0.34f, 0.055f), chalkboard);
-            Label(root, FishCatalog.Get(species[tray]).Name.ToUpperInvariant(), new Vector3(x, 0.67f, -2.515f));
+            Box(
+                root,
+                "Label board",
+                new Vector3(x, 0.67f, -2.48f),
+                new Vector3(2.35f, 0.30f, 0.055f),
+                boardMaterial);
+            Label(
+                root,
+                FishCatalog.Get(species[tray]).Name.ToUpperInvariant(),
+                new Vector3(x, 0.67f, -2.515f));
         }
+
+        // Imported fish prefabs use Awake/OnEnable for rig/material setup. Let
+        // those callbacks finish before freezing the Animator. Do NOT disable all
+        // MonoBehaviours: the old implementation could interrupt prefab visual
+        // initialization and leave a perfectly valid fish with no visible mesh.
+        yield return null;
+        yield return null;
+
+        for (int i = 0; i < pending.Count; i++)
+            FreezeAndPlace(root, pending[i]);
+
+        rebuildRoutine = null;
     }
 
-    private void NormalizeCounter()
+    private void NormalizeExistingCounterDisplay()
     {
         foreach (Transform child in transform)
         {
-            Vector3 position = child.localPosition;
-            Vector3 scale = child.localScale;
+            if (child == null)
+                continue;
+
+            Vector3 p = child.localPosition;
+            Vector3 s = child.localScale;
+
             if (child.name == "Counter")
             {
-                // Keep the front counter above the deck rather than extending
-                // below it after lowering the working surface.
-                scale.y = 0.75f;
-                position.y = 0.375f;
-                child.localScale = scale;
-                child.localPosition = position;
+                s.y = 0.75f;
+                p.y = 0.375f;
+                child.localScale = s;
+                child.localPosition = p;
             }
             else if (child.name == "Countertop")
             {
-                position.y = CounterTopY;
-                child.localPosition = position;
+                p.y = CounterTopY;
+                child.localPosition = p;
             }
             else if (child.name == "CounterInlay")
             {
-                position.y = 0.45f;
-                child.localPosition = position;
+                p.y = 0.45f;
+                child.localPosition = p;
+            }
+            else if (child.name == "SeafoodTray")
+            {
+                // Keep the scene-authored tray rather than deleting it. This is
+                // a visible fallback even if a fish prefab ever fails to load.
+                p.y = TrayY;
+                s.y = 0.10f;
+                child.localPosition = p;
+                child.localScale = s;
+                child.gameObject.SetActive(true);
+                EnableRenderers(child);
+            }
+            else if (child.name == "Ice")
+            {
+                p.y = IceY;
+                s.y = 0.11f;
+                child.localPosition = p;
+                child.localScale = s;
+                child.gameObject.SetActive(true);
+                EnableRenderers(child);
             }
         }
     }
 
-    private void PlaceFish(Transform parent, int species, Vector3 position, int index)
+    private void RemoveOldRuntimeRoots()
     {
-        GameObject fish = FishVisualFactory.CreateFish("Fresh " + FishCatalog.Get(species).Name, parent, species, 1f);
+        var remove = new List<GameObject>();
+        foreach (Transform child in transform)
+        {
+            if (child == null)
+                continue;
 
-        // Freeze one authored pose. Market fish are display food, never swimmers.
-        foreach (var behaviour in fish.GetComponentsInChildren<MonoBehaviour>(true)) behaviour.enabled = false;
-        foreach (var animation in fish.GetComponentsInChildren<Animation>(true)) animation.enabled = false;
-        foreach (var animator in fish.GetComponentsInChildren<Animator>(true))
-        {
-            if (animator.runtimeAnimatorController != null)
-            {
-                animator.enabled = true;
-                animator.applyRootMotion = false;
-                animator.Rebind();
-                animator.Update(0f);
-                var clips = animator.GetCurrentAnimatorClipInfo(0);
-                if (clips.Length > 0 && clips[0].clip.length > 0f)
-                {
-                    var clip = clips[0].clip;
-                    animator.Play(animator.GetCurrentAnimatorStateInfo(0).fullPathHash, 0,
-                        Mathf.Clamp01(5f / Mathf.Max(1f, clip.frameRate) / clip.length));
-                    animator.Update(0f);
-                }
-            }
-            animator.enabled = false;
+            if (child.name == "FreshCatchOnIce" ||
+                child.name == "FreshCatchRuntimeDisplay")
+                remove.Add(child.gameObject);
         }
-        foreach (var collider in fish.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
-        foreach (var body in fish.GetComponentsInChildren<Rigidbody>(true))
+
+        for (int i = 0; i < remove.Count; i++)
+            if (remove[i] != null)
+                Destroy(remove[i]);
+    }
+
+    private void FreezeAndPlace(Transform parent, PendingFish pending)
+    {
+        GameObject fish = pending.fish;
+        if (fish == null)
+            return;
+
+        fish.SetActive(true);
+
+        // Freeze the authored rig without disabling presentation scripts or
+        // GameObjects. Leaving the hierarchy alive is substantially safer for
+        // imported skinned fish than switching every MonoBehaviour off.
+        Animator[] animators = fish.GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < animators.Length; i++)
         {
+            Animator animator = animators[i];
+            if (animator == null)
+                continue;
+
+            animator.enabled = true;
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+            animator.Rebind();
+            animator.Update(0f);
+            animator.speed = 0f;
+        }
+
+        foreach (Animation animation in fish.GetComponentsInChildren<Animation>(true))
+            if (animation != null)
+                animation.enabled = false;
+
+        foreach (Collider collider in fish.GetComponentsInChildren<Collider>(true))
+            if (collider != null)
+                collider.enabled = false;
+
+        foreach (Rigidbody body in fish.GetComponentsInChildren<Rigidbody>(true))
+        {
+            if (body == null)
+                continue;
             body.isKinematic = true;
             body.useGravity = false;
         }
 
-        // Smaller retail-display fish leave the ice clearly visible around them.
-        FishWorldSize.SetLength(fish, 0.62f + index * 0.035f);
-        fish.transform.localRotation = Quaternion.Euler(0f, index % 2 == 0 ? 8f : -8f, 90f);
+        // Use the project's normal real-world fish scaler first.
+        FishWorldSize.SetLength(fish, pending.desiredLength);
 
-        Renderer[] renderers = fish.GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length == 0) return;
-        Bounds bounds = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+        // Retail fish lie on their side. Rotation happens before final bounds
+        // measurement so the bottom placed on the ice is the actual rendered
+        // bottom in the finished pose.
+        fish.transform.localRotation = Quaternion.Euler(
+            0f,
+            pending.index % 2 == 0 ? 8f : -8f,
+            90f);
 
-        // Put the lowest rendered point directly onto the top of the crushed ice.
-        Vector3 target = parent.TransformPoint(position);
-        Vector3 correction = new Vector3(target.x - bounds.center.x, target.y - bounds.min.y, target.z - bounds.center.z);
-        fish.transform.position += correction;
+        if (!TryGetVisibleBounds(fish, out Bounds bounds))
+        {
+            Debug.LogError(
+                "Fresh Catch Market: " + fish.name +
+                " instantiated but has no active visible Renderer.",
+                fish);
+            return;
+        }
+
+        // Guard against an imported rig-unit mismatch. If the normal scaler ever
+        // produces an obviously microscopic or giant market fish, normalize by
+        // its actual visible world bounds rather than letting it disappear.
+        float longest = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z);
+        if (longest < 0.18f || longest > 0.90f)
+        {
+            float factor = pending.desiredLength / Mathf.Max(0.0001f, longest);
+            fish.transform.localScale *= factor;
+            if (!TryGetVisibleBounds(fish, out bounds))
+                return;
+        }
+
+        Vector3 target = parent.TransformPoint(pending.targetLocal);
+        fish.transform.position += new Vector3(
+            target.x - bounds.center.x,
+            target.y - bounds.min.y,
+            target.z - bounds.center.z);
+
+        // Skinned meshes should continue rendering even though their Animator is
+        // paused and the player can stand very close to the counter.
+        Renderer[] renderers = fish.GetComponentsInChildren<Renderer>(false);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null)
+                continue;
+            renderers[i].enabled = true;
+            if (renderers[i] is SkinnedMeshRenderer skinned)
+                skinned.updateWhenOffscreen = true;
+        }
+    }
+
+    private static bool TryGetVisibleBounds(GameObject fish, out Bounds bounds)
+    {
+        bounds = default;
+        bool found = false;
+
+        // IMPORTANT: do not include inactive alternate meshes/LODs. The previous
+        // version used GetComponentsInChildren(..., true), so an inactive imported
+        // renderer could corrupt the bounds and move an otherwise visible fish far
+        // away from its tray.
+        Renderer[] renderers = fish.GetComponentsInChildren<Renderer>(false);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy)
+                continue;
+
+            if (!found)
+            {
+                bounds = renderer.bounds;
+                found = true;
+            }
+            else
+                bounds.Encapsulate(renderer.bounds);
+        }
+
+        return found;
+    }
+
+    private static void EnableRenderers(Transform root)
+    {
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+            if (renderers[i] != null && renderers[i].gameObject.activeInHierarchy)
+                renderers[i].enabled = true;
     }
 
     private void BuildCrushedIce(Transform parent, float x, int seed, Material material)
     {
-        // All angular chips in a tray share one mesh/draw call.
-        var random = new System.Random(301 + seed);
+        var random = new System.Random(801 + seed);
         var vertices = new List<Vector3>();
         var triangles = new List<int>();
         int[] faces = { 0,2,3,1, 4,5,7,6, 0,4,6,2, 1,3,7,5, 0,1,5,4, 2,6,7,3 };
-        for (int row = 0; row < 5; row++)
-        for (int col = 0; col < 12; col++)
+
+        for (int row = 0; row < 4; row++)
+        for (int col = 0; col < 10; col++)
         {
-            Vector3 center = new Vector3(x - 1.27f + col * 0.23f, 1.085f, -2.06f + row * 0.28f);
+            Vector3 center = new Vector3(
+                x - 1.05f + col * 0.235f,
+                1.075f,
+                -1.98f + row * 0.32f);
             Vector3 size = new Vector3(
-                0.13f + (float)random.NextDouble() * 0.09f,
-                0.07f + (float)random.NextDouble() * 0.09f,
-                0.15f);
-            Quaternion rotation = Quaternion.Euler((float)random.NextDouble() * 30f, (float)random.NextDouble() * 180f, 20f);
+                0.13f + (float)random.NextDouble() * 0.08f,
+                0.06f + (float)random.NextDouble() * 0.07f,
+                0.16f);
+            Quaternion rotation = Quaternion.Euler(
+                (float)random.NextDouble() * 24f,
+                (float)random.NextDouble() * 180f,
+                (float)random.NextDouble() * 18f);
+
             for (int face = 0; face < 6; face++)
             {
                 int start = vertices.Count;
                 for (int corner = 0; corner < 4; corner++)
                 {
                     int c = faces[face * 4 + corner];
-                    vertices.Add(center + rotation * Vector3.Scale(size, new Vector3(
-                        (c & 1) == 0 ? -0.5f : 0.5f,
-                        (c & 2) == 0 ? -0.5f : 0.5f,
-                        (c & 4) == 0 ? -0.5f : 0.5f)));
+                    vertices.Add(center + rotation * Vector3.Scale(
+                        size,
+                        new Vector3(
+                            (c & 1) == 0 ? -0.5f : 0.5f,
+                            (c & 2) == 0 ? -0.5f : 0.5f,
+                            (c & 4) == 0 ? -0.5f : 0.5f)));
                 }
-                triangles.AddRange(new[] {start, start + 1, start + 2, start, start + 2, start + 3});
+                triangles.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
             }
         }
-        var mesh = new Mesh { name = "Crushed ice facets" };
-        mesh.SetVertices(vertices); mesh.SetTriangles(triangles, 0); mesh.RecalculateNormals(); mesh.RecalculateBounds();
+
+        Mesh mesh = new Mesh { name = "Fresh Catch crushed ice" };
+        mesh.SetVertices(vertices);
+        mesh.SetTriangles(triangles, 0);
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
         meshes.Add(mesh);
-        var node = new GameObject("Crushed ice"); node.transform.SetParent(parent, false);
+
+        GameObject node = new GameObject("Crushed ice");
+        node.transform.SetParent(parent, false);
         node.AddComponent<MeshFilter>().sharedMesh = mesh;
         node.AddComponent<MeshRenderer>().sharedMaterial = material;
     }
 
     private Material Surface(string label, Color color, float smoothness, float metallic)
     {
-        var shader = Resources.Load<Shader>("Fishing/ShopSurface");
-        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-        var material = new Material(shader) { name = label };
-        material.SetColor("_BaseColor", color); material.SetFloat("_Smoothness", smoothness); material.SetFloat("_Metallic", metallic);
-        materials.Add(material); return material;
+        Shader shader = Resources.Load<Shader>("Fishing/ShopSurface");
+        if (shader == null)
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+
+        Material material = new Material(shader) { name = label };
+        if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
+        if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
+        if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", metallic);
+        materials.Add(material);
+        return material;
     }
 
-    private void Box(Transform parent, string label, Vector3 position, Vector3 size, Material material)
+    private static GameObject Box(Transform parent, string label, Vector3 position, Vector3 size, Material material)
     {
-        var node = GameObject.CreatePrimitive(PrimitiveType.Cube); node.name = label;
-        node.transform.SetParent(parent, false); node.transform.localPosition = position; node.transform.localScale = size;
+        GameObject node = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        node.name = label;
+        node.transform.SetParent(parent, false);
+        node.transform.localPosition = position;
+        node.transform.localScale = size;
         node.GetComponent<Renderer>().sharedMaterial = material;
-        node.GetComponent<Collider>().enabled = false; Destroy(node.GetComponent<Collider>());
+        Collider collider = node.GetComponent<Collider>();
+        if (collider != null) Destroy(collider);
+        return node;
     }
 
     private void Label(Transform parent, string caption, Vector3 position)
     {
-        var node = new GameObject("Species label"); node.transform.SetParent(parent, false); node.transform.localPosition = position;
-        var text = node.AddComponent<TextMesh>(); text.text = caption; text.fontSize = 64;
-        text.characterSize = 0.035f; text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
-        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.color = new Color(0.95f, 0.96f, 0.89f);
-        var signShader = Resources.Load<Shader>("Fishing/ShopSign");
-        if (signShader == null) signShader = Shader.Find("Universal Render Pipeline/Unlit");
-        var material = new Material(signShader);
-        material.mainTexture = text.font.material.mainTexture; materials.Add(material);
-        var renderer = node.GetComponent<MeshRenderer>(); renderer.sharedMaterial = material;
-        float width = renderer.bounds.size.x;
-        if (width > 2.15f) node.transform.localScale = Vector3.one * (2.15f / width);
+        GameObject node = new GameObject("Species label");
+        node.transform.SetParent(parent, false);
+        node.transform.localPosition = position;
+
+        TextMesh text = node.AddComponent<TextMesh>();
+        text.text = caption;
+        text.fontSize = 64;
+        text.characterSize = 0.031f;
+        text.anchor = TextAnchor.MiddleCenter;
+        text.alignment = TextAlignment.Center;
+        text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        text.color = new Color(0.95f, 0.96f, 0.89f);
+
+        Shader sign = Resources.Load<Shader>("Fishing/ShopSign");
+        if (sign == null)
+            sign = Shader.Find("Universal Render Pipeline/Unlit");
+
+        Material material = new Material(sign);
+        material.mainTexture = text.font.material.mainTexture;
+        materials.Add(material);
+        node.GetComponent<MeshRenderer>().sharedMaterial = material;
     }
 
     private void OnDestroy()
     {
-        foreach (var material in materials) if (material != null) Destroy(material);
-        foreach (var mesh in meshes) if (mesh != null) Destroy(mesh);
+        if (rebuildRoutine != null)
+            StopCoroutine(rebuildRoutine);
+
+        foreach (Material material in materials)
+            if (material != null) Destroy(material);
+        foreach (Mesh mesh in meshes)
+            if (mesh != null) Destroy(mesh);
+    }
+
+    private sealed class PendingFish
+    {
+        public GameObject fish;
+        public Vector3 targetLocal;
+        public float desiredLength;
+        public int index;
     }
 }
