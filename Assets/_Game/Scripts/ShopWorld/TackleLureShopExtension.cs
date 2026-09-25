@@ -1,22 +1,39 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 // Adds permanent lure variants to the existing Tackle Store without replacing
-// the established ShopWorldHUD. Every lure deliberately reuses the same Bait4
-// preview model; only its name, tuning and ownership differ.
+// ShopWorldHUD. The lure rows intentionally mirror ShopWorldHUD.Row so bought
+// and owned tackle look like part of the same menu rather than a second UI.
 public sealed class TackleLureShopExtension : MonoBehaviour
 {
+    private sealed class LureRowView
+    {
+        public int variant;
+        public Button button;
+        public Text buttonLabel;
+        public Image buttonImage;
+    }
+
     private ShopWorldHUD hud;
     private ShopProgress progress;
     private ShopPreview preview;
     private GameObject section;
     private Font font;
+    private bool sectionIsShop;
+    private readonly List<LureRowView> rowViews = new List<LureRowView>();
+
+    private static readonly Color Ink = new Color(0.07f,0.12f,0.14f,1f);
+    private static readonly Color Teal = new Color(0.04f,0.36f,0.39f,1f);
+    private static readonly Color Gold = new Color(0.89f,0.72f,0.40f,1f);
+    private static readonly Color Detail = new Color(0.65f,0.79f,0.8f,1f);
+    private static readonly Color Disabled = new Color(0.17f,0.23f,0.24f,1f);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void InstallAfterLoad()
     {
-        var target=FindFirstObjectByType<ShopWorldHUD>();
+        ShopWorldHUD target=FindFirstObjectByType<ShopWorldHUD>();
         if(target!=null && target.GetComponent<TackleLureShopExtension>()==null)
             target.gameObject.AddComponent<TackleLureShopExtension>();
     }
@@ -41,21 +58,21 @@ public sealed class TackleLureShopExtension : MonoBehaviour
         if(!tackle && !baitPage)
         {
             section=null;
+            rowViews.Clear();
             return;
         }
 
         RectTransform rows=FindRows();
         if(rows==null)return;
-        if(section==null || section.transform.parent!=rows)
-        {
-            if(!tackle && OwnedAlternativeCount()==0)return;
+        if(section==null || section.transform.parent!=rows || !section.activeSelf || sectionIsShop!=tackle)
             BuildSection(rows,tackle);
-        }
+        else
+            RefreshRows();
     }
 
     private bool HasHeading(string caption)
     {
-        var labels=hud.GetComponentsInChildren<Text>(true);
+        Text[] labels=hud.GetComponentsInChildren<Text>(true);
         for(int i=0;i<labels.Length;i++)
             if(labels[i]!=null && string.Equals(labels[i].text,caption,StringComparison.OrdinalIgnoreCase))return true;
         return false;
@@ -63,7 +80,7 @@ public sealed class TackleLureShopExtension : MonoBehaviour
 
     private RectTransform FindRows()
     {
-        var transforms=hud.GetComponentsInChildren<RectTransform>(true);
+        RectTransform[] transforms=hud.GetComponentsInChildren<RectTransform>(true);
         for(int i=0;i<transforms.Length;i++)
             if(transforms[i]!=null && transforms[i].name=="Rows")return transforms[i];
         return null;
@@ -71,125 +88,226 @@ public sealed class TackleLureShopExtension : MonoBehaviour
 
     private void BuildSection(RectTransform rows,bool shop)
     {
-        var existing=rows.Find("LureShopSection");
+        Transform existing=rows.Find("LureShopSection");
         if(existing!=null)Destroy(existing.gameObject);
 
-        section=new GameObject("LureShopSection",typeof(RectTransform),typeof(Image),typeof(LayoutElement),typeof(VerticalLayoutGroup));
+        rowViews.Clear();
+        sectionIsShop=shop;
+        section=new GameObject("LureShopSection",typeof(RectTransform),typeof(LayoutElement),typeof(VerticalLayoutGroup));
         section.transform.SetParent(rows,false);
-        var background=section.GetComponent<Image>();
-        background.color=new Color(.035f,.11f,.13f,.94f);
-        var layout=section.GetComponent<VerticalLayoutGroup>();
-        layout.padding=new RectOffset(14,14,12,14);layout.spacing=8;
-        layout.childControlWidth=true;layout.childForceExpandWidth=true;
-        layout.childControlHeight=true;layout.childForceExpandHeight=false;
-        var sectionSize=section.GetComponent<LayoutElement>();
-        sectionSize.preferredHeight=shop?650f:Mathf.Max(160f,70f+OwnedAlternativeCount()*142f);
+        VerticalLayoutGroup layout=section.GetComponent<VerticalLayoutGroup>();
+        layout.spacing=10f;
+        layout.childControlWidth=true;
+        layout.childForceExpandWidth=true;
+        layout.childControlHeight=true;
+        layout.childForceExpandHeight=false;
 
-        var title=CreateText(section.transform,shop?"PERMANENT LURES":"OWNED LURES",30,Color.white,TextAnchor.MiddleLeft);
-        title.GetComponent<LayoutElement>().preferredHeight=48f;
+        int visibleRows=0;
+        for(int variant=0;variant<ShopCatalog.LureVariantCount;variant++)
+            if(shop || progress.Data.OwnsLure(variant))visibleRows++;
+
+        LayoutElement sectionSize=section.GetComponent<LayoutElement>();
+        sectionSize.preferredHeight=58f+visibleRows*194f;
+
+        GameObject titleRow=new GameObject(shop?"PermanentLuresHeading":"OwnedLuresHeading",typeof(RectTransform),typeof(LayoutElement));
+        titleRow.transform.SetParent(section.transform,false);
+        titleRow.GetComponent<LayoutElement>().preferredHeight=48f;
+        Text title=CreateText(titleRow.transform,shop?"PERMANENT LURES":"OWNED LURES",30,Gold,TextAnchor.MiddleLeft);
+        Full(title.rectTransform);
+        title.rectTransform.offsetMin=new Vector2(8f,0f);
+        title.rectTransform.offsetMax=new Vector2(-8f,0f);
 
         for(int variant=0;variant<ShopCatalog.LureVariantCount;variant++)
         {
             bool owned=progress.Data.OwnsLure(variant);
-            bool equipped=progress.Data.baitEquipped==ShopCatalog.StarterLure && progress.Data.lureEquipped==variant;
-            if(!shop && (!owned || equipped))continue;
-            CreateLureRow(section.transform,variant,shop,owned,equipped);
+            if(!shop && !owned)continue;
+            CreateLureRow(section.transform,variant);
+        }
+
+        RefreshRows();
+        Canvas.ForceUpdateCanvases();
+    }
+
+    private void CreateLureRow(Transform parent,int variant)
+    {
+        GameObject row=Panel("Lure_"+variant,parent,Ink);
+        row.AddComponent<LayoutElement>().preferredHeight=184f;
+
+        GameObject accent=Panel("Accent",row.transform,Gold);
+        Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
+        accent.GetComponent<Image>().raycastTarget=false;
+
+        GameObject picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));
+        picture.transform.SetParent(row.transform,false);
+        Rect(picture.GetComponent<RectTransform>(),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(14,0),new Vector2(140,140));
+        RawImage raw=picture.GetComponent<RawImage>();
+        raw.raycastTarget=false;
+        preview.Attach(raw,0,1f,"Bait4");
+
+        Text name=CreateText(row.transform,ShopCatalog.LureNames[variant],31,Color.white,TextAnchor.MiddleLeft);
+        Anchor(name.rectTransform,0,.5f,1,1,170,0,-232,-10);
+
+        Text description=CreateText(row.transform,ShopCatalog.LureDescriptions[variant],25,Detail,TextAnchor.MiddleLeft);
+        Anchor(description.rectTransform,0,0,1,.55f,170,10,-232,0);
+
+        int selected=variant;
+        Button button=CreateButton(row.transform,"EQUIP",()=>SelectLure(selected));
+        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-14,0),new Vector2(205,76));
+
+        LureRowView view=new LureRowView();
+        view.variant=variant;
+        view.button=button;
+        view.buttonImage=button.GetComponent<Image>();
+        view.buttonLabel=button.GetComponentInChildren<Text>();
+        rowViews.Add(view);
+    }
+
+    private void RefreshRows()
+    {
+        for(int i=0;i<rowViews.Count;i++)
+        {
+            LureRowView view=rowViews[i];
+            if(view==null || view.button==null)continue;
+
+            int variant=view.variant;
+            bool owned=progress.Data.OwnsLure(variant);
+            bool equipped=owned && progress.Data.baitEquipped==ShopCatalog.StarterLure && progress.Data.lureEquipped==variant;
+            string action;
+            bool interactable;
+
+            if(equipped)
+            {
+                action="EQUIPPED";
+                interactable=false;
+            }
+            else if(owned)
+            {
+                action="EQUIP";
+                interactable=!progress.ReadOnly;
+            }
+            else if(sectionIsShop)
+            {
+                action="BUY "+ShopCatalog.LurePrices[variant].ToString("N0");
+                interactable=!progress.ReadOnly && progress.Data.coins>=ShopCatalog.LurePrices[variant];
+            }
+            else
+            {
+                action="LOCKED";
+                interactable=false;
+            }
+
+            if(view.buttonLabel!=null)view.buttonLabel.text=action;
+            view.button.gameObject.name=action;
+            view.button.interactable=interactable;
+            if(view.buttonImage!=null)view.buttonImage.color=interactable?Teal:Disabled;
         }
     }
 
-    private int OwnedAlternativeCount()
+    private void SelectLure(int variant)
     {
-        int count=0;
-        for(int i=0;i<ShopCatalog.LureVariantCount;i++)
-            if(progress.Data.OwnsLure(i) && !(progress.Data.baitEquipped==ShopCatalog.StarterLure && progress.Data.lureEquipped==i))count++;
-        return count;
-    }
+        bool owned=progress.Data.OwnsLure(variant);
+        bool changed=owned ? progress.EquipLure(variant) : progress.BuyLure(variant);
+        if(!changed)
+        {
+            RefreshRows();
+            return;
+        }
 
-    private void CreateLureRow(Transform parent,int variant,bool shop,bool owned,bool equipped)
-    {
-        var row=new GameObject("Lure_"+variant,typeof(RectTransform),typeof(Image),typeof(LayoutElement),typeof(HorizontalLayoutGroup));
-        row.transform.SetParent(parent,false);
-        row.GetComponent<Image>().color=new Color(.06f,.18f,.20f,.96f);
-        row.GetComponent<LayoutElement>().preferredHeight=132f;
-        var horizontal=row.GetComponent<HorizontalLayoutGroup>();
-        horizontal.padding=new RectOffset(10,10,8,8);horizontal.spacing=12;
-        horizontal.childControlHeight=true;horizontal.childForceExpandHeight=true;
-        horizontal.childControlWidth=false;horizontal.childForceExpandWidth=false;
-
-        var imageObject=new GameObject("LurePreview",typeof(RectTransform),typeof(RawImage),typeof(LayoutElement));
-        imageObject.transform.SetParent(row.transform,false);
-        var imageLayout=imageObject.GetComponent<LayoutElement>();imageLayout.preferredWidth=112f;imageLayout.minWidth=112f;
-        var raw=imageObject.GetComponent<RawImage>();raw.color=Color.white;raw.raycastTarget=false;
-        preview.Attach(raw,0,1f,"Bait4");
-
-        var info=new GameObject("Info",typeof(RectTransform),typeof(LayoutElement),typeof(VerticalLayoutGroup));
-        info.transform.SetParent(row.transform,false);
-        var infoLayout=info.GetComponent<LayoutElement>();infoLayout.flexibleWidth=1f;infoLayout.minWidth=260f;
-        var infoGroup=info.GetComponent<VerticalLayoutGroup>();infoGroup.spacing=2;infoGroup.childControlHeight=true;infoGroup.childForceExpandHeight=false;
-        var name=CreateText(info.transform,ShopCatalog.LureNames[variant],26,Color.white,TextAnchor.MiddleLeft);name.GetComponent<LayoutElement>().preferredHeight=38f;
-        var description=CreateText(info.transform,ShopCatalog.LureDescriptions[variant],19,new Color(.78f,.90f,.91f),TextAnchor.MiddleLeft);description.GetComponent<LayoutElement>().preferredHeight=72f;
-
-        string action;
-        bool interactable=true;
-        if(equipped){action="EQUIPPED";interactable=false;}
-        else if(owned)action="EQUIP";
-        else if(shop){action=ShopCatalog.LurePrices[variant].ToString("N0")+" COINS";interactable=progress.Data.coins>=ShopCatalog.LurePrices[variant];}
-        else {action="LOCKED";interactable=false;}
-
-        int selected=variant;
-        var button=CreateButton(row.transform,action,()=>SelectLure(selected,owned));
-        var buttonLayout=button.GetComponent<LayoutElement>();buttonLayout.preferredWidth=180f;buttonLayout.minWidth=180f;
-        button.interactable=interactable;
-    }
-
-    private void SelectLure(int variant,bool wasOwned)
-    {
-        bool changed=wasOwned ? progress.EquipLure(variant) : progress.BuyLure(variant);
-        if(!changed)return;
         ShopCatalog.SetActiveLureVariant(progress.Data.lureEquipped);
         SyncShortcutName();
-        if(section!=null)Destroy(section);
-        section=null;
+        // Do not destroy/recreate this section here. Keeping the same row tree
+        // avoids the old scroll-to-top behavior while the save/UI refresh runs.
+        RefreshRows();
     }
 
     private Text CreateText(Transform parent,string value,int size,Color color,TextAnchor alignment)
     {
-        var go=new GameObject("Label",typeof(RectTransform),typeof(Text),typeof(LayoutElement));
+        GameObject go=new GameObject("Label",typeof(RectTransform),typeof(Text));
         go.transform.SetParent(parent,false);
-        var text=go.GetComponent<Text>();text.font=font;text.text=value;text.fontSize=size;text.color=color;text.alignment=alignment;text.raycastTarget=false;
-        text.horizontalOverflow=HorizontalWrapMode.Wrap;text.verticalOverflow=VerticalWrapMode.Truncate;
+        Text text=go.GetComponent<Text>();
+        text.font=font;
+        text.text=value;
+        text.fontSize=size;
+        text.color=color;
+        text.alignment=alignment;
+        text.raycastTarget=false;
+        text.horizontalOverflow=HorizontalWrapMode.Wrap;
+        text.verticalOverflow=VerticalWrapMode.Truncate;
+        text.resizeTextForBestFit=true;
+        text.resizeTextMinSize=22;
+        text.resizeTextMaxSize=size;
         return text;
     }
 
     private Button CreateButton(Transform parent,string caption,Action action)
     {
-        var go=new GameObject(caption,typeof(RectTransform),typeof(Image),typeof(Button),typeof(LayoutElement));
-        go.transform.SetParent(parent,false);
-        var image=go.GetComponent<Image>();image.color=new Color(.02f,.46f,.52f,.96f);
-        var button=go.GetComponent<Button>();button.targetGraphic=image;button.onClick.AddListener(()=>action());
-        var label=CreateText(go.transform,caption,21,Color.white,TextAnchor.MiddleCenter);
-        var rect=label.rectTransform;rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;rect.offsetMin=Vector2.zero;rect.offsetMax=Vector2.zero;
+        GameObject go=Panel(caption,parent,Teal);
+        Button button=go.AddComponent<Button>();
+        button.targetGraphic=go.GetComponent<Image>();
+        button.transition=Selectable.Transition.None;
+        button.onClick.AddListener(()=>action());
+        ColorBlock colors=button.colors;
+        colors.disabledColor=new Color(.4f,.4f,.4f,.45f);
+        button.colors=colors;
+        Text label=CreateText(go.transform,caption,28,Color.white,TextAnchor.MiddleCenter);
+        Full(label.rectTransform);
         return button;
+    }
+
+    private GameObject Panel(string name,Transform parent,Color color)
+    {
+        GameObject go=new GameObject(name,typeof(RectTransform),typeof(Image));
+        go.transform.SetParent(parent,false);
+        go.GetComponent<Image>().color=color;
+        return go;
     }
 
     private void SyncShortcutName()
     {
         if(progress.Data.baitEquipped!=ShopCatalog.StarterLure)return;
-        var raws=hud.GetComponentsInChildren<RawImage>(true);
+        RawImage[] raws=hud.GetComponentsInChildren<RawImage>(true);
         Transform shortcut=null;
         for(int i=0;i<raws.Length;i++)
             if(raws[i]!=null && raws[i].name=="EquippedBaitPicture"){shortcut=raws[i].transform.parent;break;}
         if(shortcut==null)return;
-        var labels=shortcut.GetComponentsInChildren<Text>(true);
+        Text[] labels=shortcut.GetComponentsInChildren<Text>(true);
         for(int i=0;i<labels.Length;i++)
         {
-            var label=labels[i];
+            Text label=labels[i];
             if(label==null || string.IsNullOrWhiteSpace(label.text))continue;
             for(int lure=0;lure<ShopCatalog.LureNames.Length;lure++)
             {
                 if(string.Equals(label.text,ShopCatalog.LureNames[lure],StringComparison.OrdinalIgnoreCase) || string.Equals(label.text,ShopCatalog.LureNames[lure].ToUpperInvariant(),StringComparison.OrdinalIgnoreCase))
-                {label.text=ShopCatalog.LureNames[progress.Data.lureEquipped].ToUpperInvariant();return;}
+                {
+                    label.text=ShopCatalog.LureNames[progress.Data.lureEquipped].ToUpperInvariant();
+                    return;
+                }
             }
         }
+    }
+
+    private static void Full(RectTransform rect)
+    {
+        rect.anchorMin=Vector2.zero;
+        rect.anchorMax=Vector2.one;
+        rect.offsetMin=Vector2.zero;
+        rect.offsetMax=Vector2.zero;
+    }
+
+    private static void Rect(RectTransform rect,Vector2 min,Vector2 max,Vector2 pivot,Vector2 position,Vector2 size)
+    {
+        rect.anchorMin=min;
+        rect.anchorMax=max;
+        rect.pivot=pivot;
+        rect.sizeDelta=size;
+        rect.anchoredPosition=position;
+    }
+
+    private static void Anchor(RectTransform rect,float x0,float y0,float x1,float y1,float left,float bottom,float right,float top)
+    {
+        rect.anchorMin=new Vector2(x0,y0);
+        rect.anchorMax=new Vector2(x1,y1);
+        rect.offsetMin=new Vector2(left,bottom);
+        rect.offsetMax=new Vector2(right,top);
     }
 }
