@@ -138,15 +138,12 @@ public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
         display.localScale = Vector3.one;
         display.gameObject.SetActive(true);
 
+        // Only touch renderer visibility. Do not force every child GameObject on:
+        // imported fish may intentionally keep alternate meshes/LODs inactive.
         Renderer[] renderers = display.GetComponentsInChildren<Renderer>(true);
         for (int i = 0; i < renderers.Length; i++)
-            if (renderers[i] != null)
+            if (renderers[i] != null && renderers[i].gameObject.activeInHierarchy)
                 renderers[i].enabled = true;
-
-        Transform[] displayNodes = display.GetComponentsInChildren<Transform>(true);
-        for (int i = 0; i < displayNodes.Length; i++)
-            if (displayNodes[i] != null)
-                displayNodes[i].gameObject.SetActive(true);
 
         return true;
     }
