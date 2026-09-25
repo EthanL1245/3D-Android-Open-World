@@ -153,14 +153,14 @@ public static class FishCatalog
         FishSpeciesDefinition species =
             Get(speciesId);
 
-        // Pond/special catches can legitimately be far below a species' normal
-        // ocean minimum. Rarity should not make a 5–10 cm fish worth hundreds of
-        // coins: undersized fish now collapse toward roughly pocket-change value.
-        // Normal-sized fish (at or above MinWeightKg) keep the old economy exactly.
-        if(weightKg<species.MinWeightKg)
+        // The Palm Pond and other special sources can generate genuinely tiny
+        // 5–15 cm fish. Species rarity does not make those miniature catches
+        // valuable: a 5 cm specimen is almost worthless and even a 15 cm rare fish
+        // tops out around 12 coins. Larger fish keep the existing economy exactly.
+        float length=FishSizeTable.LengthMetres(speciesId,weightKg);
+        if(length<=.15f)
         {
-            float ratio=Mathf.Clamp01(weightKg/Mathf.Max(.0001f,species.MinWeightKg));
-            float tiny=Mathf.Pow(ratio,.65f);
+            float tiny=Mathf.InverseLerp(.05f,.15f,length);
             return Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(2f,12f,tiny)),1,12);
         }
 
