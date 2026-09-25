@@ -5,7 +5,8 @@ using UnityEngine;
 /// <summary>
 /// Replaces the visible bobber with the authored lipless crankbait whenever a
 /// permanent lure is being cast/retrieved. FishingSystem remains authoritative
-/// for casting, bites and fights; this component is presentation-only.
+/// for casting, bites and fights. The lure's authored transform and animation
+/// are never rotated, flipped, rescaled or procedurally wobbled here.
 /// </summary>
 [DefaultExecutionOrder(900)]
 public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
@@ -13,7 +14,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
     private const string PrefabResource = "Fishing/LiplessCrankbaitGreenStriped";
     private const float RetrieveDepth = 0.20f;
     private const float FloatDepth = 0.015f;
-    private const float WorldScaleMultiplier = 2f;
 
     private FishingSystem fishing;
     private ShopProgress shopProgress;
@@ -34,9 +34,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
     private bool showingLure;
     private float sinkDepth;
-    private Vector3 previousLogicalPosition;
-    private Vector3 travelDirection = Vector3.forward;
-    private Quaternion smoothRotation = Quaternion.identity;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -67,8 +64,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         if (bobber == null)
             return;
 
-        bool lureState = ShouldShowLure(state, bobber);
-        if (!lureState)
+        if (!ShouldShowLure(state, bobber))
         {
             StopShowingLure();
             return;
@@ -78,14 +74,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             return;
 
         if (!showingLure)
-        {
             showingLure = true;
-            previousLogicalPosition = bobber.transform.position;
-            travelDirection = Vector3.ProjectOnPlane(fishing.transform.position - previousLogicalPosition, Vector3.up);
-            if (travelDirection.sqrMagnitude < 0.0001f) travelDirection = Vector3.forward;
-            travelDirection.Normalize();
-            smoothRotation = Quaternion.LookRotation(travelDirection, Vector3.up);
-        }
 
         SetBobberRenderers(false);
         lureRoot.SetActive(true);
@@ -96,19 +85,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         Vector3 logicalPosition = waiting && castPointField != null
             ? (Vector3)castPointField.GetValue(fishing)
             : bobber.transform.position;
-
-        Vector3 frameTravel = logicalPosition - previousLogicalPosition;
-        frameTravel.y = 0f;
-        if (frameTravel.sqrMagnitude > 0.000005f)
-            travelDirection = frameTravel.normalized;
-        else if (reeling)
-        {
-            Vector3 towardPlayer = fishing.transform.position - logicalPosition;
-            towardPlayer.y = 0f;
-            if (towardPlayer.sqrMagnitude > 0.0001f)
-                travelDirection = towardPlayer.normalized;
-        }
-        previousLogicalPosition = logicalPosition;
 
         float targetDepth = reeling ? RetrieveDepth : FloatDepth;
         float depthSpeed = reeling ? 0.70f : 0.38f;
@@ -123,31 +99,15 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
                 position.y += Mathf.Sin(Time.time * 2.6f) * 0.012f;
         }
 
-        Vector3 up = waiting ? GetWaterNormal(logicalPosition) : Vector3.up;
-        Quaternion heading = Quaternion.LookRotation(travelDirection, up);
-        float response = reeling ? 12f : 5f;
-        smoothRotation = Quaternion.Slerp(
-            smoothRotation,
-            heading,
-            1f - Mathf.Exp(-response * Time.deltaTime));
-
-        // The prefab origin is the authored head/line tie. Pull that point toward
-        // the player and let the rear body and treble hooks trail. LookRotation's
-        // up vector keeps the supplied model right-side-up; the authored Animator
-        // remains responsible for its lure/hook swing instead of us touching bones.
-        float vibration = reeling ? Mathf.Sin(Time.time * 31f) : 0f;
-        Quaternion pullMotion = Quaternion.Euler(
-            reeling ? 3.0f + Mathf.Sin(Time.time * 17f) * 1.0f : -1.0f,
-            reeling ? vibration * 2.5f : 0f,
-            reeling ? Mathf.Sin(Time.time * 27f + 0.8f) * 4.5f : Mathf.Sin(Time.time * 2.2f) * 1.2f);
-
+        // Translation is required to put the lure at the cast/retrieve point.
+        // Deliberately do NOT write rotation or scale. The prefab keeps the exact
+        // orientation and size produced by the authored import.
         lureRoot.transform.position = position;
-        lureRoot.transform.rotation = smoothRotation * pullMotion;
 
-        // FishingSystem's invisible logical bobber lives at the same head point,
-        // so distance/retrieval/fight handoff and the visible string agree exactly.
         bobber.transform.position = position;
 
+        // Use the supplied animation exactly. No hook/body bones are touched by
+        // this presentation component and no extra procedural wobble is added.
         if (lureAnimator != null)
             lureAnimator.speed = reeling ? 1f : 0f;
 
@@ -169,8 +129,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             return (int)activeBaitField.GetValue(fishing) == ShopCatalog.StarterLure;
         }
 
-        // activeBait is committed only after landing, so while the cast is in
-        // flight look at the currently equipped tackle selection instead.
         if (string.Equals(state, "Casting", StringComparison.Ordinal))
             return shopProgress != null && shopProgress.Data.baitEquipped == ShopCatalog.StarterLure;
 
@@ -184,20 +142,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         return hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
     }
 
-    private Vector3 GetWaterNormal(Vector3 position)
-    {
-        if (oceanWater == null) return Vector3.up;
-        const float sample = 0.20f;
-        float left = oceanWater.GetSurfaceHeight(position - Vector3.right * sample);
-        float right = oceanWater.GetSurfaceHeight(position + Vector3.right * sample);
-        float back = oceanWater.GetSurfaceHeight(position - Vector3.forward * sample);
-        float front = oceanWater.GetSurfaceHeight(position + Vector3.forward * sample);
-        Vector3 tangentX = new Vector3(sample * 2f, right - left, 0f);
-        Vector3 tangentZ = new Vector3(0f, front - back, sample * 2f);
-        Vector3 normal = Vector3.Cross(tangentZ, tangentX).normalized;
-        return normal.y < 0f ? -normal : normal;
-    }
-
     private bool EnsureLure()
     {
         if (lureRoot != null)
@@ -209,21 +153,17 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         lureRoot = Instantiate(prefab);
         lureRoot.name = "ActiveLiplessCrankbait";
-        lureRoot.transform.localScale *= WorldScaleMultiplier;
 
-        // Older generated prefabs and the current importer both define the root
-        // origin as the visible lure head/line eye. Re-anchor LineAttach there so
-        // scaling and the supplied animation can never leave a gap in the string.
+        // Keep the imported LineAttach exactly where the importer put it. Do not
+        // reparent or reset it, because doing so would shift the string away from
+        // the authored lure head.
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
         if (lineAttach == null)
         {
             GameObject attach = new GameObject("LineAttach");
             lineAttach = attach.transform;
+            lineAttach.SetParent(lureRoot.transform, false);
         }
-        lineAttach.SetParent(lureRoot.transform, false);
-        lineAttach.localPosition = Vector3.zero;
-        lineAttach.localRotation = Quaternion.identity;
-        lineAttach.localScale = Vector3.one;
 
         lureAnimator = lureRoot.GetComponentInChildren<Animator>(true);
         if (lureAnimator != null)
