@@ -15,6 +15,7 @@ public static class FishSizeTable
         new float[] {0.0016784f, 0.0138047f, 0.0473525f, 0.1135421f, 0.2237502f, 0.3894703f, 0.6222897f, 0.9338736f, 1.3359548f, 1.8403251f}, // Parupeneus spilurus
         new float[] {0.0018536f, 0.0151406f, 0.0517248f, 0.1236696f, 0.2431646f, 0.4224930f, 0.6740131f, 1.0101455f, 1.4433647f, 1.9861922f, 2.6511916f, 3.4509642f, 4.3981459f, 5.5054044f, 6.7854365f, 8.2509665f, 9.9147440f, 11.7895429f, 13.8881592f, 16.2234107f, 18.8081352f, 21.6551900f, 24.7774506f, 28.1878101f, 31.8991787f, 35.9244824f, 40.2766629f, 44.9686769f, 50.0134955f, 55.4241035f, 61.2134994f, 67.3946945f, 73.9807130f, 80.9845911f, 88.4193768f, 96.2981297f, 104.6339207f, 113.4398315f, 122.7289544f, 132.5143921f}, // Bigeye gameplay size curve (tuna-family approximation)
     };
+
     // Inverse of LengthMetres, so tiny pond catches retain their size in every view/save.
     public static float WeightForLength(int species,float metres)
     {
@@ -23,12 +24,28 @@ public static class FishSizeTable
         int low=(int)Math.Floor(index),high=Math.Min(low+1,row.Length-1);
         return row[low]+(row[high]-row[low])*(index-low);
     }
+
     public static float LengthMetres(int species,float kg)
     {
-        var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,species))];
+        var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
         if(float.IsNaN(kg) || kg<=0)return 0.05f;
-        // Legacy oversized catches keep their weight but cannot grow without limit.
-        if(kg>=weights[weights.Length-1])return weights.Length*0.05f;
+
+        if(kg>=weights[weights.Length-1])
+        {
+            // Open-ocean catches can now exceed the old gameplay weight ceiling.
+            // Continue the species' own final weight/length slope instead of
+            // visually clamping a 2x-weight fish to the same size as a coastal max.
+            int last=weights.Length-1;
+            float lastLength=weights.Length*.05f;
+            float previousLength=(weights.Length-1)*.05f;
+            double weightRatio=Math.Max(1.000001,weights[last]/weights[last-1]);
+            double lengthRatio=Math.Max(1.000001,lastLength/previousLength);
+            double exponent=Math.Log(weightRatio)/Math.Log(lengthRatio);
+            if(double.IsNaN(exponent) || double.IsInfinity(exponent) || exponent<1.5)exponent=3.0;
+            double extrapolated=lastLength*Math.Pow(kg/weights[last],1.0/exponent);
+            return (float)Math.Min(lastLength*1.8,Math.Max(lastLength,extrapolated));
+        }
+
         int hi=1;while(hi<weights.Length-1 && weights[hi]<kg)hi++;
         float t=(kg-weights[hi-1])/(weights[hi]-weights[hi-1]);
         return Math.Max(0.05f,(hi+t)*0.05f);
