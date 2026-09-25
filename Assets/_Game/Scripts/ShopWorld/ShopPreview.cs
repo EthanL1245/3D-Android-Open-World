@@ -20,13 +20,22 @@ public sealed class ShopPreview : MonoBehaviour
         target.enabled=false;
         string resolvedGear=ResolveGearKey(target,gear);
         string key=(fitWholeFish?"index:":"")+(resolvedGear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
-        if(cache.TryGetValue(key,out var ready)) {target.texture=ready;target.enabled=ready.IsCreated();if(target.enabled)return;cache.Remove(key);Destroy(ready);}
+        if(cache.TryGetValue(key,out var ready))
+        {
+            if(ready!=null && ready.IsCreated())
+            {
+                target.texture=ready;target.enabled=true;return;
+            }
+            cache.Remove(key);
+            if(ready!=null)Destroy(ready);
+        }
         requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,resolvedGear,fitWholeFish));else busy=false;});
     }
     private void Update() { if(!busy && requests.Count>0) {busy=true;requests.Dequeue()();} }
     private IEnumerator Render(RawImage target,string key,int species,float kg,string gear,bool fitWholeFish)
     {
-        if(cache.TryGetValue(key,out var existing)) {target.texture=existing;target.enabled=true;busy=false;yield break;}
+        if(cache.TryGetValue(key,out var existing) && existing!=null && existing.IsCreated())
+        {target.texture=existing;target.enabled=true;busy=false;yield break;}
         if(stage==null)
         {
             stage=new GameObject("InventoryPreviewStudio");stage.transform.position=new Vector3(10000+100*studioCount++,10000,10000);
@@ -137,12 +146,18 @@ public sealed class ShopPreview : MonoBehaviour
 
     private static string ResolveGearKey(RawImage target,string gear)
     {
+        // ShopWorldHUD historically asks for Bait4 before it knows which permanent
+        // lure variant is equipped. Resolve that request here, before any cache key
+        // or placeholder render is created. This removes both the old bait-symbol
+        // flash and the black preview that could appear after closing/reopening.
+        if(gear=="Bait4")return ShopCatalog.LurePreviewKey(ShopCatalog.ActiveLureVariant);
         if((gear!="Reel" && gear!="Rod") || target==null)return gear;
         bool reel=gear=="Reel";
         Transform row=target.transform;
         for(int i=0;i<8 && row!=null;i++,row=row.parent)
         {
             Text[] labels=row.GetComponentsInChildren<Text>(true);
+            if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 3 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel2";
             if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
             if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 3 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod2";
             if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod1";
@@ -234,6 +249,8 @@ public sealed class ShopPreview : MonoBehaviour
         };
         if(kind=="Bait4")
         {
+            // Kept only as a defensive fallback for old save/UI code. ResolveGearKey
+            // converts current lure requests to Lure# before reaching this branch.
             part(PrimitiveType.Capsule,Vector3.zero,new Vector3(.2f,.42f,.16f),new Color(.82f,.89f,.94f));
             part(PrimitiveType.Sphere,new Vector3(0,.28f,-.04f),new Vector3(.19f,.2f,.17f),new Color(.85f,.15f,.08f));
             part(PrimitiveType.Cylinder,new Vector3(0,-.5f,0),new Vector3(.025f,.12f,.025f),Color.gray);
@@ -262,11 +279,11 @@ public sealed class ShopPreview : MonoBehaviour
         if(rendering!=null){rendering.Release();Destroy(rendering);rendering=null;}
         if(studio!=null){studio.enabled=false;studio.targetTexture=null;}
         if(model!=null)Destroy(model);
-        if(cache.Count>96){foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();}
+        if(cache.Count>96){foreach(var t in cache.Values){if(t!=null){t.Release();Destroy(t);}}cache.Clear();}
     }
     public void Clear()
     {
-        Suspend();foreach(var t in cache.Values){t.Release();Destroy(t);}cache.Clear();
+        Suspend();foreach(var t in cache.Values){if(t!=null){t.Release();Destroy(t);}}cache.Clear();
     }
     private void OnDestroy(){Clear();if(stage!=null)Destroy(stage);if(itemMaterial!=null)Destroy(itemMaterial);}
 }
