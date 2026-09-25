@@ -83,7 +83,9 @@ public sealed class ShopPreview : MonoBehaviour
             model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"
                 ? Quaternion.Euler(0,-90,40)
                 : gear=="Reel"
-                    ? Quaternion.Euler(12,35,-12)
+                    // Match the supplied Blender reference: mounting bar level,
+                    // spool toward the lower-left/front and handle extending right.
+                    ? Quaternion.Euler(8,35,0)
                     : Quaternion.Euler(0,-90,0);
         }
 
@@ -100,8 +102,8 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else
         {
-            // Leave a little extra margin around lure hooks so the profile never clips.
-            float margin=lurePreview?0.66f:0.58f;
+            // Lure hooks and the tall reel/handle need a little extra breathing room.
+            float margin=lurePreview?0.66f:gear=="Reel"?0.64f:0.58f;
             studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
         }
