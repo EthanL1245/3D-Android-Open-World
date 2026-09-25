@@ -9,8 +9,15 @@ public static class FishingRules
     // it receives zero while the lure is in less than 1 m of water.
     public static bool LureBiteAllowed { get; set; } = true;
 
+    // 0 at the reef/coast and 1 far into open ocean. This is updated from the
+    // player's world position by OffshoreFishingRuntime. Coastal fishing keeps its
+    // existing size distribution exactly; only distant open-ocean fishing gains
+    // the giant-fish distribution below.
+    public static float OffshoreFactor { get; set; }
+
     public static float CastPower(float elapsed) => 1f-Mathf.Sqrt(1f-Mathf.PingPong(Mathf.Max(0,elapsed)/1.25f,1f));
     public static float CastDistance(float power,float maximum) => Mathf.Lerp(5f,maximum,Mathf.Clamp01(power));
+
     // Any continuous interval is usable; gaps and either end can be blocked.
     public static bool ContinuousCastRange(bool[] samples,out float minimumPower)
     {
@@ -20,13 +27,20 @@ public static class FishingRules
         {minimumPower=i/(float)(samples.Length-1);return true;}
         return false;
     }
+
     public static bool IsCastPowerAvailable(bool[] samples,float power)
     {
         if(samples==null || samples.Length<2)return false;
         int i=Mathf.Clamp((int)(Mathf.Clamp01(power)*(samples.Length-1)),0,samples.Length-2);
         return samples[i] && samples[i+1];
     }
-    public static float WeightAtDepth(int species,float depth,float random01)
+
+    public static float OffshoreMaximumWeight(int species)
+    {
+        return FishCatalog.Get(species).MaxWeightKg*2.25f;
+    }
+
+    private static float BaseWeightAtDepth(int species,float depth,float random01)
     {
         var fish=FishCatalog.Get(species);
         float deep=Mathf.InverseLerp(.6f,6f,depth);
@@ -34,6 +48,31 @@ public static class FishingRules
         float sample=Mathf.Pow(Mathf.Clamp01(random01),Mathf.Lerp(3.5f,.65f,deep));
         return Mathf.Lerp(fish.MinWeightKg,fish.MaxWeightKg,upper*sample);
     }
+
+    private static float ApplyOffshoreSize(int species,float normalWeight,float random01)
+    {
+        float offshore=Mathf.Clamp01(OffshoreFactor);
+        if(offshore<=0f)return normalWeight;
+
+        var fish=FishCatalog.Get(species);
+        float offshoreMaximum=OffshoreMaximumWeight(species);
+
+        // In truly distant water, the distribution shifts dramatically upward:
+        // giant candidates start around the old species maximum and extend to
+        // 2.25x it. The .55 exponent strongly favors the upper end. Because this
+        // is blended by OffshoreFactor, ordinary reef/coastal catches are not made
+        // smaller or otherwise retuned.
+        float giantRoll=Mathf.Pow(Mathf.Clamp01(random01),.55f);
+        float giant=Mathf.Lerp(fish.MaxWeightKg*.92f,offshoreMaximum,giantRoll);
+        float strength=Mathf.SmoothStep(0f,1f,offshore);
+        return Mathf.Lerp(normalWeight,Mathf.Max(normalWeight,giant),strength);
+    }
+
+    public static float WeightAtDepth(int species,float depth,float random01)
+    {
+        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,random01),random01);
+    }
+
     public static float WeightAtCastDistance(int species,float distance,float random01)
     {
         // Fire Shad (variant 2) intentionally uses the exact same fish-size
@@ -41,8 +80,10 @@ public static class FishingRules
         // the Red Snapper-heavy species table in ReefCatalog.
         float sizeBias=ShopCatalog.ActiveLureVariant==3 ? .18f : 0f;
         float sample=Mathf.Lerp(Mathf.Clamp01(random01),1f,sizeBias);
-        return WeightAtDepth(species,Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance)),sample);
+        float depth=Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance));
+        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,sample),sample);
     }
+
     public static float LureBiteChance(float castDistance,float retrievedFraction)
     {
         if(!LureBiteAllowed)return 0f;
@@ -52,6 +93,7 @@ public static class FishingRules
         float fullChance=Mathf.Clamp01(.5f*Mathf.Clamp01(castDistance/30f)*biteMultiplier);
         return 1f-Mathf.Pow(1f-fullChance,Mathf.Clamp01(retrievedFraction));
     }
+
     public static int MaxHealth(int species,float kg)
     {
         var fish=FishCatalog.Get(species);
