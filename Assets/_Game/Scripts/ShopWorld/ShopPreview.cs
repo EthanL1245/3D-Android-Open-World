@@ -144,6 +144,7 @@ public sealed class ShopPreview : MonoBehaviour
         {
             Text[] labels=row.GetComponentsInChildren<Text>(true);
             if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
+            if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 3 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod2";
             if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod1";
             if(row.GetComponent<LayoutElement>()!=null)break;
         }
