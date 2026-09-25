@@ -20,6 +20,10 @@ public sealed class LureGraphicOverride : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
+        ShopProgress saved=FindFirstObjectByType<ShopProgress>();
+        if(saved!=null)
+            ShopCatalog.SetActiveLureVariant(saved.Data.lureEquipped);
+
         ShopWorldHUD target=FindFirstObjectByType<ShopWorldHUD>();
         if(target!=null && target.GetComponent<LureGraphicOverride>()==null)
             target.gameObject.AddComponent<LureGraphicOverride>();
@@ -29,12 +33,13 @@ public sealed class LureGraphicOverride : MonoBehaviour
     {
         hud=GetComponent<ShopWorldHUD>();
         progress=FindFirstObjectByType<ShopProgress>();
-        preview=gameObject.AddComponent<ShopPreview>();
+        if(progress!=null)
+            ShopCatalog.SetActiveLureVariant(progress.Data.lureEquipped);
     }
 
     private void LateUpdate()
     {
-        if(hud==null || progress==null || preview==null)return;
+        if(hud==null || progress==null)return;
 
         int variant=Mathf.Clamp(progress.Data.lureEquipped,0,ShopCatalog.LureVariantCount-1);
         ShopCatalog.SetActiveLureVariant(variant);
@@ -52,10 +57,23 @@ public sealed class LureGraphicOverride : MonoBehaviour
             if(!equippedShortcut && !genericLureRow)continue;
 
             int id=image.GetInstanceID();
-            if(applied.TryGetValue(id,out string oldKey) && oldKey==key && image.texture!=null)continue;
+            if(applied.TryGetValue(id,out string oldKey) && oldKey==key && image.texture!=null && image.enabled)continue;
+
+            // Hide the legacy Bait4 image immediately. ShopPreview renders on an
+            // end-of-frame coroutine, so without this line the old placeholder was
+            // visible for the first frame the BAIT/LURES page was opened.
+            image.enabled=false;
             applied[id]=key;
-            preview.Attach(image,0,1f,key);
+            Preview().Attach(image,0,1f,key);
         }
+    }
+
+    private ShopPreview Preview()
+    {
+        if(preview!=null)return preview;
+        ShopPreview[] existing=GetComponents<ShopPreview>();
+        preview=existing.Length>0?existing[0]:gameObject.AddComponent<ShopPreview>();
+        return preview;
     }
 
     private bool ParentMentionsLure(Transform parent)
