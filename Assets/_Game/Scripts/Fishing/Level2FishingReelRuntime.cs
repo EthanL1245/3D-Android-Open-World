@@ -26,6 +26,11 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
         foreach(FishingSystem system in FindObjectsByType<FishingSystem>(FindObjectsSortMode.None))
             if(system!=null && system.GetComponent<Level2FishingReelRuntime>()==null)
                 system.gameObject.AddComponent<Level2FishingReelRuntime>();
+        EnsureShopCleanup();
+    }
+
+    private static void EnsureShopCleanup()
+    {
         foreach(ShopWorldHUD hud in FindObjectsByType<ShopWorldHUD>(FindObjectsSortMode.None))
             if(hud!=null && hud.GetComponent<ReelShopCleanup>()==null)
                 hud.gameObject.AddComponent<ReelShopCleanup>();
@@ -42,6 +47,7 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
 
     private void Start()
     {
+        EnsureShopCleanup();
         if(progress==null || fishing==null || reelPowerField==null || rodRootField==null){enabled=false;return;}
         bool migrated=false;
         if(progress.Data.reelOwned>ShopCatalog.MaxReelTier){progress.Data.reelOwned=ShopCatalog.MaxReelTier;migrated=true;}
@@ -54,8 +60,6 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
     private void LateUpdate()
     {
         if(progress==null || fishing==null)return;
-        // FishingSystem's own shop-gear method predates the real two-reel catalog
-        // and used 22% per placeholder tier. Override only this one multiplier.
         reelPowerField.SetValue(fishing,progress.Data.reelEquipped>=1?1.20f:1f);
         ApplyVisual(progress.Data.reelEquipped>=1?1:0);
     }
@@ -69,11 +73,9 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
     private void ApplyVisual(int tier)
     {
         GameObject rodRoot=rodRootField.GetValue(fishing) as GameObject;
-        if(rodRoot==null)return;
-        if(appliedTier==tier)return;
+        if(rodRoot==null || appliedTier==tier)return;
 
-        string resource=ShopCatalog.ReelPrefabResource(tier);
-        GameObject sourcePrefab=Resources.Load<GameObject>(resource);
+        GameObject sourcePrefab=Resources.Load<GameObject>(ShopCatalog.ReelPrefabResource(tier));
         if(sourcePrefab==null)
         {
             if(tier>0 && !warnedMissing)
@@ -101,8 +103,6 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
             if(sourceRenderer!=null && targetRenderer!=null)
             {
                 targetRenderer.sharedMaterials=sourceRenderer.sharedMaterials;
-                // Remove the old placeholder-tier gold tint. The authored texture
-                // should appear exactly as imported for both real reels.
                 targetRenderer.SetPropertyBlock(null);
             }
         }
