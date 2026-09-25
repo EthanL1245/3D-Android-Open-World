@@ -153,6 +153,17 @@ public static class FishCatalog
         FishSpeciesDefinition species =
             Get(speciesId);
 
+        // Pond/special catches can legitimately be far below a species' normal
+        // ocean minimum. Rarity should not make a 5–10 cm fish worth hundreds of
+        // coins: undersized fish now collapse toward roughly pocket-change value.
+        // Normal-sized fish (at or above MinWeightKg) keep the old economy exactly.
+        if(weightKg<species.MinWeightKg)
+        {
+            float ratio=Mathf.Clamp01(weightKg/Mathf.Max(.0001f,species.MinWeightKg));
+            float tiny=Mathf.Pow(ratio,.65f);
+            return Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(2f,12f,tiny)),1,12);
+        }
+
         float weightPercent =
             Mathf.InverseLerp(
                 species.MinWeightKg,
