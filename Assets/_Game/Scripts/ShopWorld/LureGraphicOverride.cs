@@ -54,7 +54,9 @@ public sealed class LureGraphicOverride : MonoBehaviour
         int variant=Mathf.Clamp(progress.Data.lureEquipped,0,ShopCatalog.LureVariantCount-1);
         string key=ShopCatalog.LurePreviewKey(variant);
         string expected="Inventory "+key;
-        bool valid=shortcutImage.texture!=null &&
+        RenderTexture rt=shortcutImage.texture as RenderTexture;
+        bool textureAlive=rt==null || rt.IsCreated();
+        bool valid=shortcutImage.texture!=null && textureAlive &&
             string.Equals(shortcutImage.texture.name,expected,StringComparison.Ordinal) &&
             shortcutImage.enabled;
 
