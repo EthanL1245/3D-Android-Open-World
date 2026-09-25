@@ -391,6 +391,10 @@ public class FishingSystem : MonoBehaviour
     }
     public void EquipRod()
     {
+        var boatPassenger=GetComponent<BoatPassenger>();
+        if(boatPassenger!=null && boatPassenger.Driving)return;
+        GetComponent<BoatSystem>()?.CancelPlacement();
+
         if(shopMode)return;
 
         if(MustStowForSwimming()){UnequipHands();return;}
@@ -419,6 +423,8 @@ public class FishingSystem : MonoBehaviour
 
     public void HoldFish(int inventoryIndex)
     {
+        GetComponent<BoatSystem>()?.CancelPlacement();
+
         if (inventory == null ||
             inventoryIndex < 0 ||
             inventoryIndex >=
@@ -4013,3 +4019,4 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+

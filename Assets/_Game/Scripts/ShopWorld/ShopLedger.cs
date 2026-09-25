@@ -10,6 +10,17 @@ using System.Collections.Generic;
 [Serializable] public sealed class ShopLedger
 {
     public int version = 1, coins;
+    public List<string> boats = new List<string>();
+    public string boatEquipped;
+    public bool OwnsBoat(string id) => !string.IsNullOrEmpty(id) && boats!=null && boats.Contains(id);
+    public bool EquipBoat(string id) { if(!OwnsBoat(id))return false;boatEquipped=id;return true; }
+    public bool BuyBoat(string id,int cost)
+    {
+        if(string.IsNullOrWhiteSpace(id) || cost<0 || OwnsBoat(id) || coins<cost)return false;
+        if(boats==null)boats=new List<string>();
+        coins-=cost;boats.Add(id);boatEquipped=id;return true;
+    }
+
     // rodOwned/reelOwned/lineOwned remain as the highest owned tier for backwards
     // compatibility. Ownership masks are authoritative. Buying a higher tier no
     // longer requires the previous one; lower tiers are marked owned automatically
@@ -223,3 +234,4 @@ using System.Collections.Generic;
         coins+=value; return true;
     }
 }
+

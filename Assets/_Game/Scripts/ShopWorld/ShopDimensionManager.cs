@@ -74,7 +74,9 @@ public sealed class ShopDimensionManager : MonoBehaviour
         Destination=destination; World=target;
         if(destination==0)
         {
-            Teleport(hasReturn?returnPosition:islandArrival.position,hasReturn?returnRotation:islandArrival.rotation);
+            var boats=GetComponent<BoatSystem>();
+            Transform dock=boats!=null?boats.IslandDock:null;
+            Teleport(dock!=null?dock.position:hasReturn?returnPosition:islandArrival.position,dock!=null?dock.rotation:hasReturn?returnRotation:islandArrival.rotation);
             RenderSettings.fog=oldFog; RenderSettings.fogColor=oldFogColor; RenderSettings.fogDensity=oldFogDensity;
         }
         else Teleport(target.spawn.position,target.spawn.rotation);
@@ -106,6 +108,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
     }
     private void Teleport(Vector3 position,Quaternion rotation)
     {
+        GetComponent<BoatSystem>()?.BeforeTeleport();
         var capsule=GetComponent<CharacterController>();
         capsule.enabled=false; transform.SetPositionAndRotation(position,rotation); capsule.enabled=true;
         controller.ResetMotion(); controller.ResetViewPitch(); Physics.SyncTransforms();
@@ -116,3 +119,4 @@ public sealed class ShopDimensionManager : MonoBehaviour
             Teleport(World.spawn.position,World.spawn.rotation);
     }
 }
+

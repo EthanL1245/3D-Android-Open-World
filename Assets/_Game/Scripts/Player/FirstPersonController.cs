@@ -182,8 +182,13 @@ public class FirstPersonController : MonoBehaviour
         jumpButton = button;
     }
 
+    public bool BoatUIBlocked => uiBlocked || menuOpen;
+    public Vector2 BoatInput => BoatUIBlocked?Vector2.zero:Vector2.ClampMagnitude(ReadMovementInput(),1);
     private void HandleMovement()
     {
+        var passenger=GetComponent<BoatPassenger>();
+        if(passenger!=null && passenger.Driving){IsSwimming=false;IsSprinting=false;return;}
+
         Vector2 input =
             Vector2.ClampMagnitude(
                 ReadMovementInput(),
@@ -721,3 +726,4 @@ public class FirstPersonController : MonoBehaviour
         }
     }
 }
+

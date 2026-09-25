@@ -588,6 +588,7 @@ public class FishingHUD : MonoBehaviour
             numberRect.offsetMax =
                 new Vector2(-4f, -3f);
 
+            if(i==1)system.GetComponent<BoatSystem>()?.BindSlot(slot);
             if (i == 0)
             {
                 rodSlotImage =
@@ -1246,3 +1247,4 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
