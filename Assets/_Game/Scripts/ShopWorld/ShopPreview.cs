@@ -62,19 +62,36 @@ public sealed class ShopPreview : MonoBehaviour
                 renderer.enabled=gear=="Reel"?reel:!reel;
             }
         }
-        model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"
-            ? Quaternion.Euler(0,-90,40)
-            : gear=="Reel"
-                ? Quaternion.Euler(12,35,-12)
-                : lurePreview
-                    ? Quaternion.Euler(0,-90,90)
+
+        if(lurePreview)
+        {
+            // Keep icons static and use the exact catalog orientation requested:
+            // broad side profile, nose/head on the left, tail on the right, and
+            // the belly hook hanging downward. This is computed from LineAttach +
+            // the two hook positions so all four authored models frame identically.
+            foreach(var animator in model.GetComponentsInChildren<Animator>(true))
+            {
+                animator.applyRootMotion=false;
+                animator.speed=0f;
+                animator.Update(0f);
+                animator.enabled=false;
+            }
+            OrientLureSideProfile(model);
+        }
+        else
+        {
+            model.transform.localRotation=gear=="Rod" || gear=="RodAssembly"
+                ? Quaternion.Euler(0,-90,40)
+                : gear=="Reel"
+                    ? Quaternion.Euler(12,35,-12)
                     : Quaternion.Euler(0,-90,0);
+        }
+
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
         if(renderers.Length==0){Destroy(model);busy=false;yield break;}
         Bounds bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
         if(gear==null && !fitWholeFish)
         {
-
             bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);
             // Common world-size frame: small fish fit; larger bodies extend off the right edge.
             studio.orthographicSize=0.26f;
@@ -83,7 +100,9 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else
         {
-            studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*0.58f;
+            // Leave a little extra margin around lure hooks so the profile never clips.
+            float margin=lurePreview?0.66f:0.58f;
+            studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
         }
         studio.transform.rotation=Quaternion.identity;
@@ -95,6 +114,71 @@ public sealed class ShopPreview : MonoBehaviour
         cache[key]=texture;rendering=null;if(target!=null){target.texture=texture;target.enabled=true;}
         busy=false;
     }
+
+    private static void OrientLureSideProfile(GameObject lure)
+    {
+        if(lure==null)return;
+        Transform lineAttach=FindDeepChild(lure.transform,"LineAttach");
+        Renderer[] renderers=lure.GetComponentsInChildren<Renderer>(true)
+            .Where(r=>r!=null && r.enabled && !IsUnderLightingRig(r.transform,lure.transform)).ToArray();
+        if(lineAttach==null || renderers.Length<2)return;
+
+        Renderer body=renderers[0];
+        float bodyScore=-1f;
+        for(int i=0;i<renderers.Length;i++)
+        {
+            Vector3 size=renderers[i].bounds.size;
+            float score=Mathf.Max(size.x,Mathf.Max(size.y,size.z))*Mathf.Max(0.000001f,size.x*size.y*size.z);
+            if(score>bodyScore){bodyScore=score;body=renderers[i];}
+        }
+
+        Vector3 centre=body.bounds.center;
+        Vector3 head=lineAttach.position-centre;
+        if(head.sqrMagnitude<0.000001f)return;
+        head.Normalize();
+
+        Renderer bellyHook=null;
+        Vector3 belly=Vector3.zero;
+        float bestPerpendicular=-1f;
+        for(int i=0;i<renderers.Length;i++)
+        {
+            Renderer candidate=renderers[i];
+            if(candidate==body)continue;
+            Vector3 fromBody=candidate.bounds.center-centre;
+            Vector3 perpendicular=fromBody-Vector3.Dot(fromBody,head)*head;
+            float score=perpendicular.sqrMagnitude;
+            if(score>bestPerpendicular)
+            {
+                bestPerpendicular=score;
+                bellyHook=candidate;
+                belly=perpendicular;
+            }
+        }
+        if(bellyHook==null || belly.sqrMagnitude<0.000001f)return;
+        belly.Normalize();
+
+        // Source basis: forward = nose, up = opposite the belly-hook direction.
+        // Target basis: nose points screen-left and belly points screen-down.
+        Quaternion sourceBasis=Quaternion.LookRotation(head,-belly);
+        Quaternion targetBasis=Quaternion.LookRotation(Vector3.left,Vector3.up);
+        Quaternion delta=targetBasis*Quaternion.Inverse(sourceBasis);
+        lure.transform.rotation=delta*lure.transform.rotation;
+    }
+
+    private static bool IsUnderLightingRig(Transform transform,Transform root)
+    {
+        for(Transform current=transform;current!=null && current!=root;current=current.parent)
+            if(current.name=="AuthoredLightingRig")return true;
+        return false;
+    }
+
+    private static Transform FindDeepChild(Transform root,string name)
+    {
+        Transform[] all=root.GetComponentsInChildren<Transform>(true);
+        for(int i=0;i<all.Length;i++)if(all[i]!=null && all[i].name==name)return all[i];
+        return null;
+    }
+
     private GameObject BuildItem(string kind)
     {
         var root=new GameObject(kind);root.transform.SetParent(stage.transform,false);
