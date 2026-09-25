@@ -24,7 +24,7 @@ public static class ShopCatalog
     public const int NeonBreachLureVariant=0;
     public const int FireShadLureVariant=2;
     public const int BloodyBaitLureVariant=4;
-    public const int MaxRodTier=1;
+    public const int MaxRodTier=2;
     public const int MaxReelTier=1;
 
     public static readonly string[] LureNames =
@@ -84,7 +84,12 @@ public static class ShopCatalog
 
     public static string RodPrefabResource(int tier)
     {
-        return tier>=1 ? "Fishing/FishingRodReelLevel2Rod" : "Fishing/FishingRodReel";
+        switch(tier)
+        {
+            case 2:return "Fishing/FishingRodReelLevel3Rod";
+            case 1:return "Fishing/FishingRodReelLevel2Rod";
+            default:return "Fishing/FishingRodReel";
+        }
     }
 
     public static string ReelPrefabResource(int tier)
@@ -102,12 +107,12 @@ public static class ShopCatalog
         new HabitatDefinition("garden", "Garden Lagoon", 5000, 25, 35f, 240f, 18f, 4f, 14f, true, true),
         new HabitatDefinition("lake", "Sanctuary Lake", 15000, 50, 120f, 1200f, 32f, 6f, 24f, true, true)
     };
-    public static readonly string[] RodNames = { "Woodland Rod", "Level 2 Fishing Rod", "REMOVED ROD", "REMOVED ROD" };
+    public static readonly string[] RodNames = { "Woodland Rod", "Level 2 Fishing Rod", "Level 3 Fishing Rod", "REMOVED ROD" };
     public static readonly string[] ReelNames = { "Starter Reel", "Level 2 Fishing Reel", "REMOVED REEL", "REMOVED REEL" };
     public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
     public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Neon Breach Crankbait" };
     public static readonly int[] BaitPrices = { 0, 35, 90, 180, 0 };
-    public static readonly int[] RodPrices = { 0, 2000, int.MaxValue, int.MaxValue };
+    public static readonly int[] RodPrices = { 0, 2000, 6000, int.MaxValue };
     public static readonly int[] ReelPrices = { 0, 1500, int.MaxValue, int.MaxValue };
     public static readonly int[] LinePrices = { 0, 100, 400, 1100 };
     public static readonly float[] LineBonus = { 0, 0, 0, 0 };
