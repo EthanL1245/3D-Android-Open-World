@@ -1,13 +1,14 @@
 using System;
+using System.Globalization;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Runtime support for the real Level 2 rod. It keeps Woodland Rod handling,
-/// tension, casting and reel behavior unchanged, swaps only the rod visual,
-/// doubles fish damage, and gives each damage pulse a 5% critical chance that
-/// doubles the Level 2 rod's already-doubled damage again.
+/// Runtime support for upgraded fishing rods. All upgraded rods retain Woodland
+/// Rod casting, line tension, flex and reel behavior. Level 2 deals 2x Woodland
+/// damage with a 5% 2x critical; Level 3 deals 3x Woodland damage with an 8%
+/// 2x critical. Only the visible RodBlank and damage output change.
 /// </summary>
 [DefaultExecutionOrder(960)]
 public sealed class Level2FishingRodRuntime : MonoBehaviour
@@ -18,7 +19,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     private FieldInfo stateField, hpField, maxHpField, healthField, pendingDamageField, unconsciousField;
     private int appliedTier=-1;
     private int observedHp=-1;
-    private bool warnedMissing;
+    private int warnedTier=-1;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -60,11 +61,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
            stateField==null || hpField==null || maxHpField==null || healthField==null || pendingDamageField==null || unconsciousField==null)
         { enabled=false; return; }
 
-        bool migrated=false;
-        if(progress.Data.rodOwned>ShopCatalog.MaxRodTier){progress.Data.rodOwned=ShopCatalog.MaxRodTier;migrated=true;}
-        if(progress.Data.rodEquipped>ShopCatalog.MaxRodTier){progress.Data.rodEquipped=ShopCatalog.MaxRodTier;migrated=true;}
-        if(progress.Data.rodEquipped>progress.Data.rodOwned){progress.Data.rodEquipped=progress.Data.rodOwned;migrated=true;}
-        if(migrated && !progress.ReadOnly)progress.Save();
+        if(progress.Data.EnsureGearOwnership() && !progress.ReadOnly)progress.Save();
         observedHp=(int)hpField.GetValue(fishing);
     }
 
@@ -72,13 +69,15 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     {
         if(progress==null || fishing==null)return;
         EnsureShopCleanup();
+        // Upgraded rods do not receive the old placeholder tension-control bonus.
         rodPowerField.SetValue(fishing,1f);
-        ApplyVisual(progress.Data.rodEquipped>=1?1:0);
+        int tier=Mathf.Clamp(progress.Data.rodEquipped,0,ShopCatalog.MaxRodTier);
+        ApplyVisual(tier);
         ClearRodTint();
-        ApplyDamageBonus();
+        ApplyDamageBonus(tier);
     }
 
-    private void ApplyDamageBonus()
+    private void ApplyDamageBonus(int tier)
     {
         int current=(int)hpField.GetValue(fishing);
         string state=stateField.GetValue(fishing)?.ToString()??string.Empty;
@@ -97,10 +96,13 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         }
 
         int woodlandDamage=observedHp-current;
-        if(progress.Data.rodEquipped>=1 && woodlandDamage>0 && current>0)
+        if(tier>0 && woodlandDamage>0 && current>0)
         {
-            bool critical=UnityEngine.Random.value<0.05f;
-            int extraMultiplier=critical?3:1;
+            int normalMultiplier=tier>=2?3:2;
+            float criticalChance=tier>=2?0.08f:0.05f;
+            bool critical=UnityEngine.Random.value<criticalChance;
+            int totalMultiplier=critical?normalMultiplier*2:normalMultiplier;
+            int extraMultiplier=totalMultiplier-1;
             int extra=Mathf.Min(current,woodlandDamage*extraMultiplier);
             if(extra>0)
             {
@@ -123,10 +125,11 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         GameObject sourcePrefab=Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(tier));
         if(sourcePrefab==null)
         {
-            if(tier>0 && !warnedMissing)
+            if(tier>0 && warnedTier!=tier)
             {
-                warnedMissing=true;
-                Debug.LogWarning("Level 2 rod model is not installed yet. Run Tools > Open World > Import Level 2 Fishing Rod (One Click). Woodland Rod visual is being used temporarily.");
+                warnedTier=tier;
+                string level=(tier+1).ToString(CultureInfo.InvariantCulture);
+                Debug.LogWarning("Level "+level+" rod model is not installed yet. Run Tools > Open World > Import Level "+level+" Fishing Rod (One Click). Woodland Rod visual is being used temporarily.");
             }
             return;
         }
@@ -148,7 +151,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         FishingRodView view=rodViewField.GetValue(fishing) as FishingRodView;
         if(view!=null)view.InitializePose();
         appliedTier=tier;
-        warnedMissing=false;
+        warnedTier=-1;
     }
 
     private void ClearRodTint()
@@ -168,13 +171,24 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     }
 }
 
+/// <summary>
+/// Keeps the generated Tackle Store UI aligned with the real gear rules without
+/// changing travel/equipment menus. Every purchasable tackle item may be bought
+/// directly; no previous tier is required.
+/// </summary>
 public sealed class RodShopCleanup : MonoBehaviour
 {
     private float nextScan;
+    private ShopProgress progress;
+
+    private void Awake(){progress=FindFirstObjectByType<ShopProgress>();}
+
     private void LateUpdate()
     {
         if(!ShopWorldHUD.MenuOpen || Time.unscaledTime<nextScan)return;
-        nextScan=Time.unscaledTime+0.08f;
+        nextScan=Time.unscaledTime+0.05f;
+        if(progress==null)progress=FindFirstObjectByType<ShopProgress>();
+
         foreach(Text text in GetComponentsInChildren<Text>(true))
         {
             if(text==null)continue;
@@ -185,10 +199,45 @@ public sealed class RodShopCleanup : MonoBehaviour
                 if(row!=null)row.SetActive(false);
                 continue;
             }
-            if(value.Contains("18% more tension control"))
-                text.text=value.Replace("18% more tension control","2x fish damage • 5% critical chance (critical = 2x Level 2 damage)")
-                               .Replace(" / Requires previous tier",string.Empty);
+
+            if(value.Contains(" / Requires previous tier"))
+                text.text=value.Replace(" / Requires previous tier",string.Empty);
+
+            GameObject parentRow=FindRow(text.transform);
+            if(parentRow==null)continue;
+            if(RowContains(parentRow,"Level 2 Fishing Rod") && text.text.Contains("18% more tension control"))
+                text.text=text.text.Replace("18% more tension control","2x fish damage • 5% critical chance • critical = 2x Level 2 damage");
+            else if(RowContains(parentRow,"Level 3 Fishing Rod") && text.text.Contains("36% more tension control"))
+                text.text=text.text.Replace("36% more tension control","3x fish damage • 8% critical chance • critical = 2x Level 3 damage");
         }
+
+        // ShopWorldHUD's original rows disabled a BUY button unless the previous
+        // tier was owned. The ledger now accepts any tier directly, so make the
+        // button reflect only affordability/read-only state instead.
+        foreach(Button button in GetComponentsInChildren<Button>(true))
+        {
+            Text label=button.GetComponentInChildren<Text>(true);
+            if(label==null)continue;
+            string value=label.text??string.Empty;
+            if(!value.StartsWith("BUY ",StringComparison.OrdinalIgnoreCase))continue;
+            int price=ParseBuyPrice(value);
+            if(price<0)continue;
+            button.interactable=progress!=null && !progress.ReadOnly && progress.Data.coins>=price;
+        }
+    }
+
+    private static int ParseBuyPrice(string label)
+    {
+        string digits="";
+        for(int i=4;i<label.Length;i++)if(char.IsDigit(label[i]))digits+=label[i];
+        return int.TryParse(digits,NumberStyles.None,CultureInfo.InvariantCulture,out int price)?price:-1;
+    }
+
+    private static bool RowContains(GameObject row,string value)
+    {
+        foreach(Text t in row.GetComponentsInChildren<Text>(true))
+            if(t!=null && string.Equals(t.text,value,StringComparison.OrdinalIgnoreCase))return true;
+        return false;
     }
 
     private static GameObject FindRow(Transform start)
