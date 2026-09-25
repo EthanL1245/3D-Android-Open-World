@@ -10,7 +10,12 @@ using System.Collections.Generic;
 [Serializable] public sealed class ShopLedger
 {
     public int version = 1, coins;
+    // rodOwned/reelOwned/lineOwned remain as the highest owned tier for backwards
+    // compatibility with existing saves and older helper code. The masks below are
+    // authoritative for ownership so tiers can now be purchased independently.
     public int rodOwned, reelOwned, lineOwned, rodEquipped, reelEquipped, lineEquipped, baitEquipped;
+    public int gearOwnershipVersion;
+    public int rodOwnedMask = 1, reelOwnedMask = 1, lineOwnedMask = 1;
     public int[] bait = new int[4];
     public int lureOwnedMask = 1;
     public int lureEquipped;
@@ -18,6 +23,57 @@ using System.Collections.Generic;
     public int catchStatsVersion;
     public int[] totalCaught;
     public float[] personalBestKg;
+
+    public bool EnsureGearOwnership()
+    {
+        bool changed=false;
+        if(gearOwnershipVersion<1)
+        {
+            // Legacy saves treated every tier below the highest tier as owned.
+            rodOwnedMask=LegacyGearMask(rodOwned);
+            reelOwnedMask=LegacyGearMask(reelOwned);
+            lineOwnedMask=LegacyGearMask(lineOwned);
+            gearOwnershipVersion=1;
+            changed=true;
+        }
+
+        if((rodOwnedMask&1)==0){rodOwnedMask|=1;changed=true;}
+        if((reelOwnedMask&1)==0){reelOwnedMask|=1;changed=true;}
+        if((lineOwnedMask&1)==0){lineOwnedMask|=1;changed=true;}
+
+        int rodHighest=HighestOwnedTier(rodOwnedMask);
+        int reelHighest=HighestOwnedTier(reelOwnedMask);
+        int lineHighest=HighestOwnedTier(lineOwnedMask);
+        if(rodOwned!=rodHighest){rodOwned=rodHighest;changed=true;}
+        if(reelOwned!=reelHighest){reelOwned=reelHighest;changed=true;}
+        if(lineOwned!=lineHighest){lineOwned=lineHighest;changed=true;}
+
+        if(!OwnsGear(GearKind.Rod,rodEquipped)){rodEquipped=0;changed=true;}
+        if(!OwnsGear(GearKind.Reel,reelEquipped)){reelEquipped=0;changed=true;}
+        if(!OwnsGear(GearKind.Line,lineEquipped)){lineEquipped=0;changed=true;}
+        return changed;
+    }
+
+    private static int LegacyGearMask(int highest)
+    {
+        highest=Math.Max(0,Math.Min(3,highest));
+        return (1<<(highest+1))-1;
+    }
+
+    private static int HighestOwnedTier(int mask)
+    {
+        for(int tier=3;tier>=0;tier--)if((mask&(1<<tier))!=0)return tier;
+        return 0;
+    }
+
+    private int GearMask(GearKind kind) => kind==GearKind.Rod?rodOwnedMask:kind==GearKind.Reel?reelOwnedMask:lineOwnedMask;
+    private void SetGearMask(GearKind kind,int mask)
+    {
+        if(kind==GearKind.Rod)rodOwnedMask=mask;
+        else if(kind==GearKind.Reel)reelOwnedMask=mask;
+        else lineOwnedMask=mask;
+    }
+    public bool OwnsGear(GearKind kind,int tier) => tier>=0 && tier<=3 && (GearMask(kind)&(1<<tier))!=0;
 
     public bool EnsureLures()
     {
@@ -97,17 +153,22 @@ using System.Collections.Generic;
     public int Owned(GearKind kind) => kind == GearKind.Rod ? rodOwned : kind == GearKind.Reel ? reelOwned : lineOwned;
     public int Equipped(GearKind kind) => kind == GearKind.Rod ? rodEquipped : kind == GearKind.Reel ? reelEquipped : lineEquipped;
     public HabitatOwnership Habitat(string id) => habitats.Find(h => h.id == id);
-    public bool Spend(int price) { if (price < 0 || coins < price) return false; coins -= price; return true; }
+    public bool Spend(int price) { if (price < 0 || price==int.MaxValue || coins < price) return false; coins -= price; return true; }
     public bool BuyGear(GearKind kind, int tier)
     {
-        if (tier < 1 || tier > 3 || tier != Owned(kind)+1 || !Spend(ShopCatalog.GearPrice(kind,tier))) return false;
-        if (kind == GearKind.Rod) rodOwned=tier;
-        else if (kind == GearKind.Reel) reelOwned=tier; else lineOwned=tier;
+        if(tier<1 || tier>3 || OwnsGear(kind,tier))return false;
+        int price=ShopCatalog.GearPrice(kind,tier);
+        if(!Spend(price))return false;
+        SetGearMask(kind,GearMask(kind)|(1<<tier));
+        int highest=HighestOwnedTier(GearMask(kind));
+        if(kind==GearKind.Rod)rodOwned=highest;
+        else if(kind==GearKind.Reel)reelOwned=highest;
+        else lineOwned=highest;
         return Equip(kind,tier);
     }
     public bool Equip(GearKind kind, int tier)
     {
-        if (tier < 0 || tier > Owned(kind)) return false;
+        if(!OwnsGear(kind,tier))return false;
         if (kind == GearKind.Rod) rodEquipped=tier;
         else if (kind == GearKind.Reel) reelEquipped=tier; else lineEquipped=tier;
         return true;
