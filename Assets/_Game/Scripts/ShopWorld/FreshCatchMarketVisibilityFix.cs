@@ -1,37 +1,89 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-// Runtime correction for already-installed Tideglass Quay scenes. Some scene
-// variants nest the counter pieces, so direct-child edits can miss the actual
-// counter and leave the frozen display buried inside the old tall countertop.
+// Runtime correction for both already-installed and newly-generated Tideglass
+// Quay scenes. Tideglass is loaded additively, so this fixer must survive the
+// initial island scene and run again after the Quay scene actually arrives.
 public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
 {
     private const float DisplayDrop = 0.55f;
+    private static FreshCatchMarketVisibilityFix instance;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
-        var host = new GameObject("FreshCatchMarketVisibilityFix");
+        if (instance != null)
+            return;
+
+        GameObject host = new GameObject("FreshCatchMarketVisibilityFix");
+        instance = host.AddComponent<FreshCatchMarketVisibilityFix>();
         DontDestroyOnLoad(host);
-        host.AddComponent<FreshCatchMarketVisibilityFix>();
     }
 
-    private IEnumerator Start()
+    private void Awake()
     {
-        // Let ShopMarketDisplay.Start() rebuild its trays/fish first.
-        yield return null;
-        yield return null;
-        Apply();
-        Destroy(gameObject);
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    private static void Apply()
+    private void OnEnable()
     {
-        ShopMarketDisplay[] markets =
-            FindObjectsByType<ShopMarketDisplay>(FindObjectsSortMode.None);
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
-        for (int i = 0; i < markets.Length; i++)
-            FixMarket(markets[i]);
+    private void Start()
+    {
+        StartCoroutine(ApplyWhenReady());
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        StartCoroutine(ApplyWhenReady());
+    }
+
+    private IEnumerator ApplyWhenReady()
+    {
+        // ShopMarketDisplay.Start() builds the trays and frozen fish. Additive
+        // sceneLoaded can fire before Start, so retry for several frames rather
+        // than applying once during the original island load and disappearing.
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            yield return null;
+
+            ShopMarketDisplay[] markets =
+                FindObjectsByType<ShopMarketDisplay>(FindObjectsSortMode.None);
+
+            if (markets.Length == 0)
+                continue;
+
+            for (int i = 0; i < markets.Length; i++)
+                FixMarket(markets[i]);
+
+            // One extra pass catches render bounds after animator/skinned-mesh
+            // initialization without leaving any polling work behind.
+            yield return null;
+            for (int i = 0; i < markets.Length; i++)
+                FixMarket(markets[i]);
+            yield break;
+        }
     }
 
     private static void FixMarket(ShopMarketDisplay market)
@@ -83,7 +135,7 @@ public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
         if (display == null)
             return;
 
-        // Keep the full frozen display lowered with the counter.
+        // Keep the complete display aligned with the lowered counter.
         display.localPosition = Vector3.down * DisplayDrop;
         display.gameObject.SetActive(true);
 
@@ -91,16 +143,13 @@ public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
             display.GetComponentsInChildren<Renderer>(true);
 
         for (int i = 0; i < displayRenderers.Length; i++)
-            displayRenderers[i].enabled = true;
+            if (displayRenderers[i] != null)
+                displayRenderers[i].enabled = true;
 
-        // Guarantee each frozen fish is physically above the real countertop,
-        // even if an older scene hierarchy had different parent offsets.
         float countertopTop = 0.86f;
         if (countertop != null)
         {
-            Renderer counterRenderer =
-                countertop.GetComponent<Renderer>();
-
+            Renderer counterRenderer = countertop.GetComponent<Renderer>();
             if (counterRenderer != null)
                 countertopTop = counterRenderer.bounds.max.y;
             else
@@ -110,11 +159,8 @@ public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
         for (int i = 0; i < display.childCount; i++)
         {
             Transform child = display.GetChild(i);
-            if (child == null ||
-                !child.name.StartsWith("Fresh "))
-            {
+            if (child == null || !child.name.StartsWith("Fresh "))
                 continue;
-            }
 
             child.gameObject.SetActive(true);
 
@@ -126,30 +172,29 @@ public sealed class FreshCatchMarketVisibilityFix : MonoBehaviour
 
             for (int r = 0; r < fishRenderers.Length; r++)
             {
-                fishRenderers[r].enabled = true;
+                Renderer renderer = fishRenderers[r];
+                if (renderer == null)
+                    continue;
+
+                renderer.enabled = true;
                 if (!found)
                 {
-                    bounds = fishRenderers[r].bounds;
+                    bounds = renderer.bounds;
                     found = true;
                 }
                 else
                 {
-                    bounds.Encapsulate(fishRenderers[r].bounds);
+                    bounds.Encapsulate(renderer.bounds);
                 }
             }
 
             if (!found)
                 continue;
 
-            float desiredBottom =
-                countertopTop + 0.20f;
-
-            if (bounds.min.y < desiredBottom)
-            {
-                child.position +=
-                    Vector3.up *
-                    (desiredBottom - bounds.min.y);
-            }
+            // Put the lowest point of every frozen fish visibly above the actual
+            // countertop, independent of old hierarchy offsets or prefab scale.
+            float desiredBottom = countertopTop + 0.20f;
+            child.position += Vector3.up * (desiredBottom - bounds.min.y);
         }
     }
 }
