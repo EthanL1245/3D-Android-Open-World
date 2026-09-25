@@ -28,6 +28,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
             if(system!=null && system.GetComponent<Level2FishingRodRuntime>()==null)
                 system.gameObject.AddComponent<Level2FishingRodRuntime>();
         EnsureShopCleanup();
+        EnsureDamagePresentation();
     }
 
     private static void EnsureShopCleanup()
@@ -35,6 +36,13 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         foreach(ShopWorldHUD hud in FindObjectsByType<ShopWorldHUD>(FindObjectsSortMode.None))
             if(hud!=null && hud.GetComponent<RodShopCleanup>()==null)
                 hud.gameObject.AddComponent<RodShopCleanup>();
+    }
+
+    private static void EnsureDamagePresentation()
+    {
+        foreach(FishingHUD hud in FindObjectsByType<FishingHUD>(FindObjectsSortMode.None))
+            if(hud!=null && hud.GetComponent<FishingDamagePresentation>()==null)
+                hud.gameObject.AddComponent<FishingDamagePresentation>();
     }
 
     private void Awake()
@@ -57,6 +65,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     private void Start()
     {
         EnsureShopCleanup();
+        EnsureDamagePresentation();
         if(progress==null || fishing==null || rodRootField==null || rodViewField==null || rodPowerField==null ||
            stateField==null || hpField==null || maxHpField==null || healthField==null || pendingDamageField==null || unconsciousField==null)
         { enabled=false; return; }
@@ -69,6 +78,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
     {
         if(progress==null || fishing==null)return;
         EnsureShopCleanup();
+        EnsureDamagePresentation();
         // Upgraded rods do not receive the old placeholder tension-control bonus.
         rodPowerField.SetValue(fishing,1f);
         int tier=Mathf.Clamp(progress.Data.rodEquipped,0,ShopCatalog.MaxRodTier);
@@ -112,6 +122,7 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
                 healthField.SetValue(fishing,current/(float)max);
                 int pending=(int)pendingDamageField.GetValue(fishing);
                 pendingDamageField.SetValue(fishing,pending+extra);
+                if(critical)FishingDamagePresentation.MarkCriticalHit();
             }
         }
         observedHp=current;
@@ -205,10 +216,12 @@ public sealed class RodShopCleanup : MonoBehaviour
 
             GameObject parentRow=FindRow(text.transform);
             if(parentRow==null)continue;
-            if(RowContains(parentRow,"Level 2 Fishing Rod") && text.text.Contains("18% more tension control"))
-                text.text=text.text.Replace("18% more tension control","2x fish damage • 5% critical chance • critical = 2x Level 2 damage");
+            if(RowContains(parentRow,"Woodland Rod") && text.text.Contains("0% more tension control"))
+                text.text=text.text.Replace("0% more tension control","Damage: 2–4 per burst");
+            else if(RowContains(parentRow,"Level 2 Fishing Rod") && text.text.Contains("18% more tension control"))
+                text.text=text.text.Replace("18% more tension control","Damage: 4–8 per burst • 5% critical chance • critical hits deal 2x damage");
             else if(RowContains(parentRow,"Level 3 Fishing Rod") && text.text.Contains("36% more tension control"))
-                text.text=text.text.Replace("36% more tension control","3x fish damage • 8% critical chance • critical = 2x Level 3 damage");
+                text.text=text.text.Replace("36% more tension control","Damage: 6–12 per burst • 8% critical chance • critical hits deal 2x damage");
         }
 
         // ShopWorldHUD's original rows disabled a BUY button unless the previous
