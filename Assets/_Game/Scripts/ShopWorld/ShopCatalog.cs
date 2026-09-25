@@ -24,6 +24,7 @@ public static class ShopCatalog
     public const int NeonBreachLureVariant=0;
     public const int FireShadLureVariant=2;
     public const int BloodyBaitLureVariant=4;
+    public const int MaxReelTier=1;
 
     public static readonly string[] LureNames =
     {
@@ -34,8 +35,6 @@ public static class ShopCatalog
         "Bloody Bait Crankbait"
     };
 
-    // Every permanent crankbait has the same shop price. Variant 0 may already
-    // be owned by legacy/starter saves, but its catalog price is still 500.
     public static readonly int[] LurePrices =
     {
         500,
@@ -77,11 +76,14 @@ public static class ShopCatalog
         }
     }
 
-    // Every lure gets its own preview cache key so ShopPreview always renders
-    // the correct authored prefab instead of reusing the old placeholder.
     public static string LurePreviewKey(int variant)
     {
         return "Lure"+Math.Max(0,Math.Min(LureVariantCount-1,variant));
+    }
+
+    public static string ReelPrefabResource(int tier)
+    {
+        return tier>=1 ? "Fishing/FishingRodReelLevel2" : "Fishing/FishingRodReel";
     }
 
     public static readonly HabitatDefinition[] Habitats = {
@@ -95,14 +97,14 @@ public static class ShopCatalog
         new HabitatDefinition("lake", "Sanctuary Lake", 15000, 50, 120f, 1200f, 32f, 6f, 24f, true, true)
     };
     public static readonly string[] RodNames = { "Woodland Rod", "Coastal Carbon", "Offshore Carbon", "Bluewater Elite" };
-    public static readonly string[] ReelNames = { "Starter Reel", "Smooth Drag", "Precision Drag", "Deepwater Pro" };
+    public static readonly string[] ReelNames = { "Starter Reel", "Level 2 Fishing Reel", "REMOVED REEL", "REMOVED REEL" };
     public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
     public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Neon Breach Crankbait" };
     public static readonly int[] BaitPrices = { 0, 35, 90, 180, 0 };
     public static readonly int[] RodPrices = { 0, 180, 650, 1800 };
-    public static readonly int[] ReelPrices = { 0, 160, 550, 1500 };
+    public static readonly int[] ReelPrices = { 0, 1500, int.MaxValue, int.MaxValue };
     public static readonly int[] LinePrices = { 0, 100, 400, 1100 };
-    public static readonly float[] LineBonus = { 0, 0, 0, 0 }; // Fixed 40 m spool; tiers improve tolerance.
+    public static readonly float[] LineBonus = { 0, 0, 0, 0 };
     public static HabitatDefinition Habitat(string id) => Array.Find(Habitats, h => h.id == id);
     public static string GearName(GearKind kind, int tier) => (kind == GearKind.Rod ? RodNames : kind == GearKind.Reel ? ReelNames : LineNames)[tier];
     public static int GearPrice(GearKind kind, int tier) => (kind == GearKind.Rod ? RodPrices : kind == GearKind.Reel ? ReelPrices : LinePrices)[tier];
