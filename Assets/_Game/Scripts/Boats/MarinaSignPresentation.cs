@@ -1,17 +1,21 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Repairs the generated Suncrest Marina lettering at runtime. The old TextMesh was
-/// offset/scaled in a way that could intersect the sign and was only present on one
-/// face. These two labels sit just above the wood on both faces, stay parented to
-/// the sign, and opt out of occlusion culling so the lettering remains stable at
-/// distance without becoming a camera-facing billboard.
+/// Keeps one fitted SUNCREST MARINA label physically attached to the wooden sign.
+/// The label never billboards around the camera; it only swaps to the opposite sign
+/// face when the player walks behind it. Using one visible TextMesh at a time avoids
+/// the double-sided font shader drawing front/back copies on top of each other.
 /// </summary>
+[DefaultExecutionOrder(-900)]
 public sealed class MarinaSignPresentation : MonoBehaviour
 {
-    private const string FrontName="Marina lettering stable front";
-    private const string BackName="Marina lettering stable back";
+    private const string StableName="Marina lettering stable";
+    private Transform sign;
+    private Transform label;
+    private Camera view;
+    private bool fitted;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -21,63 +25,110 @@ public sealed class MarinaSignPresentation : MonoBehaviour
             marina.AddComponent<MarinaSignPresentation>();
     }
 
-    private void Start(){Repair();}
+    private void Awake(){Repair();}
 
     private void Repair()
     {
-        Transform sign=FindDeepChild(transform,"Marina sign");
+        sign=FindDeepChild(transform,"Marina sign");
         if(sign==null)return;
 
-        // Hide/remove the original single-face text immediately so it cannot
-        // z-fight with the repaired lettering for even one frame.
-        Transform[] children=sign.GetComponentsInChildren<Transform>(true);
-        foreach(Transform child in children)
+        // Remove every older lettering implementation first. The built-in TextMesh
+        // font material is double-sided, so keeping two opposite labels caused the
+        // mirrored/stacked text seen in game.
+        TextMesh[] old=sign.GetComponentsInChildren<TextMesh>(true);
+        foreach(TextMesh text in old)
         {
-            if(child==null || child==sign || child.name==FrontName || child.name==BackName)continue;
-            if(child.name=="Marina lettering")
-            {
-                child.gameObject.SetActive(false);
-                Destroy(child.gameObject);
-            }
+            if(text==null)continue;
+            text.gameObject.SetActive(false);
+            Destroy(text.gameObject);
         }
 
-        EnsureFace(sign,FrontName,-.515f,Quaternion.identity);
-        EnsureFace(sign,BackName,.515f,Quaternion.Euler(0f,180f,0f));
-    }
-
-    private static void EnsureFace(Transform sign,string objectName,float localZ,Quaternion localRotation)
-    {
-        Transform existing=sign.Find(objectName);
-        GameObject go=existing!=null?existing.gameObject:new GameObject(objectName,typeof(TextMesh));
+        GameObject go=new GameObject(StableName,typeof(TextMesh));
         go.transform.SetParent(sign,false);
-        go.transform.localPosition=new Vector3(0f,0f,localZ);
-        go.transform.localRotation=localRotation;
+        label=go.transform;
 
-        // Counter the primitive sign's non-uniform transform so the font is not
-        // stretched with the wooden cube.
-        Vector3 signScale=sign.localScale;
-        go.transform.localScale=new Vector3(
-            1f/Mathf.Max(.001f,Mathf.Abs(signScale.x)),
-            1f/Mathf.Max(.001f,Mathf.Abs(signScale.y)),
-            1f/Mathf.Max(.001f,Mathf.Abs(signScale.z)));
-
-        TextMesh text=go.GetComponent<TextMesh>();
-        text.text="SUNCREST MARINA";
-        text.anchor=TextAnchor.MiddleCenter;
-        text.alignment=TextAlignment.Center;
-        text.characterSize=.14f;
-        text.fontSize=56;
-        text.color=Color.white;
-        text.richText=false;
+        TextMesh mesh=go.GetComponent<TextMesh>();
+        Font font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        mesh.font=font;
+        mesh.text="SUNCREST MARINA";
+        mesh.anchor=TextAnchor.MiddleCenter;
+        mesh.alignment=TextAlignment.Center;
+        mesh.characterSize=1f;
+        mesh.fontSize=64;
+        mesh.color=Color.white;
+        mesh.richText=false;
 
         MeshRenderer renderer=go.GetComponent<MeshRenderer>();
         if(renderer!=null)
         {
+            if(font!=null)renderer.sharedMaterial=font.material;
             renderer.shadowCastingMode=ShadowCastingMode.Off;
             renderer.receiveShadows=false;
             renderer.allowOcclusionWhenDynamic=false;
             renderer.sortingOrder=20;
         }
+
+        // Start harmlessly tiny. Once Unity has generated TextMesh geometry on the
+        // next frame, FitToSign measures the real bounds and scales it exactly to
+        // this sign instead of relying on font-size guesses.
+        SetWorldScale(.001f);
+        UpdateFace();
+        StartCoroutine(FitNextFrame());
+    }
+
+    private IEnumerator FitNextFrame()
+    {
+        yield return null;
+        FitToSign();
+    }
+
+    private void FitToSign()
+    {
+        if(sign==null || label==null)return;
+        Renderer renderer=label.GetComponent<Renderer>();
+        if(renderer==null)return;
+
+        Vector3 size=renderer.bounds.size;
+        if(size.x<0.000001f || size.y<0.000001f)return;
+
+        float signWidth=Vector3.Distance(sign.TransformPoint(new Vector3(-.5f,0,0)),sign.TransformPoint(new Vector3(.5f,0,0)));
+        float signHeight=Vector3.Distance(sign.TransformPoint(new Vector3(0,-.5f,0)),sign.TransformPoint(new Vector3(0,.5f,0)));
+        float worldScale=Mathf.Min(signWidth*.88f/size.x,signHeight*.62f/size.y)*.001f;
+        SetWorldScale(worldScale);
+        fitted=true;
+    }
+
+    private void SetWorldScale(float uniformWorldScale)
+    {
+        if(sign==null || label==null)return;
+        Vector3 parentScale=sign.lossyScale;
+        label.localScale=new Vector3(
+            uniformWorldScale/Mathf.Max(.000001f,Mathf.Abs(parentScale.x)),
+            uniformWorldScale/Mathf.Max(.000001f,Mathf.Abs(parentScale.y)),
+            uniformWorldScale/Mathf.Max(.000001f,Mathf.Abs(parentScale.z)));
+    }
+
+    private void LateUpdate()
+    {
+        if(sign==null || label==null)
+        {
+            Repair();
+            return;
+        }
+        UpdateFace();
+        if(!fitted)FitToSign();
+    }
+
+    private void UpdateFace()
+    {
+        if(sign==null || label==null)return;
+        if(view==null)view=Camera.main!=null?Camera.main:FindFirstObjectByType<Camera>();
+
+        bool positiveSide=view!=null && Vector3.Dot(view.transform.position-sign.position,sign.forward)>=0f;
+        // Primitive cube face is at local +/-0.5 Z. The small extra offset keeps the
+        // glyphs above the wood so there is no z-fighting at any viewing distance.
+        label.localPosition=new Vector3(0f,0f,positiveSide?.535f:-.535f);
+        label.localRotation=positiveSide?Quaternion.Euler(0f,180f,0f):Quaternion.identity;
     }
 
     private static Transform FindDeepChild(Transform root,string name)
