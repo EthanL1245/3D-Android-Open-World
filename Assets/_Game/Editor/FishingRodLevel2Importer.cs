@@ -135,12 +135,13 @@ if best is None: raise RuntimeError('No mesh object exists in the Level 2 rod Bl
 eo=best.evaluated_get(deps); me=eo.to_mesh(preserve_all_data_layers=True,depsgraph=deps)
 try:
     me.calc_loop_triangles(); uv_layer=me.uv_layers.active.data if me.uv_layers.active else None
-    verts=[]; uvs=[]; tris=[]; world=best.matrix_world
+    verts=[]; uvs=[]; tris=[]; world=best.matrix_world; flip=world.to_3x3().determinant()<0
     for tri in me.loop_triangles:
         ids=[]
         for li in tri.loops:
             loop=me.loops[li]; p=world @ me.vertices[loop.vertex_index].co; uv=uv_layer[li].uv if uv_layer else (0.0,0.0)
             ids.append(len(verts)//3); verts.extend((p.x,p.y,p.z)); uvs.extend((float(uv[0]),float(uv[1])))
+        if flip: ids[1],ids[2]=ids[2],ids[1]
         tris.extend(ids)
     os.makedirs(os.path.dirname(out_path),exist_ok=True)
     with open(out_path,'w',encoding='utf-8') as f: json.dump({'vertices':verts,'uv':uvs,'triangles':tris},f,separators=(',',':'))
@@ -206,10 +207,15 @@ finally: eo.to_mesh_clear()
             vertices[i]=new Vector3((Axis(p,a)-ca)*scale,along*scale,(Axis(p,b)-cb)*scale);
             uv[i]=new Vector2(g.uv[i*2],g.uv[i*2+1]);
         }
-        Mesh mesh=new Mesh{name="Level2FishingRod",vertices=vertices,uv=uv,triangles=g.triangles};
-        if(count>65535)mesh.indexFormat=IndexFormat.UInt32;mesh.RecalculateNormals();mesh.RecalculateBounds();mesh.RecalculateTangents();return mesh;
+        int[] triangles=(int[])g.triangles.Clone();
+        Vector3 tx=MapDirection(Vector3.right,longAxis,a,b,sign),ty=MapDirection(Vector3.up,longAxis,a,b,sign),tz=MapDirection(Vector3.forward,longAxis,a,b,sign);
+        if(Vector3.Dot(Vector3.Cross(tx,ty),tz)<0f)
+            for(int i=0;i<triangles.Length;i+=3){int swap=triangles[i+1];triangles[i+1]=triangles[i+2];triangles[i+2]=swap;}
+        Mesh mesh=new Mesh{name="Level2FishingRod"};if(count>65535)mesh.indexFormat=IndexFormat.UInt32;
+        mesh.vertices=vertices;mesh.uv=uv;mesh.triangles=triangles;mesh.RecalculateNormals();mesh.RecalculateBounds();mesh.RecalculateTangents();return mesh;
     }
 
+    private static Vector3 MapDirection(Vector3 v,int longAxis,int a,int b,float sign)=>new Vector3(Axis(v,a),Axis(v,longAxis)*sign,Axis(v,b));
     private static float Axis(Vector3 v,int axis)=>axis==0?v.x:axis==1?v.y:v.z;
 
     private static Material BuildMaterial()
