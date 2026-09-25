@@ -93,7 +93,13 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         string state=stateField.GetValue(fishing)?.ToString()??string.Empty;
         bool unconscious=(bool)unconsciousField.GetValue(fishing);
 
-        if(state!="Fighting" || unconscious)
+        if(state!="Fighting")
+        {
+            FishingDamagePresentation.ClearPendingCritical();
+            observedHp=current;
+            return;
+        }
+        if(unconscious)
         {
             observedHp=current;
             return;
@@ -218,10 +224,10 @@ public sealed class RodShopCleanup : MonoBehaviour
             if(parentRow==null)continue;
             if(RowContains(parentRow,"Woodland Rod") && text.text.Contains("0% more tension control"))
                 text.text=text.text.Replace("0% more tension control","Damage: 2–4 per burst");
-            else if(RowContains(parentRow,"Level 2 Fishing Rod") && text.text.Contains("18% more tension control"))
-                text.text=text.text.Replace("18% more tension control","Damage: 4–8 per burst • 5% critical chance • critical hits deal 2x damage");
-            else if(RowContains(parentRow,"Level 3 Fishing Rod") && text.text.Contains("36% more tension control"))
-                text.text=text.text.Replace("36% more tension control","Damage: 6–12 per burst • 8% critical chance • critical hits deal 2x damage");
+            else if(RowContains(parentRow,"Level 2 Fishing Rod") && (text.text.Contains("18% more tension control") || text.text.Contains("2x fish damage")))
+                text.text="Damage: 4–8 per burst • 5% critical chance • critical hits deal 2x damage";
+            else if(RowContains(parentRow,"Level 3 Fishing Rod") && (text.text.Contains("36% more tension control") || text.text.Contains("3x fish damage")))
+                text.text="Damage: 6–12 per burst • 8% critical chance • critical hits deal 2x damage";
         }
 
         // ShopWorldHUD's original rows disabled a BUY button unless the previous
