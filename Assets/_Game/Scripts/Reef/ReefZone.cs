@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Scene geometry bounds, used by ambient habitat queries and the island index.
+// Scene geometry reference used by habitat queries, offshore-distance tuning and the island index.
 public sealed class ReefZone : MonoBehaviour
 {
     public Vector3 center;
@@ -12,24 +12,12 @@ public sealed class ReefZone : MonoBehaviour
 
     public bool Contains(Vector3 point)
     {
-        Vector3 d=point-center;
-        float rx=Mathf.Max(1f,islandRadiusX+reefWidth);
-        float rz=Mathf.Max(1f,islandRadiusZ+reefWidth);
-        bool insideReef=d.x*d.x/(rx*rx)+d.z*d.z/(rz*rz)<=1f;
-        if(insideReef)return true;
-
-        // The old implementation made the edge of the installed reef an invisible
-        // fishing wall. Keep rejecting finite terrain outside the authored reef,
-        // but once the player/cast is beyond every terrain tile it is genuine open
-        // ocean and is valid fishing water.
-        foreach(Terrain terrain in Terrain.activeTerrains)
-        {
-            if(terrain==null || terrain.terrainData==null)continue;
-            Vector3 local=point-terrain.transform.position;
-            Vector3 size=terrain.terrainData.size;
-            if(local.x>=0f && local.z>=0f && local.x<=size.x && local.z<=size.z)
-                return false;
-        }
+        // FishingSystem and AmbientFishManager both perform their own actual-water
+        // depth/terrain validation after this call. The previous ellipse therefore
+        // acted only as an invisible wall that disabled otherwise-valid ocean once
+        // a boat travelled beyond Suncrest's reef. Suncrest now intentionally has
+        // continuous fishable ocean; OpenOceanDistance still preserves the reef
+        // boundary for coastal-vs-offshore size tuning.
         return true;
     }
 
