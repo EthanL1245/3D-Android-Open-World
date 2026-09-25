@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 public sealed class ShopWorldHUD : MonoBehaviour
 {
     public static bool MenuOpen { get; private set; }
+    private const string HabitatAddPrefix="habitat-add:";
     private ShopProgress progress;
     private ShopDimensionManager travel;
     private FishingSystem fishing;
@@ -20,8 +21,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Text heading, wallet, feedback, nearLabel;
     private string page="travel", message="";
     private bool dirty;
-    private string shopSession, bagPicker;
-    private int bagSort, speciesFilter=-1;
+    private string shopSession, bagPicker, habitatPicker;
+    private int bagSort, speciesFilter=-1, habitatSort, habitatSpeciesFilter=-1;
     private GameObject menuShortcut, indexShortcut, baitShortcut;
     private RawImage baitPicture;
     private Text baitQuantity, baitName;
@@ -51,7 +52,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)
         { if(MenuOpen) Close(); else Open("travel"); }
         menuShortcut.SetActive(!MenuOpen);indexShortcut.SetActive(!MenuOpen);baitShortcut.SetActive(!MenuOpen);RefreshBaitShortcut();
-        if(shopSession==null && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
+        bool independentPage=page=="bait" || page.StartsWith(HabitatAddPrefix,StringComparison.Ordinal);
+        if(shopSession==null && !independentPage && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
         string nearest=travel.Nearest();
         nearbyButton.SetActive(!MenuOpen && nearest!=null && !travel.Traveling);
         if(nearest!=null) nearLabel.text=nearest=="gear" ? "OPEN TACKLE STORE" : nearest=="market" ? "SELL FISH" : "VIEW HABITAT";
@@ -66,6 +68,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(root==null || travel.Traveling) return;
         if(MenuOpen && shopSession!=null && destination!=shopSession && !(shopSession=="market" && destination=="sell-confirm"))return;
         if(MenuOpen && page==destination && !dirty)return;
+        if(destination!=page) message="";
         if(!MenuOpen)
         {
             shopSession=destination=="gear" || destination=="market"?destination:null;
@@ -78,7 +81,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     public void Close()
     {
         if(travel!=null && travel.Traveling) return;
-        MenuOpen=false;shopSession=null;bagPicker=null;
+        MenuOpen=false;shopSession=null;bagPicker=null;habitatPicker=null;message="";
         if(previews!=null)previews.Suspend();
         if(modal!=null) modal.SetActive(false);
         if(player!=null) player.SetMenuOpen(false);
@@ -135,15 +138,23 @@ public sealed class ShopWorldHUD : MonoBehaviour
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
         wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":"SUNCREST REEF")}";
         feedback.text=progress.ReadOnly ? progress.Notice : message;
+        string habitatAddId=page.StartsWith(HabitatAddPrefix,StringComparison.Ordinal)?page.Substring(HabitatAddPrefix.Length):null;
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
         bool index=page=="islands" || page=="reef-fish";
         if(index)heading.text=page=="islands"?"ISLAND INDEX":"SUNCREST REEF • FISH INDEX";
         if(page=="bait")heading.text="BAIT / LURES";
-        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !index && page!="bait");
+        if(habitatAddId!=null)
+        {
+            var habitat=ShopCatalog.Habitat(habitatAddId);
+            heading.text=habitat!=null?"ADD FISH • "+habitat.name.ToUpperInvariant():"ADD FISH";
+        }
+        bool independent=index || page=="bait" || habitatAddId!=null;
+        foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !independent);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
         else if(page=="bait") BaitPage(false);
         else if(page=="islands") IslandIndex(); else if(page=="reef-fish") ReefFishIndex();
+        else if(habitatAddId!=null) HabitatFishPicker(habitatAddId);
         else HabitatPage(page);
         Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=top?1f:position;
     }
@@ -293,7 +304,15 @@ public sealed class ShopWorldHUD : MonoBehaviour
             string effect=id==ShopCatalog.StarterLure?"Permanent lure. Rare-fish focus. Hold REEL for bites; longer casts favor larger fish.":id==0?"Infinite worms. Standard catch chances.":id==1?"35% shorter wait; one worm per cast.":id==2?"20% shorter wait; favors snapper and goatfish.":"Favors yellowtail and tuna; one squid per cast.";
             string count=ShopCatalog.PermanentBait(id)?"Unlimited":$"{progress.Data.bait[id]} remaining";
             if(shop && !ShopCatalog.PermanentBait(id)) Row(ShopCatalog.BaitNames[id]+" / PACK OF 10",effect+" "+count,$"BUY {ShopCatalog.BaitPrices[id]}",()=>Result(progress.BuyBait(id),"Bait purchased and selected."),progress.Data.coins>=ShopCatalog.BaitPrices[id] && !progress.ReadOnly,gear:"Bait"+id);
-            if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>{if(progress.ReadOnly)return; progress.Data.baitEquipped=id; progress.Save(); Result(true,"Bait selected.");},progress.Data.baitEquipped!=id && (ShopCatalog.PermanentBait(id) || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
+            if(!shop)Row(ShopCatalog.BaitNames[id],count+" / "+effect,progress.Data.baitEquipped==id?"SELECTED":"SELECT",()=>
+            {
+                if(progress.ReadOnly)return;
+                progress.Data.baitEquipped=id;
+                progress.Save();
+                message="";
+                shownBait=-1;
+                Refresh(false);
+            },progress.Data.baitEquipped!=id && (ShopCatalog.PermanentBait(id) || progress.Data.bait[id]>0) && !progress.ReadOnly,gear:"Bait"+id);
         }
     }
     private void MarketPage()
@@ -335,10 +354,70 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(owned==null || !travel.InHome)return;
         float kg=0;foreach(var f in owned.fish)kg+=f.weightKg;
         Row(d.name,$"{owned.fish.Count}/{d.fishLimit} fish • {kg:0.00}/{d.totalKg} kg\n"+capacity,"HOME",()=>{},false);
+        Row("ADD FISH TO "+d.name.ToUpperInvariant(),$"{progress.Data.bag.Count} fish in your bag. Open the dedicated fish picker to sort, filter and check which catches fit this habitat.",progress.Data.bag.Count>0?"SELECT FISH":"BAG EMPTY",()=>Open(HabitatAddPrefix+id),progress.Data.bag.Count>0 && !progress.ReadOnly);
         foreach(var fish in new List<CaughtFishRecord>(owned.fish))
         {var f=fish;Row(FishCatalog.Get(f.speciesId).Name,$"RESIDENT • {FishCatalog.FormatWeight(f.weightKg)}",progress.Data.BagFull?"BAG FULL":"TO BAG",()=>Result(progress.Withdraw(id,f),"Fish returned to bag."),!progress.ReadOnly && !progress.Data.BagFull,fish:f);}
-        foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
-        {var f=fish;string reason=progress.Data.Admission(id,f);Row(FishCatalog.Get(f.speciesId).Name,$"BAG • {FishCatalog.FormatWeight(f.weightKg)} • "+(reason??"Fits this habitat"),"ADD FISH",()=>Result(progress.Deposit(id,f),"Fish added to habitat."),reason==null && !progress.ReadOnly,fish:f);}
+    }
+    private void HabitatFishPicker(string id)
+    {
+        var d=ShopCatalog.Habitat(id);
+        if(d==null){Row("Habitat unavailable","This habitat could not be found.","CLOSE",Close);return;}
+        if(!travel.InHome || !travel.Near(id))
+        {Row(d.name,"Return to this habitat at Home to add fish.","BACK",()=>Open(id));return;}
+        var owned=progress.Data.Habitat(id);
+        if(owned==null)
+        {Row(d.name,"Purchase this habitat before adding fish.","BACK",()=>Open(id));return;}
+
+        Row("BACK TO "+d.name.ToUpperInvariant(),$"Residents: {owned.fish.Count}/{d.fishLimit}. Select a catch below to move it from your bag into this habitat.","BACK",()=>Open(id));
+
+        var species=progress.Data.bag.Select(f=>f.speciesId).Distinct().OrderBy(speciesId=>FishCatalog.Get(speciesId).Name).ToList();
+        if(habitatSpeciesFilter!=-1 && !species.Contains(habitatSpeciesFilter))habitatSpeciesFilter=-1;
+        var controls=Panel("Habitat sort and filter",list,Color.clear);controls.AddComponent<LayoutElement>().preferredHeight=64;
+        var sort=ButtonAt(controls.transform,"SORT: "+SortNames[habitatSort],()=>{habitatPicker=habitatPicker=="sort"?null:"sort";Refresh(true);});
+        Anchor(sort.GetComponent<RectTransform>(),0,0,0.5f,1,0,0,-6,0);
+        var filter=ButtonAt(controls.transform,"SPECIES: "+(habitatSpeciesFilter<0?"All":FishCatalog.Get(habitatSpeciesFilter).Name),()=>{habitatPicker=habitatPicker=="species"?null:"species";Refresh(true);});
+        Anchor(filter.GetComponent<RectTransform>(),0.5f,0,1,1,6,0,0,0);
+
+        if(habitatPicker=="sort")
+        {
+            for(int i=0;i<SortNames.Length;i++)
+            {
+                int choice=i;
+                Row(SortNames[i],"Choose how catches are ordered in this habitat picker.",habitatSort==i?"SELECTED":"SELECT",()=>{habitatSort=choice;habitatPicker=null;Refresh(true);});
+            }
+            return;
+        }
+        if(habitatPicker=="species")
+        {
+            Row("All species","Show every catch in your bag.","SELECT",()=>{habitatSpeciesFilter=-1;habitatPicker=null;Refresh(true);});
+            foreach(int speciesId in species)
+            {
+                int choice=speciesId;
+                Row(FishCatalog.Get(speciesId).Name,$"{progress.Data.bag.Count(f=>f.speciesId==speciesId)} in bag","SELECT",()=>{habitatSpeciesFilter=choice;habitatPicker=null;Refresh(true);});
+            }
+            return;
+        }
+
+        if(progress.Data.bag.Count==0)
+        {Row("No fish in your bag","Catch fish first, then return here to add them to this habitat.","BACK",()=>Open(id));return;}
+
+        IEnumerable<CaughtFishRecord> fish=progress.Data.bag.Where(f=>habitatSpeciesFilter<0 || f.speciesId==habitatSpeciesFilter);
+        switch(habitatSort)
+        {
+            case 1:fish=fish.OrderByDescending(f=>f.weightKg).ThenByDescending(f=>f.caughtUtcTicks);break;
+            case 2:fish=fish.OrderBy(f=>f.weightKg).ThenByDescending(f=>f.caughtUtcTicks);break;
+            case 3:fish=fish.OrderByDescending(f=>FishCatalog.GetSellValue(f.speciesId,f.weightKg));break;
+            case 4:fish=fish.OrderBy(f=>FishCatalog.Get(f.speciesId).Name).ThenByDescending(f=>f.weightKg);break;
+            default:fish=fish.OrderByDescending(f=>f.caughtUtcTicks);break;
+        }
+
+        foreach(var record in fish)
+        {
+            var f=record;
+            string reason=progress.Data.Admission(id,f);
+            string detail=$"{FishCatalog.FormatWeight(f.weightKg)} / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m / "+(reason??"Fits this habitat");
+            Row(FishCatalog.Get(f.speciesId).Name,detail,reason==null?"ADD FISH":"DOESN'T FIT",()=>Result(progress.Deposit(id,f),"Fish added to habitat."),reason==null && !progress.ReadOnly,fish:f);
+        }
     }
     private void Result(bool ok,string success) { message=ok?success:"Action unavailable. Check coins, ownership, capacity and distance to the shop."; Refresh(false); }
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
