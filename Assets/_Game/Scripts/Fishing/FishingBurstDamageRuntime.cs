@@ -26,7 +26,7 @@ using UnityEngine;
 public sealed class FishingBurstDamageRuntime : MonoBehaviour
 {
     private const float RepeatSeconds = 0.35f;
-    private const float SuppressedLegacyAccumulator = -1000f;
+    private const float SuppressedLegacyDisplayTimer = -1000f;
 
     private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly FieldInfo StateField = typeof(FishingSystem).GetField("state", Flags);
@@ -138,9 +138,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             waitForHookRelease = activeBait != ShopCatalog.StarterLure && heldNow;
         }
 
-        // Undo any legacy per-frame decrement that FishingSystem.Update attempted
-        // earlier this frame, then keep its old accumulator far below 1 so it cannot
-        // create its own popup before this component gets control next frame.
+        // FishingSystem.Update ran earlier this frame. Restore the authoritative HP
+        // before applying our discrete burst so any legacy frame tick cannot leak
+        // into health or the popup. Resetting damageFraction to ZERO (not a negative
+        // number) is important: a negative accumulator would make the legacy code
+        // calculate negative damage and briefly heal the fish on the next frame.
         WriteAuthoritativeHealth(maxHp);
         SuppressLegacyDamageFields();
 
@@ -230,8 +232,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private void SuppressLegacyDamageFields()
     {
         PendingDamageField.SetValue(fishing, 0);
-        DamageFractionField.SetValue(fishing, SuppressedLegacyAccumulator);
-        DamageDisplayTimerField.SetValue(fishing, SuppressedLegacyAccumulator);
+        DamageFractionField.SetValue(fishing, 0f);
+        DamageDisplayTimerField.SetValue(fishing, SuppressedLegacyDisplayTimer);
     }
 
     private void EndFightOwnership()
