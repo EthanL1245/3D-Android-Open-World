@@ -50,7 +50,12 @@ public sealed class FishingTuningAssetPostprocessor : AssetPostprocessor
     private static void OnPostprocessAllAssets(string[] imported,string[] deleted,string[] moved,string[] movedFrom)
     {
         if(ContainsTuning(imported) || ContainsTuning(deleted) || ContainsTuning(moved) || ContainsTuning(movedFrom))
-            EditorApplication.delayCall+=FishingTuningValidator.ValidateFromAssetChange;
+            EditorApplication.delayCall+=ValidateAfterAssetChange;
+    }
+
+    private static void ValidateAfterAssetChange()
+    {
+        FishingTuningValidator.Validate(false);
     }
 
     private static bool ContainsTuning(string[] paths)
@@ -59,10 +64,4 @@ public sealed class FishingTuningAssetPostprocessor : AssetPostprocessor
         for(int i=0;i<paths.Length;i++)if(FishingTuningValidator.IsTuningAsset(paths[i]))return true;
         return false;
     }
-}
-
-public static class FishingTuningValidatorAssetChangeBridge
-{
-    // Kept separate so the postprocessor callback can schedule a parameterless delegate.
-    public static void ValidateNow()=>FishingTuningValidator.Validate(false);
 }
