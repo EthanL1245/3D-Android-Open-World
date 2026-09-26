@@ -76,9 +76,9 @@ public static class FishingRules
         return Mathf.Lerp(fish.MinWeightKg,fish.MaxWeightKg,upper*sample);
     }
 
-    private static float ApplyOffshoreSize(int species,float normalWeight,float random01)
+    private static float ApplyOffshoreSize(int species,float normalWeight,float random01,float factor)
     {
-        float offshore=Mathf.Clamp01(OffshoreFactor);
+        float offshore=Mathf.Clamp01(factor);
         if(offshore<=0f)return normalWeight;
 
         var fish=FishCatalog.Get(species);
@@ -95,12 +95,12 @@ public static class FishingRules
         return Mathf.Lerp(normalWeight,Mathf.Max(normalWeight,giant),strength);
     }
 
-    public static float WeightAtDepth(int species,float depth,float random01)
+    public static float WeightAtDepth(int species,float depth,float random01,float offshore=-1)
     {
-        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,random01),random01);
+        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,random01),random01,offshore<0?OffshoreFactor:offshore);
     }
 
-    public static float WeightAtCastDistance(int species,float distance,float random01)
+    public static float WeightAtCastDistance(int species,float distance,float random01,float offshore=-1)
     {
         // Fire Shad (variant 2) intentionally uses the exact same fish-size
         // sampling as Neon Breach (variant 0). Its ONLY gameplay difference is
@@ -108,7 +108,7 @@ public static class FishingRules
         float sizeBias=ShopCatalog.ActiveLureVariant==3 ? .18f : 0f;
         float sample=Mathf.Lerp(Mathf.Clamp01(random01),1f,sizeBias);
         float depth=Mathf.Lerp(.6f,6f,Mathf.InverseLerp(5f,30f,distance));
-        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,sample),sample);
+        return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,sample),sample,offshore<0?OffshoreFactor:offshore);
     }
 
     public static float LureBiteChance(float castDistance,float retrievedFraction)
@@ -128,3 +128,4 @@ public static class FishingRules
         return Mathf.Max(1,Mathf.RoundToInt(2.5f*(10+22*Mathf.Sqrt(Mathf.Max(0,kg))+3*kg)*(1+fish.Difficulty*.5f+rarity)));
     }
 }
+

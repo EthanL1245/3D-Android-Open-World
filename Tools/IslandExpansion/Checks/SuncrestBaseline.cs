@@ -1,10 +1,8 @@
 using UnityEngine;
 
 // Stable zone/species IDs are save-safe; add future zones here without renumbering.
-public static class ReefCatalog
+public static class SuncrestBaseline
 {
-    public const string RuggedId="brinebreak-isle";
-    public static bool BrinebreakDiscovered {get;set;}
     public const string StarterId = "suncrest-reef";
     public const string StarterName = "Suncrest Reef";
     public sealed class Zone
@@ -14,18 +12,14 @@ public static class ReefCatalog
         public readonly float[] weights;
         public Zone(string id, string name, string description, bool unlocked, float[] weights)
         { this.id=id; this.name=name; this.description=description; unlockedByDefault=unlocked; this.weights=weights; }
-        public bool Unlocked => unlockedByDefault || (id==RuggedId && BrinebreakDiscovered);
+        public bool Unlocked => unlockedByDefault || PlayerPrefs.GetInt("ReefUnlock."+id,0)==1;
     }
 
     // Raw weights are normalized at use time. This lets new fish be appended without
     // hand-rebalancing every table back to an exact total of 100.
     public static readonly Zone[] Zones = {
         new Zone(StarterId, StarterName, "A palm-lined beginner island, sandy coves and a broad shallow reef.", true,
-            new float[] {20,11,13,6,0,2,22,22,4,6,6}),
-        new Zone(RuggedId,"Brinebreak Isle","Rocky low hills, steep sandy shores and restless water. Land here to unlock fast travel.",false,
-            new float[] {8,13,12,18,0,10,5,5,20,12,12}),
-        new Zone("deep-ocean","Deep Ocean","Beyond the shared outer shelf. Pelagic fish, giant catches and demanding fights.",true,
-            new float[] {5,5,5,20,0,16,2,2,32,20,8})
+            new float[] {20,11,13,6,0,2,22,22,4,6,6})
     };
     public static Zone Starter => Zones[0];
     public static float Weight(int species) => species>=0 && species<Starter.weights.Length ? Starter.weights[species] : 0f;
@@ -46,7 +40,7 @@ public static class ReefCatalog
         new float[] {4,21,36,19,0,6,4,4,6,6,7}    // Bloody Bait Crankbait
     };
 
-    private static float[] BaseEquippedWeights(int bait)
+    private static float[] EquippedWeights(int bait)
     {
         if(bait==ShopCatalog.StarterLure)
         {
@@ -56,21 +50,6 @@ public static class ReefCatalog
         return bait==2?ShrimpOdds:bait==3?SquidOdds:Starter.weights;
     }
 
-    private static float[] EquippedWeights(int bait,int biome)
-    {
-        var original=BaseEquippedWeights(bait);
-        if(biome<=0 || biome>=Zones.Length)return original;
-        var weights=new float[original.Length];
-        for(int i=0;i<weights.Length;i++)
-            weights[i]=Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
-        return weights;
-    }
-    public static float MinimumWeight(int species,int biome)
-    {var fish=FishCatalog.Get(species);return biome==1?Mathf.Max(fish.MinWeightKg,fish.MaxWeightKg*.18f):fish.MinWeightKg;}
-    public static float MaximumWeight(int species,int biome)
-        => FishCatalog.Get(species).MaxWeightKg*(biome==1?1.6f:biome==2?2.25f:1f);
-    public static float HealthMultiplier(int biome)=>biome==1?1.4f:biome==2?1.7f:1f;
-
     private static float Total(float[] weights)
     {
         float total=0f;
@@ -78,17 +57,17 @@ public static class ReefCatalog
         return total;
     }
 
-    public static float EquippedChance(int species,int bait,int biome=0)
+    public static float EquippedChance(int species,int bait)
     {
-        float[] weights=EquippedWeights(bait,biome);
+        float[] weights=EquippedWeights(bait);
         if(species<0 || species>=weights.Length)return 0f;
         float total=Total(weights);
         return total>0f?Mathf.Max(0f,weights[species])/total*100f:0f;
     }
 
-    public static int Roll(float random01, int bait = 0,int biome=0)
+    public static int Roll(float random01, int bait = 0)
     {
-        float[] weights=EquippedWeights(bait,biome);
+        float[] weights=EquippedWeights(bait);
         float total=Total(weights);
         if(total<=0f)return FishCatalog.ActiveIds[0];
         float pick=Mathf.Clamp01(random01)*total;

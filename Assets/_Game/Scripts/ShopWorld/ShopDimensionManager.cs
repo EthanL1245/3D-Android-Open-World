@@ -38,11 +38,26 @@ public sealed class ShopDimensionManager : MonoBehaviour
         foreach(var h in World.habitats) if(h.gameObject.activeInHierarchy && Near(h.id)) return h.id;
         return null;
     }
+    private bool travelToBrinebreak;
+    public void TravelIsland(bool brinebreak)
+    {
+        if(Traveling)return;
+        var expansion=IslandExpansionWorld.Active;
+        if(brinebreak && (!ReefCatalog.BrinebreakDiscovered || expansion==null || !expansion.Ready || expansion.Arrival==null))return;
+        travelToBrinebreak=brinebreak;
+        if(Destination!=0){StartCoroutine(TravelRoutine(0));return;}
+        Transform point=brinebreak?expansion.Arrival:GetComponent<BoatSystem>()?.IslandDock;
+        if(point==null)point=islandArrival;
+        if(point==null)return;
+        fishing.PrepareForWorldTravel();Teleport(point.position,point.rotation);
+        var ui=FindFirstObjectByType<ShopWorldHUD>();if(ui!=null)ui.Close();
+        travelToBrinebreak=false;
+    }
     public void Travel(bool shop) => Travel(shop?1:0);
     public void Travel(int destination)
     {
         if(Traveling || destination==Destination || destination<0 || destination>2)return;
-        StartCoroutine(TravelRoutine(destination));
+        travelToBrinebreak=false;StartCoroutine(TravelRoutine(destination));
     }
     private IEnumerator TravelRoutine(int destination)
     {
@@ -76,6 +91,9 @@ public sealed class ShopDimensionManager : MonoBehaviour
         {
             var boats=GetComponent<BoatSystem>();
             Transform dock=boats!=null?boats.IslandDock:null;
+            var expansion=IslandExpansionWorld.Active;
+            if(travelToBrinebreak && ReefCatalog.BrinebreakDiscovered && expansion!=null && expansion.Ready) dock=expansion.Arrival;
+            travelToBrinebreak=false;
             Teleport(dock!=null?dock.position:hasReturn?returnPosition:islandArrival.position,dock!=null?dock.rotation:hasReturn?returnRotation:islandArrival.rotation);
             RenderSettings.fog=oldFog; RenderSettings.fogColor=oldFogColor; RenderSettings.fogDensity=oldFogDensity;
         }
@@ -119,4 +137,5 @@ public sealed class ShopDimensionManager : MonoBehaviour
             Teleport(World.spawn.position,World.spawn.rotation);
     }
 }
+
 

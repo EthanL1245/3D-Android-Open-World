@@ -23,6 +23,8 @@ public sealed class ReefZone : MonoBehaviour
 
     public float OpenOceanDistance(Vector3 point)
     {
+        var expansion=IslandExpansionWorld.Active;
+        if(expansion!=null && expansion.Ready)return IslandGeometry.Beyond(point,expansion.ShelfCenter,expansion.ShelfRadii);
         Vector3 d=point-center;
         float rx=Mathf.Max(1f,islandRadiusX+reefWidth);
         float rz=Mathf.Max(1f,islandRadiusZ+reefWidth);
@@ -31,3 +33,4 @@ public sealed class ReefZone : MonoBehaviour
         return (normalized-1f)*(rx+rz)*.5f;
     }
 }
+

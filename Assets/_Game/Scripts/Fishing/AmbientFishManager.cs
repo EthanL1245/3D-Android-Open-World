@@ -11,6 +11,9 @@ public class AmbientFishManager : MonoBehaviour
     [SerializeField] private float minRadius=7f, maxRadius=32f;
     private Terrain terrain;
     private Camera view;
+    private int poolBiome,pendingBiome;
+    private float biomeChangedAt;
+    private bool replacing=true;
     private readonly List<AmbientFishAgent> fish=new List<AmbientFishAgent>();
     public bool InReef => ShopDimensionManager.Instance==null || !ShopDimensionManager.Instance.InDimension;
     private IEnumerator Start()
@@ -20,9 +23,17 @@ public class AmbientFishManager : MonoBehaviour
         if(player==null){var p=FindFirstObjectByType<FirstPersonController>();if(p!=null)player=p.transform;}
         if(player!=null)view=player.GetComponentInChildren<Camera>();
         fishCount=Mathf.Clamp(fishCount,4,12); // Includes old scenes serialized with 18.
+        poolBiome=IslandExpansionWorld.FishingBiome(player!=null?player.position:Vector3.zero);
         for(int i=0;i<fishCount;i++)
         {
-            int id=ReefCatalog.Roll(Random.value);
+            fish.Add(CreateFish(i,poolBiome));
+            yield return null; // Spread skin/prefab setup across frames.
+        }
+        replacing=false;
+    }
+    private AmbientFishAgent CreateFish(int i,int biome)
+    {
+            int id=ReefCatalog.Roll(Random.value,0,biome);
             var species=FishCatalog.Get(id);
             var visual=FishWorldSize.Create("Reef_"+species.Name,transform,id,
                 Mathf.Lerp(species.MinWeightKg,species.MaxWeightKg,Random.Range(0.05f,0.28f)));
@@ -35,9 +46,26 @@ public class AmbientFishManager : MonoBehaviour
             foreach(var animator in visual.GetComponentsInChildren<Animator>())animator.cullingMode=AnimatorCullingMode.CullCompletely;
             var agent=visual.AddComponent<AmbientFishAgent>();
             agent.Configure(this,Random.Range(0.45f,0.95f),i);
-            fish.Add(agent);
-            yield return null; // Spread skin/prefab setup across frames.
+            return agent;
+    }
+    private void Update()
+    {
+        if(replacing || player==null || !InReef)return;
+        int biome=IslandExpansionWorld.FishingBiome(player.position);
+        if(biome!=pendingBiome){pendingBiome=biome;biomeChangedAt=Time.time;}
+        if(biome!=poolBiome && Time.time-biomeChangedAt>2f)StartCoroutine(ReplacePool(biome));
+    }
+    private IEnumerator ReplacePool(int biome)
+    {
+        replacing=true;
+        for(int i=0;i<fish.Count;i++)
+        {
+            // Avoid replacing a visible fish in front of the player.
+            while(fish[i]!=null && Visible(fish[i].transform.position))yield return null;
+            if(fish[i]!=null){fish[i].gameObject.SetActive(false);Destroy(fish[i].gameObject);}
+            fish[i]=CreateFish(i,biome);yield return null;
         }
+        poolBiome=biome;replacing=false;
     }
     public void Configure(OceanWater water,Transform target){oceanWater=water;player=target;fishCount=12;}
     public bool Visible(Vector3 position)
@@ -143,3 +171,4 @@ public class AmbientFishAgent : MonoBehaviour
         trail.Record();
     }
 }
+

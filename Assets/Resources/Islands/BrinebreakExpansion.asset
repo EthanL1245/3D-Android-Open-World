@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7b006f051a252ffa076abcfaa47f35d, type: 3}
+  m_Name: BrinebreakExpansion
+  m_EditorClassIdentifier:
+  IslandName: Brinebreak Isle
+  OffsetBeyondSuncrest: 250
+  IslandRadii: {x: 95, y: 65}
+  ShelfDepth: 14
+  OceanDepth: 65
+  DropoffWidth: 130
+  HeightResolution: 1025
+  ScenerySeed: 260926
+  WaveAmplitudeMultiplier: 2.8
+  WaveSpeedMultiplier: 1.65
+  WaveBlendDistance: 160

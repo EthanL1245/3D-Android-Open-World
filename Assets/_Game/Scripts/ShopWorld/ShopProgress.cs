@@ -38,6 +38,7 @@ public sealed class ShopProgress : MonoBehaviour
             ReadOnly=true; Data=new ShopLedger(); Data.EnsureCatchStats(); Data.EnsureLures(); Data.EnsureGearOwnership(); ShopCatalog.SetActiveLureVariant(0); Notice="Save could not be loaded. Purchases and transfers are disabled; your saved data has not been overwritten.";
             Debug.LogError(Notice+" "+ex.Message);
         }
+        ReefCatalog.BrinebreakDiscovered=Data!=null && Data.brinebreakDiscovered;
     }
     private static ShopLedger Read(string json)
     {
@@ -115,3 +116,4 @@ public sealed class ShopProgress : MonoBehaviour
         return id;
     }
 }
+

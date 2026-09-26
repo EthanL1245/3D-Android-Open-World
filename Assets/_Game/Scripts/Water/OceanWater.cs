@@ -106,6 +106,16 @@ public class OceanWater : MonoBehaviour
         waterRenderer.GetPropertyBlock(propertyBlock);
 
         propertyBlock.SetFloat("_OceanTime", Time.time);
+        var expansion=IslandExpansionWorld.Active;
+        bool expanded=expansion!=null && expansion.Ready;
+        propertyBlock.SetFloat("_IslandWaveEnabled",expanded?1:0);
+        if(expanded)
+        {
+            float inner=Mathf.Max(expansion.Config.IslandRadii.x,expansion.Config.IslandRadii.y)+40;
+            propertyBlock.SetVector("_IslandWaveCenter",new Vector4(expansion.NewCenter.x,expansion.NewCenter.z,inner,inner+expansion.Config.WaveBlendDistance));
+            propertyBlock.SetFloat("_IslandWaveAmplitude",expansion.Config.WaveAmplitudeMultiplier);
+            propertyBlock.SetFloat("_IslandWaveSpeed",expansion.Config.WaveSpeedMultiplier);
+        }
 
         SetWaveProperties(
             propertyBlock,
@@ -195,7 +205,7 @@ public class OceanWater : MonoBehaviour
             );
     }
 
-    private static float EvaluateWave(
+    private float EvaluateWave(
         Vector2 position,
         float time,
         float amplitude,
@@ -218,6 +228,13 @@ public class OceanWater : MonoBehaviour
             Vector2.Dot(position, dir) * frequency +
             time * speed;
 
-        return Mathf.Sin(phase) * amplitude;
+        float calm=Mathf.Sin(phase)*amplitude;
+        var expansion=IslandExpansionWorld.Active;
+        if(expansion==null || !expansion.Ready)return calm;
+        float inner=Mathf.Max(expansion.Config.IslandRadii.x,expansion.Config.IslandRadii.y)+40;
+        float blend=IslandGeometry.StormBlend(new Vector3(position.x,0,position.y),expansion.NewCenter,inner,inner+expansion.Config.WaveBlendDistance);
+        float roughPhase=Vector2.Dot(position,dir)*frequency+time*speed*expansion.Config.WaveSpeedMultiplier;
+        return Mathf.Lerp(calm,Mathf.Sin(roughPhase)*amplitude*expansion.Config.WaveAmplitudeMultiplier,blend);
     }
 }
+

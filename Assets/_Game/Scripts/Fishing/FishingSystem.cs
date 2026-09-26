@@ -806,7 +806,8 @@ public class FishingSystem : MonoBehaviour
         );
     }
 
-    private int RollBaitSpecies() => ReefCatalog.Roll(Random.value, activeBait);
+    private int fightBiome;
+    private int RollBaitSpecies() => ReefCatalog.Roll(Random.value,activeBait,fightBiome);
 
     private void BeginLureRetrieve()
     {
@@ -842,14 +843,22 @@ public class FishingSystem : MonoBehaviour
     }
     private void BeginBite()
     {
+            fightBiome=pondCast?0:IslandExpansionWorld.FishingBiome(castPoint);
+            float offshore=IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready
+                ? (fightBiome==2?IslandExpansionWorld.Active.OffshoreAt(castPoint):0f) : FishingRules.OffshoreFactor;
             hookedSpeciesId =
                 RollBaitSpecies();
 
             hookedWeightKg =
                 activeBait==ShopCatalog.StarterLure
-                    ? FishingRules.WeightAtCastDistance(hookedSpeciesId,originalCastDistance,Random.value)
-                    : FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value);
+                    ? FishingRules.WeightAtCastDistance(hookedSpeciesId,originalCastDistance,Random.value,offshore)
+                    : FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value,offshore);
 
+            if(fightBiome==1)
+            {
+                var range=FishCatalog.Get(hookedSpeciesId);
+                hookedWeightKg=Mathf.Lerp(ReefCatalog.MinimumWeight(hookedSpeciesId,1),ReefCatalog.MaximumWeight(hookedSpeciesId,1),Mathf.InverseLerp(range.MinWeightKg,range.MaxWeightKg,hookedWeightKg));
+            }
             if(pondCast)
             {
                 var species=FishCatalog.Get(hookedSpeciesId);
@@ -923,7 +932,7 @@ public class FishingSystem : MonoBehaviour
         state = FishingState.Fighting;
 
         fightTension = 0.24f;
-        fishMaxHealth=FishingRules.MaxHealth(hookedSpeciesId,hookedWeightKg);
+        fishMaxHealth=Mathf.RoundToInt(FishingRules.MaxHealth(hookedSpeciesId,hookedWeightKg)*ReefCatalog.HealthMultiplier(fightBiome));
         fishHealthPoints=fishMaxHealth;fishHealth=1f;
         damageFraction=0;pendingDamage=0;damageDisplayTimer=0;
         lineBreakTimer = 0f;
@@ -1092,7 +1101,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
-                    1.12f * temperamentTension / (rodPower * lineGuard);
+                    1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
                     hookedTemperament ==
@@ -4019,4 +4028,5 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 

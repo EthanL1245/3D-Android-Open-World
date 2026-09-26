@@ -24,6 +24,10 @@ Shader "OpenWorld/OceanWater"
         _WaveSpeed3 ("Wave Speed 3", Float) = 2.4
         _WaveDirection3 ("Wave Direction 3", Vector) = (0.8, -0.65, 0, 0)
 
+        [HideInInspector] _IslandWaveEnabled ("Island Waves", Float) = 0
+        [HideInInspector] _IslandWaveCenter ("Island center and blend radii", Vector) = (0,0,100,260)
+        [HideInInspector] _IslandWaveAmplitude ("Island amplitude", Float) = 2.8
+        [HideInInspector] _IslandWaveSpeed ("Island speed", Float) = 1.65
         [HideInInspector] _OceanTime ("Ocean Time", Float) = 0
     }
 
@@ -78,6 +82,10 @@ Shader "OpenWorld/OceanWater"
                 float4 _WaveDirection3;
 
                 float _OceanTime;
+                float _IslandWaveEnabled;
+                float4 _IslandWaveCenter;
+                float _IslandWaveAmplitude;
+                float _IslandWaveSpeed;
             CBUFFER_END
 
             struct Attributes
@@ -126,6 +134,20 @@ Shader "OpenWorld/OceanWater"
                     amplitude *
                     frequency *
                     dir;
+                if (_IslandWaveEnabled > 0.5)
+                {
+                    float2 delta = position - _IslandWaveCenter.xy;
+                    float distance = length(delta);
+                    float width = max(0.01, _IslandWaveCenter.w - _IslandWaveCenter.z);
+                    float t = saturate((distance - _IslandWaveCenter.z) / width);
+                    float blend = 1.0 - t*t*(3.0 - 2.0*t);
+                    float roughPhase = dot(position,dir)*frequency + time*speed*_IslandWaveSpeed;
+                    float roughHeight = sin(roughPhase)*amplitude*_IslandWaveAmplitude;
+                    float2 roughDerivative = cos(roughPhase)*amplitude*_IslandWaveAmplitude*frequency*dir;
+                    float2 gradient = (-6.0*t*(1.0-t)/width)*delta/max(distance,0.001);
+                    derivative = lerp(derivative,roughDerivative,blend)+(roughHeight-height)*gradient;
+                    height = lerp(height,roughHeight,blend);
+                }
             }
 
             Varyings Vert(Attributes input)
@@ -318,4 +340,5 @@ Shader "OpenWorld/OceanWater"
         }
     }
 }
+
 
