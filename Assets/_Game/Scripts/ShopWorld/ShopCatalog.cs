@@ -102,15 +102,19 @@ public static class ShopCatalog
         }
     }
 
+    // Individual-fish and total-weight capacities are intentionally 3x the
+    // original values. Fish-count limits and the physical habitat dimensions stay
+    // unchanged, so this expands what can be housed without inflating collection
+    // slot counts or visually resizing the tanks/ponds.
     public static readonly HabitatDefinition[] Habitats = {
-        new HabitatDefinition("nano", "Tidepool Cabinet", 250, 3, 0.8f, 1.8f, 2.2f, 1.2f, 1.4f),
-        new HabitatDefinition("reef", "Reef Gallery", 700, 6, 4f, 14f, 4.8f, 2.2f, 2.8f),
-        new HabitatDefinition("lagoon", "Lagoon Suite", 2000, 10, 12f, 55f, 8f, 3.6f, 5f, false, true),
-        new HabitatDefinition("grand", "Grand Ocean Gallery", 6500, 20, 35f, 220f, 14f, 5f, 9f, false, true),
-        new HabitatDefinition("ocean", "Oceanarium", 18000, 40, 120f, 1000f, 26f, 7f, 16f, false, true),
-        new HabitatDefinition("pond", "Courtyard Pond", 1400, 12, 8f, 45f, 10f, 2.8f, 8f, true, true),
-        new HabitatDefinition("garden", "Garden Lagoon", 5000, 25, 35f, 240f, 18f, 4f, 14f, true, true),
-        new HabitatDefinition("lake", "Sanctuary Lake", 15000, 50, 120f, 1200f, 32f, 6f, 24f, true, true)
+        new HabitatDefinition("nano", "Tidepool Cabinet", 250, 3, 2.4f, 5.4f, 2.2f, 1.2f, 1.4f),
+        new HabitatDefinition("reef", "Reef Gallery", 700, 6, 12f, 42f, 4.8f, 2.2f, 2.8f),
+        new HabitatDefinition("lagoon", "Lagoon Suite", 2000, 10, 36f, 165f, 8f, 3.6f, 5f, false, true),
+        new HabitatDefinition("grand", "Grand Ocean Gallery", 6500, 20, 105f, 660f, 14f, 5f, 9f, false, true),
+        new HabitatDefinition("ocean", "Oceanarium", 18000, 40, 360f, 3000f, 26f, 7f, 16f, false, true),
+        new HabitatDefinition("pond", "Courtyard Pond", 1400, 12, 24f, 135f, 10f, 2.8f, 8f, true, true),
+        new HabitatDefinition("garden", "Garden Lagoon", 5000, 25, 105f, 720f, 18f, 4f, 14f, true, true),
+        new HabitatDefinition("lake", "Sanctuary Lake", 15000, 50, 360f, 3600f, 32f, 6f, 24f, true, true)
     };
     public static readonly string[] RodNames = { "Woodland Rod", "Level 2 Fishing Rod", "Level 3 Fishing Rod", "REMOVED ROD" };
     public static readonly string[] ReelNames = { "Starter Reel", "Level 2 Fishing Reel", "Level 3 Fishing Reel", "REMOVED REEL" };
