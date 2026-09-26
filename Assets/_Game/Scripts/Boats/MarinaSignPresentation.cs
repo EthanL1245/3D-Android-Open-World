@@ -3,10 +3,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Keeps one fitted SUNCREST MARINA label physically attached to the wooden sign.
-/// The label never billboards around the camera; it only swaps to the opposite sign
-/// face when the player walks behind it. Using one visible TextMesh at a time avoids
-/// the double-sided font shader drawing front/back copies on top of each other.
+/// Keeps SUNCREST MARINA fitted to the land-facing side of its wooden board.
+/// It deliberately uses the same depth-tested, front-only shader as the other
+/// world/shop signs, so terrain, trees, walls and other geometry can occlude it.
 /// </summary>
 [DefaultExecutionOrder(-900)]
 public sealed class MarinaSignPresentation : MonoBehaviour
@@ -14,7 +13,8 @@ public sealed class MarinaSignPresentation : MonoBehaviour
     private const string StableName="Marina lettering stable";
     private Transform sign;
     private Transform label;
-    private Camera view;
+    private Font labelFont;
+    private Material depthMaterial;
     private bool fitted;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -25,6 +25,25 @@ public sealed class MarinaSignPresentation : MonoBehaviour
             marina.AddComponent<MarinaSignPresentation>();
     }
 
+    private void OnEnable()
+    {
+        Font.textureRebuilt+=OnFontTextureRebuilt;
+    }
+
+    private void OnDisable()
+    {
+        Font.textureRebuilt-=OnFontTextureRebuilt;
+    }
+
+    private void OnDestroy()
+    {
+        if(depthMaterial!=null)
+        {
+            Destroy(depthMaterial);
+            depthMaterial=null;
+        }
+    }
+
     private void Awake(){Repair();}
 
     private void Repair()
@@ -32,9 +51,9 @@ public sealed class MarinaSignPresentation : MonoBehaviour
         sign=FindDeepChild(transform,"Marina sign");
         if(sign==null)return;
 
-        // Remove every older lettering implementation first. The built-in TextMesh
-        // font material is double-sided, so keeping two opposite labels caused the
-        // mirrored/stacked text seen in game.
+        // Remove every older lettering implementation. In particular, the old
+        // built-in font material rendered like an overlay and the previous runtime
+        // script swapped the label to whichever face the camera occupied.
         TextMesh[] old=sign.GetComponentsInChildren<TextMesh>(true);
         foreach(TextMesh text in old)
         {
@@ -43,13 +62,19 @@ public sealed class MarinaSignPresentation : MonoBehaviour
             Destroy(text.gameObject);
         }
 
+        if(depthMaterial!=null)
+        {
+            Destroy(depthMaterial);
+            depthMaterial=null;
+        }
+
         GameObject go=new GameObject(StableName,typeof(TextMesh));
         go.transform.SetParent(sign,false);
         label=go.transform;
 
         TextMesh mesh=go.GetComponent<TextMesh>();
-        Font font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        mesh.font=font;
+        labelFont=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        mesh.font=labelFont;
         mesh.text="SUNCREST MARINA";
         mesh.anchor=TextAnchor.MiddleCenter;
         mesh.alignment=TextAlignment.Center;
@@ -61,19 +86,49 @@ public sealed class MarinaSignPresentation : MonoBehaviour
         MeshRenderer renderer=go.GetComponent<MeshRenderer>();
         if(renderer!=null)
         {
-            if(font!=null)renderer.sharedMaterial=font.material;
+            // This is the exact shader contract used by the normal shop/trail
+            // signs: Transparent queue, ZTest LEqual and Cull Back. That means the
+            // letters obey the scene depth buffer and disappear behind geometry,
+            // and they cannot be read through the back of the wooden sign.
+            Shader shader=Resources.Load<Shader>("Fishing/ShopSign");
+            if(shader==null)shader=Shader.Find("OpenWorld/ShopSign");
+            if(shader!=null)
+            {
+                depthMaterial=new Material(shader)
+                {
+                    name="Suncrest Marina Sign Text (Runtime)"
+                };
+                if(labelFont!=null)depthMaterial.mainTexture=labelFont.material.mainTexture;
+                renderer.sharedMaterial=depthMaterial;
+            }
+            else
+            {
+                Debug.LogError("SUNCREST MARINA could not load Fishing/ShopSign. The sign text has been hidden rather than rendered through world geometry.");
+                renderer.enabled=false;
+            }
+
             renderer.shadowCastingMode=ShadowCastingMode.Off;
             renderer.receiveShadows=false;
-            renderer.allowOcclusionWhenDynamic=false;
-            renderer.sortingOrder=20;
+            renderer.allowOcclusionWhenDynamic=true;
+            renderer.sortingOrder=0;
         }
 
+        // TextMesh faces local -Z and BoatSystemSetup defines -Z as the land-facing
+        // side. Keep it on that one face permanently, just like the other signs.
+        // Do not camera-swap it to the rear face.
+        label.localPosition=new Vector3(0f,0f,-.535f);
+        label.localRotation=Quaternion.identity;
+
         // Start harmlessly tiny. Once Unity has generated TextMesh geometry on the
-        // next frame, FitToSign measures the real bounds and scales it exactly to
-        // this sign instead of relying on font-size guesses.
+        // next frame, FitToSign measures the real bounds and scales it to the board.
         SetWorldScale(.001f);
-        UpdateFace();
         StartCoroutine(FitNextFrame());
+    }
+
+    private void OnFontTextureRebuilt(Font rebuilt)
+    {
+        if(rebuilt==null || rebuilt!=labelFont || depthMaterial==null)return;
+        depthMaterial.mainTexture=rebuilt.material.mainTexture;
     }
 
     private IEnumerator FitNextFrame()
@@ -113,23 +168,11 @@ public sealed class MarinaSignPresentation : MonoBehaviour
     {
         if(sign==null || label==null)
         {
+            fitted=false;
             Repair();
             return;
         }
-        UpdateFace();
         if(!fitted)FitToSign();
-    }
-
-    private void UpdateFace()
-    {
-        if(sign==null || label==null)return;
-        if(view==null)view=Camera.main!=null?Camera.main:FindFirstObjectByType<Camera>();
-
-        bool positiveSide=view!=null && Vector3.Dot(view.transform.position-sign.position,sign.forward)>=0f;
-        // Primitive cube face is at local +/-0.5 Z. The small extra offset keeps the
-        // glyphs above the wood so there is no z-fighting at any viewing distance.
-        label.localPosition=new Vector3(0f,0f,positiveSide?.535f:-.535f);
-        label.localRotation=positiveSide?Quaternion.Euler(0f,180f,0f):Quaternion.identity;
     }
 
     private static Transform FindDeepChild(Transform root,string name)
