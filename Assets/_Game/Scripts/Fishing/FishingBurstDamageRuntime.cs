@@ -11,12 +11,16 @@ using UnityEngine;
 /// critical even though the advertised critical is 2x a full burst.
 ///
 /// This runtime suppresses only that legacy frame damage while a fight is active and
-/// applies one truthful randomized burst whenever REEL is pressed, then every 0.35 s
-/// while it remains held:
+/// applies one authoritative randomized burst whenever REEL is pressed, then every
+/// 0.35 s while it remains held:
 ///   Woodland: 2-4
 ///   Level 2:  4-8, 5% critical, critical = 8-16
 ///   Level 3:  6-12, 8% critical, critical = 12-24
-/// The popup value, health-bar loss and critical styling all come from the same roll.
+///
+/// The displayed popup is the rolled hit, including legitimate overkill on the final
+/// blow, while the health bar clamps at zero. This guarantees that every Level 2
+/// normal popup is 4-8 and every Level 2 critical popup is 8-16 instead of showing a
+/// misleading capped -1/-2/-3/-4 when the fish has little health remaining.
 /// </summary>
 [DefaultExecutionOrder(2200)]
 public sealed class FishingBurstDamageRuntime : MonoBehaviour
@@ -47,6 +51,40 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private bool waitForHookRelease;
     private float heldBurstTimer;
     private int authoritativeHp;
+
+    public static int NormalMinimumForTier(int tier)
+    {
+        tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
+        return 2 * (tier + 1);
+    }
+
+    public static int NormalMaximumForTier(int tier)
+    {
+        tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
+        return 4 * (tier + 1);
+    }
+
+    public static float CriticalChanceForTier(int tier)
+    {
+        tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
+        return tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
+    }
+
+    /// <summary>
+    /// Deterministic entry point used by the editor validation pass as well as the
+    /// live game. damageRoll01 chooses an integer uniformly across the advertised
+    /// inclusive normal range; criticalRoll01 determines whether that whole burst is
+    /// doubled. This keeps the UI description and gameplay formula literally shared.
+    /// </summary>
+    public static int RollBurstForTier(int tier, float damageRoll01, float criticalRoll01, out bool critical)
+    {
+        int minimum = NormalMinimumForTier(tier);
+        int maximum = NormalMaximumForTier(tier);
+        float roll = Mathf.Clamp(damageRoll01, 0f, 0.999999f);
+        int normal = minimum + Mathf.FloorToInt(roll * (maximum - minimum + 1));
+        critical = criticalRoll01 < CriticalChanceForTier(tier);
+        return critical ? normal * 2 : normal;
+    }
 
     private void Awake()
     {
@@ -151,14 +189,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private void DealBurst(int maxHp)
     {
         int tier = progress != null ? Mathf.Clamp(progress.Data.rodEquipped, 0, ShopCatalog.MaxRodTier) : 0;
-        int multiplier = tier + 1;
-        int minimum = 2 * multiplier;
-        int maximum = 4 * multiplier;
-        int normalDamage = UnityEngine.Random.Range(minimum, maximum + 1);
-
-        float criticalChance = tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
-        bool critical = criticalChance > 0f && UnityEngine.Random.value < criticalChance;
-        int rolledDamage = critical ? normalDamage * 2 : normalDamage;
+        bool critical;
+        int rolledDamage = RollBurstForTier(tier, UnityEngine.Random.value, UnityEngine.Random.value, out critical);
         int appliedDamage = Mathf.Min(authoritativeHp, rolledDamage);
         if (appliedDamage <= 0) return;
 
@@ -174,7 +206,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             Camera camera = PlayerCameraField != null ? PlayerCameraField.GetValue(fishing) as Camera : null;
             if (bobber != null && camera != null)
                 screenPoint = camera.WorldToScreenPoint(bobber.transform.position);
-            hud.ShowDamage(appliedDamage, screenPoint);
+
+            // Show the rolled attack value, not the remaining-HP-capped value. A
+            // finishing 12-damage critical against a 3-HP fish is still a 12-damage
+            // critical; only the health bar clamps at zero.
+            hud.ShowDamage(rolledDamage, screenPoint);
         }
     }
 
