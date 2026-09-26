@@ -14,23 +14,30 @@ using UnityEngine.UI;
 /// Boat placement is also remembered while visiting Home/Quay. The original boat
 /// system removes its runtime instance during dimension teleports; this component
 /// restores the exact placed boat at its saved world pose when the player returns.
+///
+/// The existing live-fishing safety is preserved: while a cast/fight is active,
+/// teleport buttons are disabled but FISH INDEX still opens through the passive
+/// FishingMenuSafetyRuntime path without cancelling the fish or releasing REEL.
 /// </summary>
 [DefaultExecutionOrder(1500)]
 public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 {
-    private const string MarkerName="__TravelAndIslandMenuRuntime_v1";
+    private const string MarkerName="__TravelAndIslandMenuRuntime_v2";
 
     private static readonly BindingFlags PrivateInstance=BindingFlags.Instance|BindingFlags.NonPublic;
     private static readonly FieldInfo PageField=typeof(ShopWorldHUD).GetField("page",PrivateInstance);
     private static readonly FieldInfo ListField=typeof(ShopWorldHUD).GetField("list",PrivateInstance);
     private static readonly MethodInfo BiomeThumbnailMethod=typeof(ShopWorldHUD).GetMethod("BiomeThumbnail",PrivateInstance);
     private static readonly FieldInfo ActiveBoatBackingField=typeof(BoatSystem).GetField("<ActiveBoat>k__BackingField",PrivateInstance);
+    private static readonly FieldInfo FishingStateField=typeof(FishingSystem).GetField("state",PrivateInstance);
+    private static readonly MethodInfo SafeIndexOpenMethod=typeof(FishingMenuSafetyRuntime).GetMethod("SafeOpenIndex",PrivateInstance);
 
     private ShopWorldHUD hud;
     private ShopDimensionManager travel;
     private ShopProgress progress;
     private FirstPersonController player;
     private FishingSystem fishing;
+    private FishingMenuSafetyRuntime menuSafety;
     private BoatSystem boats;
     private BoatPassenger passenger;
     private Font font;
@@ -41,7 +48,6 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private bool hasPlacedBoat;
     private Coroutine boatTeleportRoutine;
 
-    private readonly Color ink=new Color(.025f,.055f,.07f,.98f);
     private readonly Color teal=new Color(.04f,.36f,.39f,1f);
     private readonly Color gold=new Color(.89f,.72f,.40f,1f);
     private readonly Color muted=new Color(.23f,.23f,.23f,1f);
@@ -61,12 +67,14 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         progress=GetComponent<ShopProgress>();
         player=GetComponent<FirstPersonController>();
         fishing=GetComponent<FishingSystem>();
+        menuSafety=GetComponent<FishingMenuSafetyRuntime>();
         boats=GetComponent<BoatSystem>();
         passenger=GetComponent<BoatPassenger>();
 
         if(progress==null)progress=FindFirstObjectByType<ShopProgress>();
         if(player==null && progress!=null)player=progress.GetComponent<FirstPersonController>();
         if(fishing==null && progress!=null)fishing=progress.GetComponent<FishingSystem>();
+        if(menuSafety==null)menuSafety=FindFirstObjectByType<FishingMenuSafetyRuntime>();
         if(boats==null && progress!=null)boats=progress.GetComponent<BoatSystem>();
         if(passenger==null && progress!=null)passenger=progress.GetComponent<BoatPassenger>();
 
@@ -81,6 +89,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     {
         if(!enabled)return;
         if(travel==null)travel=ShopDimensionManager.Instance;
+        if(menuSafety==null)menuSafety=GetComponent<FishingMenuSafetyRuntime>();
 
         CapturePlacedBoat();
         RestorePlacedBoatIfNeeded();
@@ -157,7 +166,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         caption.fontSize=32;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=19;caption.resizeTextMaxSize=32;
         caption.horizontalOverflow=HorizontalWrapMode.Wrap;caption.verticalOverflow=VerticalWrapMode.Truncate;
         Full(caption.rectTransform,18,16,-18,-16);
-        SetButtonAvailable(button,!here);
+        SetButtonAvailable(button,!here && !IsFishingBusy());
     }
 
     private void CreateBoatTravelCard(Transform parent)
@@ -173,7 +182,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         caption.fontSize=32;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=19;caption.resizeTextMaxSize=32;
         caption.horizontalOverflow=HorizontalWrapMode.Wrap;caption.verticalOverflow=VerticalWrapMode.Truncate;
         Full(caption.rectTransform,24,16,-24,-16);
-        SetButtonAvailable(button,owns && placed && travel!=null && !travel.Traveling);
+        SetButtonAvailable(button,owns && placed && travel!=null && !travel.Traveling && !IsFishingBusy());
     }
 
     private bool OwnsAnyBoat()
@@ -205,6 +214,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         bool isIsland=biome==0 || biome==1;
         bool here=travel!=null && travel.Destination==0 && currentBiome==biome;
         bool worldReady=biome!=1 || (IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready);
+        bool fishingBusy=IsFishingBusy();
 
         Color cardColor=biome==0?new Color(.045f,.24f,.30f,1f):biome==1?new Color(.20f,.23f,.25f,1f):new Color(.025f,.12f,.20f,1f);
         if(!unlocked)cardColor=muted;
@@ -237,10 +247,10 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 
         if(isIsland)
         {
-            string travelText=here?"YOU ARE HERE":"TELEPORT";
+            string travelText=here?"YOU ARE HERE":fishingBusy?"FISHING…":"TELEPORT";
             Button teleport=ButtonAt(card.transform,travelText,()=>TeleportToIsland(biome));
             Anchor(teleport.GetComponent<RectTransform>(),.74f,.54f,.98f,.88f,0,0,0,0);
-            SetButtonAvailable(teleport,unlocked && worldReady && !here && travel!=null && !travel.Traveling);
+            SetButtonAvailable(teleport,unlocked && worldReady && !here && !fishingBusy && travel!=null && !travel.Traveling);
         }
 
         Button fishIndex=ButtonAt(card.transform,"FISH INDEX",()=>OpenFishIndex(biome));
@@ -249,8 +259,16 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         SetButtonAvailable(fishIndex,unlocked);
     }
 
+    private bool IsFishingBusy()
+    {
+        if(fishing==null || FishingStateField==null)return false;
+        object value=FishingStateField.GetValue(fishing);
+        return value!=null && !string.Equals(value.ToString(),"Idle",System.StringComparison.Ordinal);
+    }
+
     private void TeleportToIsland(int biome)
     {
+        if(IsFishingBusy())return;
         if(travel==null || travel.Traveling || biome<0 || biome>=ReefCatalog.Zones.Length)return;
         if(!ReefCatalog.Zones[biome].Unlocked)return;
         if(biome!=0 && biome!=1)return; // Deep Ocean and future non-island biomes have no teleport.
@@ -263,7 +281,18 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private void OpenFishIndex(int biome)
     {
         if(hud==null || biome<0 || biome>=ReefCatalog.Zones.Length || !ReefCatalog.Zones[biome].Unlocked)return;
-        if(hud.SelectIndexBiome(biome))hud.Open("reef-fish");
+        if(!hud.SelectIndexBiome(biome))return;
+
+        // During a live cast/fight, route through the safety runtime's existing
+        // passive overlay instead of ShopWorldHUD.Open(), which would call
+        // PrepareForMenu and cancel the fishing interaction.
+        if(IsFishingBusy() && menuSafety!=null && SafeIndexOpenMethod!=null)
+        {
+            SafeIndexOpenMethod.Invoke(menuSafety,new object[]{"reef-fish"});
+            return;
+        }
+
+        hud.Open("reef-fish");
     }
 
     private void CapturePlacedBoat()
@@ -304,6 +333,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 
     private void BeginBoatTeleport()
     {
+        if(IsFishingBusy())return;
         if(boatTeleportRoutine!=null || travel==null || travel.Traveling)return;
         CapturePlacedBoat();
         if(!hasPlacedBoat)return;
