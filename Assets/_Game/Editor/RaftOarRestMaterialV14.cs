@@ -1,44 +1,93 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// v14 fixes the last raft/oar material edge case using the evidence from the user's
-/// v13 diagnostics.
+/// v14 narrows the existing mixed oar submesh so ONLY the moving paddle geometry
+/// keeps Oar Texture.jpg. The stationary rests/brackets around the middle of each
+/// paddle shaft are moved back to the raft-material submesh.
 ///
-/// v13 inspected the final "oar" submesh on the merged raft renderer and found only
-/// ONE tiny component: 2 triangles, ~0.355 m long. That cannot be either moving oar.
-/// Therefore the final submesh is the stationary oar-rest/support geometry, while the
-/// actual moving paddles are rendered elsewhere and already look correct.
+/// Earlier v14 assumed the final split slot itself was tiny. The device diagnostic
+/// proved that assumption wrong: the final slot currently contains 76 triangles over
+/// ~2.675 m, so it contains the moving oars AND the small rests together. This pass
+/// therefore works INSIDE that already-working oar slot instead of repainting the
+/// whole slot. It finds long/narrow paddle components, preserves them and their
+/// endpoint pieces, then moves only small components sitting around the middle of a
+/// paddle shaft back to raft slot 0.
 ///
-/// This pass is deliberately material-only: it changes ONLY the final tiny submesh on
-/// the merged raft renderer from Oar Texture back to the raft material. It does not
-/// touch any other renderer, mesh triangles, animation, transforms, UVs, colliders or
-/// boat gameplay. The moving oars therefore keep their existing oar texture.
+/// No vertices, UVs, transforms, animation curves, colliders or gameplay components
+/// are changed. Only triangle-to-submesh membership changes.
 /// </summary>
 public static class RaftOarRestMaterialV14
 {
     private const string PrefabPath = "Assets/Resources/Boats/BaseBoat.prefab";
     private const string WrapperPath = "ModelContainer/Uploaded Raft Model";
+    private const string RecoveryFolder = "Assets/_Game/Boats/Raft/UserTextures";
+    private const string MeshPath = RecoveryFolder + "/RaftOarRestsBackToRaft_v14.asset";
     private const string MarkerName = "RaftOarRestMaterial_v14";
     private const string V12Marker = "RaftMaterialRecovery_v12";
     private const string V13Marker = "RaftMovingOarsOnly_v13";
 
+    private sealed class Part
+    {
+        public int id;
+        public readonly HashSet<int> vertices = new HashSet<int>();
+        public readonly List<int> triangleOrdinals = new List<int>();
+        public int triangleCount;
+        public Vector3 center;
+        public Vector3 endpointA;
+        public Vector3 endpointB;
+        public float length;
+        public float width;
+        public float ratio;
+    }
+
+    private sealed class UnionFind
+    {
+        private readonly int[] parent;
+        private readonly byte[] rank;
+
+        public UnionFind(int count)
+        {
+            parent = new int[count];
+            rank = new byte[count];
+            for (int i = 0; i < count; i++) parent[i] = i;
+        }
+
+        public int Find(int value)
+        {
+            if (parent[value] != value) parent[value] = Find(parent[value]);
+            return parent[value];
+        }
+
+        public void Union(int a, int b)
+        {
+            a = Find(a);
+            b = Find(b);
+            if (a == b) return;
+            if (rank[a] < rank[b]) parent[a] = b;
+            else if (rank[a] > rank[b]) parent[b] = a;
+            else
+            {
+                parent[b] = a;
+                rank[a]++;
+            }
+        }
+    }
+
     [InitializeOnLoadMethod]
     private static void Queue()
     {
-        // Stop v13 from retrying its now-proven-wrong assumption on every reload.
         EditorApplication.delayCall += BlockV13Retry;
-
-        // Apply after the v12 material restoration has had time to settle.
         EditorApplication.delayCall += () =>
             EditorApplication.delayCall += () =>
                 EditorApplication.delayCall += () => Apply(false);
     }
 
-    [MenuItem("Tools/Open World/Make Oar Rests Use Raft Texture (v14)")]
+    [MenuItem("Tools/Open World/Make ONLY Moving Oars Use Oar Texture (v14)")]
     private static void Force()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -68,7 +117,7 @@ public static class RaftOarRestMaterialV14
             new GameObject(V13Marker).transform.SetParent(wrapper, false);
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             AssetDatabase.SaveAssets();
-            Debug.Log("[RAFT V14] Disabled obsolete v13 retry; v13 diagnostics proved the merged renderer's final slot is only the stationary rest/support piece.");
+            Debug.Log("[RAFT V14] Disabled obsolete v13 retry. v14 now separates stationary rests from moving oars inside the existing mixed oar slot.");
         }
         finally
         {
@@ -98,100 +147,192 @@ public static class RaftOarRestMaterialV14
             if (wrapper == null) return false;
 
             Renderer merged = FindMergedSplitRenderer(wrapper);
-            Mesh mesh = GetMesh(merged);
-            if (merged == null || mesh == null || mesh.subMeshCount < 2)
+            Mesh source = GetMesh(merged);
+            if (merged == null || source == null || source.subMeshCount < 2)
             {
-                Debug.LogError("[RAFT V14] Could not find the v12 merged split renderer.");
+                Debug.LogError("[RAFT V14] Could not find the v12 split raft renderer.");
                 return false;
             }
 
-            int restSlot = mesh.subMeshCount - 1;
-            if (mesh.GetTopology(restSlot) != MeshTopology.Triangles)
+            int oarSlot = source.subMeshCount - 1;
+            if (source.GetTopology(oarSlot) != MeshTopology.Triangles ||
+                source.GetTopology(0) != MeshTopology.Triangles)
             {
-                Debug.LogError("[RAFT V14] Final split slot is not triangle geometry; refusing to change materials.");
+                Debug.LogError("[RAFT V14] Raft/oar slots are not triangle geometry; refusing to change the mesh.");
                 return false;
             }
 
-            int[] restIndices = mesh.GetIndices(restSlot);
-            int restTriangles = restIndices.Length / 3;
-            if (!TryMeasureSubmesh(mesh, restIndices, merged.transform, root.transform, out Bounds restBounds))
+            Vector3[] vertices;
+            try { vertices = source.vertices; }
+            catch (Exception e)
             {
-                Debug.LogError("[RAFT V14] Could not measure the final split slot; refusing to change materials.");
+                Debug.LogError("[RAFT V14] Current raft mesh is not CPU-readable: " + e.Message);
                 return false;
             }
 
-            float largest = Mathf.Max(restBounds.size.x, Mathf.Max(restBounds.size.y, restBounds.size.z));
-
-            // The user's exact diagnostic was 2 triangles and ~0.355 m length. Keep
-            // a little tolerance for import scaling, but never repaint a large/complex
-            // paddle submesh by accident.
-            if (restTriangles <= 0 || restTriangles > 12 || largest > 0.80f)
+            int[] oarIndices = source.GetIndices(oarSlot);
+            int totalOarTriangles = oarIndices.Length / 3;
+            if (totalOarTriangles < 8)
             {
-                Debug.LogError(
-                    "[RAFT V14] Safety stop: final slot no longer looks like the tiny stationary oar rest. " +
-                    "triangles=" + restTriangles + " largestDimension=" + largest.ToString("0.000") +
-                    " m. No prefab change was saved.");
+                Debug.LogError("[RAFT V14] Existing oar slot has too little geometry to safely separate rests.");
                 return false;
             }
 
             Material[] materials = merged.sharedMaterials ?? Array.Empty<Material>();
-            if (materials.Length < mesh.subMeshCount)
+            if (materials.Length < source.subMeshCount ||
+                materials[0] == null || materials[oarSlot] == null ||
+                IsOarMaterial(materials[0]) || !IsOarMaterial(materials[oarSlot]))
             {
-                Debug.LogError("[RAFT V14] Renderer has fewer material slots than mesh submeshes.");
+                Debug.LogError("[RAFT V14] Expected raft material in slot 0 and oar material in final slot; refusing to modify geometry.");
                 return false;
             }
 
-            Material raftMaterial = FindRaftMaterial(materials, restSlot);
-            if (raftMaterial == null)
+            List<Part> parts = BuildParts(oarIndices, vertices, merged.transform, root.transform);
+            if (parts.Count < 3)
             {
-                Debug.LogError("[RAFT V14] Could not find the restored raft material on this renderer.");
+                Debug.LogError("[RAFT V14] Mixed oar slot did not contain enough disconnected pieces to separate rests safely.");
+                LogInventory(parts);
                 return false;
             }
 
-            List<string> preservedOarRenderers = FindOtherOarRenderers(wrapper, merged);
+            List<Part> cores = parts
+                .Where(p => p.triangleCount >= 4 && p.length >= 0.72f && p.ratio >= 2.0f)
+                .OrderByDescending(p => p.length)
+                .ToList();
 
-            // MATERIAL ASSIGNMENT ONLY. Do not touch the mesh: slot geometry stays
-            // exactly where it is, but the stationary rest now visually belongs to
-            // the raft. All other renderers (including the moving paddles) are left
-            // completely untouched.
-            Material oldRestMaterial = materials[restSlot];
-            materials[restSlot] = raftMaterial;
-            merged.sharedMaterials = materials;
-            EditorUtility.SetDirty(merged);
+            // If an import slightly changes scale/topology, keep the two longest
+            // clearly elongated components rather than failing on a fixed threshold.
+            if (cores.Count < 2)
+            {
+                cores = parts
+                    .Where(p => p.triangleCount >= 4 && p.length >= 0.50f && p.ratio >= 1.8f)
+                    .OrderByDescending(p => p.length)
+                    .Take(4)
+                    .ToList();
+            }
+
+            if (cores.Count < 2)
+            {
+                Debug.LogError("[RAFT V14] Could not identify at least two elongated moving-oar components.");
+                LogInventory(parts);
+                return false;
+            }
+
+            HashSet<Part> stationaryRests = new HashSet<Part>();
+            foreach (Part part in parts)
+            {
+                if (cores.Contains(part)) continue;
+
+                // Stationary oarlocks/rests are compact pieces sitting around the
+                // middle of a long shaft. Disconnected blade/end-cap pieces live
+                // near an endpoint and are deliberately NOT returned to the raft.
+                if (part.triangleCount > 16 || part.length > 0.62f) continue;
+
+                foreach (Part core in cores)
+                {
+                    if (IsMiddleShaftSupport(part, core))
+                    {
+                        stationaryRests.Add(part);
+                        break;
+                    }
+                }
+            }
+
+            if (stationaryRests.Count == 0)
+            {
+                Debug.LogError("[RAFT V14] No compact middle-of-shaft rest/support components were found. No prefab change was saved.");
+                LogInventory(parts);
+                return false;
+            }
+
+            HashSet<int> restOrdinals = new HashSet<int>();
+            foreach (Part part in stationaryRests)
+                foreach (int ordinal in part.triangleOrdinals)
+                    restOrdinals.Add(ordinal);
+
+            List<int> movingOarIndices = new List<int>(oarIndices.Length);
+            List<int> restIndices = new List<int>();
+            for (int i = 0, ordinal = 0; i + 2 < oarIndices.Length; i += 3, ordinal++)
+            {
+                List<int> destination = restOrdinals.Contains(ordinal) ? restIndices : movingOarIndices;
+                destination.Add(oarIndices[i]);
+                destination.Add(oarIndices[i + 1]);
+                destination.Add(oarIndices[i + 2]);
+            }
+
+            int returnedTriangles = restIndices.Count / 3;
+            int movingTriangles = movingOarIndices.Count / 3;
+            if (returnedTriangles <= 0 || movingTriangles < 8 ||
+                returnedTriangles > 32 || returnedTriangles >= Mathf.CeilToInt(totalOarTriangles * 0.40f))
+            {
+                Debug.LogError(
+                    "[RAFT V14] Safety stop after classification. total=" + totalOarTriangles +
+                    " moving=" + movingTriangles + " returnedToRaft=" + returnedTriangles +
+                    ". No prefab change was saved.");
+                LogInventory(parts);
+                return false;
+            }
+
+            Mesh refined = UnityEngine.Object.Instantiate(source);
+            refined.name = "RaftOarRestsBackToRaft_v14";
+
+            int[] raft0 = source.GetIndices(0);
+            List<int> raftCombined = new List<int>(raft0.Length + restIndices.Count);
+            raftCombined.AddRange(raft0);
+            raftCombined.AddRange(restIndices);
+
+            refined.SetTriangles(raftCombined, 0, false);
+            refined.SetTriangles(movingOarIndices, oarSlot, false);
+            refined.RecalculateBounds();
+
+            Directory.CreateDirectory(RecoveryFolder);
+            AssetDatabase.Refresh();
+            if (AssetDatabase.LoadAssetAtPath<Mesh>(MeshPath) != null)
+                AssetDatabase.DeleteAsset(MeshPath);
+            AssetDatabase.CreateAsset(refined, MeshPath);
+            Mesh savedMesh = AssetDatabase.LoadAssetAtPath<Mesh>(MeshPath);
+            if (savedMesh == null)
+            {
+                Debug.LogError("[RAFT V14] Could not save refined raft/oar mesh asset.");
+                return false;
+            }
+
+            MeshFilter filter = merged.GetComponent<MeshFilter>();
+            SkinnedMeshRenderer skinned = merged as SkinnedMeshRenderer;
+            if (filter != null) filter.sharedMesh = savedMesh;
+            else if (skinned != null) skinned.sharedMesh = savedMesh;
+            else
+            {
+                Debug.LogError("[RAFT V14] Target renderer has no assignable mesh component.");
+                return false;
+            }
 
             RemoveMarker(wrapper, MarkerName);
             new GameObject(MarkerName).transform.SetParent(wrapper, false);
             if (wrapper.Find(V13Marker) == null)
                 new GameObject(V13Marker).transform.SetParent(wrapper, false);
 
+            EditorUtility.SetDirty(merged);
+            if (filter != null) EditorUtility.SetDirty(filter);
+            if (skinned != null) EditorUtility.SetDirty(skinned);
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // Verify the serialized final slot matches the raft material.
-            GameObject saved = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-            Transform savedWrapper = saved != null ? saved.transform.Find(WrapperPath) : null;
-            Renderer savedMerged = savedWrapper != null ? FindMergedSplitRenderer(savedWrapper) : null;
-            Material[] savedMaterials = savedMerged != null ? savedMerged.sharedMaterials : null;
-            if (savedMaterials == null || savedMaterials.Length <= restSlot || savedMaterials[restSlot] == null ||
-                savedMaterials[restSlot] != raftMaterial)
-            {
-                Debug.LogError("[RAFT V14] Save verification failed; final rest slot did not serialize to the raft material.");
-                return false;
-            }
+            string restReport = string.Join(" | ", stationaryRests.OrderBy(p => p.center.x).Select(p =>
+                "id=" + p.id + " tris=" + p.triangleCount +
+                " len=" + p.length.ToString("0.000") +
+                " center=" + p.center.ToString("F3")));
 
             Debug.Log(
-                "[RAFT V14] SUCCESS — stationary oar rest/support now uses the raft material; moving oar renderers were untouched. " +
-                "restSlot=" + restSlot + " triangles=" + restTriangles +
-                " bounds=" + restBounds.size.ToString("F3") +
-                " oldMaterial=" + MaterialName(oldRestMaterial) +
-                " newMaterial=" + MaterialName(raftMaterial) +
-                " preservedOarRenderers=" + (preservedOarRenderers.Count > 0 ? string.Join(" | ", preservedOarRenderers) : "none-detected"));
+                "[RAFT V14] SUCCESS — only stationary middle-shaft oar rests/supports were returned to raft texture. " +
+                "Returned " + returnedTriangles + "/" + totalOarTriangles + " triangles; kept " +
+                movingTriangles + " moving-oar triangles on Oar Texture. Rests: " + restReport);
 
             if (force)
                 EditorUtility.DisplayDialog(
                     "Raft v14 Complete",
-                    "The small stationary parts the oars sit on now use the raft texture. The actual moving oar renderers were not changed.",
+                    "Only the moving oars keep the oar texture. The stationary rests/brackets they sit on now use the raft texture.",
                     "OK");
             return true;
         }
@@ -206,6 +347,137 @@ public static class RaftOarRestMaterialV14
         }
     }
 
+    private static bool IsMiddleShaftSupport(Part small, Part core)
+    {
+        Vector3 a = core.endpointA;
+        Vector3 b = core.endpointB;
+        Vector3 ab = b - a;
+        float sqr = ab.sqrMagnitude;
+        if (sqr < 0.0001f) return false;
+
+        float t = Vector3.Dot(small.center - a, ab) / sqr;
+        float clampedT = Mathf.Clamp01(t);
+        Vector3 closest = a + ab * clampedT;
+        float distance = Vector3.Distance(small.center, closest);
+
+        // The oar rest belongs near the pivot/middle of the shaft. End pieces at
+        // either blade/handle are kept on the oar even when they are tiny.
+        bool middle = t >= 0.20f && t <= 0.80f;
+        float tolerance = Mathf.Clamp(core.width * 2.2f + 0.06f, 0.12f, 0.34f);
+        return middle && distance <= tolerance;
+    }
+
+    private static List<Part> BuildParts(int[] indices, Vector3[] vertices, Transform rendererTransform, Transform boatRoot)
+    {
+        UnionFind uf = new UnionFind(vertices.Length);
+        for (int i = 0; i + 2 < indices.Length; i += 3)
+        {
+            int a = indices[i], b = indices[i + 1], c = indices[i + 2];
+            if (!Valid(a, vertices.Length) || !Valid(b, vertices.Length) || !Valid(c, vertices.Length)) continue;
+            uf.Union(a, b);
+            uf.Union(b, c);
+            uf.Union(c, a);
+        }
+
+        Dictionary<int, Part> map = new Dictionary<int, Part>();
+        int nextId = 0;
+        for (int i = 0, ordinal = 0; i + 2 < indices.Length; i += 3, ordinal++)
+        {
+            int a = indices[i], b = indices[i + 1], c = indices[i + 2];
+            if (!Valid(a, vertices.Length) || !Valid(b, vertices.Length) || !Valid(c, vertices.Length)) continue;
+            int key = uf.Find(a);
+            if (!map.TryGetValue(key, out Part part))
+            {
+                part = new Part { id = nextId++ };
+                map.Add(key, part);
+            }
+            part.vertices.Add(a);
+            part.vertices.Add(b);
+            part.vertices.Add(c);
+            part.triangleOrdinals.Add(ordinal);
+            part.triangleCount++;
+        }
+
+        foreach (Part part in map.Values)
+            FinalizePart(part, vertices, rendererTransform, boatRoot);
+
+        return map.Values.ToList();
+    }
+
+    private static void FinalizePart(Part part, Vector3[] vertices, Transform rendererTransform, Transform boatRoot)
+    {
+        List<Vector3> points = new List<Vector3>(part.vertices.Count);
+        Vector3 sum = Vector3.zero;
+        foreach (int index in part.vertices)
+        {
+            Vector3 world = rendererTransform.TransformPoint(vertices[index]);
+            Vector3 p = boatRoot.InverseTransformPoint(world);
+            points.Add(p);
+            sum += p;
+        }
+
+        if (points.Count == 0) return;
+        part.center = sum / points.Count;
+        if (points.Count < 2) return;
+
+        Vector3 a = Farthest(points, part.center);
+        Vector3 b = Farthest(points, a);
+        Vector3 delta = b - a;
+        part.length = delta.magnitude;
+        part.endpointA = a;
+        part.endpointB = b;
+        if (part.length < 0.0001f)
+        {
+            part.width = 0.01f;
+            part.ratio = 0f;
+            return;
+        }
+
+        Vector3 direction = delta / part.length;
+        float radius = 0f;
+        foreach (Vector3 p in points)
+        {
+            Vector3 d = p - part.center;
+            Vector3 perpendicular = d - direction * Vector3.Dot(d, direction);
+            radius = Mathf.Max(radius, perpendicular.magnitude);
+        }
+
+        part.width = Mathf.Max(0.012f, radius * 2f);
+        part.ratio = part.length / part.width;
+    }
+
+    private static Vector3 Farthest(List<Vector3> points, Vector3 origin)
+    {
+        Vector3 best = points[0];
+        float bestDistance = -1f;
+        foreach (Vector3 point in points)
+        {
+            float distance = (point - origin).sqrMagnitude;
+            if (distance > bestDistance)
+            {
+                bestDistance = distance;
+                best = point;
+            }
+        }
+        return best;
+    }
+
+    private static bool Valid(int index, int count)
+    {
+        return index >= 0 && index < count;
+    }
+
+    private static void LogInventory(List<Part> parts)
+    {
+        string report = string.Join(" | ", parts.OrderByDescending(p => p.length).Select(p =>
+            "id=" + p.id + " tris=" + p.triangleCount +
+            " len=" + p.length.ToString("0.000") +
+            " width=" + p.width.ToString("0.000") +
+            " ratio=" + p.ratio.ToString("0.00") +
+            " center=" + p.center.ToString("F3")));
+        Debug.Log("[RAFT V14] component inventory: " + report);
+    }
+
     private static Renderer FindMergedSplitRenderer(Transform wrapper)
     {
         Renderer best = null;
@@ -214,6 +486,10 @@ public static class RaftOarRestMaterialV14
         {
             Mesh mesh = GetMesh(renderer);
             if (mesh == null || mesh.subMeshCount < 2) continue;
+
+            Material[] materials = renderer.sharedMaterials ?? Array.Empty<Material>();
+            bool finalIsOar = materials.Length >= mesh.subMeshCount && IsOarMaterial(materials[mesh.subMeshCount - 1]);
+            if (!finalIsOar) continue;
 
             long score = mesh.vertexCount;
             string meshName = mesh.name ?? string.Empty;
@@ -230,55 +506,6 @@ public static class RaftOarRestMaterialV14
         return best;
     }
 
-    private static Material FindRaftMaterial(Material[] materials, int excludeSlot)
-    {
-        for (int i = 0; i < materials.Length; i++)
-        {
-            if (i == excludeSlot) continue;
-            Material material = materials[i];
-            if (material == null || IsOarMaterial(material)) continue;
-            Texture texture = material.mainTexture;
-            if ((material.name ?? string.Empty).IndexOf("Raft", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                (texture != null && texture.name.IndexOf("Raft", StringComparison.OrdinalIgnoreCase) >= 0))
-                return material;
-        }
-
-        return materials.Where((m, i) => i != excludeSlot && m != null && !IsOarMaterial(m)).FirstOrDefault();
-    }
-
-    private static List<string> FindOtherOarRenderers(Transform wrapper, Renderer merged)
-    {
-        List<string> result = new List<string>();
-        foreach (Renderer renderer in wrapper.GetComponentsInChildren<Renderer>(true))
-        {
-            if (renderer == null || renderer == merged) continue;
-            Material[] materials = renderer.sharedMaterials ?? Array.Empty<Material>();
-            if (!materials.Any(IsOarMaterial)) continue;
-            result.Add(AnimationUtility.CalculateTransformPath(renderer.transform, wrapper));
-        }
-        return result;
-    }
-
-    private static bool TryMeasureSubmesh(Mesh mesh, int[] indices, Transform rendererTransform, Transform boatRoot, out Bounds bounds)
-    {
-        bounds = default;
-        Vector3[] vertices;
-        try { vertices = mesh.vertices; }
-        catch { return false; }
-        if (vertices == null || vertices.Length == 0 || indices == null || indices.Length == 0) return false;
-
-        bool have = false;
-        foreach (int index in indices)
-        {
-            if (index < 0 || index >= vertices.Length) continue;
-            Vector3 world = rendererTransform.TransformPoint(vertices[index]);
-            Vector3 local = boatRoot.InverseTransformPoint(world);
-            if (!have) { bounds = new Bounds(local, Vector3.zero); have = true; }
-            else bounds.Encapsulate(local);
-        }
-        return have;
-    }
-
     private static bool IsOarMaterial(Material material)
     {
         if (material == null) return false;
@@ -289,12 +516,6 @@ public static class RaftOarRestMaterialV14
         Texture texture = material.mainTexture;
         return texture != null && (texture.name.IndexOf("Oar", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                    texture.name.IndexOf("Paddle", StringComparison.OrdinalIgnoreCase) >= 0);
-    }
-
-    private static string MaterialName(Material material)
-    {
-        if (material == null) return "NULL";
-        return material.name + "/" + (material.mainTexture != null ? material.mainTexture.name : "no-texture");
     }
 
     private static void RemoveMarker(Transform wrapper, string name)
