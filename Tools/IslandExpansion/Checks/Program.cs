@@ -46,7 +46,7 @@ class Program
   {float blend=IslandGeometry.StormBlend(new Vector3(400+x,0,35),newCenter,135,295);Check(blend<=prior && blend>=0 && blend<=1,"Continuous monotonic wave blend");Check(prior-blend<.011f,"No wave blend steps");prior=blend;}
   Check(prior==0,"Calm outside transition");
   foreach(int id in FishCatalog.ActiveIds)
-  {Check(ReefCatalog.MaximumWeight(id,1)>ReefCatalog.MaximumWeight(id,0),"Brinebreak size cap larger");Check(ReefCatalog.HealthMultiplier(1)>1,"Brinebreak harder");}
+  {Check(ReefCatalog.MaximumWeight(id,1)>ReefCatalog.MaximumWeight(id,0),"Brinebreak size cap larger");Check(ReefCatalog.HealthMultiplier(1)==1,"Biome no longer changes fish health");}
   Check(!new ShopLedger().brinebreakDiscovered,"Existing saves locked by default");
   ReefCatalog.BrinebreakDiscovered=false;Check(!ReefCatalog.Zones[1].Unlocked,"Travel locked");
   ReefCatalog.BrinebreakDiscovered=true;Check(ReefCatalog.Zones[1].Unlocked,"Discovery unlock");
