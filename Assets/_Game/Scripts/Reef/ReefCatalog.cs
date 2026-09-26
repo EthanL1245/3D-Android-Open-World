@@ -18,9 +18,7 @@ public static class ReefCatalog
         public bool Unlocked=>unlockedByDefault||(id==RuggedId&&BrinebreakDiscovered);
     }
 
-    // IDs 11/12 are Striped Bass and Spotted Sand Bass. Their Suncrest baseline
-    // weights intentionally match Sea Bass / Black Sea Bass because FishingRules
-    // includes baseline rarity in fish HP; this makes equal-weight fights exact.
+    // Embedded odds remain only as a fallback if an editable tuning CSV is invalid.
     public static readonly Zone[] Zones={
         new Zone(StarterId,StarterName,"A palm-lined beginner island, sandy coves and a broad shallow reef.",true,
             new float[]{20,11,13,6,0,2,22,22,4,6,6,13,6}),
@@ -31,15 +29,16 @@ public static class ReefCatalog
     };
 
     public static Zone Starter=>Zones[0];
-    public static float Weight(int species)=>species>=0&&species<Starter.weights.Length?Starter.weights[species]:0f;
+    public static float Weight(int species)
+    {
+        float configured;
+        if(FishingTuning.TryGetChance(species,0,0,out configured))return configured;
+        return species>=0&&species<Starter.weights.Length?Starter.weights[species]:0f;
+    }
     public static string Rarity(int id)=>Weight(id)>=18?"Common":Weight(id)>=10?"Uncommon":Weight(id)>=4?"Rare":"Very rare";
 
     private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2,4,8,6,12};
     private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12,8,4,8,10};
-
-    // Mackerel, Snapper, Sea Bass, Yellowtail, retired, Yellowfin, Yellow Goatfish,
-    // Black Spot Goatfish, Bigeye Tuna, Bonito, Black Sea Bass, Striped Bass,
-    // Spotted Sand Bass.
     private static readonly float[][] LureOdds=
     {
         new float[]{4,21,36,19,0,6,4,4,6,6,7,8,9},
@@ -65,21 +64,39 @@ public static class ReefCatalog
     }
 
     public static float MinimumWeight(int species,int biome)
-    {var fish=FishCatalog.Get(species);return biome==1?Mathf.Max(fish.MinWeightKg,fish.MaxWeightKg*.18f):fish.MinWeightKg;}
-    public static float MaximumWeight(int species,int biome)=>FishCatalog.Get(species).MaxWeightKg*(biome==1?1.6f:biome==2?2.25f:1f);
-    public static float HealthMultiplier(int biome)=>biome==1?1.4f:biome==2?1.7f:1f;
+    {
+        float minimum,maximum;
+        if(FishingTuning.TryGetWeightRange(species,biome,out minimum,out maximum))return minimum;
+        var fish=FishCatalog.Get(species);return biome==1?Mathf.Max(fish.MinWeightKg,fish.MaxWeightKg*.18f):fish.MinWeightKg;
+    }
+
+    public static float MaximumWeight(int species,int biome)
+    {
+        float minimum,maximum;
+        if(FishingTuning.TryGetWeightRange(species,biome,out minimum,out maximum))return maximum;
+        return FishCatalog.Get(species).MaxWeightKg*(biome==1?1.6f:biome==2?2.25f:1f);
+    }
+
+    // Health is now species + weight only. Kept for API compatibility with existing UI/code.
+    public static float HealthMultiplier(int biome)=>1f;
 
     private static float Total(float[] weights)
     {float total=0f;if(weights!=null)for(int i=0;i<weights.Length;i++)total+=Mathf.Max(0f,weights[i]);return total;}
 
     public static float EquippedChance(int species,int bait,int biome=0)
     {
+        float configured;
+        if(FishingTuning.TryGetChance(species,bait,biome,out configured))return configured;
         float[] weights=EquippedWeights(bait,biome);if(species<0||species>=weights.Length)return 0f;
         float total=Total(weights);return total>0f?Mathf.Max(0f,weights[species])/total*100f:0f;
     }
 
     public static int Roll(float random01,int bait=0,int biome=0)
     {
+        FishingTuning.RememberBiome(biome);
+        int configured;
+        if(FishingTuning.TryRollSpecies(random01,bait,biome,out configured))return configured;
+
         float[] weights=EquippedWeights(bait,biome);float total=Total(weights);if(total<=0f)return FishCatalog.ActiveIds[0];
         float pick=Mathf.Clamp01(random01)*total;int fallback=FishCatalog.ActiveIds[0];
         for(int i=0;i<weights.Length;i++)
