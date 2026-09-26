@@ -2,17 +2,17 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Makes the outer/deep-ocean biome visibly dangerous without changing the calmer
-/// shelf/coastal water. The existing OceanWater simulation remains authoritative;
-/// this component scales its real wave amplitudes/speeds so boats, bobbers and the
-/// rendered surface continue to agree, then darkens/opaques the same water material.
+/// Makes progressively deeper ocean water darker, less transparent, and more
+/// threatening while keeping the existing OceanWater simulation authoritative.
+/// Water visibility is driven by actual seabed depth instead of an abrupt biome
+/// boundary; deep-ocean waves then build gradually as the player travels offshore.
 /// </summary>
 [DefaultExecutionOrder(-650)]
 public sealed class DeepOceanWaterRuntime : MonoBehaviour
 {
     private const float DeepWaveMultiplier = 4.5f;
     private const float DeepWaveSpeedMultiplier = 1.35f;
-    private const float DeepAlpha = 0.985f;
+    private const float DeepAlpha = 1f;
 
     private static readonly Color DeepShallowColor = new Color(0.004f, 0.020f, 0.032f, 1f);
     private static readonly Color DeepDeepColor = new Color(0.001f, 0.006f, 0.014f, 1f);
@@ -31,6 +31,9 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
     private float baseAlpha, baseSmoothness, baseFoamStrength;
     private float roughBlend, darkBlend;
     private bool cached;
+
+    public float VisibilityBlend => darkBlend;
+    public float WaterDepth { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -71,15 +74,31 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         if (!cached) return;
 
         IslandExpansionWorld expansion = IslandExpansionWorld.Active;
-        bool deep = expansion != null && expansion.Ready && player != null && expansion.BiomeAt(player.position) == 2;
-        float offshore = deep ? expansion.OffshoreAt(player.position) : 0f;
+        float targetDark = 0f;
+        float targetRough = 0f;
+        WaterDepth = 0f;
 
-        // Crossing the biome boundary should already feel dangerous. Farther out,
-        // the sea grows into the full storm state instead of changing abruptly.
-        float targetRough = deep ? Mathf.Lerp(0.50f, 1f, offshore) : 0f;
-        float targetDark = deep ? Mathf.Lerp(0.78f, 1f, offshore) : 0f;
-        roughBlend = Mathf.MoveTowards(roughBlend, targetRough, Time.deltaTime * 0.70f);
-        darkBlend = Mathf.MoveTowards(darkBlend, targetDark, Time.deltaTime * 1.15f);
+        if (expansion != null && expansion.Ready && player != null)
+        {
+            // Use the generated seabed itself. This makes Suncrest shallows remain
+            // readable, then steadily removes bottom visibility as the sea floor
+            // falls away instead of changing suddenly at a biome border.
+            WaterDepth = Mathf.Max(0f, ocean.BaseWaterLevel - expansion.Height(player.position));
+            float depth01 = Mathf.InverseLerp(3.5f, 32f, WaterDepth);
+            targetDark = Mathf.SmoothStep(0f, 1f, depth01);
+
+            // Rough-water progression is specifically an outer-ocean effect. At
+            // the shelf edge it starts at normal ocean strength and builds over the
+            // next ~180 m, avoiding the previous instant wave jump.
+            if (expansion.BiomeAt(player.position) == 2)
+            {
+                float offshore = expansion.OffshoreAt(player.position);
+                targetRough = Mathf.SmoothStep(0f, 1f, offshore);
+            }
+        }
+
+        roughBlend = Mathf.MoveTowards(roughBlend, targetRough, Time.deltaTime * 0.35f);
+        darkBlend = Mathf.MoveTowards(darkBlend, targetDark, Time.deltaTime * 0.45f);
 
         ApplyWaveSimulation();
     }
@@ -142,6 +161,10 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
 
     private void OnDisable()
     {
+        WaterDepth = 0f;
+        darkBlend = 0f;
+        roughBlend = 0f;
+
         if (!cached || ocean == null) return;
         amplitude1Field?.SetValue(ocean, baseAmplitude1);
         amplitude2Field?.SetValue(ocean, baseAmplitude2);
