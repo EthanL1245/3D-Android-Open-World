@@ -1,0 +1,164 @@
+using System.Reflection;
+using UnityEngine;
+
+/// <summary>
+/// Makes the outer/deep-ocean biome visibly dangerous without changing the calmer
+/// shelf/coastal water. The existing OceanWater simulation remains authoritative;
+/// this component scales its real wave amplitudes/speeds so boats, bobbers and the
+/// rendered surface continue to agree, then darkens/opaques the same water material.
+/// </summary>
+[DefaultExecutionOrder(-650)]
+public sealed class DeepOceanWaterRuntime : MonoBehaviour
+{
+    private const float DeepWaveMultiplier = 4.5f;
+    private const float DeepWaveSpeedMultiplier = 1.35f;
+    private const float DeepAlpha = 0.985f;
+
+    private static readonly Color DeepShallowColor = new Color(0.004f, 0.020f, 0.032f, 1f);
+    private static readonly Color DeepDeepColor = new Color(0.001f, 0.006f, 0.014f, 1f);
+
+    private OceanWater ocean;
+    private MeshRenderer rendererRef;
+    private Transform player;
+    private MaterialPropertyBlock block;
+
+    private FieldInfo amplitude1Field, amplitude2Field, amplitude3Field;
+    private FieldInfo speed1Field, speed2Field, speed3Field;
+
+    private float baseAmplitude1, baseAmplitude2, baseAmplitude3;
+    private float baseSpeed1, baseSpeed2, baseSpeed3;
+    private Color baseShallowColor, baseDeepColor;
+    private float baseAlpha, baseSmoothness, baseFoamStrength;
+    private float roughBlend, darkBlend;
+    private bool cached;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Install()
+    {
+        foreach (OceanWater water in FindObjectsByType<OceanWater>(FindObjectsSortMode.None))
+        {
+            if (water != null && water.GetComponent<DeepOceanWaterRuntime>() == null)
+                water.gameObject.AddComponent<DeepOceanWaterRuntime>();
+        }
+    }
+
+    private void Awake()
+    {
+        ocean = GetComponent<OceanWater>();
+        rendererRef = GetComponent<MeshRenderer>();
+        block = new MaterialPropertyBlock();
+
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        System.Type type = typeof(OceanWater);
+        amplitude1Field = type.GetField("waveAmplitude1", flags);
+        amplitude2Field = type.GetField("waveAmplitude2", flags);
+        amplitude3Field = type.GetField("waveAmplitude3", flags);
+        speed1Field = type.GetField("waveSpeed1", flags);
+        speed2Field = type.GetField("waveSpeed2", flags);
+        speed3Field = type.GetField("waveSpeed3", flags);
+    }
+
+    private void Start()
+    {
+        CacheBaseline();
+        ResolvePlayer();
+    }
+
+    private void Update()
+    {
+        if (!cached) CacheBaseline();
+        if (player == null) ResolvePlayer();
+        if (!cached) return;
+
+        IslandExpansionWorld expansion = IslandExpansionWorld.Active;
+        bool deep = expansion != null && expansion.Ready && player != null && expansion.BiomeAt(player.position) == 2;
+        float offshore = deep ? expansion.OffshoreAt(player.position) : 0f;
+
+        // Crossing the biome boundary should already feel dangerous. Farther out,
+        // the sea grows into the full storm state instead of changing abruptly.
+        float targetRough = deep ? Mathf.Lerp(0.50f, 1f, offshore) : 0f;
+        float targetDark = deep ? Mathf.Lerp(0.78f, 1f, offshore) : 0f;
+        roughBlend = Mathf.MoveTowards(roughBlend, targetRough, Time.deltaTime * 0.70f);
+        darkBlend = Mathf.MoveTowards(darkBlend, targetDark, Time.deltaTime * 1.15f);
+
+        ApplyWaveSimulation();
+    }
+
+    private void LateUpdate()
+    {
+        if (!cached || rendererRef == null) return;
+
+        rendererRef.GetPropertyBlock(block);
+        block.SetColor("_ShallowColor", Color.Lerp(baseShallowColor, DeepShallowColor, darkBlend));
+        block.SetColor("_DeepColor", Color.Lerp(baseDeepColor, DeepDeepColor, darkBlend));
+        block.SetFloat("_Alpha", Mathf.Lerp(baseAlpha, DeepAlpha, darkBlend));
+        block.SetFloat("_Smoothness", Mathf.Lerp(baseSmoothness, 0.93f, darkBlend));
+        block.SetFloat("_FoamStrength", Mathf.Lerp(baseFoamStrength, 1f, roughBlend));
+        rendererRef.SetPropertyBlock(block);
+    }
+
+    private void CacheBaseline()
+    {
+        if (cached || ocean == null || rendererRef == null ||
+            amplitude1Field == null || amplitude2Field == null || amplitude3Field == null ||
+            speed1Field == null || speed2Field == null || speed3Field == null)
+            return;
+
+        baseAmplitude1 = (float)amplitude1Field.GetValue(ocean);
+        baseAmplitude2 = (float)amplitude2Field.GetValue(ocean);
+        baseAmplitude3 = (float)amplitude3Field.GetValue(ocean);
+        baseSpeed1 = (float)speed1Field.GetValue(ocean);
+        baseSpeed2 = (float)speed2Field.GetValue(ocean);
+        baseSpeed3 = (float)speed3Field.GetValue(ocean);
+
+        Material material = rendererRef.sharedMaterial;
+        baseShallowColor = material != null && material.HasProperty("_ShallowColor")
+            ? material.GetColor("_ShallowColor") : new Color(0.05f, 0.55f, 0.72f, 1f);
+        baseDeepColor = material != null && material.HasProperty("_DeepColor")
+            ? material.GetColor("_DeepColor") : new Color(0.01f, 0.10f, 0.28f, 1f);
+        baseAlpha = material != null && material.HasProperty("_Alpha") ? material.GetFloat("_Alpha") : 0.72f;
+        baseSmoothness = material != null && material.HasProperty("_Smoothness") ? material.GetFloat("_Smoothness") : 0.82f;
+        baseFoamStrength = material != null && material.HasProperty("_FoamStrength") ? material.GetFloat("_FoamStrength") : 1f;
+        cached = true;
+    }
+
+    private void ResolvePlayer()
+    {
+        FirstPersonController controller = FindFirstObjectByType<FirstPersonController>();
+        player = controller != null ? controller.transform : Camera.main != null ? Camera.main.transform : null;
+    }
+
+    private void ApplyWaveSimulation()
+    {
+        float amplitudeScale = Mathf.Lerp(1f, DeepWaveMultiplier, roughBlend);
+        float speedScale = Mathf.Lerp(1f, DeepWaveSpeedMultiplier, roughBlend);
+        amplitude1Field.SetValue(ocean, baseAmplitude1 * amplitudeScale);
+        amplitude2Field.SetValue(ocean, baseAmplitude2 * amplitudeScale);
+        amplitude3Field.SetValue(ocean, baseAmplitude3 * amplitudeScale);
+        speed1Field.SetValue(ocean, baseSpeed1 * speedScale);
+        speed2Field.SetValue(ocean, baseSpeed2 * speedScale);
+        speed3Field.SetValue(ocean, baseSpeed3 * speedScale);
+    }
+
+    private void OnDisable()
+    {
+        if (!cached || ocean == null) return;
+        amplitude1Field?.SetValue(ocean, baseAmplitude1);
+        amplitude2Field?.SetValue(ocean, baseAmplitude2);
+        amplitude3Field?.SetValue(ocean, baseAmplitude3);
+        speed1Field?.SetValue(ocean, baseSpeed1);
+        speed2Field?.SetValue(ocean, baseSpeed2);
+        speed3Field?.SetValue(ocean, baseSpeed3);
+
+        if (rendererRef != null)
+        {
+            rendererRef.GetPropertyBlock(block);
+            block.SetColor("_ShallowColor", baseShallowColor);
+            block.SetColor("_DeepColor", baseDeepColor);
+            block.SetFloat("_Alpha", baseAlpha);
+            block.SetFloat("_Smoothness", baseSmoothness);
+            block.SetFloat("_FoamStrength", baseFoamStrength);
+            rendererRef.SetPropertyBlock(block);
+        }
+    }
+}
