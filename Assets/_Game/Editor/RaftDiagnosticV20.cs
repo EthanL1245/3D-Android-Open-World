@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// Non-destructive raft diagnostic. This deliberately changes NOTHING on the raft.
@@ -198,7 +199,6 @@ public static class RaftDiagnosticV20
         try { File.WriteAllText(path, text); } catch (Exception e) { Debug.LogError("[RAFT V20] Could not write report file: " + e.Message); }
         EditorGUIUtility.systemCopyBuffer = text;
 
-        // Console is intentionally split into manageable chunks. The file/clipboard is the canonical full report.
         string[] lines = text.Split(new[] { '\n' }, StringSplitOptions.None);
         foreach (string line in lines)
             if (!string.IsNullOrWhiteSpace(line)) Debug.Log("[RAFT V20 MAP] " + line.TrimEnd('\r'));
