@@ -2,15 +2,23 @@ using UnityEngine;
 
 public static class BoatClearance
 {
+    // Keep the authored raft footprint in code so local BoatData prefab references
+    // can remain untouched by Git pulls. The visual importer still fits the hidden
+    // deck/hull supports directly to the imported Raft.blend bounds.
+    private static readonly Vector3 AuthoredRaftHullSize = new Vector3(4.563371f,1.254236f,4.407107f);
+    private const float AuthoredRaftDraft = .45f;
+
     // Full footprint plus a one-metre buffer, not only the centre ray.
-    // RaftModelImporter now writes the actual authored Raft.blend bounds into the
-    // Raft BoatData asset, so no model-specific hard-coded footprint is needed here.
     public static bool Valid(BoatData data, Vector3 position, Quaternion rotation, OceanWater water, Transform ignored=null, Transform player=null)
     {
         if(data==null || water==null || PondWater.TrySurface(position,out _))return false;
-        if(data.HullSize.x<=0 || data.HullSize.z<=0 || data.Draft<0)return false;
 
-        Vector3 half=data.HullSize*.5f+new Vector3(1,0,1);
+        bool authoredRaft=data.ID=="raft";
+        Vector3 hullSize=authoredRaft?AuthoredRaftHullSize:data.HullSize;
+        float draft=authoredRaft?AuthoredRaftDraft:data.Draft;
+        if(hullSize.x<=0 || hullSize.z<=0 || draft<0)return false;
+
+        Vector3 half=hullSize*.5f+new Vector3(1,0,1);
         var terrains=Terrain.activeTerrains;
         for(float x=-half.x;x<=half.x+.01f;x+=half.x/3f)
         for(float z=-half.z;z<=half.z+.01f;z+=half.z/4f)
@@ -23,13 +31,13 @@ public static class BoatClearance
                 if(local.x<0 || local.z<0 || local.x>size.x || local.z>size.z)continue;
                 found=true;
                 float ground=terrain.SampleHeight(p)+terrain.transform.position.y;
-                if(water.BaseWaterLevel-ground<data.Draft+.8f)return false;
+                if(water.BaseWaterLevel-ground<draft+.8f)return false;
             }
             // No known bathymetry: fail closed instead of allowing an unseen shore.
             if(!found)return false;
         }
-        half.y=(data.Draft+2f)*.5f;
-        foreach(var c in Physics.OverlapBox(position+Vector3.up*((2f-data.Draft)*.5f),half,rotation,~0,QueryTriggerInteraction.Ignore))
+        half.y=(draft+2f)*.5f;
+        foreach(var c in Physics.OverlapBox(position+Vector3.up*((2f-draft)*.5f),half,rotation,~0,QueryTriggerInteraction.Ignore))
         {
             var rider=c.GetComponentInParent<BoatPassenger>();
             if(rider!=null && rider.Boat!=null && ignored==rider.Boat.transform)continue;
