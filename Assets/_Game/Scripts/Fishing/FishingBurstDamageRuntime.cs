@@ -144,11 +144,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             bool heldNow = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
             int activeBait = ActiveBaitField != null ? (int)ActiveBaitField.GetValue(fishing) : ShopCatalog.StarterLure;
 
-            // Starter bait uses the same action for the manual HOOK press, so that
+            // Consumable bait enters Fighting from a manual HOOK press, so that
             // press must be released before it can begin earning reel time. Permanent
-            // lures auto-hook; if REEL is already held when the bite starts, that
-            // held input intentionally carries straight into the fight.
-            waitForHookRelease = activeBait == ShopCatalog.StarterLure && heldNow;
+            // lures auto-hook while REEL is already held; that same continuous hold
+            // must start the 0.35 s damage clock immediately without a release/repress.
+            waitForHookRelease = activeBait != ShopCatalog.StarterLure && heldNow;
         }
 
         // FishingSystem.Update ran earlier this frame. Restore the authoritative HP
