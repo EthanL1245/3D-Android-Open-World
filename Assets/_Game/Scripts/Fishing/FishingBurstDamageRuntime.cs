@@ -10,22 +10,21 @@ using UnityEngine;
 /// make a 4-8 damage Level 2 rod visibly show -1/-2/-3, and can mark a tiny popup as
 /// critical even though the advertised critical is 2x a full burst.
 ///
-/// This runtime suppresses only that legacy frame damage while a fight is active and
-/// applies one authoritative randomized burst whenever REEL is pressed, then every
-/// 0.35 s while it remains held:
+/// Damage is now earned strictly from ACTUAL REEL HOLD TIME. Every 0.35 seconds of
+/// accumulated held REEL time produces one authoritative randomized burst:
 ///   Woodland: 2-4
 ///   Level 2:  4-8, 5% critical, critical = 8-16
 ///   Level 3:  6-12, 8% critical, critical = 12-24
 ///
-/// The displayed popup is the rolled hit, including legitimate overkill on the final
-/// blow, while the health bar clamps at zero. This guarantees that every Level 2
-/// normal popup is 4-8 and every Level 2 critical popup is 8-16 instead of showing a
-/// misleading capped -1/-2/-3/-4 when the fish has little health remaining.
+/// Pressing REEL does not deal an instant hit. Releasing and rapidly tapping also
+/// does not reset or accelerate the clock: only the sum of time the input is truly
+/// held advances damage. This removes the tap-spam exploit while keeping continuous
+/// reeling at the same 0.35-second burst cadence.
 /// </summary>
 [DefaultExecutionOrder(2200)]
 public sealed class FishingBurstDamageRuntime : MonoBehaviour
 {
-    private const float RepeatSeconds = 0.35f;
+    private const float SecondsPerBurst = 0.35f;
     private const float SuppressedLegacyDisplayTimer = -1000f;
 
     private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -47,9 +46,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private Level2FishingRodRuntime legacyUpgradeRuntime;
 
     private bool inFight;
-    private bool wasReeling;
     private bool waitForHookRelease;
-    private float heldBurstTimer;
+    private float accumulatedReelSeconds;
     private int authoritativeHp;
 
     public static int NormalMinimumForTier(int tier)
@@ -128,21 +126,21 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         {
             inFight = true;
             authoritativeHp = maxHp;
-            heldBurstTimer = 0f;
-            wasReeling = false;
+            accumulatedReelSeconds = 0f;
 
             bool heldNow = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
             int activeBait = ActiveBaitField != null ? (int)ActiveBaitField.GetValue(fishing) : ShopCatalog.StarterLure;
-            // A normal HOOK tap must not itself count as a REEL attack. Lures are
-            // different: their existing held REEL intentionally carries into fight.
-            waitForHookRelease = activeBait != ShopCatalog.StarterLure && heldNow;
+
+            // Starter bait uses the same action for the manual HOOK press, so that
+            // press must be released before it can begin earning reel time. Permanent
+            // lures auto-hook; if REEL is already held when the bite starts, that
+            // held input intentionally carries straight into the fight.
+            waitForHookRelease = activeBait == ShopCatalog.StarterLure && heldNow;
         }
 
         // FishingSystem.Update ran earlier this frame. Restore the authoritative HP
-        // before applying our discrete burst so any legacy frame tick cannot leak
-        // into health or the popup. Resetting damageFraction to ZERO (not a negative
-        // number) is important: a negative accumulator would make the legacy code
-        // calculate negative damage and briefly heal the fish on the next frame.
+        // before applying our burst so legacy frame ticks cannot leak into health or
+        // spawn their old -1/-2/-3 popups.
         WriteAuthoritativeHealth(maxHp);
         SuppressLegacyDamageFields();
 
@@ -156,33 +154,23 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         if (waitForHookRelease)
         {
             if (!reeling) waitForHookRelease = false;
-            wasReeling = reeling;
             return;
         }
 
         if (reeling)
         {
-            if (!wasReeling)
+            // The only thing that advances damage is real time spent holding REEL.
+            // Do NOT award a burst on button-down and do NOT reset this accumulator
+            // on release. Therefore 7 x 0.05 s taps equal 0.35 s of reel time, not
+            // seven full hits, while a continuous hold behaves identically.
+            accumulatedReelSeconds += Time.deltaTime;
+            while (accumulatedReelSeconds >= SecondsPerBurst && authoritativeHp > 0)
             {
+                accumulatedReelSeconds -= SecondsPerBurst;
                 DealBurst(maxHp);
-                heldBurstTimer = 0f;
             }
-            else
-            {
-                heldBurstTimer += Time.deltaTime;
-                while (heldBurstTimer >= RepeatSeconds && authoritativeHp > 0)
-                {
-                    heldBurstTimer -= RepeatSeconds;
-                    DealBurst(maxHp);
-                }
-            }
-        }
-        else
-        {
-            heldBurstTimer = 0f;
         }
 
-        wasReeling = reeling;
         WriteAuthoritativeHealth(maxHp);
         SuppressLegacyDamageFields();
         UnconsciousField.SetValue(fishing, authoritativeHp <= 0);
@@ -246,9 +234,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         }
 
         inFight = false;
-        wasReeling = false;
         waitForHookRelease = false;
-        heldBurstTimer = 0f;
+        accumulatedReelSeconds = 0f;
         FishingDamagePresentation.ClearPendingCritical();
 
         if (legacyUpgradeRuntime != null && !legacyUpgradeRuntime.enabled)
