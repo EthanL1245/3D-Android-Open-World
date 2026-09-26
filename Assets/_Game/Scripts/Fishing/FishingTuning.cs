@@ -4,9 +4,9 @@ using System.Globalization;
 using UnityEngine;
 
 /// <summary>
-/// Single runtime contract for editable fishing balance CSVs under
-/// Assets/Resources/FishingTuning. Invalid data never silently normalizes: the
-/// configured system is disabled and legacy rules remain available as a fallback.
+/// Runtime contract for the human-editable fishing balance CSVs under
+/// Assets/Resources/FishingTuning. Invalid data is rejected instead of silently
+/// normalized; callers then fall back to the embedded legacy rules.
 /// </summary>
 public static class FishingTuning
 {
@@ -26,11 +26,13 @@ public static class FishingTuning
     {
         public string BiomeId;
         public int SpeciesId;
+        public float MinKg;
+        public float P01Kg;
         public float P25Kg;
         public float P50Kg;
         public float P75Kg;
-
-        public float SigmaKg => (P75Kg-P25Kg)/(2f*0.67448975f);
+        public float P99Kg;
+        public float MaxKg;
     }
 
     private const string StatsResource="FishingTuning/FishStats";
@@ -86,14 +88,20 @@ public static class FishingTuning
 
     public static bool TryGetSpeciesStats(int species,out SpeciesStats stats)
     {
+        // Assign first so C# definite-assignment rules are satisfied even when
+        // validation is false and the dictionary lookup is intentionally skipped.
+        stats=null;
         EnsureLoaded();
-        return valid && Stats.TryGetValue(Canonical(species),out stats);
+        if(!valid)return false;
+        return Stats.TryGetValue(Canonical(species),out stats);
     }
 
     public static bool TryGetWeightDistribution(int species,int biome,out WeightDistribution row)
     {
+        row=null;
         EnsureLoaded();
-        return valid && WeightRows.TryGetValue(WeightKey(BiomeId(biome),Canonical(species)),out row);
+        if(!valid)return false;
+        return WeightRows.TryGetValue(WeightKey(BiomeId(biome),Canonical(species)),out row);
     }
 
     public static bool TryGetQuartiles(int species,int biome,out float p25,out float p50,out float p75)
@@ -110,26 +118,31 @@ public static class FishingTuning
     {
         minimum=maximum=0f;
         WeightDistribution row;
-        SpeciesStats stats;
-        if(!TryGetWeightDistribution(species,biome,out row) || !TryGetSpeciesStats(species,out stats))return false;
-        // The index shows the practical central 99.7% range of the configured normal,
-        // clamped to the species' absolute physical/gameplay min/max bounds.
-        float sigma=row.SigmaKg;
-        minimum=Mathf.Max(stats.MinWeightKg,row.P50Kg-3f*sigma);
-        maximum=Mathf.Min(stats.MaxWeightKg,row.P50Kg+3f*sigma);
-        return true;
+        if(!TryGetWeightDistribution(species,biome,out row))return false;
+        minimum=row.MinKg;maximum=row.MaxKg;return true;
     }
 
     public static bool TryRollWeight(int species,int biome,float random01,out float kg)
     {
         kg=0f;
         WeightDistribution row;
-        SpeciesStats stats;
-        if(!TryGetWeightDistribution(species,biome,out row) || !TryGetSpeciesStats(species,out stats))return false;
-        double p=Math.Max(0.000001,Math.Min(0.999999,random01));
-        double z=InverseNormal(p);
-        kg=Mathf.Clamp(row.P50Kg+(float)z*row.SigmaKg,stats.MinWeightKg,stats.MaxWeightKg);
+        if(!TryGetWeightDistribution(species,biome,out row))return false;
+        kg=WeightAtPercentile(row,Mathf.Clamp01(random01));
         return true;
+    }
+
+    // This is deliberately percentile-defined instead of a textbook normal/skew-normal.
+    // It gives the tuning file exact, intuitive control and has no clamped pile-up at
+    // either hard bound. A uniform random percentile is mapped through these anchors:
+    //   0%, 1%, 25%, 50%, 75%, 99%, 100%.
+    private static float WeightAtPercentile(WeightDistribution row,float p)
+    {
+        if(p<=.01f)return Mathf.Lerp(row.MinKg,row.P01Kg,p/.01f);
+        if(p<=.25f)return Mathf.Lerp(row.P01Kg,row.P25Kg,(p-.01f)/.24f);
+        if(p<=.50f)return Mathf.Lerp(row.P25Kg,row.P50Kg,(p-.25f)/.25f);
+        if(p<=.75f)return Mathf.Lerp(row.P50Kg,row.P75Kg,(p-.50f)/.25f);
+        if(p<=.99f)return Mathf.Lerp(row.P75Kg,row.P99Kg,(p-.75f)/.24f);
+        return Mathf.Lerp(row.P99Kg,row.MaxKg,(p-.99f)/.01f);
     }
 
     public static bool TryGetChance(int species,int bait,int biome,out float percent)
@@ -181,9 +194,8 @@ public static class FishingTuning
         return true;
     }
 
-    // Endpoint-defined parabola convention: t=0 at minimum weight, t=1 at maximum,
-    // value=min+(max-min)*t^2. This uniquely supplies the missing third constraint by
-    // placing the parabola's vertex (zero slope) at the minimum-weight endpoint.
+    // Endpoint-defined parabola: t=0 at the species-wide minimum weight and t=1 at
+    // the species-wide maximum. The minimum endpoint is the parabola's vertex.
     public static float QuadraticByWeight(float weight,float minWeight,float maxWeight,float minValue,float maxValue)
     {
         if(maxWeight<=minWeight)return maxValue;
@@ -254,24 +266,28 @@ public static class FishingTuning
             string line=lines[lineIndex].Trim();
             if(Ignore(line) || line.StartsWith("biomeId,"))continue;
             string[] c=line.Split(',');
-            if(c.Length!=6)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" must have 6 columns.");
-            string biome=c[0].Trim();int id;float p25,p50,p75;
+            if(c.Length!=10)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" must have 10 columns.");
+
+            string biome=c[0].Trim();
+            int id;
+            float min,p01,p25,p50,p75,p99,max;
             if(BiomeIndex(biome)<0)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" has unknown biome '"+biome+"'.");
-            if(!Int(c[1],out id) || !Float(c[3],out p25) || !Float(c[4],out p50) || !Float(c[5],out p75))
+            if(!Int(c[1],out id) || !Float(c[3],out min) || !Float(c[4],out p01) || !Float(c[5],out p25) ||
+               !Float(c[6],out p50) || !Float(c[7],out p75) || !Float(c[8],out p99) || !Float(c[9],out max))
                 return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" contains an invalid number.");
+
             id=Canonical(id);
             SpeciesStats stats;
             if(!Stats.TryGetValue(id,out stats))return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" references species "+id+" before/without FishStats.");
-            if(!(p25<p50 && p50<p75))return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires P25 < P50 < P75.");
-            float midpoint=(p25+p75)*.5f;
-            float symmetryTolerance=Mathf.Max(.005f,(p75-p25)*.01f);
-            if(Mathf.Abs(p50-midpoint)>symmetryTolerance)
-                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" is not a normal distribution: P50 must equal the midpoint of P25/P75 (within "+symmetryTolerance.ToString("0.###",CultureInfo.InvariantCulture)+" kg). For asymmetric quartiles use a skewed distribution instead.");
-            if(p25<stats.MinWeightKg || p75>stats.MaxWeightKg)
-                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" quartiles must stay inside FishStats min/max weight.");
+            if(!(min<p01 && p01<p25 && p25<p50 && p50<p75 && p75<p99 && p99<max))
+                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires min < P01 < P25 < P50 < P75 < P99 < max.");
+            if(min<stats.MinWeightKg || max>stats.MaxWeightKg)
+                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" hard min/max must stay inside FishStats species min/max ("+
+                    stats.MinWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+"–"+stats.MaxWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+" kg).");
+
             string key=WeightKey(biome,id);
             if(WeightRows.ContainsKey(key))return Fail("BiomeFishWeights.csv has duplicate row for "+biome+" species "+id+".");
-            WeightRows[key]=new WeightDistribution{BiomeId=biome,SpeciesId=id,P25Kg=p25,P50Kg=p50,P75Kg=p75};
+            WeightRows[key]=new WeightDistribution{BiomeId=biome,SpeciesId=id,MinKg=min,P01Kg=p01,P25Kg=p25,P50Kg=p50,P75Kg=p75,P99Kg=p99,MaxKg=max};
         }
         return true;
     }
@@ -352,27 +368,5 @@ public static class FishingTuning
     {
         for(int i=0;i<RequiredBaits.Length;i++)if(string.Equals(RequiredBaits[i],bait,StringComparison.OrdinalIgnoreCase))return true;
         return false;
-    }
-
-    // Peter J. Acklam's rational approximation of the inverse standard-normal CDF.
-    private static double InverseNormal(double p)
-    {
-        double[] a={-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00};
-        double[] b={-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01};
-        double[] c={-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00};
-        double[] d={7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00};
-        const double plow=.02425,phigh=1-.02425;
-        if(p<plow)
-        {
-            double q=Math.Sqrt(-2*Math.Log(p));
-            return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-        }
-        if(p>phigh)
-        {
-            double q=Math.Sqrt(-2*Math.Log(1-p));
-            return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-        }
-        double r=p-.5;double s=r*r;
-        return (((((a[0]*s+a[1])*s+a[2])*s+a[3])*s+a[4])*s+a[5])*r/(((((b[0]*s+b[1])*s+b[2])*s+b[3])*s+b[4])*s+1);
     }
 }
