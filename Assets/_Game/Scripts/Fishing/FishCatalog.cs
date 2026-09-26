@@ -34,11 +34,14 @@ public struct FishSpeciesDefinition
 
 public static class FishCatalog
 {
-    public const int BigeyeTunaId = 8;
     public const int RedSnapperId = 1;
     public const int YellowfinTunaId = 5;
     public const int YellowGoatfishId = 6;
     public const int BlackSpotGoatfishId = 7;
+    public const int BigeyeTunaId = 8;
+    public const int BonitoId = 9;
+    public const int BlackSeaBassId = 10;
+
     private static readonly FishSpeciesDefinition[] Species =
     {
         new FishSpeciesDefinition(
@@ -112,11 +115,42 @@ public static class FishCatalog
             14.0f,
             44
         ),
-        new FishSpeciesDefinition("Bigeye Tuna",new Color(.1f,.22f,.32f),new Color(.75f,.8f,.8f),3f,40f,.86f,4f,220)
+        new FishSpeciesDefinition(
+            "Bigeye Tuna",
+            new Color(.1f,.22f,.32f),
+            new Color(.75f,.8f,.8f),
+            3f,
+            40f,
+            .86f,
+            4f,
+            220
+        ),
+        // Bonito fights a little harder than Sea Bass, but remains below Yellowtail.
+        new FishSpeciesDefinition(
+            "Bonito",
+            new Color(0.08f,0.23f,0.38f),
+            new Color(0.72f,0.82f,0.86f),
+            0.50f,
+            5.00f,
+            0.58f,
+            6f,
+            78
+        ),
+        // User-defined fight difficulty: exactly the same as Yellowtail.
+        new FishSpeciesDefinition(
+            "Black Sea Bass",
+            new Color(0.10f,0.14f,0.18f),
+            new Color(0.50f,0.57f,0.62f),
+            0.35f,
+            2.00f,
+            0.68f,
+            6f,
+            74
+        )
     };
 
     public static int Count => Species.Length;
-    public static readonly int[] ActiveIds = {0,1,2,3,5,6,7,8};
+    public static readonly int[] ActiveIds = {0,1,2,3,5,6,7,8,9,10};
     public static int CanonicalId(int id) => id==4 ? YellowfinTunaId : id;
 
     public static FishSpeciesDefinition Get(int id)
@@ -132,26 +166,15 @@ public static class FishCatalog
 
     public static float RollWeight(int speciesId)
     {
-        FishSpeciesDefinition definition =
-            Get(speciesId);
-
+        FishSpeciesDefinition definition = Get(speciesId);
         float t = Random.value;
-
         t = t * t;
-
-        return Mathf.Lerp(
-            definition.MinWeightKg,
-            definition.MaxWeightKg,
-            t
-        );
+        return Mathf.Lerp(definition.MinWeightKg,definition.MaxWeightKg,t);
     }
 
-    public static int GetSellValue(
-        int speciesId,
-        float weightKg)
+    public static int GetSellValue(int speciesId,float weightKg)
     {
-        FishSpeciesDefinition species =
-            Get(speciesId);
+        FishSpeciesDefinition species = Get(speciesId);
 
         // The Palm Pond and other special sources can generate genuinely tiny
         // 5–15 cm fish. Species rarity does not make those miniature catches
@@ -164,32 +187,12 @@ public static class FishCatalog
             return Mathf.Clamp(Mathf.RoundToInt(Mathf.Lerp(2f,12f,tiny)),1,12);
         }
 
-        float weightPercent =
-            Mathf.InverseLerp(
-                species.MinWeightKg,
-                species.MaxWeightKg,
-                weightKg
-            );
-
-        float weightMultiplier =
-            Mathf.Lerp(
-                0.70f,
-                1.90f,
-                weightPercent
-            );
-
-        return Mathf.Max(
-            1,
-            Mathf.RoundToInt(
-                species.BaseSellCoins *
-                weightMultiplier
-            )
-        );
+        float weightPercent=Mathf.InverseLerp(species.MinWeightKg,species.MaxWeightKg,weightKg);
+        float weightMultiplier=Mathf.Lerp(0.70f,1.90f,weightPercent);
+        return Mathf.Max(1,Mathf.RoundToInt(species.BaseSellCoins*weightMultiplier));
     }
 
-    public static float GetVisualScale(
-        int speciesId,
-        float weightKg)
+    public static float GetVisualScale(int speciesId,float weightKg)
     {
         return FishSizeTable.LengthMetres(speciesId,weightKg);
     }
