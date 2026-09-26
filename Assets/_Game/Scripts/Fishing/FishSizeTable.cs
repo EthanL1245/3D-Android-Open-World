@@ -15,7 +15,9 @@ public static class FishSizeTable
         new float[] {0.0016784f, 0.0138047f, 0.0473525f, 0.1135421f, 0.2237502f, 0.3894703f, 0.6222897f, 0.9338736f, 1.3359548f, 1.8403251f}, // Parupeneus spilurus
         new float[] {0.0018536f, 0.0151406f, 0.0517248f, 0.1236696f, 0.2431646f, 0.4224930f, 0.6740131f, 1.0101455f, 1.4433647f, 1.9861922f, 2.6511916f, 3.4509642f, 4.3981459f, 5.5054044f, 6.7854365f, 8.2509665f, 9.9147440f, 11.7895429f, 13.8881592f, 16.2234107f, 18.8081352f, 21.6551900f, 24.7774506f, 28.1878101f, 31.8991787f, 35.9244824f, 40.2766629f, 44.9686769f, 50.0134955f, 55.4241035f, 61.2134994f, 67.3946945f, 73.9807130f, 80.9845911f, 88.4193768f, 96.2981297f, 104.6339207f, 113.4398315f, 122.7289544f, 132.5143921f}, // Bigeye gameplay size curve
         new float[] {0.0011716f,0.0097708f,0.0337885f,0.0814857f,0.1612969f,0.2817868f,0.4516248f,0.6795683f,0.9744507f,1.3451719f,1.8006918f,2.3500245f,3.0022333f,3.7664271f,4.6517571f,5.6674138f,6.8226246f,8.1266516f,9.5887897f,11.2183648f}, // Sarda sarda (Bonito)
-        new float[] {0.0015304f,0.0125876f,0.0431777f,0.1035316f,0.2040232f,0.3551326f,0.5674254f,0.8515384f,1.2181701f,1.6780724f,2.2420457f,2.9209336f,3.7256195f,4.6670229f} // Centropristis striata (Black Sea Bass)
+        new float[] {0.0015304f,0.0125876f,0.0431777f,0.1035316f,0.2040232f,0.3551326f,0.5674254f,0.8515384f,1.2181701f,1.6780724f,2.2420457f,2.9209336f,3.7256195f,4.6670229f}, // Centropristis striata (Black Sea Bass)
+        new float[] {0.0012638f,0.0104739f,0.0360643f,0.0867113f,0.1713634f,0.2993969f,0.4803911f,0.7241117f,1.0403645f,1.4388422f,1.9291215f,2.5207841f,3.2224173f,4.0426136f,4.9909739f,6.0771070f,7.3114208f,8.7049088f,10.2677553f,12.0100439f,13.9427033f,16.0766441f,18.4227125f,20.9915967f,23.7950314f,26.8456014f,30.1558458f,33.7372705f,37.6033315f,41.7674472f,46.2430008f,51.0433423f,56.1827902f,61.6756332f,67.5361320f,73.7785204f,80.4170063f,87.4667726f,94.9429787f,102.8607615f}, // Morone saxatilis (Striped Bass)
+        new float[] {0.0015652f,0.0128817f,0.0441847f,0.1058547f,0.2086845f,0.3638955f,0.5824606f,0.8754019f,1.2537384f,1.7286444f,2.3114468f,3.0136274f} // Paralabrax maculatofasciatus (Spotted Sand Bass)
     };
 
     // Inverse of LengthMetres, so tiny pond catches retain their size in every view/save.
@@ -30,26 +32,21 @@ public static class FishSizeTable
     public static float LengthMetres(int species,float kg)
     {
         var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
-        if(float.IsNaN(kg) || kg<=0)return 0.05f;
-
+        if(float.IsNaN(kg)||kg<=0)return .05f;
         if(kg>=weights[weights.Length-1])
         {
-            // Open-ocean catches can now exceed the old gameplay weight ceiling.
-            // Continue the species' own final weight/length slope instead of
-            // visually clamping a 2x-weight fish to the same size as a coastal max.
             int last=weights.Length-1;
             float lastLength=weights.Length*.05f;
             float previousLength=(weights.Length-1)*.05f;
             double weightRatio=Math.Max(1.000001,weights[last]/weights[last-1]);
             double lengthRatio=Math.Max(1.000001,lastLength/previousLength);
             double exponent=Math.Log(weightRatio)/Math.Log(lengthRatio);
-            if(double.IsNaN(exponent) || double.IsInfinity(exponent) || exponent<1.5)exponent=3.0;
+            if(double.IsNaN(exponent)||double.IsInfinity(exponent)||exponent<1.5)exponent=3.0;
             double extrapolated=lastLength*Math.Pow(kg/weights[last],1.0/exponent);
             return (float)Math.Min(lastLength*1.8,Math.Max(lastLength,extrapolated));
         }
-
-        int hi=1;while(hi<weights.Length-1 && weights[hi]<kg)hi++;
+        int hi=1;while(hi<weights.Length-1&&weights[hi]<kg)hi++;
         float t=(kg-weights[hi-1])/(weights[hi]-weights[hi-1]);
-        return Math.Max(0.05f,(hi+t)*0.05f);
+        return Math.Max(.05f,(hi+t)*.05f);
     }
 }
