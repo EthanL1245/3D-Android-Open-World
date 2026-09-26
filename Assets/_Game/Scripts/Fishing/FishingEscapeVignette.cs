@@ -3,9 +3,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Adds a red edge vignette when a hooked fish is close to snapping the line.
-/// It is presentation-only and reads the existing FishingSystem risk state, so it
-/// cannot change fight balance, tension, damage or escape timing.
+/// Fishing danger presentation. High tension keeps the existing red screen-edge
+/// vignette. Separately, a fish approaching the equipped line's maximum distance
+/// flashes a red OUTLINE around the fight-status panel without changing any of the
+/// panel, HP, or tension colors themselves.
 /// </summary>
 [DefaultExecutionOrder(1600)]
 public sealed class FishingEscapeVignette : MonoBehaviour
@@ -16,10 +17,14 @@ public sealed class FishingEscapeVignette : MonoBehaviour
     private FieldInfo lineBreakTimerField;
     private FieldInfo unconsciousField;
     private FieldInfo gameplayCanvasField;
+    private FieldInfo maximumLineDistanceField;
+    private FieldInfo fishingLineField;
 
     private RawImage overlay;
     private Texture2D vignetteTexture;
+    private Outline lineWarningOutline;
     private float visibleRisk;
+    private float visibleLineRisk;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -41,22 +46,34 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         lineBreakTimerField = type.GetField("lineBreakTimer", flags);
         unconsciousField = type.GetField("fishUnconscious", flags);
         gameplayCanvasField = type.GetField("gameplayCanvas", flags);
+        maximumLineDistanceField = type.GetField("maximumLineDistance", flags);
+        fishingLineField = type.GetField("fishingLine", flags);
     }
 
     private void Start()
     {
         BuildOverlay();
+        BuildStatusOutline();
     }
 
     private void LateUpdate()
     {
         if (overlay == null) BuildOverlay();
-        if (overlay == null || fishing == null || stateField == null || tensionField == null ||
+        if (lineWarningOutline == null) BuildStatusOutline();
+
+        if (fishing == null || stateField == null || tensionField == null ||
             lineBreakTimerField == null || unconsciousField == null)
             return;
 
         string state = stateField.GetValue(fishing)?.ToString() ?? string.Empty;
         bool fighting = state == "Fighting" && !(bool)unconsciousField.GetValue(fishing);
+
+        UpdateTensionVignette(fighting);
+        UpdateLineDistanceWarning(fighting);
+    }
+
+    private void UpdateTensionVignette(bool fighting)
+    {
         float targetRisk = 0f;
 
         if (fighting)
@@ -75,6 +92,9 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         float speed = targetRisk > visibleRisk ? 5.5f : 8f;
         visibleRisk = Mathf.MoveTowards(visibleRisk, targetRisk, Time.deltaTime * speed);
 
+        if (overlay == null)
+            return;
+
         if (visibleRisk <= 0.001f)
         {
             overlay.gameObject.SetActive(false);
@@ -87,6 +107,66 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         float pulse = 0.86f + Mathf.Sin(Time.time * 11f) * 0.14f;
         float alpha = Mathf.Lerp(0.03f, 0.58f, Mathf.SmoothStep(0f, 1f, visibleRisk)) * pulse;
         overlay.color = new Color(0.92f, 0.015f, 0.01f, alpha);
+    }
+
+    private void UpdateLineDistanceWarning(bool fighting)
+    {
+        float targetRisk = 0f;
+
+        if (fighting &&
+            maximumLineDistanceField != null &&
+            fishingLineField != null)
+        {
+            float maximum =
+                Mathf.Max(
+                    0.01f,
+                    (float)maximumLineDistanceField.GetValue(fishing)
+                );
+
+            LineRenderer line =
+                fishingLineField.GetValue(fishing) as LineRenderer;
+
+            float length = RenderedLineLength(line);
+
+            // The range limiter fails the fishing action once the rendered line
+            // exceeds the equipped line maximum. Begin a subtle border warning at
+            // 80%, then flash rapidly as the fish approaches that hard limit.
+            targetRisk =
+                Mathf.Clamp01(
+                    Mathf.InverseLerp(
+                        maximum * 0.80f,
+                        maximum * 0.985f,
+                        length
+                    )
+                );
+        }
+
+        float speed = targetRisk > visibleLineRisk ? 7f : 10f;
+        visibleLineRisk =
+            Mathf.MoveTowards(
+                visibleLineRisk,
+                targetRisk,
+                Time.deltaTime * speed
+            );
+
+        if (lineWarningOutline == null)
+            return;
+
+        if (visibleLineRisk <= 0.001f)
+        {
+            lineWarningOutline.effectColor = new Color(1f, 0f, 0f, 0f);
+            return;
+        }
+
+        float flashSpeed = Mathf.Lerp(5.5f, 13.5f, visibleLineRisk);
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * flashSpeed);
+        float alpha =
+            Mathf.Lerp(0.18f, 1f, visibleLineRisk) *
+            Mathf.Lerp(0.35f, 1f, pulse);
+
+        float thickness = Mathf.Lerp(2f, 7f, visibleLineRisk);
+        lineWarningOutline.effectDistance = new Vector2(thickness, -thickness);
+        lineWarningOutline.effectColor = new Color(1f, 0.025f, 0.015f, alpha);
     }
 
     private void BuildOverlay()
@@ -110,6 +190,73 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         overlay.texture = vignetteTexture;
         overlay.color = new Color(0.92f, 0.015f, 0.01f, 0f);
         go.SetActive(false);
+    }
+
+    private void BuildStatusOutline()
+    {
+        if (lineWarningOutline != null || fishing == null)
+            return;
+
+        Canvas canvas =
+            gameplayCanvasField != null
+                ? gameplayCanvasField.GetValue(fishing) as Canvas
+                : null;
+
+        FishingHUD hud =
+            canvas != null
+                ? canvas.GetComponent<FishingHUD>()
+                : FindFirstObjectByType<FishingHUD>();
+
+        if (hud == null)
+            return;
+
+        Transform panel = FindDeepChild(hud.transform, "FightPanel");
+        if (panel == null || panel.GetComponent<Graphic>() == null)
+            return;
+
+        lineWarningOutline = panel.gameObject.AddComponent<Outline>();
+        lineWarningOutline.useGraphicAlpha = false;
+        lineWarningOutline.effectDistance = new Vector2(2f, -2f);
+        lineWarningOutline.effectColor = new Color(1f, 0f, 0f, 0f);
+    }
+
+    private static Transform FindDeepChild(Transform root, string name)
+    {
+        if (root == null)
+            return null;
+
+        Transform[] children = root.GetComponentsInChildren<Transform>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            if (children[i] != null && children[i].name == name)
+                return children[i];
+        }
+
+        return null;
+    }
+
+    private static float RenderedLineLength(LineRenderer line)
+    {
+        if (line == null || !line.enabled || line.positionCount < 2)
+            return 0f;
+
+        float length = 0f;
+        Vector3 previous = LinePointWorld(line, 0);
+
+        for (int i = 1; i < line.positionCount; i++)
+        {
+            Vector3 current = LinePointWorld(line, i);
+            length += Vector3.Distance(previous, current);
+            previous = current;
+        }
+
+        return length;
+    }
+
+    private static Vector3 LinePointWorld(LineRenderer line, int index)
+    {
+        Vector3 point = line.GetPosition(index);
+        return line.useWorldSpace ? point : line.transform.TransformPoint(point);
     }
 
     private static Texture2D BuildTexture()
