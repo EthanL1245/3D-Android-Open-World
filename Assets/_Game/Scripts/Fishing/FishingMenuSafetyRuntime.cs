@@ -6,10 +6,10 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Active fishing is a committed interaction. While a cast, lure retrieve, bite or
-/// fight is in progress, gear/travel/boat-changing controls are locked instead of
-/// cancelling the fishing state. The Island / Fish Index is the one exception: it
-/// opens as a passive overlay over the live game and never calls PrepareForMenu,
-/// never pauses FishingSystem, and never resets the held REEL input.
+/// fight is in progress, gear/travel/boat-changing controls are visibly locked
+/// instead of cancelling the fishing state. The Island / Fish Index is the one
+/// exception: it opens as a passive overlay over the live game and never calls
+/// PrepareForMenu, never pauses FishingSystem, and never resets held REEL input.
 /// </summary>
 [DefaultExecutionOrder(5000)]
 public sealed class FishingMenuSafetyRuntime : MonoBehaviour
@@ -135,18 +135,7 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         indexButton=indexShortcut.GetComponent<Button>();
         baitButton=baitShortcut.GetComponent<Button>();
         nearbyUiButton=nearbyButton!=null?nearbyButton.GetComponent<Button>():null;
-
-        if(fishingHud!=null && rodSlotImageField!=null)
-        {
-            Image image=rodSlotImageField.GetValue(fishingHud) as Image;
-            if(image!=null)rodSlotButton=image.GetComponent<Button>();
-        }
-        if(boatSystem!=null)
-        {
-            Image image=boatSlotImageField?.GetValue(boatSystem) as Image;
-            if(image!=null)boatSlotButton=image.GetComponent<Button>();
-            boatInteractButton=boatInteractField?.GetValue(boatSystem) as Button;
-        }
+        RefreshDynamicButtons();
 
         // The stock index button routes through ShopWorldHUD.Open(), which calls
         // FishingSystem.PrepareForMenu() and cancels the cast/fight. Replace only
@@ -158,6 +147,25 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         }
 
         bound=true;
+    }
+
+    private void RefreshDynamicButtons()
+    {
+        if(rodSlotButton==null && fishingHud!=null && rodSlotImageField!=null)
+        {
+            Image image=rodSlotImageField.GetValue(fishingHud) as Image;
+            if(image!=null)rodSlotButton=image.GetComponent<Button>();
+        }
+        if(boatSystem!=null)
+        {
+            if(boatSlotButton==null)
+            {
+                Image image=boatSlotImageField?.GetValue(boatSystem) as Image;
+                if(image!=null)boatSlotButton=image.GetComponent<Button>();
+            }
+            if(boatInteractButton==null)
+                boatInteractButton=boatInteractField?.GetValue(boatSystem) as Button;
+        }
     }
 
     private bool FishingBusy
@@ -172,14 +180,16 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
 
     private void ApplyInteractionLocks()
     {
+        RefreshDynamicButtons();
         bool busy=FishingBusy;
 
-        // A normal shop/travel menu owns its own visibility/interactability. Do not
-        // interfere with it. It cannot coexist with an active fishing state because
-        // the normal menu path already prepares the player for menus first.
+        // If a normal menu is open, it must always keep its own update loop and
+        // CLOSE button. This also repairs the case where the persistent CLOSE button
+        // had previously been temporarily rewired for the passive fish index.
         if(!safeIndexOpen && ShopWorldHUD.MenuOpen)
         {
-            RestoreSystemsIfPossible(false);
+            RestoreNormalCloseButton();
+            RestoreSystemsIfPossible(true);
             return;
         }
 
@@ -198,17 +208,19 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
             SetButton(nearbyUiButton,!busy);
 
             if(busy)DisableShopHudUpdate();
-            else RestoreSystemsIfPossible(true);
+            else
+            {
+                RestoreSystemsIfPossible(true);
+                RestoreNormalCloseButton();
+            }
         }
 
         // Do not let a hotbar switch silently stow the rod during a cast/fight.
         SetButton(rodSlotButton,!busy);
         SetButton(boatSlotButton,!busy);
 
-        // BOARD / DRIVE BOAT / MARINA SHOP remains visible when it is contextually
-        // present, but is greyed out while the fishing interaction is committed.
-        if(boatInteractButton==null && boatSystem!=null)
-            boatInteractButton=boatInteractField?.GetValue(boatSystem) as Button;
+        // BOARD / DRIVE BOAT / MARINA SHOP remains visible when contextually
+        // present, but is visibly greyed and non-interactable while fishing.
         SetButton(boatInteractButton,!busy && !safeIndexOpen);
 
         // BoatSystem also accepts keyboard shortcuts (2/E). Disable only its UI /
@@ -273,8 +285,8 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         if(player!=null)player.SetMenuOpen(true);
 
         // Deliberately DO NOT call FishingSystem.PrepareForMenu() and DO NOT call
-        // FishingHUD.SetMenuCovered(). The cast coroutine, bite window, fish AI,
-        // tension/HP, and an already-held REEL input all continue in real time.
+        // FishingHUD.SetMenuCovered(). Casts, bites, fish AI, tension/HP and held
+        // REEL input continue in real time behind the informational index.
         refreshMethod.Invoke(shopHud,new object[]{true});
         RewireIndexButtons();
         ApplyInteractionLocks();
@@ -286,6 +298,11 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         safeIndexOpen=false;
         if(modal!=null)modal.SetActive(false);
         if(player!=null)player.SetMenuOpen(false);
+
+        // Rebuild the persistent CLOSE button's normal listener immediately. The
+        // modal object is reused for BAIT/LURES, TRAVEL, equipment, etc.; leaving
+        // SafeCloseIndex attached here made CLOSE do nothing on a later normal menu.
+        RestoreNormalCloseButton();
 
         // Do not call FishingHUD.SetMenuCovered(false): that method resets the
         // FishingActionButton and would release an in-progress REEL hold.
@@ -318,6 +335,21 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         }
     }
 
+    private void RestoreNormalCloseButton()
+    {
+        if(modal==null || shopHud==null || safeIndexOpen)return;
+        foreach(Button button in modal.GetComponentsInChildren<Button>(true))
+        {
+            if(button==null)continue;
+            string text=CombinedText(button.gameObject);
+            if(!string.Equals(text.Trim(),"CLOSE",StringComparison.OrdinalIgnoreCase))continue;
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(shopHud.Close);
+            SetButton(button,true);
+            break;
+        }
+    }
+
     private static string CombinedText(GameObject root)
     {
         Text[] labels=root.GetComponentsInChildren<Text>(true);
@@ -341,12 +373,30 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
 
     private static void SetButton(Button button,bool enabled)
     {
-        if(button!=null)button.interactable=enabled;
+        if(button==null)return;
+
+        // Unity's generated buttons previously used nearly identical normal and
+        // disabled colors, so interactable=false was functionally correct but did
+        // not LOOK disabled. Force an obvious neutral disabled tint and dim the
+        // whole button (background + icon + text) while preserving normal colors.
+        ColorBlock colors=button.colors;
+        colors.disabledColor=new Color(.34f,.34f,.34f,.82f);
+        colors.fadeDuration=.025f;
+        button.colors=colors;
+        button.interactable=enabled;
+
+        CanvasGroup group=button.GetComponent<CanvasGroup>();
+        if(group==null)group=button.gameObject.AddComponent<CanvasGroup>();
+        group.alpha=enabled?1f:.46f;
+        group.interactable=enabled;
+        group.blocksRaycasts=enabled;
     }
 
     private void OnDestroy()
     {
         if(safeIndexOpen && player!=null)player.SetMenuOpen(false);
+        safeIndexOpen=false;
+        RestoreNormalCloseButton();
         if(shopHud!=null && shopHudDisabledByUs)shopHud.enabled=true;
         if(boatSystem!=null && boatSystemDisabledByUs)boatSystem.enabled=true;
     }
