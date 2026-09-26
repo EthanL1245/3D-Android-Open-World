@@ -31,6 +31,7 @@ public static class ReefCatalog
     public static Zone Starter=>Zones[0];
     public static float Weight(int species)
     {
+        if(species==4)return 0f;
         float configured;
         if(FishingTuning.TryGetChance(species,0,0,out configured))return configured;
         return species>=0&&species<Starter.weights.Length?Starter.weights[species]:0f;
@@ -85,6 +86,7 @@ public static class ReefCatalog
 
     public static float EquippedChance(int species,int bait,int biome=0)
     {
+        if(species==4)return 0f;
         float configured;
         if(FishingTuning.TryGetChance(species,bait,biome,out configured))return configured;
         float[] weights=EquippedWeights(bait,biome);if(species<0||species>=weights.Length)return 0f;
