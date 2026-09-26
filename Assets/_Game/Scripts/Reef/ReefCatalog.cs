@@ -96,13 +96,29 @@ public static class ReefCatalog
     public static int Roll(float random01,int bait=0,int biome=0)
     {
         FishingTuning.RememberBiome(biome);
-        int configured;
-        if(FishingTuning.TryRollSpecies(random01,bait,biome,out configured))return configured;
+
+        // Config rows are already validated to exactly 100%; roll those percentages
+        // directly so a fish configured at 0% can never be selected, even at random=0.
+        if(FishingTuning.IsValid)
+        {
+            float pick=Mathf.Clamp01(random01)*100f;
+            int fallback=FishCatalog.ActiveIds[0];bool found=false;
+            foreach(int id in FishCatalog.ActiveIds)
+            {
+                float chance;
+                if(!FishingTuning.TryGetChance(id,bait,biome,out chance)){found=false;break;}
+                if(chance<=0f)continue;
+                found=true;fallback=id;
+                if(pick<chance)return id;
+                pick-=chance;
+            }
+            if(found)return fallback;
+        }
 
         float[] weights=EquippedWeights(bait,biome);float total=Total(weights);if(total<=0f)return FishCatalog.ActiveIds[0];
-        float pick=Mathf.Clamp01(random01)*total;int fallback=FishCatalog.ActiveIds[0];
+        float legacyPick=Mathf.Clamp01(random01)*total;int legacyFallback=FishCatalog.ActiveIds[0];
         for(int i=0;i<weights.Length;i++)
-        {float weight=Mathf.Max(0f,weights[i]);if(weight<=0f)continue;fallback=i;pick-=weight;if(pick<0f)return i;}
-        return fallback;
+        {float weight=Mathf.Max(0f,weights[i]);if(weight<=0f)continue;legacyFallback=i;legacyPick-=weight;if(legacyPick<0f)return i;}
+        return legacyFallback;
     }
 }
