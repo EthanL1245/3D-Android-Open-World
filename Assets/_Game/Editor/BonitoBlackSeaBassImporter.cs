@@ -22,7 +22,7 @@ public static class BonitoBlackSeaBassImporter
     private const string BonitoPackage="Bonito.zip";
     private const string BassPackage="Black Sea Bass.zip";
     private const string BlenderPrefsKey="OpenWorld.Goatfish.BlenderExecutable";
-    private const string AutoSessionKey="OpenWorld.AutoImport.BonitoBlackSeaBass.20260925.v1";
+    private const string AutoSessionKey="OpenWorld.AutoImport.BonitoBlackSeaBass.20260926.v2";
     private const string SourceFolder="Assets/_Game/Reef/Source";
 
     private sealed class FishPackage
@@ -168,29 +168,93 @@ public static class BonitoBlackSeaBassImporter
         Directory.CreateDirectory(Path.GetDirectoryName(fbxPath));
         if(File.Exists(fbxPath))File.Delete(fbxPath);
         string scriptPath=Path.Combine(workFolder,"ExportFish.py");
-        string python=@"import bpy, os, sys, math
+        string logPath=Path.Combine(workFolder,"BlenderExport.log");
+        string python=@"import bpy, os, sys, math, traceback
 args=sys.argv
 out_path=args[args.index('--')+1]
+
 armatures=[o for o in bpy.context.scene.objects if o.type=='ARMATURE']
 meshes=[o for o in bpy.context.scene.objects if o.type=='MESH']
 if not armatures or not meshes:
     raise RuntimeError('Expected an armature and at least one mesh in the fish Blend.')
-arm=armatures[0]
-actions=list(bpy.data.actions)
-if not actions:
-    raise RuntimeError('Fish Blend has no authored animation action.')
-action=max(actions,key=lambda a:(a.frame_range[1]-a.frame_range[0],len(a.fcurves)))
+
+# Use the armature actually bound to the fish mesh whenever possible. This is
+# more reliable than simply taking the first armature in files containing helpers.
+arm=None
+for mesh in meshes:
+    for modifier in mesh.modifiers:
+        if modifier.type=='ARMATURE' and modifier.object is not None:
+            arm=modifier.object
+            break
+    if arm is not None:
+        break
+if arm is None:
+    arm=armatures[0]
+
 if arm.animation_data is None:
     arm.animation_data_create()
+
+action=arm.animation_data.action
+actions=list(bpy.data.actions)
+
+# Blender 4.4+/5.x can store layered/slotted Actions. Action.fcurves is not
+# available for every Action type anymore, so never inspect fcurves here.
+# Prefer the action already assigned to the fish armature, then a clearly named
+# swim/armature action, then the longest authored action by frame range.
+if action is None:
+    for candidate in actions:
+        lower=candidate.name.lower()
+        if 'swim' in lower or 'armatureaction' in lower or lower=='armature':
+            action=candidate
+            break
+if action is None and actions:
+    def span(candidate):
+        try:
+            r=candidate.frame_range
+            return float(r[1]-r[0])
+        except Exception:
+            return 0.0
+    action=max(actions,key=span)
+if action is None:
+    raise RuntimeError('Fish Blend has no authored animation action.')
+
 arm.animation_data.action=action
 scene=bpy.context.scene
-scene.frame_start=int(math.floor(action.frame_range[0]))
-scene.frame_end=int(math.ceil(action.frame_range[1]))
-bpy.ops.object.select_all(action='DESELECT')
-arm.select_set(True)
-for obj in meshes:
-    obj.select_set(True)
-bpy.context.view_layer.objects.active=arm
+try:
+    scene.frame_start=int(math.floor(action.frame_range[0]))
+    scene.frame_end=int(math.ceil(action.frame_range[1]))
+except Exception:
+    scene.frame_start=1
+    scene.frame_end=max(scene.frame_end,2)
+scene.frame_set(scene.frame_start)
+
+# Avoid context-sensitive select_all in background mode. Explicitly unhide and
+# select the mesh + bound armature, matching the proven Red Snapper importer.
+for obj in bpy.context.view_layer.objects:
+    try:
+        obj.select_set(False)
+    except Exception:
+        pass
+for obj in meshes+[arm]:
+    obj.hide_viewport=False
+    obj.hide_render=False
+    try:
+        obj.hide_set(False)
+    except Exception:
+        pass
+    try:
+        obj.select_set(True)
+    except Exception:
+        pass
+try:
+    bpy.context.view_layer.objects.active=arm
+except Exception:
+    pass
+
+os.makedirs(os.path.dirname(out_path),exist_ok=True)
+if os.path.exists(out_path):
+    os.remove(out_path)
+
 bpy.ops.export_scene.fbx(
     filepath=out_path,
     use_selection=True,
@@ -210,6 +274,9 @@ bpy.ops.export_scene.fbx(
     path_mode='AUTO')
 if not os.path.exists(out_path):
     raise RuntimeError('Blender did not create the FBX.')
+print('FISH_ARMATURE='+arm.name)
+print('FISH_ACTION='+action.name)
+print('FISH_FRAMES='+str(scene.frame_start)+':'+str(scene.frame_end))
 ";
         File.WriteAllText(scriptPath,python);
         ProcessStartInfo info=new ProcessStartInfo
@@ -231,12 +298,44 @@ if not os.path.exists(out_path):
                 try{process.Kill();}catch{}
                 throw new TimeoutException("Blender took more than two minutes to export the fish.");
             }
+
+            try
+            {
+                File.WriteAllText(
+                    logPath,
+                    "BLENDER: "+blender+Environment.NewLine+
+                    "BLEND: "+blendPath+Environment.NewLine+
+                    "FBX: "+fbxPath+Environment.NewLine+Environment.NewLine+
+                    "STDOUT"+Environment.NewLine+output+Environment.NewLine+Environment.NewLine+
+                    "STDERR"+Environment.NewLine+error);
+            }
+            catch{}
+
             if(process.ExitCode!=0 || !File.Exists(fbxPath))
             {
-                Debug.LogError("Fish Blender output:\n"+output+"\n\nErrors:\n"+error);
-                throw new InvalidOperationException("Blender could not export the supplied fish model/animation. See Console.");
+                Debug.LogError("Fish Blender output:\n"+output+"\n\nErrors:\n"+error+"\n\nSaved log: "+logPath);
+                string detail=LastNonEmptyLine(error);
+                if(string.IsNullOrWhiteSpace(detail))detail=LastNonEmptyLine(output);
+                throw new InvalidOperationException(
+                    "Blender opened the fish source but could not export it."+
+                    (string.IsNullOrWhiteSpace(detail)?string.Empty:"\n\nBlender: "+detail)+
+                    "\n\nA full log was saved to:\n"+logPath);
             }
+
+            Debug.Log("Fish Blender export completed.\n"+output);
         }
+    }
+
+    private static string LastNonEmptyLine(string value)
+    {
+        if(string.IsNullOrWhiteSpace(value))return string.Empty;
+        string[] lines=value.Replace("\r",string.Empty).Split('\n');
+        for(int i=lines.Length-1;i>=0;i--)
+        {
+            string line=lines[i].Trim();
+            if(!string.IsNullOrWhiteSpace(line))return line;
+        }
+        return string.Empty;
     }
 
     private static void ValidatePrefab(string prefabPath)
