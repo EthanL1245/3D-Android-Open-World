@@ -50,6 +50,10 @@ public static class RaftModelImporter
             {
                 Debug.LogException(e);
             }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
         };
     }
 
@@ -98,6 +102,10 @@ public static class RaftModelImporter
         {
             Debug.LogException(e);
             return false;
+        }
+        finally
+        {
+            EditorUtility.ClearProgressBar();
         }
     }
 
