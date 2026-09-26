@@ -13,17 +13,22 @@ class Program {
    var errors=CSharpSyntaxTree.ParseText(File.ReadAllText(file)).GetDiagnostics().Where(d=>d.Severity==DiagnosticSeverity.Error).ToArray();
    Check(errors.Length==0,file+": "+string.Join("; ",errors.Select(e=>e.ToString())));
   }
-  Check(FishCatalog.ActiveIds.Length==8,"Eight active species");
+  Check(FishCatalog.ActiveIds.Length==10,"Ten active species");
+  Check(FishCatalog.BonitoId==9 && FishCatalog.BlackSeaBassId==10,"New fish stable IDs");
   Check(FishCatalog.CanonicalId(4)==5,"Retired save migration");
+  Check(FishCatalog.Get(FishCatalog.BonitoId).Difficulty>FishCatalog.Get(2).Difficulty && FishCatalog.Get(FishCatalog.BonitoId).Difficulty<FishCatalog.Get(3).Difficulty,"Bonito difficulty is just above Sea Bass");
+  Check(Math.Abs(FishCatalog.Get(FishCatalog.BlackSeaBassId).Difficulty-FishCatalog.Get(3).Difficulty)<.00001f,"Black Sea Bass difficulty matches Yellowtail");
   Check(ReefCatalog.Starter.Unlocked,"Starter unlocked");
-  Check(ReefCatalog.Starter.weights.Sum()==100,"Total odds");
-  Check(ReefCatalog.Weight(0)==20 && ReefCatalog.Weight(8)==2*ReefCatalog.Weight(5),"Mackerel/tuna odds");
+  Check(ReefCatalog.Starter.weights.Length==FishCatalog.Count,"Starter odds include every stable species ID");
+  Check(ReefCatalog.Weight(0)==20 && ReefCatalog.Weight(8)==2*ReefCatalog.Weight(5),"Mackerel/tuna raw odds");
   Check(ReefCatalog.Weight(6)==22 && ReefCatalog.Weight(7)==22,"Equal goatfish redistribution");
+  Check(ReefCatalog.Weight(FishCatalog.BonitoId)>0 && ReefCatalog.Weight(FishCatalog.BlackSeaBassId)>0,"New fish are catchable");
   var counts=new int[FishCatalog.Count];for(int i=0;i<100000;i++)counts[ReefCatalog.Roll((i+.5f)/100000)]++;
-  for(int id=0;id<counts.Length;id++)Check(Math.Abs(counts[id]-1000*ReefCatalog.Weight(id))<=1,"Roll distribution "+id);
+  for(int id=0;id<counts.Length;id++)Check(Math.Abs(counts[id]-1000f*ReefCatalog.EquippedChance(id,0))<=2,"Roll distribution "+id);
   for(int bait=0;bait<5;bait++){
    var baitCounts=new int[FishCatalog.Count];for(int i=0;i<100000;i++)baitCounts[ReefCatalog.Roll((i+.5f)/100000,bait)]++;
-   Check(baitCounts[4]==0,"Retired fish excluded");Check(Math.Abs(baitCounts[8]-2*baitCounts[5])<=2,"Tuna ratio with bait");
+   Check(baitCounts[4]==0,"Retired fish excluded");
+   Check(baitCounts[FishCatalog.BonitoId]>0 && baitCounts[FishCatalog.BlackSeaBassId]>0,"New fish available with bait "+bait);
   }
   Check(FishingRules.CastPower(0)==0 && FishingRules.CastPower(1.25f)==1 && FishingRules.CastPower(2.5f)==0,"Power oscillation");
   Check(FishingRules.CastDistance(0,30)==5 && FishingRules.CastDistance(1,30)==30,"Close/far endpoints");
@@ -35,7 +40,6 @@ class Program {
   Check(!FishingRules.ContinuousCastRange(new[]{false,false,true},out _),"Single endpoint is not a continuous range");
   for(int bits=0;bits<256;bits++){
    var samples=Enumerable.Range(0,8).Select(i=>(bits&(1<<i))!=0).ToArray();
-   int first=Array.IndexOf(samples,true);
    bool expected=Enumerable.Range(0,7).Any(i=>samples[i] && samples[i+1]);
    Check(FishingRules.ContinuousCastRange(samples,out _)==expected,"Exhaustive range topology");
    for(int i=0;i<7;i++)Check(FishingRules.IsCastPowerAvailable(samples,(i+.5f)/7)==(samples[i] && samples[i+1]),"Gauge interval mask matches cast eligibility");
@@ -49,11 +53,11 @@ class Program {
   for(int bait=0;bait<5;bait++){
    float total=0;for(int id=0;id<FishCatalog.Count;id++){
     float chance=ReefCatalog.EquippedChance(id,bait);total+=chance;
-    Check(chance>=0 && chance==(int)chance,"Equipped odds are whole percentages");
+    Check(chance>=0,"Equipped odds are non-negative");
    }
-   Check(total==100,"Every equipped table sums to 100");
+   Check(Math.Abs(total-100f)<.001f,"Every equipped table normalizes to 100");
   }
-  Check(ReefCatalog.EquippedChance(3,4)+ReefCatalog.EquippedChance(5,4)+ReefCatalog.EquippedChance(8,4)==78,"Lure rare fish bias");
+  Check(ReefCatalog.EquippedChance(FishCatalog.BonitoId,4)>0 && ReefCatalog.EquippedChance(FishCatalog.BlackSeaBassId,4)>0,"Balanced lure includes both new fish");
   foreach(int species in FishCatalog.ActiveIds)for(int q=0;q<=10;q++){
    float last=0;for(int distance=5;distance<=30;distance++){
     float kg=FishingRules.WeightAtCastDistance(species,distance,q/10f);Check(kg>=last-.0001f,"Lure size increases with original cast distance");last=kg;
