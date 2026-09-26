@@ -1,6 +1,6 @@
 # Species-wide physical/gameplay bounds. Health and cost are independent of biome.
 # Runtime curve: t=(weight-minWeight)/(maxWeight-minWeight), value=min+(max-min)*t^2.
-# minWeightKg/maxWeightKg are also hard bounds for sampled normal distributions.
+# BiomeFishWeights.csv may use narrower biome-specific hard catch ranges, but never outside these species bounds.
 speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,maxCostCoins
 0,Blue Mackerel,0.25,2.475,73,175,11,57
 1,Red Snapper,0.70,7.20,115,342,24,124
