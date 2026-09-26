@@ -8,13 +8,15 @@ using UnityEngine;
 /// </summary>
 public sealed class OpenWorldCoreFixBootstrap : MonoBehaviour
 {
-    private const string ObjectName = "__OpenWorldCoreFixBootstrap_v1";
+    private const string ObjectName = "__OpenWorldCoreFixBootstrap_v2";
     private float nextScan;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Install()
     {
-        if (GameObject.Find(ObjectName) != null) return;
+        // Accept either bootstrap name so a domain-reload edge case cannot create
+        // two scanners in the same play session.
+        if (FindFirstObjectByType<OpenWorldCoreFixBootstrap>() != null) return;
         GameObject go = new GameObject(ObjectName);
         go.hideFlags = HideFlags.HideInHierarchy;
         DontDestroyOnLoad(go);
@@ -35,6 +37,15 @@ public sealed class OpenWorldCoreFixBootstrap : MonoBehaviour
                 hud.gameObject.AddComponent<AreaEntryBannerRuntime>();
             if (hud.GetComponent<TravelAndIslandMenuRuntime>() == null)
                 hud.gameObject.AddComponent<TravelAndIslandMenuRuntime>();
+        }
+
+        foreach (FishingHUD hud in FindObjectsByType<FishingHUD>(FindObjectsSortMode.None))
+        {
+            // Critical styling is part of the damage contract, not an optional
+            // cosmetic. Attach it even if the older AfterSceneLoad installer ran
+            // before the generated HUD existed.
+            if (hud != null && hud.GetComponent<FishingDamagePresentation>() == null)
+                hud.gameObject.AddComponent<FishingDamagePresentation>();
         }
 
         foreach (FishingSystem fishing in FindObjectsByType<FishingSystem>(FindObjectsSortMode.None))
