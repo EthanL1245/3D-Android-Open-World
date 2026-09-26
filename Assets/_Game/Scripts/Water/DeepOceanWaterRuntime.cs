@@ -6,6 +6,8 @@ using UnityEngine;
 /// threatening while keeping the existing OceanWater simulation authoritative.
 /// Water visibility is driven by actual seabed depth instead of an abrupt biome
 /// boundary; deep-ocean waves then build gradually as the player travels offshore.
+/// Brinebreak deliberately uses a lower-smoothness surface so the darker shelf does
+/// not turn into a broad white/specular sheet in direct light.
 /// </summary>
 [DefaultExecutionOrder(-650)]
 public sealed class DeepOceanWaterRuntime : MonoBehaviour
@@ -13,6 +15,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
     private const float DeepWaveMultiplier = 4.5f;
     private const float DeepWaveSpeedMultiplier = 1.35f;
     private const float DeepAlpha = 1f;
+    private const float BrinebreakSmoothness = 0.48f;
 
     private static readonly Color DeepShallowColor = new Color(0.004f, 0.020f, 0.032f, 1f);
     private static readonly Color DeepDeepColor = new Color(0.001f, 0.006f, 0.014f, 1f);
@@ -29,7 +32,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
     private float baseSpeed1, baseSpeed2, baseSpeed3;
     private Color baseShallowColor, baseDeepColor;
     private float baseAlpha, baseSmoothness, baseFoamStrength;
-    private float roughBlend, darkBlend;
+    private float roughBlend, darkBlend, brinebreakMatteBlend;
     private bool cached;
 
     public float VisibilityBlend => darkBlend;
@@ -76,6 +79,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         IslandExpansionWorld expansion = IslandExpansionWorld.Active;
         float targetDark = 0f;
         float targetRough = 0f;
+        float targetBrinebreakMatte = 0f;
         WaterDepth = 0f;
 
         if (expansion != null && expansion.Ready && player != null)
@@ -87,10 +91,13 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
             float depth01 = Mathf.InverseLerp(3.5f, 32f, WaterDepth);
             targetDark = Mathf.SmoothStep(0f, 1f, depth01);
 
+            int biome = expansion.BiomeAt(player.position);
+            targetBrinebreakMatte = biome == 1 ? 1f : 0f;
+
             // Rough-water progression is specifically an outer-ocean effect. At
             // the shelf edge it starts at normal ocean strength and builds over the
             // next ~180 m, avoiding the previous instant wave jump.
-            if (expansion.BiomeAt(player.position) == 2)
+            if (biome == 2)
             {
                 float offshore = expansion.OffshoreAt(player.position);
                 targetRough = Mathf.SmoothStep(0f, 1f, offshore);
@@ -99,6 +106,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
 
         roughBlend = Mathf.MoveTowards(roughBlend, targetRough, Time.deltaTime * 0.35f);
         darkBlend = Mathf.MoveTowards(darkBlend, targetDark, Time.deltaTime * 0.45f);
+        brinebreakMatteBlend = Mathf.MoveTowards(brinebreakMatteBlend, targetBrinebreakMatte, Time.deltaTime * 1.5f);
 
         ApplyWaveSimulation();
     }
@@ -111,7 +119,9 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         block.SetColor("_ShallowColor", Color.Lerp(baseShallowColor, DeepShallowColor, darkBlend));
         block.SetColor("_DeepColor", Color.Lerp(baseDeepColor, DeepDeepColor, darkBlend));
         block.SetFloat("_Alpha", Mathf.Lerp(baseAlpha, DeepAlpha, darkBlend));
-        block.SetFloat("_Smoothness", Mathf.Lerp(baseSmoothness, 0.93f, darkBlend));
+
+        float depthSmoothness = Mathf.Lerp(baseSmoothness, 0.93f, darkBlend);
+        block.SetFloat("_Smoothness", Mathf.Lerp(depthSmoothness, BrinebreakSmoothness, brinebreakMatteBlend));
         block.SetFloat("_FoamStrength", Mathf.Lerp(baseFoamStrength, 1f, roughBlend));
         rendererRef.SetPropertyBlock(block);
     }
@@ -164,6 +174,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         WaterDepth = 0f;
         darkBlend = 0f;
         roughBlend = 0f;
+        brinebreakMatteBlend = 0f;
 
         if (!cached || ocean == null) return;
         amplitude1Field?.SetValue(ocean, baseAmplitude1);
