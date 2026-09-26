@@ -10,13 +10,10 @@ using UnityEngine;
 /// Applies the user's supplied Oar Texture.jpg from a tracked repository asset,
 /// independent of Raft.zip and Blender's imported material links.
 ///
-/// The previous repair still depended on the locally extracted package texture and
-/// on world-space elongated bounds. That was fragile for rotated paddles and could
-/// leave the shaft on the raft material and small end-cap renderers on Unity grey.
 /// This pass identifies the authored paddle assembly from animation curves first,
-/// then names/materials, then rotation-safe local mesh geometry. It forces the same
-/// dedicated oar material onto every submesh and nearby end-cap renderer in that
-/// assembly. No deck/hull material is changed.
+/// then names/materials, then rotation-safe local mesh geometry. It forces one
+/// dedicated oar material onto every submesh and physically-connected end-cap
+/// renderer in that assembly. No deck/hull material is changed.
 /// </summary>
 public static class RaftOarUserTextureFix
 {
@@ -26,13 +23,14 @@ public static class RaftOarUserTextureFix
     private const string TexturePath = "Assets/_Game/Boats/Raft/UserTextures/Oar Texture.jpg";
     private const string MaterialFolder = "Assets/_Game/Boats/Raft/UserTextures";
     private const string MaterialPath = MaterialFolder + "/OarUserTexture.mat";
-    private const string MarkerName = "RaftOarUserTexture_v5";
+    private const string MarkerName = "RaftOarUserTexture_v6";
 
     [InitializeOnLoadMethod]
     private static void QueueAutomaticRepair()
     {
-        // Run after RaftModelImporter, RaftPaddleTextureFix and authored animation
-        // hookup have had their delayed editor passes.
+        // Run after model import, material cleanup and animation hookup have had
+        // their delayed passes. v6 intentionally forces a fresh repair after the
+        // real binary texture asset was added to source control.
         EditorApplication.delayCall += () =>
             EditorApplication.delayCall += () =>
                 EditorApplication.delayCall += () => Apply(false);
@@ -56,6 +54,7 @@ public static class RaftOarUserTextureFix
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return false;
 
+        AssetDatabase.ImportAsset(TexturePath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
         if (prefab == null)
@@ -65,7 +64,7 @@ public static class RaftOarUserTextureFix
         }
         if (texture == null)
         {
-            Debug.LogError("[OAR DIAG] Tracked user texture is missing at " + TexturePath + ". Pull the latest main branch; do not substitute the raft texture.");
+            Debug.LogError("[OAR DIAG] Tracked user texture is missing or failed to import at " + TexturePath + ". Pull latest main and check the file imports as Texture2D.");
             return false;
         }
 
@@ -78,6 +77,7 @@ public static class RaftOarUserTextureFix
         if (!force && prefabWrapper.Find(MarkerName) != null) return false;
 
         ConfigureTexture(TexturePath);
+        texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
         Material oarMaterial = BuildMaterial(texture);
         GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
@@ -116,17 +116,25 @@ public static class RaftOarUserTextureFix
             foreach (Renderer renderer in targets)
                 AssignEverySubmesh(renderer, oarMaterial);
 
-            Transform oldMarker = wrapper.Find(MarkerName);
-            if (oldMarker != null) UnityEngine.Object.DestroyImmediate(oldMarker.gameObject);
+            // Remove all older direct repair markers so the prefab records only the
+            // current applied version and future migrations are deterministic.
+            for (int i = wrapper.childCount - 1; i >= 0; i--)
+            {
+                Transform child = wrapper.GetChild(i);
+                if (child != null && child.name.StartsWith("RaftOarUserTexture_v", StringComparison.Ordinal))
+                    UnityEngine.Object.DestroyImmediate(child.gameObject);
+            }
             GameObject marker = new GameObject(MarkerName);
             marker.transform.SetParent(wrapper, false);
 
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
             StringBuilder report = new StringBuilder();
             report.AppendLine("[OAR DIAG] User oar texture applied successfully.");
             report.AppendLine("Texture: " + TexturePath + "  " + texture.width + "x" + texture.height);
+            report.AppendLine("Material: " + MaterialPath);
             report.AppendLine("Seed renderers: " + seeds.Count + "  Final textured renderers: " + targets.Count);
             foreach (Renderer renderer in targets.OrderBy(r => AnimationUtility.CalculateTransformPath(r.transform, exactModel)))
             {
@@ -139,7 +147,7 @@ public static class RaftOarUserTextureFix
             if (force)
                 EditorUtility.DisplayDialog(
                     "Raft Oar Texture Fixed",
-                    "The tracked Oar Texture.jpg is now forced onto every identified oar submesh and end-cap renderer. A detailed OAR DIAG renderer report was written to the Console.",
+                    "The supplied Oar Texture.jpg is now forced onto every identified oar submesh and end-cap renderer. A detailed OAR DIAG renderer report was written to the Console.",
                     "OK");
             return true;
         }
@@ -316,6 +324,7 @@ public static class RaftOarUserTextureFix
         Material[] slots = new Material[count];
         for (int i = 0; i < slots.Length; i++) slots[i] = material;
         renderer.sharedMaterials = slots;
+        EditorUtility.SetDirty(renderer);
     }
 
     private static int GetSubMeshCount(Renderer renderer)
@@ -370,8 +379,6 @@ public static class RaftOarUserTextureFix
     {
         TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer == null) return;
-        bool changed = importer.textureType != TextureImporterType.Default || !importer.sRGBTexture ||
-                       importer.wrapMode != TextureWrapMode.Repeat || importer.maxTextureSize < 2048;
         importer.textureType = TextureImporterType.Default;
         importer.sRGBTexture = true;
         importer.mipmapEnabled = true;
@@ -380,7 +387,7 @@ public static class RaftOarUserTextureFix
         importer.anisoLevel = 4;
         importer.maxTextureSize = 2048;
         importer.textureCompression = TextureImporterCompression.CompressedHQ;
-        if (changed) importer.SaveAndReimport();
+        importer.SaveAndReimport();
     }
 
     private static void LogRendererInventory(Transform root, Renderer[] renderers, HashSet<Renderer> targets)
@@ -391,10 +398,14 @@ public static class RaftOarUserTextureFix
             string path = AnimationUtility.CalculateTransformPath(renderer.transform, root);
             Bounds local = LocalMeshBounds(renderer);
             report.Append("  ").Append(path)
-                .Append(" | localSize=").Append(local.size.ToString("F3"))
-                .Append(" | slots=").Append(renderer.sharedMaterials.Length)
-                .Append(" | target=").Append(targets != null && targets.Contains(renderer))
-                .AppendLine();
+                .Append(" | ").Append(renderer.GetType().Name)
+                .Append(" | local=").Append(local.size)
+                .Append(" | world=").Append(renderer.bounds.size)
+                .Append(" | mats=");
+            foreach (Material mat in renderer.sharedMaterials)
+                report.Append(mat != null ? mat.name : "<null>").Append(",");
+            if (targets != null && targets.Contains(renderer)) report.Append("  [TARGET]");
+            report.AppendLine();
         }
         Debug.Log(report.ToString());
     }
