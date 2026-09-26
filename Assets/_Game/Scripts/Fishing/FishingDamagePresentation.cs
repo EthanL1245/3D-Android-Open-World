@@ -6,8 +6,8 @@ using UnityEngine.UI;
 /// <summary>
 /// Presentation-only layer for floating fishing damage numbers.
 /// Damage amounts are owned by FishingBurstDamageRuntime; this component never
-/// changes fish HP or popup values. Critical styling is therefore guaranteed to
-/// describe the exact same burst that actually rolled critical.
+/// changes fish HP or popup values. A critical is therefore the same numeric burst
+/// that actually received the 2x gameplay multiplier; only its styling changes.
 /// </summary>
 [DefaultExecutionOrder(3100)]
 public sealed class FishingDamagePresentation : MonoBehaviour
@@ -67,17 +67,15 @@ public sealed class FishingDamagePresentation : MonoBehaviour
                 bool critical=criticalQueued;
                 if(critical)criticalQueued=false;
 
+                // Keep criticals numeric-only. The gameplay number itself is already
+                // exactly doubled by FishingBurstDamageRuntime. A modest size/tint
+                // change is enough to distinguish it without covering the screen.
                 label.resizeTextForBestFit=false;
                 if(critical)
                 {
-                    // Make a critical impossible to confuse with a normal hit on a
-                    // phone: explicit label, >2x text size, larger bounds and a
-                    // hotter tint. The numeric value itself is already the doubled
-                    // full-burst roll (Level 2 = 8-16, Level 3 = 12-24).
-                    if(!label.text.StartsWith("CRIT! "))label.text="CRIT! "+label.text;
-                    label.fontSize=68;
-                    label.rectTransform.sizeDelta=new Vector2(420f,124f);
-                    label.color=new Color(1f,.48f,.12f,1f);
+                    label.fontSize=38;
+                    label.rectTransform.sizeDelta=new Vector2(205f,72f);
+                    label.color=new Color(1f,.62f,.24f,1f);
                 }
                 else
                 {
