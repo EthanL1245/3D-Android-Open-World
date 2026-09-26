@@ -13,13 +13,23 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(960)]
 public sealed class Level2FishingRodRuntime : MonoBehaviour
 {
+    private const float HookDamageGraceSeconds=0.18f;
+    private const float DamageBurstSeconds=0.35f;
+
     private FishingSystem fishing;
     private ShopProgress progress;
     private FieldInfo rodRootField, rodViewField, rodPowerField;
     private FieldInfo stateField, hpField, maxHpField, healthField, pendingDamageField, unconsciousField;
+    private FieldInfo damageFractionField, damageDisplayTimerField;
     private int appliedTier=-1;
     private int observedHp=-1;
     private int warnedTier=-1;
+    private string previousState=string.Empty;
+    private float damageEnabledAt;
+    private int criticalBurstIndex=-1;
+    private bool criticalRolledForBurst;
+    private bool criticalForBurst;
+    private bool criticalMarkedForBurst;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -60,6 +70,8 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         healthField=type.GetField("fishHealth",flags);
         pendingDamageField=type.GetField("pendingDamage",flags);
         unconsciousField=type.GetField("fishUnconscious",flags);
+        damageFractionField=type.GetField("damageFraction",flags);
+        damageDisplayTimerField=type.GetField("damageDisplayTimer",flags);
     }
 
     private void Start()
@@ -67,11 +79,13 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         EnsureShopCleanup();
         EnsureDamagePresentation();
         if(progress==null || fishing==null || rodRootField==null || rodViewField==null || rodPowerField==null ||
-           stateField==null || hpField==null || maxHpField==null || healthField==null || pendingDamageField==null || unconsciousField==null)
+           stateField==null || hpField==null || maxHpField==null || healthField==null || pendingDamageField==null ||
+           unconsciousField==null || damageFractionField==null || damageDisplayTimerField==null)
         { enabled=false; return; }
 
         if(progress.Data.EnsureGearOwnership() && !progress.ReadOnly)progress.Save();
         observedHp=(int)hpField.GetValue(fishing);
+        previousState=stateField.GetValue(fishing)?.ToString()??string.Empty;
     }
 
     private void LateUpdate()
@@ -97,8 +111,40 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         {
             FishingDamagePresentation.ClearPendingCritical();
             observedHp=current;
+            previousState=state;
+            criticalBurstIndex=-1;
+            criticalRolledForBurst=false;
+            criticalForBurst=false;
+            criticalMarkedForBurst=false;
             return;
         }
+
+        // A lure starts the fight immediately while the player's existing REEL
+        // press remains held. Previously that meant the first Update could remove
+        // health before the full-health fight meter had even been visible. Give the
+        // newly hooked fish a tiny presentation-only grace window: the fight,
+        // tension and held reel input all begin immediately, but damage starts only
+        // after the full health bar has had time to render.
+        if(previousState!="Fighting")
+        {
+            damageEnabledAt=Time.time+HookDamageGraceSeconds;
+            criticalBurstIndex=-1;
+            criticalRolledForBurst=false;
+            criticalForBurst=false;
+            criticalMarkedForBurst=false;
+            ResetOpeningDamage();
+            current=(int)hpField.GetValue(fishing);
+        }
+        previousState=state;
+
+        if(Time.time<damageEnabledAt)
+        {
+            ResetOpeningDamage();
+            return;
+        }
+
+        current=(int)hpField.GetValue(fishing);
+        unconscious=(bool)unconsciousField.GetValue(fishing);
         if(unconscious)
         {
             observedHp=current;
@@ -111,13 +157,32 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
             return;
         }
 
+        // Critical chance is defined per visible damage burst, not per individual
+        // 1-HP decrement. The old implementation rolled 5%/8% repeatedly as base
+        // damage ticked down frame-by-frame, making an apparent critical far more
+        // likely than the advertised chance and allowing oversized first chunks.
+        int burstIndex=Mathf.Max(0,Mathf.FloorToInt((Time.time-damageEnabledAt)/DamageBurstSeconds));
+        if(burstIndex!=criticalBurstIndex)
+        {
+            criticalBurstIndex=burstIndex;
+            criticalRolledForBurst=false;
+            criticalForBurst=false;
+            criticalMarkedForBurst=false;
+        }
+
         int woodlandDamage=observedHp-current;
         if(tier>0 && woodlandDamage>0 && current>0)
         {
             int normalMultiplier=tier>=2?3:2;
             float criticalChance=tier>=2?0.08f:0.05f;
-            bool critical=UnityEngine.Random.value<criticalChance;
-            int totalMultiplier=critical?normalMultiplier*2:normalMultiplier;
+
+            if(!criticalRolledForBurst)
+            {
+                criticalRolledForBurst=true;
+                criticalForBurst=UnityEngine.Random.value<criticalChance;
+            }
+
+            int totalMultiplier=criticalForBurst?normalMultiplier*2:normalMultiplier;
             int extraMultiplier=totalMultiplier-1;
             int extra=Mathf.Min(current,woodlandDamage*extraMultiplier);
             if(extra>0)
@@ -128,10 +193,28 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
                 healthField.SetValue(fishing,current/(float)max);
                 int pending=(int)pendingDamageField.GetValue(fishing);
                 pendingDamageField.SetValue(fishing,pending+extra);
-                if(critical)FishingDamagePresentation.MarkCriticalHit();
+
+                if(criticalForBurst && !criticalMarkedForBurst)
+                {
+                    criticalMarkedForBurst=true;
+                    FishingDamagePresentation.MarkCriticalHit();
+                }
             }
         }
         observedHp=current;
+    }
+
+    private void ResetOpeningDamage()
+    {
+        int max=Mathf.Max(1,(int)maxHpField.GetValue(fishing));
+        hpField.SetValue(fishing,max);
+        healthField.SetValue(fishing,1f);
+        pendingDamageField.SetValue(fishing,0);
+        damageFractionField.SetValue(fishing,0f);
+        damageDisplayTimerField.SetValue(fishing,0f);
+        unconsciousField.SetValue(fishing,false);
+        observedHp=max;
+        FishingDamagePresentation.ClearPendingCritical();
     }
 
     private void ApplyVisual(int tier)
