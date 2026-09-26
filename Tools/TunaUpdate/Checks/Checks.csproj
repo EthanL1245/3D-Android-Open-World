@@ -3,7 +3,7 @@
  <ItemGroup>
   <Compile Include="../../../Assets/_Game/Scripts/ShopWorld/ShopLedger.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/ShopWorld/ShopCatalog.cs"/>
-  <Compile Include="Program.cs"/><Compile Include="UnityStubs.cs"/>
+  <Compile Include="Program.cs"/><Compile Include="UnityStubs.cs"/><Compile Include="../../FishingTuningStub.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/Fishing/FishCatalog.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/Fishing/FishSizeTable.cs"/>
   <Compile Include="../../../Assets/_Game/Scripts/Fishing/FishingRules.cs"/>
