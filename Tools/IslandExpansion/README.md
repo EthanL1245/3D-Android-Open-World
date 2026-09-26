@@ -8,9 +8,9 @@ The committed terrain data is the deterministic `Resources/Islands/BrinebreakExp
 
 ## World
 
-Brinebreak Isle is an approximately 190 × 130 m oval east of Suncrest, centred 250 m beyond Suncrest's east radius near the former outer drop-off. Low rocky hills rise roughly 4–14 m; scrub, weathered boulders, sandy beaches and a reserved arrival/sign approach furnish the land. Its underwater beach reaches the 14 m shelf within 65 m. Existing Suncrest land, pond and nearshore heights are sampled from the installed terrain.
+Brinebreak Isle is an approximately 190 × 130 m oval east of Suncrest, centred 550 m beyond Suncrest's east radius near the former outer drop-off. Low rocky hills rise roughly 4–14 m; scrub, weathered boulders, sandy beaches and a reserved arrival/sign approach furnish the land. Its underwater beach reaches the 28 m shelf within 65 m. Existing Suncrest land, pond and nearshore heights are sampled from the installed terrain.
 
-A single enlarged elliptical outer boundary encloses both islands and the boat route between them. The connecting shelf is approximately 14 m deep away from coastal shelves. The true outer drop-off descends to 65 m across 130 m beyond that boundary. Terrain resolution defaults to 1025² with a 512² splat map. The boat Water-layer query surface expands to cover the same terrain. Known-terrain, full-hull clearance and one-active-boat logic remain in force.
+A single enlarged elliptical outer boundary encloses both islands and the boat route between them. The connecting shelf is approximately 28 m deep away from coastal shelves. The true outer drop-off descends to 65 m across 130 m beyond that boundary. Terrain resolution defaults to 1025² with a 512² splat map. The boat Water-layer query surface expands to cover the same terrain. Known-terrain, full-hull clearance and one-active-boat logic remain in force.
 
 ## Fishing / index
 
@@ -43,3 +43,8 @@ Unity Editor and Android are unavailable in the remote workspace. Full Unity com
 - Travel to Home/Quay and back to each island: correct clear arrival, boat despawned, no stuck controls.
 - Cast on each side of biome boundaries; compare index odds/caps, HP and tension. Verify normal Suncrest catches and tiny pond catches remain unchanged.
 - Compare rendered wave crests with boat/bobber movement through the blend region; inspect sign approaches and planted rocks/scrub.
+
+## Follow-up: spacing and menu routing
+
+Brinebreak has moved 300 m farther east and the shared crossing shelf is now 28 m deep. MENU / TRAVEL uses four matching destination cards in two rows. Locked cards and unavailable shop buttons have explicit neutral-grey backgrounds and dimmed labels/previews. Fish-index cards carry a BiomeIndexLink, so the passive fishing-menu safety handler preserves the selected biome instead of routing every card to the last/default index. Per-area size labels replace the ambiguous Ocean label. Pull and restart Play; no scene overwrite or installer rerun is required for this follow-up.
+

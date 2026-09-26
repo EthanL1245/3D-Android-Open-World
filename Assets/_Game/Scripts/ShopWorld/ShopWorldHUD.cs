@@ -138,7 +138,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         dirty=false;
         float position=scroll.verticalNormalizedPosition;
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
-        wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":ReefCatalog.Zones[IslandExpansionWorld.FishingBiome(player.transform.position)].name.ToUpperInvariant())}";
+        wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   LOCATION: {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":ReefCatalog.Zones[IslandExpansionWorld.FishingBiome(player.transform.position)].name.ToUpperInvariant())}";
         feedback.text=progress.ReadOnly ? progress.Notice : message;
         string habitatAddId=page.StartsWith(HabitatAddPrefix,StringComparison.Ordinal)?page.Substring(HabitatAddPrefix.Length):null;
         heading.text=shopSession=="gear"?"TACKLE STORE":shopSession=="market"?"SELL FISH":"MENU / TRAVEL";
@@ -162,40 +162,61 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void TravelPage()
     {
-        string[] names={"SUNCREST REEF","TIDEGLASS QUAY","HOME"};
-        string[] details={"Beginner island • beach • shallow reef","View habitats • buy upgrades • sell your catch","Your garden • aquarium • pond • fish collection"};
-        Color[] colors={new Color(0.06f,0.30f,0.39f),new Color(0.29f,0.23f,0.13f),new Color(0.12f,0.30f,0.22f)};
-        var cards=Panel("Destinations",list,Color.clear);
-        cards.AddComponent<LayoutElement>().preferredHeight=280;
-        for(int i=0;i<3;i++)
+        string[] names={"SUNCREST REEF","TIDEGLASS QUAY","HOME","BRINEBREAK ISLE"};
+        string[] details={"Beginner island • beach • shallow reef","View habitats • buy upgrades • sell your catch","Your garden • aquarium • pond • fish collection","Rocky island • deeper crossing • restless waters"};
+        Color[] colors={new Color(.06f,.30f,.39f),new Color(.29f,.23f,.13f),new Color(.12f,.30f,.22f),new Color(.24f,.28f,.32f)};
+        for(int row=0;row<2;row++)
         {
-            int destination=i;
-            bool here=travel.Destination==i && (i!=0 || IslandExpansionWorld.FishingBiome(player.transform.position)==0);
-            var button=ButtonAt(cards.transform,names[i]+"\n\n"+details[i]+(here?"\n\nYOU ARE HERE":"\n\nTRAVEL →"),()=>{if(destination==0)travel.TravelIsland(false);else travel.Travel(destination);});
-            Anchor(button.GetComponent<RectTransform>(),i/3f,0,(i+1)/3f,1,8,8,-8,-8);
-            var caption=button.GetComponentInChildren<Text>().rectTransform;caption.offsetMin=new Vector2(16,16);caption.offsetMax=new Vector2(-16,-16);
-            button.GetComponent<Image>().color=colors[i];
-            button.GetComponentInChildren<Text>().fontSize=34;
-            button.GetComponentInChildren<Text>().resizeTextMaxSize=34;
-            button.interactable=i==0 || travel.Destination!=i;
-            if(here)button.GetComponent<Image>().color=new Color(0.16f,0.22f,0.24f);
+            var cards=Panel("Destinations",list,Color.clear);
+            cards.AddComponent<LayoutElement>().preferredHeight=280;
+            for(int column=0;column<2;column++)
+            {
+                int destination=row*2+column;
+                bool unlocked=destination!=3 || ReefCatalog.BrinebreakDiscovered;
+                bool available=unlocked && (destination!=3 || (IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready));
+                int biome=IslandExpansionWorld.FishingBiome(player.transform.position);
+                bool here=destination==3?travel.Destination==0 && biome==1:travel.Destination==destination && (destination!=0 || biome==0);
+                string footer=!unlocked?"LOCKED — discover by landing":here?"YOU ARE HERE • TRAVEL →":"TRAVEL →";
+                var button=ButtonAt(cards.transform,names[destination]+"\n\n"+details[destination]+"\n\n"+footer,()=>
+                {
+                    if(destination==3)travel.TravelIsland(true);
+                    else if(destination==0)travel.TravelIsland(false);
+                    else travel.Travel(destination);
+                });
+                Anchor(button.GetComponent<RectTransform>(),column*.5f,0,(column+1)*.5f,1,8,8,-8,-8);
+                var caption=button.GetComponentInChildren<Text>();caption.rectTransform.offsetMin=new Vector2(16,16);caption.rectTransform.offsetMax=new Vector2(-16,-16);
+                caption.fontSize=34;caption.resizeTextMaxSize=34;button.GetComponent<Image>().color=colors[destination];
+                SetAvailability(button,available && (destination==0 || destination==3 || !here));
+            }
         }
-
-        Row("BRINEBREAK ISLE",ReefCatalog.BrinebreakDiscovered?"Discovered • rocky hills • restless waters":"Undiscovered — sail east past Suncrest's reef and step onto the island.",ReefCatalog.BrinebreakDiscovered?"TRAVEL →":"LOCKED",()=>travel.TravelIsland(true),ReefCatalog.BrinebreakDiscovered && IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready);
+    }
+    public bool SelectIndexBiome(int biome)
+    {
+        if(biome<0 || biome>=ReefCatalog.Zones.Length || !ReefCatalog.Zones[biome].Unlocked)return false;
+        indexBiome=biome;dirty=true;return true;
+    }
+    private static void SetAvailability(Button button,bool enabled)
+    {
+        button.interactable=enabled;
+        if(enabled)return;
+        button.GetComponent<Image>().color=new Color(.23f,.23f,.23f,1);
+        foreach(var label in button.GetComponentsInChildren<Text>())label.color=new Color(.60f,.60f,.60f,1);
+        foreach(var picture in button.GetComponentsInChildren<RawImage>())picture.color=new Color(.38f,.38f,.38f,1);
     }
     private void IslandIndex()
     {
         for(int zoneIndex=0;zoneIndex<ReefCatalog.Zones.Length;zoneIndex++)
         {
             int selectedBiome=zoneIndex;var entry=ReefCatalog.Zones[zoneIndex];
-            var card=ButtonAt(list,entry.name+(entry.Unlocked?"\nUNLOCKED":"\nLOCKED")+" • FISHING AREA\n\n"+entry.description+"\n\nOPEN FISH INDEX →",()=>{indexBiome=selectedBiome;Open("reef-fish");});
+            var card=ButtonAt(list,entry.name+(entry.Unlocked?"\nUNLOCKED":"\nLOCKED")+" • FISHING AREA\n\n"+entry.description+"\n\nOPEN FISH INDEX →",()=>{if(SelectIndexBiome(selectedBiome))Open("reef-fish");});
             card.gameObject.AddComponent<LayoutElement>().preferredHeight=290;
-            card.interactable=entry.Unlocked;
+            card.gameObject.AddComponent<BiomeIndexLink>().Biome=selectedBiome;
             var label=card.GetComponentInChildren<Text>();label.alignment=TextAnchor.MiddleLeft;
             Anchor(label.rectTransform,.29f,0,1,1,20,18,-22,-18);
             var picture=new GameObject("Island preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(card.transform,false);
             Anchor(picture.GetComponent<RectTransform>(),0,0,.29f,1,18,20,0,-20);
             picture.GetComponent<RawImage>().texture=BiomeThumbnail(selectedBiome);picture.GetComponent<RawImage>().raycastTarget=false;
+            SetAvailability(card,entry.Unlocked);
         }
 
 
@@ -207,7 +228,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         foreach(int id in FishCatalog.ActiveIds.OrderByDescending(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)))
         {
             var species=FishCatalog.Get(id);
-            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.EquippedChance(id,equipped,indexBiome).ToString("0")+"% equipped chance\nOcean: "+FishCatalog.FormatWeight(ReefCatalog.MinimumWeight(id,indexBiome))+" – "+FishCatalog.FormatWeight(ReefCatalog.MaximumWeight(id,indexBiome))+"\nLength: "+ShopCatalog.FishLength(id,ReefCatalog.MinimumWeight(id,indexBiome)).ToString("0.00")+" – "+ShopCatalog.FishLength(id,ReefCatalog.MaximumWeight(id,indexBiome)).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
+            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.EquippedChance(id,equipped,indexBiome).ToString("0")+"% equipped chance\n"+ReefCatalog.Zones[indexBiome].name+" size: "+FishCatalog.FormatWeight(ReefCatalog.MinimumWeight(id,indexBiome))+" – "+FishCatalog.FormatWeight(ReefCatalog.MaximumWeight(id,indexBiome))+"\nLength: "+ShopCatalog.FishLength(id,ReefCatalog.MinimumWeight(id,indexBiome)).ToString("0.00")+" – "+ShopCatalog.FishLength(id,ReefCatalog.MaximumWeight(id,indexBiome)).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
                 fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
     }
@@ -448,8 +469,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,page=="reef-fish"?.72f:.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
         var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,page=="reef-fish"?.75f:.55f,(fish!=null || gear!=null?170:22),10,-232,0);
         var b=ButtonAt(row.transform,action,callback); Rect(b.GetComponent<RectTransform>(),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(-14,0),new Vector2(205,76));
-        b.interactable=enabled;
-        if(!enabled)b.GetComponent<Image>().color=new Color(0.17f,0.23f,0.24f);
+        SetAvailability(b,enabled);
         if(fish!=null || gear!=null)
         {
             var picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(row.transform,false);
@@ -470,7 +490,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private Button ButtonAt(Transform parent,string text,Action action)
     {
-        var go=Panel(text,parent,teal);var b=go.AddComponent<Button>();b.targetGraphic=go.GetComponent<Image>();b.transition=Selectable.Transition.None;b.onClick.AddListener(()=>action());
+        var go=Panel(text,parent,teal);var b=go.AddComponent<Button>();b.targetGraphic=go.GetComponent<Image>();b.transition=Selectable.Transition.ColorTint;b.onClick.AddListener(()=>action());
         ColorBlock colors=b.colors;colors.disabledColor=new Color(0.4f,0.4f,0.4f,0.45f);b.colors=colors;
         var label=Label(go.transform,text,23,Color.white);label.alignment=TextAnchor.MiddleCenter;Full(label.rectTransform);return b;
     }
@@ -478,4 +498,5 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 

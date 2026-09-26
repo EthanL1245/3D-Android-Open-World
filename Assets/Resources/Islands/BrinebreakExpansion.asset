@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: BrinebreakExpansion
   m_EditorClassIdentifier:
   IslandName: Brinebreak Isle
-  OffsetBeyondSuncrest: 250
+  OffsetBeyondSuncrest: 550
   IslandRadii: {x: 95, y: 65}
-  ShelfDepth: 14
+  ShelfDepth: 28
   OceanDepth: 65
   DropoffWidth: 130
   HeightResolution: 1025
@@ -23,3 +23,4 @@ MonoBehaviour:
   WaveAmplitudeMultiplier: 2.8
   WaveSpeedMultiplier: 1.65
   WaveBlendDistance: 160
+

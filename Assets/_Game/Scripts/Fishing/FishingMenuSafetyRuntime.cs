@@ -325,7 +325,13 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
             else if(text.IndexOf("OPEN FISH INDEX",StringComparison.OrdinalIgnoreCase)>=0)
             {
                 button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(()=>SafeOpenIndex("reef-fish"));
+                var link=button.GetComponent<BiomeIndexLink>();
+                if(link==null)continue;
+                int biome=link.Biome;
+                button.onClick.AddListener(()=>
+                {
+                    if(shopHud.SelectIndexBiome(biome))SafeOpenIndex("reef-fish");
+                });
             }
             else if(text.IndexOf("ISLAND INDEX",StringComparison.OrdinalIgnoreCase)>=0)
             {
@@ -401,3 +407,4 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         if(boatSystem!=null && boatSystemDisabledByUs)boatSystem.enabled=true;
     }
 }
+
