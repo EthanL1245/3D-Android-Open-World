@@ -2,7 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>Fast editor assertions for the two newly supplied bass species.</summary>
+/// <summary>Fast editor assertions for the two authored bass species.</summary>
 public static class NewBassValidation
 {
     [InitializeOnLoadMethod]
@@ -14,19 +14,30 @@ public static class NewBassValidation
         if(EditorApplication.isPlayingOrWillChangePlaymode)return;
         bool ok=true;
         ok&=Check(FishCatalog.StripedBassId==11&&FishCatalog.SpottedSandBassId==12,"Stable new species IDs changed.");
-        ok&=Check(Math.Abs(FishCatalog.Get(FishCatalog.StripedBassId).Difficulty-FishCatalog.Get(2).Difficulty)<.000001f,"Striped Bass difficulty no longer matches Sea Bass.");
-        ok&=Check(Math.Abs(FishCatalog.Get(FishCatalog.SpottedSandBassId).Difficulty-FishCatalog.Get(FishCatalog.BlackSeaBassId).Difficulty)<.000001f,"Spotted Sand Bass difficulty no longer matches Black Sea Bass.");
-        foreach(float kg in new[]{1f,2f,4f})
-            ok&=Check(FishingRules.MaxHealth(FishCatalog.StripedBassId,kg)==FishingRules.MaxHealth(2,kg),"Striped Bass same-weight HP differs from Sea Bass at "+kg+" kg.");
-        foreach(float kg in new[]{.5f,1f,1.8f})
-            ok&=Check(FishingRules.MaxHealth(FishCatalog.SpottedSandBassId,kg)==FishingRules.MaxHealth(FishCatalog.BlackSeaBassId,kg),"Spotted Sand Bass same-weight HP differs from Black Sea Bass at "+kg+" kg.");
-        ok&=Check(FishCatalog.Get(FishCatalog.StripedBassId).MaxWeightKg>FishCatalog.Get(2).MaxWeightKg*4f,"Striped Bass is not substantially larger than Sea Bass.");
+
+        // Keep the legacy difficulty tags aligned for fallback/metadata purposes. Actual
+        // health is now intentionally owned by the editable FishStats.csv parabola for
+        // each species, so this validator must not hard-link same-weight HP anymore.
+        ok&=Check(Math.Abs(FishCatalog.Get(FishCatalog.StripedBassId).Difficulty-FishCatalog.Get(2).Difficulty)<.000001f,"Striped Bass legacy difficulty no longer matches Sea Bass.");
+        ok&=Check(Math.Abs(FishCatalog.Get(FishCatalog.SpottedSandBassId).Difficulty-FishCatalog.Get(FishCatalog.BlackSeaBassId).Difficulty)<.000001f,"Spotted Sand Bass legacy difficulty no longer matches Black Sea Bass.");
+
+        FishingTuning.SpeciesStats striped,spotted;
+        ok&=Check(FishingTuning.TryGetSpeciesStats(FishCatalog.StripedBassId,out striped),"Striped Bass is missing FishStats.csv tuning.");
+        ok&=Check(FishingTuning.TryGetSpeciesStats(FishCatalog.SpottedSandBassId,out spotted),"Spotted Sand Bass is missing FishStats.csv tuning.");
+        if(striped!=null)
+        {
+            ok&=Check(striped.MaxWeightKg>FishCatalog.Get(2).MaxWeightKg*4f,"Striped Bass is not substantially larger than Sea Bass.");
+            ok&=Check(striped.MaxHealth>=striped.MinHealth&&striped.MaxCostCoins>=striped.MinCostCoins,"Striped Bass health/value tuning is not monotonic.");
+        }
+        if(spotted!=null)
+            ok&=Check(spotted.MaxHealth>=spotted.MinHealth&&spotted.MaxCostCoins>=spotted.MinCostCoins,"Spotted Sand Bass health/value tuning is not monotonic.");
+
         ok&=Check(FishSizeTable.LengthMetres(FishCatalog.StripedBassId,20f)>FishSizeTable.LengthMetres(2,4f),"Striped Bass size curve did not extend to trophy sizes.");
         ok&=Check(ReefCatalog.EquippedChance(FishCatalog.StripedBassId,ShopCatalog.StarterLure)>0f&&ReefCatalog.EquippedChance(FishCatalog.SpottedSandBassId,ShopCatalog.StarterLure)>0f,"New bass are missing from fishing odds.");
 
         ValidatePrefab("Assets/Resources/Fishing/StripedBass.prefab","Striped Bass",ref ok);
         ValidatePrefab("Assets/Resources/Fishing/SpottedSandBass.prefab","Spotted Sand Bass",ref ok);
-        if(ok)Debug.Log("[NEW BASS CHECK] Gameplay tuning is consistent. Any installed prefabs use the shared aquarium/held-fish presentation contract.");
+        if(ok)Debug.Log("[NEW BASS CHECK] Bass species, editable tuning, and shared aquarium/held-fish presentation are valid.");
     }
 
     private static void ValidatePrefab(string path,string label,ref bool ok)
