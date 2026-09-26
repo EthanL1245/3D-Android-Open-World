@@ -15,8 +15,35 @@ public static class FishingRules
     // the giant-fish distribution below.
     public static float OffshoreFactor { get; set; }
 
+    // FishingSystem historically measured the cast gauge from the camera while the
+    // in-world LINE meter measures from the rod tip. The authored rod is several
+    // metres long, so a gauge reading such as 27 m could look like only ~22–23 m
+    // after landing. CastDistanceAccuracyRuntime updates these three values from the
+    // real camera/rod/water geometry before FishingSystem.Update. They are zero by
+    // default so headless checks and scenes without the runtime retain old behavior.
+    public static float CastForwardOffset { get; set; }
+    public static float CastPerpendicularOffsetSqr { get; set; }
+    public static float CastVerticalOffset { get; set; }
+
     public static float CastPower(float elapsed) => 1f-Mathf.Sqrt(1f-Mathf.PingPong(Mathf.Max(0,elapsed)/1.25f,1f));
-    public static float CastDistance(float power,float maximum) => Mathf.Lerp(5f,maximum,Mathf.Clamp01(power));
+
+    public static float RequestedCastDistance(float power,float maximum)
+        => Mathf.Lerp(5f,maximum,Mathf.Clamp01(power));
+
+    // Return the camera-relative target distance required for the STRAIGHT rendered
+    // line from RodTip to the water to equal the requested 5–maximum metres.
+    // If the runtime geometry has not been supplied, this collapses exactly to the
+    // old 5–maximum mapping.
+    public static float CastDistance(float power,float maximum)
+    {
+        float requested=RequestedCastDistance(power,maximum);
+        float side=Mathf.Max(0f,CastPerpendicularOffsetSqr);
+        float vertical=CastVerticalOffset*CastVerticalOffset;
+        float remaining=requested*requested-side-vertical;
+        if(remaining<=0f)return requested;
+        float target=CastForwardOffset+Mathf.Sqrt(remaining);
+        return Mathf.Max(0.01f,target);
+    }
 
     // Any continuous interval is usable; gaps and either end can be blocked.
     public static bool ContinuousCastRange(bool[] samples,out float minimumPower)
