@@ -11,6 +11,7 @@ public static class FishingTuning
         public int MinHealth,MaxHealth,MinCostCoins,MaxCostCoins;
     }
 
+    public static bool IsValid=>false;
     public static int LastBiome {get;private set;}
     public static void RememberBiome(int biome){LastBiome=biome;}
     public static bool TryGetSpeciesStats(int species,out SpeciesStats stats){stats=null;return false;}
