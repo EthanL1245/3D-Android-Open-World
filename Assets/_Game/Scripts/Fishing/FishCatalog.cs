@@ -42,13 +42,13 @@ public static class FishCatalog
         new FishSpeciesDefinition("Black Spot Goatfish",new Color(.72f,.73f,.70f),new Color(.22f,.18f,.15f),.30f,1.80f,.43f,14f,44),
         new FishSpeciesDefinition("Bigeye Tuna",new Color(.10f,.22f,.32f),new Color(.75f,.80f,.80f),3f,40f,.86f,4f,220),
         new FishSpeciesDefinition("Bonito",new Color(.08f,.23f,.38f),new Color(.72f,.82f,.86f),.50f,5f,.58f,6f,78),
-        // User-defined fight difficulty: exactly the same as Yellowtail.
         new FishSpeciesDefinition("Black Sea Bass",new Color(.10f,.14f,.18f),new Color(.50f,.57f,.62f),.35f,2f,.68f,6f,74),
-        // At the same weight, Striped Bass fights exactly like Sea Bass. Its much larger
-        // weight ceiling is what makes trophy fish substantially tougher in practice.
-        new FishSpeciesDefinition("Striped Bass",new Color(.34f,.40f,.39f),new Color(.76f,.78f,.69f),.90f,25f,.52f,5f,128),
-        // User-defined fight difficulty: exactly the same as Black Sea Bass.
-        new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,8f,72)
+        // Difficulty + baseline rarity match Sea Bass so equal-weight fish have the
+        // exact same FishingRules.MaxHealth. The larger weight ceiling creates the
+        // tougher trophy fish rather than an invisible species-specific bonus.
+        new FishSpeciesDefinition("Striped Bass",new Color(.34f,.40f,.39f),new Color(.76f,.78f,.69f),.90f,25f,.52f,13f,128),
+        // Difficulty + baseline rarity match Black Sea Bass for exact same-weight fights.
+        new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,6f,72)
     };
 
     public static int Count=>Species.Length;
