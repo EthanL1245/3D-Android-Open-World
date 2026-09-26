@@ -20,6 +20,16 @@ using UnityEngine;
 /// does not reset or accelerate the clock: only the sum of time the input is truly
 /// held advances damage. This removes the tap-spam exploit while keeping continuous
 /// reeling at the same 0.35-second burst cadence.
+///
+/// IMPORTANT: this compatibility layer can be the code that actually delivers the
+/// KO. FishingSystem normally creates the unconscious/dead fish surface visual inside
+/// its own zero-health branch. Because this component runs later in the frame, a burst
+/// KO can otherwise set fishUnconscious=true after FishingSystem.Update has already
+/// passed that branch; on the next frame FishingSystem sees the flag and goes straight
+/// to retrieval, leaving only the bobber visible. We explicitly enter the existing
+/// FishingSystem unconscious presentation when the authoritative burst reaches zero so
+/// the dead fish floats at the surface and the fishing line remains attached to its
+/// mouth exactly as the core fishing system intends.
 /// </summary>
 [DefaultExecutionOrder(2200)]
 public sealed class FishingBurstDamageRuntime : MonoBehaviour
@@ -39,6 +49,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private static readonly FieldInfo BobberField = typeof(FishingSystem).GetField("bobber", Flags);
     private static readonly FieldInfo PlayerCameraField = typeof(FishingSystem).GetField("playerCamera", Flags);
     private static readonly FieldInfo ActiveBaitField = typeof(FishingSystem).GetField("activeBait", Flags);
+    private static readonly MethodInfo EnsureUnconsciousFishVisualMethod =
+        typeof(FishingSystem).GetMethod("EnsureUnconsciousFishVisual", Flags);
 
     private FishingSystem fishing;
     private FishingHUD hud;
@@ -94,9 +106,10 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
         if (fishing == null || StateField == null || HpField == null || MaxHpField == null ||
             HealthField == null || PendingDamageField == null || DamageFractionField == null ||
-            DamageDisplayTimerField == null || UnconsciousField == null)
+            DamageDisplayTimerField == null || UnconsciousField == null ||
+            EnsureUnconsciousFishVisualMethod == null)
         {
-            Debug.LogError("FishingBurstDamageRuntime could not bind the fishing damage fields. Legacy damage was left untouched.");
+            Debug.LogError("FishingBurstDamageRuntime could not bind the fishing damage/presentation fields. Legacy damage was left untouched.");
             enabled = false;
         }
     }
@@ -146,7 +159,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
         if (authoritativeHp <= 0)
         {
-            UnconsciousField.SetValue(fishing, true);
+            EnterUnconsciousPresentation();
             return;
         }
 
@@ -173,7 +186,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
         WriteAuthoritativeHealth(maxHp);
         SuppressLegacyDamageFields();
-        UnconsciousField.SetValue(fishing, authoritativeHp <= 0);
+
+        if (authoritativeHp <= 0)
+            EnterUnconsciousPresentation();
+        else
+            UnconsciousField.SetValue(fishing, false);
     }
 
     private void DealBurst(int maxHp)
@@ -201,6 +218,33 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             // finishing 12-damage critical against a 3-HP fish is still a 12-damage
             // critical; only the health bar clamps at zero.
             hud.ShowDamage(rolledDamage, screenPoint);
+        }
+    }
+
+    private void EnterUnconsciousPresentation()
+    {
+        // This must be done as one transition. If we only set fishUnconscious here,
+        // FishingSystem skips its own zero-health branch on the following frame and
+        // never creates the floating fish. Invoke the existing private presentation
+        // method immediately; it creates the correctly-sized species model, freezes
+        // its animation, places it on the water surface, hides the bobber renderer,
+        // and makes GetLineTargetPosition use the mouth marker.
+        WriteAuthoritativeHealth(Mathf.Max(1, (int)MaxHpField.GetValue(fishing)));
+        SuppressLegacyDamageFields();
+        UnconsciousField.SetValue(fishing, true);
+
+        try
+        {
+            EnsureUnconsciousFishVisualMethod.Invoke(fishing, null);
+        }
+        catch (TargetInvocationException e)
+        {
+            Debug.LogError("FishingBurstDamageRuntime could not create the unconscious fish presentation: " +
+                (e.InnerException != null ? e.InnerException.ToString() : e.ToString()));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("FishingBurstDamageRuntime could not create the unconscious fish presentation: " + e);
         }
     }
 
