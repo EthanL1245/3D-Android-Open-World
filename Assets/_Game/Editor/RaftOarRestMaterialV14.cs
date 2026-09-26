@@ -6,17 +6,15 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// v14 narrows the existing mixed oar submesh so ONLY the moving paddle geometry
-/// keeps Oar Texture.jpg. The stationary rests/brackets around the middle of each
-/// paddle shaft are moved back to the raft-material submesh.
+/// Refines the existing v12 raft/oar split so ONLY the moving paddle geometry keeps
+/// Oar Texture.jpg. The stationary oar rests/brackets are returned to the raft slot.
 ///
-/// Earlier v14 assumed the final split slot itself was tiny. The device diagnostic
-/// proved that assumption wrong: the final slot currently contains 76 triangles over
-/// ~2.675 m, so it contains the moving oars AND the small rests together. This pass
-/// therefore works INSIDE that already-working oar slot instead of repainting the
-/// whole slot. It finds long/narrow paddle components, preserves them and their
-/// endpoint pieces, then moves only small components sitting around the middle of a
-/// paddle shaft back to raft slot 0.
+/// Important diagnostic learned from the real imported mesh: the authored oars are
+/// highly fragmented. Individual moving-oar pieces are often only two triangles, so
+/// trying to find one long connected "oar core" is fundamentally wrong. Instead this
+/// pass identifies the rests by what they actually are in this model: compact/blocky,
+/// mirrored left/right pieces that sit inside the raft/deck footprint. Long/thin or
+/// exterior pieces remain on the oar material.
 ///
 /// No vertices, UVs, transforms, animation curves, colliders or gameplay components
 /// are changed. Only triangle-to-submesh membership changes.
@@ -38,8 +36,6 @@ public static class RaftOarRestMaterialV14
         public readonly List<int> triangleOrdinals = new List<int>();
         public int triangleCount;
         public Vector3 center;
-        public Vector3 endpointA;
-        public Vector3 endpointB;
         public float length;
         public float width;
         public float ratio;
@@ -117,7 +113,7 @@ public static class RaftOarRestMaterialV14
             new GameObject(V13Marker).transform.SetParent(wrapper, false);
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             AssetDatabase.SaveAssets();
-            Debug.Log("[RAFT V14] Disabled obsolete v13 retry. v14 now separates stationary rests from moving oars inside the existing mixed oar slot.");
+            Debug.Log("[RAFT V14] Disabled obsolete v13 retry. v14 now separates mirrored stationary rests from the fragmented moving-oar mesh.");
         }
         finally
         {
@@ -171,6 +167,7 @@ public static class RaftOarRestMaterialV14
             }
 
             int[] oarIndices = source.GetIndices(oarSlot);
+            int[] raftIndices = source.GetIndices(0);
             int totalOarTriangles = oarIndices.Length / 3;
             if (totalOarTriangles < 8)
             {
@@ -188,60 +185,72 @@ public static class RaftOarRestMaterialV14
             }
 
             List<Part> parts = BuildParts(oarIndices, vertices, merged.transform, root.transform);
-            if (parts.Count < 3)
+            if (parts.Count < 4)
             {
                 Debug.LogError("[RAFT V14] Mixed oar slot did not contain enough disconnected pieces to separate rests safely.");
                 LogInventory(parts);
                 return false;
             }
 
-            List<Part> cores = parts
-                .Where(p => p.triangleCount >= 4 && p.length >= 0.72f && p.ratio >= 2.0f)
-                .OrderByDescending(p => p.length)
-                .ToList();
-
-            // If an import slightly changes scale/topology, keep the two longest
-            // clearly elongated components rather than failing on a fixed threshold.
-            if (cores.Count < 2)
+            Bounds deckBounds;
+            if (!TryMeasureIndices(raftIndices, vertices, merged.transform, root.transform, out deckBounds))
             {
-                cores = parts
-                    .Where(p => p.triangleCount >= 4 && p.length >= 0.50f && p.ratio >= 1.8f)
-                    .OrderByDescending(p => p.length)
-                    .Take(4)
-                    .ToList();
-            }
-
-            if (cores.Count < 2)
-            {
-                Debug.LogError("[RAFT V14] Could not identify at least two elongated moving-oar components.");
-                LogInventory(parts);
+                Debug.LogError("[RAFT V14] Could not measure the raft/deck footprint.");
                 return false;
             }
 
+            // The screenshot diagnostics show the true support pieces are little
+            // mirrored quads (~0.38 x ~0.21 m, ratio ~1.8) while the moving paddle is
+            // fragmented into many independent pieces. Find blocky compact pieces
+            // INSIDE the deck footprint, then require a matching mirror on the other
+            // side. This deliberately avoids classifying long/thin paddle geometry.
+            List<Part> compactInsideDeck = parts.Where(p =>
+                p.triangleCount >= 1 && p.triangleCount <= 8 &&
+                p.length >= 0.18f && p.length <= 0.58f &&
+                p.width >= 0.10f && p.width <= 0.36f &&
+                p.ratio >= 1.15f && p.ratio <= 3.20f &&
+                Mathf.Abs(p.center.x) >= 0.45f &&
+                p.center.x >= deckBounds.min.x - 0.12f && p.center.x <= deckBounds.max.x + 0.12f &&
+                p.center.z >= deckBounds.min.z - 0.12f && p.center.z <= deckBounds.max.z + 0.12f &&
+                p.center.y >= deckBounds.min.y - 0.25f && p.center.y <= deckBounds.max.y + 0.40f)
+                .ToList();
+
             HashSet<Part> stationaryRests = new HashSet<Part>();
-            foreach (Part part in parts)
+            for (int i = 0; i < compactInsideDeck.Count; i++)
             {
-                if (cores.Contains(part)) continue;
-
-                // Stationary oarlocks/rests are compact pieces sitting around the
-                // middle of a long shaft. Disconnected blade/end-cap pieces live
-                // near an endpoint and are deliberately NOT returned to the raft.
-                if (part.triangleCount > 16 || part.length > 0.62f) continue;
-
-                foreach (Part core in cores)
+                Part a = compactInsideDeck[i];
+                for (int j = i + 1; j < compactInsideDeck.Count; j++)
                 {
-                    if (IsMiddleShaftSupport(part, core))
+                    Part b = compactInsideDeck[j];
+                    if (a.center.x * b.center.x >= 0f) continue;
+
+                    float mirroredXError = Mathf.Abs(Mathf.Abs(a.center.x) - Mathf.Abs(b.center.x));
+                    float yError = Mathf.Abs(a.center.y - b.center.y);
+                    float zError = Mathf.Abs(a.center.z - b.center.z);
+                    float lengthError = Mathf.Abs(a.length - b.length);
+                    float widthError = Mathf.Abs(a.width - b.width);
+
+                    if (mirroredXError <= 0.16f &&
+                        yError <= 0.12f &&
+                        zError <= 0.16f &&
+                        lengthError <= 0.12f &&
+                        widthError <= 0.10f)
                     {
-                        stationaryRests.Add(part);
-                        break;
+                        stationaryRests.Add(a);
+                        stationaryRests.Add(b);
                     }
                 }
             }
 
-            if (stationaryRests.Count == 0)
+            // Safety: a real rest assembly must exist on BOTH sides and must remain a
+            // small minority of the oar slot. Do not "fix" anything on weak evidence.
+            bool hasLeft = stationaryRests.Any(p => p.center.x < 0f);
+            bool hasRight = stationaryRests.Any(p => p.center.x > 0f);
+            if (!hasLeft || !hasRight || stationaryRests.Count < 2)
             {
-                Debug.LogError("[RAFT V14] No compact middle-of-shaft rest/support components were found. No prefab change was saved.");
+                Debug.LogError("[RAFT V14] Could not identify a mirrored compact oar-rest pair inside the raft footprint. No prefab change was saved.");
                 LogInventory(parts);
+                Debug.Log("[RAFT V14] deck bounds center=" + deckBounds.center.ToString("F3") + " size=" + deckBounds.size.ToString("F3"));
                 return false;
             }
 
@@ -262,11 +271,11 @@ public static class RaftOarRestMaterialV14
 
             int returnedTriangles = restIndices.Count / 3;
             int movingTriangles = movingOarIndices.Count / 3;
-            if (returnedTriangles <= 0 || movingTriangles < 8 ||
-                returnedTriangles > 32 || returnedTriangles >= Mathf.CeilToInt(totalOarTriangles * 0.40f))
+            if (returnedTriangles < 2 || movingTriangles < 8 ||
+                returnedTriangles > 24 || returnedTriangles >= Mathf.CeilToInt(totalOarTriangles * 0.35f))
             {
                 Debug.LogError(
-                    "[RAFT V14] Safety stop after classification. total=" + totalOarTriangles +
+                    "[RAFT V14] Safety stop after mirrored-rest classification. total=" + totalOarTriangles +
                     " moving=" + movingTriangles + " returnedToRaft=" + returnedTriangles +
                     ". No prefab change was saved.");
                 LogInventory(parts);
@@ -276,9 +285,8 @@ public static class RaftOarRestMaterialV14
             Mesh refined = UnityEngine.Object.Instantiate(source);
             refined.name = "RaftOarRestsBackToRaft_v14";
 
-            int[] raft0 = source.GetIndices(0);
-            List<int> raftCombined = new List<int>(raft0.Length + restIndices.Count);
-            raftCombined.AddRange(raft0);
+            List<int> raftCombined = new List<int>(raftIndices.Length + restIndices.Count);
+            raftCombined.AddRange(raftIndices);
             raftCombined.AddRange(restIndices);
 
             refined.SetTriangles(raftCombined, 0, false);
@@ -319,20 +327,21 @@ public static class RaftOarRestMaterialV14
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            string restReport = string.Join(" | ", stationaryRests.OrderBy(p => p.center.x).Select(p =>
+            string restReport = string.Join(" | ", stationaryRests.OrderBy(p => p.center.x).ThenBy(p => p.center.z).Select(p =>
                 "id=" + p.id + " tris=" + p.triangleCount +
                 " len=" + p.length.ToString("0.000") +
+                " width=" + p.width.ToString("0.000") +
                 " center=" + p.center.ToString("F3")));
 
             Debug.Log(
-                "[RAFT V14] SUCCESS — only stationary middle-shaft oar rests/supports were returned to raft texture. " +
+                "[RAFT V14] SUCCESS — mirrored stationary oar rests/supports were returned to raft texture without touching the moving paddle pieces. " +
                 "Returned " + returnedTriangles + "/" + totalOarTriangles + " triangles; kept " +
-                movingTriangles + " moving-oar triangles on Oar Texture. Rests: " + restReport);
+                movingTriangles + " oar-textured triangles. Rests: " + restReport);
 
             if (force)
                 EditorUtility.DisplayDialog(
                     "Raft v14 Complete",
-                    "Only the moving oars keep the oar texture. The stationary rests/brackets they sit on now use the raft texture.",
+                    "Only the moving oars keep the oar texture. The mirrored stationary rests/brackets they sit on now use the raft texture.",
                     "OK");
             return true;
         }
@@ -345,26 +354,6 @@ public static class RaftOarRestMaterialV14
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
-    }
-
-    private static bool IsMiddleShaftSupport(Part small, Part core)
-    {
-        Vector3 a = core.endpointA;
-        Vector3 b = core.endpointB;
-        Vector3 ab = b - a;
-        float sqr = ab.sqrMagnitude;
-        if (sqr < 0.0001f) return false;
-
-        float t = Vector3.Dot(small.center - a, ab) / sqr;
-        float clampedT = Mathf.Clamp01(t);
-        Vector3 closest = a + ab * clampedT;
-        float distance = Vector3.Distance(small.center, closest);
-
-        // The oar rest belongs near the pivot/middle of the shaft. End pieces at
-        // either blade/handle are kept on the oar even when they are tiny.
-        bool middle = t >= 0.20f && t <= 0.80f;
-        float tolerance = Mathf.Clamp(core.width * 2.2f + 0.06f, 0.12f, 0.34f);
-        return middle && distance <= tolerance;
     }
 
     private static List<Part> BuildParts(int[] indices, Vector3[] vertices, Transform rendererTransform, Transform boatRoot)
@@ -424,8 +413,6 @@ public static class RaftOarRestMaterialV14
         Vector3 b = Farthest(points, a);
         Vector3 delta = b - a;
         part.length = delta.magnitude;
-        part.endpointA = a;
-        part.endpointB = b;
         if (part.length < 0.0001f)
         {
             part.width = 0.01f;
@@ -444,6 +431,25 @@ public static class RaftOarRestMaterialV14
 
         part.width = Mathf.Max(0.012f, radius * 2f);
         part.ratio = part.length / part.width;
+    }
+
+    private static bool TryMeasureIndices(int[] indices, Vector3[] vertices, Transform rendererTransform, Transform boatRoot, out Bounds bounds)
+    {
+        bounds = default;
+        bool have = false;
+        foreach (int index in indices)
+        {
+            if (!Valid(index, vertices.Length)) continue;
+            Vector3 world = rendererTransform.TransformPoint(vertices[index]);
+            Vector3 p = boatRoot.InverseTransformPoint(world);
+            if (!have)
+            {
+                bounds = new Bounds(p, Vector3.zero);
+                have = true;
+            }
+            else bounds.Encapsulate(p);
+        }
+        return have;
     }
 
     private static Vector3 Farthest(List<Vector3> points, Vector3 origin)
