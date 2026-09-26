@@ -30,6 +30,8 @@ public static class FishCatalog
     public const int StripedBassId=11;
     public const int SpottedSandBassId=12;
 
+    // These embedded definitions are deliberately retained as a safe legacy fallback.
+    // Editable min/max weight, health, value and catch odds live in Resources/FishingTuning.
     private static readonly FishSpeciesDefinition[] Species=
     {
         new FishSpeciesDefinition("Blue Mackerel",new Color(.20f,.42f,.58f),new Color(.72f,.86f,.90f),.25f,1.10f,.25f,42f,16),
@@ -43,11 +45,7 @@ public static class FishCatalog
         new FishSpeciesDefinition("Bigeye Tuna",new Color(.10f,.22f,.32f),new Color(.75f,.80f,.80f),3f,40f,.86f,4f,220),
         new FishSpeciesDefinition("Bonito",new Color(.08f,.23f,.38f),new Color(.72f,.82f,.86f),.50f,5f,.58f,6f,78),
         new FishSpeciesDefinition("Black Sea Bass",new Color(.10f,.14f,.18f),new Color(.50f,.57f,.62f),.35f,2f,.68f,6f,74),
-        // Difficulty + baseline rarity match Sea Bass so equal-weight fish have the
-        // exact same FishingRules.MaxHealth. The larger weight ceiling creates the
-        // tougher trophy fish rather than an invisible species-specific bonus.
         new FishSpeciesDefinition("Striped Bass",new Color(.34f,.40f,.39f),new Color(.76f,.78f,.69f),.90f,25f,.52f,13f,128),
-        // Difficulty + baseline rarity match Black Sea Bass for exact same-weight fights.
         new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,6f,72)
     };
 
@@ -58,7 +56,21 @@ public static class FishCatalog
     public static FishSpeciesDefinition Get(int id)
     {
         int index=Mathf.Clamp(CanonicalId(id),0,Species.Length-1);
-        var definition=Species[index];definition.RelativeChance=ReefCatalog.Weight(index);return definition;
+        var definition=Species[index];
+
+        FishingTuning.SpeciesStats stats;
+        if(FishingTuning.TryGetSpeciesStats(index,out stats))
+        {
+            definition.MinWeightKg=stats.MinWeightKg;
+            definition.MaxWeightKg=stats.MaxWeightKg;
+            definition.BaseSellCoins=stats.MinCostCoins;
+        }
+
+        float configuredChance;
+        definition.RelativeChance=FishingTuning.TryGetChance(index,0,0,out configuredChance)
+            ? configuredChance
+            : ReefCatalog.Weight(index);
+        return definition;
     }
 
     public static string FormatWeight(float kg)=>kg<.1f?(kg*1000f).ToString("0.0")+" g":kg.ToString("0.00")+" kg";
@@ -66,12 +78,17 @@ public static class FishCatalog
 
     public static float RollWeight(int speciesId)
     {
+        float configured;
+        if(FishingTuning.TryRollWeight(speciesId,FishingTuning.LastBiome,Random.value,out configured))return configured;
         FishSpeciesDefinition definition=Get(speciesId);float t=Random.value;t*=t;
         return Mathf.Lerp(definition.MinWeightKg,definition.MaxWeightKg,t);
     }
 
     public static int GetSellValue(int speciesId,float weightKg)
     {
+        int configured;
+        if(FishingTuning.TryGetCost(speciesId,weightKg,out configured))return configured;
+
         FishSpeciesDefinition species=Get(speciesId);
         float length=FishSizeTable.LengthMetres(speciesId,weightKg);
         if(length<=.15f)
