@@ -4,8 +4,8 @@ using UnityEngine.Playables;
 
 /// <summary>
 /// Plays the paddle animation authored in the user's Raft.blend only while the raft
-/// is actively being driven forward. The clip itself is never rescaled, regenerated,
-/// blended, or otherwise modified; this component only starts/stops and loops it.
+/// is actively being driven forward. Releasing the controls now pauses the clip at
+/// its current authored pose and resumes from that exact point on the next input.
 /// </summary>
 [DisallowMultipleComponent]
 [RequireComponent(typeof(BoatController), typeof(Rigidbody))]
@@ -60,27 +60,21 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
 
         if (shouldRow)
         {
-            if (!rowing)
-            {
-                rowing = true;
-                clipPlayable.SetTime(0d);
-                graph.Evaluate(0f);
-            }
-
-            // Play at the exact authored speed. Loop manually so we do not have to
-            // alter the imported AnimationClip's wrap/loop settings.
+            rowing = true;
             clipPlayable.SetSpeed(1d);
+
+            // Keep the exact authored timing and loop manually. Resuming after a
+            // pause continues from the held frame instead of jumping to frame zero.
             double length = PaddleClip.length;
             if (length > 0.0001d && clipPlayable.GetTime() >= length)
                 clipPlayable.SetTime(clipPlayable.GetTime() % length);
         }
         else if (rowing)
         {
-            // Stop immediately when forward propulsion stops and return the paddles
-            // to the supplied clip's authored first-frame/rest pose.
             rowing = false;
             clipPlayable.SetSpeed(0d);
-            clipPlayable.SetTime(0d);
+            // Deliberately DO NOT SetTime(0): release/idle freezes the paddles in
+            // place, and the next steering input resumes from this exact pose.
             graph.Evaluate(0f);
         }
     }
@@ -89,8 +83,6 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
     {
         if (!graphReady) return;
         clipPlayable.SetSpeed(0d);
-        clipPlayable.SetTime(0d);
-        graph.Evaluate(0f);
         rowing = false;
     }
 
