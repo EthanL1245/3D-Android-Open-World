@@ -70,17 +70,45 @@ public static class FishingRules
         return Mathf.Lerp(normalWeight,Mathf.Max(normalWeight,giant),strength);
     }
 
+    private static bool TryConfiguredWeight(int species,float random01,out float weight)
+    {
+        weight=0f;
+        int biome=FishingTuning.LastBiome;
+        float desired;
+        if(!FishingTuning.TryRollWeight(species,biome,random01,out desired))return false;
+
+        // FishingSystem still contains a historical Brinebreak-only remap after this
+        // call. Feed that remap its inverse so the FINAL caught weight remains the
+        // normal-distribution sample specified in BiomeFishWeights.csv. This keeps
+        // the large FishingSystem state machine untouched and prevents double-tuning.
+        if(biome==1)
+        {
+            float practicalMin,practicalMax;
+            FishingTuning.SpeciesStats stats;
+            if(FishingTuning.TryGetWeightRange(species,biome,out practicalMin,out practicalMax) &&
+               FishingTuning.TryGetSpeciesStats(species,out stats) && practicalMax>practicalMin)
+            {
+                float t=Mathf.InverseLerp(practicalMin,practicalMax,desired);
+                weight=Mathf.Lerp(stats.MinWeightKg,stats.MaxWeightKg,t);
+                return true;
+            }
+        }
+
+        weight=desired;
+        return true;
+    }
+
     public static float WeightAtDepth(int species,float depth,float random01,float offshore=-1)
     {
         float configured;
-        if(FishingTuning.TryRollWeight(species,FishingTuning.LastBiome,random01,out configured))return configured;
+        if(TryConfiguredWeight(species,random01,out configured))return configured;
         return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,random01),random01,offshore<0?OffshoreFactor:offshore);
     }
 
     public static float WeightAtCastDistance(int species,float distance,float random01,float offshore=-1)
     {
         float configured;
-        if(FishingTuning.TryRollWeight(species,FishingTuning.LastBiome,random01,out configured))return configured;
+        if(TryConfiguredWeight(species,random01,out configured))return configured;
 
         // Legacy fallback: Deep Flash biases size upward. In configured mode bait
         // chooses species only; biome + species owns the weight distribution exactly.
