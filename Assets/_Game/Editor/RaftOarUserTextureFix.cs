@@ -7,13 +7,16 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Applies the user's supplied Oar Texture.jpg from a tracked repository asset,
-/// independent of Raft.zip and Blender's imported material links.
+/// Repairs the authored raft's oar materials without repainting the deck.
 ///
-/// This pass identifies the authored paddle assembly from animation curves first,
-/// then names/materials, then rotation-safe local mesh geometry. It forces one
-/// dedicated oar material onto every submesh and physically-connected end-cap
-/// renderer in that assembly. No deck/hull material is changed.
+/// Important: the user's current Blender import is ONE MeshRenderer
+/// (Empty.002/Plane.001) containing the deck and both oars. Older fixes searched for
+/// separate long oar Renderers, so they could never succeed on this actual asset.
+///
+/// v7 works below Renderer level. It finds disconnected mesh components, identifies
+/// the mirrored diagonal oar pair from geometry, includes small blade/end-cap pieces,
+/// moves only those triangles into a dedicated submesh, and assigns Oar Texture.jpg
+/// only to that new submesh. The deck keeps its existing raft material/UVs.
 /// </summary>
 public static class RaftOarUserTextureFix
 {
@@ -21,19 +24,69 @@ public static class RaftOarUserTextureFix
     private const string BlendPath = "Assets/_Game/Boats/Raft/Authored/Raft.blend";
     private const string WrapperPath = "ModelContainer/Uploaded Raft Model";
     private const string TexturePath = "Assets/_Game/Boats/Raft/UserTextures/Oar Texture.jpg";
-    private const string MaterialFolder = "Assets/_Game/Boats/Raft/UserTextures";
-    private const string MaterialPath = MaterialFolder + "/OarUserTexture.mat";
-    private const string MarkerName = "RaftOarUserTexture_v6";
+    private const string AssetFolder = "Assets/_Game/Boats/Raft/UserTextures";
+    private const string MaterialPath = AssetFolder + "/OarUserTexture.mat";
+    private const string MarkerName = "RaftOarUserTexture_v7";
+
+    private sealed class ComponentInfo
+    {
+        public int id;
+        public int rootVertex;
+        public Renderer renderer;
+        public Mesh mesh;
+        public readonly HashSet<int> vertices = new HashSet<int>();
+        public readonly Dictionary<int,List<int>> triangleOrdinals = new Dictionary<int,List<int>>();
+        public int triangleCount;
+        public Bounds worldBounds;
+        public Vector3 center;
+        public Vector3 endpointA;
+        public Vector3 endpointB;
+        public Vector3 direction;
+        public float length;
+        public float width;
+        public float ratio;
+        public float diagonal;
+        public float lateral;
+    }
+
+    private sealed class UnionFind
+    {
+        private readonly int[] parent;
+        private readonly byte[] rank;
+
+        public UnionFind(int count)
+        {
+            parent = new int[count];
+            rank = new byte[count];
+            for (int i = 0; i < count; i++) parent[i] = i;
+        }
+
+        public int Find(int value)
+        {
+            int p = parent[value];
+            if (p != value) parent[value] = Find(p);
+            return parent[value];
+        }
+
+        public void Union(int a, int b)
+        {
+            a = Find(a); b = Find(b);
+            if (a == b) return;
+            if (rank[a] < rank[b]) parent[a] = b;
+            else if (rank[a] > rank[b]) parent[b] = a;
+            else { parent[b] = a; rank[a]++; }
+        }
+    }
 
     [InitializeOnLoadMethod]
     private static void QueueAutomaticRepair()
     {
-        // Run after model import, material cleanup and animation hookup have had
-        // their delayed passes. v6 intentionally forces a fresh repair after the
-        // real binary texture asset was added to source control.
+        // Run after the older raft import/material passes. The v7 marker guarantees
+        // this migration executes once even on projects that already ran v5/v6.
         EditorApplication.delayCall += () =>
             EditorApplication.delayCall += () =>
-                EditorApplication.delayCall += () => Apply(false);
+                EditorApplication.delayCall += () =>
+                    EditorApplication.delayCall += () => Apply(false);
     }
 
     [MenuItem("Tools/Open World/Diagnose + Fix Raft Oar Texture")]
@@ -47,31 +100,38 @@ public static class RaftOarUserTextureFix
 
         bool changed = Apply(true);
         if (!changed)
-            EditorUtility.DisplayDialog("Raft Oar Texture", "No change was made. Check the Console diagnostic for the exact missing asset/renderer reason.", "OK");
+            EditorUtility.DisplayDialog(
+                "Raft Oar Texture",
+                "No change was made. The Console now contains a component-level [OAR DIAG] report.",
+                "OK");
     }
 
     private static bool Apply(bool force)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return false;
 
+        Directory.CreateDirectory(AssetFolder);
+        AssetDatabase.Refresh();
         AssetDatabase.ImportAsset(TexturePath, ImportAssetOptions.ForceSynchronousImport | ImportAssetOptions.ForceUpdate);
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        EnsureBlendReadable();
+
         Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
-        if (prefab == null)
-        {
-            Debug.LogWarning("[OAR DIAG] BaseBoat.prefab is missing; oar texture pass skipped.");
-            return false;
-        }
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         if (texture == null)
         {
-            Debug.LogError("[OAR DIAG] Tracked user texture is missing or failed to import at " + TexturePath + ". Pull latest main and check the file imports as Texture2D.");
+            Debug.LogError("[OAR DIAG] Oar Texture.jpg did not import as Texture2D: " + TexturePath);
+            return false;
+        }
+        if (prefab == null)
+        {
+            Debug.LogError("[OAR DIAG] BaseBoat.prefab is missing.");
             return false;
         }
 
         Transform prefabWrapper = prefab.transform.Find(WrapperPath);
         if (prefabWrapper == null)
         {
-            Debug.LogWarning("[OAR DIAG] Uploaded raft wrapper is missing. Apply the authored raft model first.");
+            Debug.LogError("[OAR DIAG] Authored raft wrapper is missing: " + WrapperPath);
             return false;
         }
         if (!force && prefabWrapper.Find(MarkerName) != null) return false;
@@ -79,51 +139,64 @@ public static class RaftOarUserTextureFix
         ConfigureTexture(TexturePath);
         texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
         Material oarMaterial = BuildMaterial(texture);
+
         GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
         try
         {
             Transform wrapper = root.transform.Find(WrapperPath);
-            if (wrapper == null) return false;
-            Transform exactModel = FindAuthoredModelRoot(wrapper);
-            if (exactModel == null)
+            Transform model = wrapper != null ? FindAuthoredModelRoot(wrapper) : null;
+            if (wrapper == null || model == null)
             {
-                Debug.LogWarning("[OAR DIAG] Authored model root could not be found inside " + WrapperPath + ".");
+                Debug.LogError("[OAR DIAG] Could not resolve the authored model inside the boat prefab.");
                 return false;
             }
 
-            Renderer[] all = exactModel.GetComponentsInChildren<Renderer>(true);
-            if (all.Length == 0)
+            Renderer[] renderers = model.GetComponentsInChildren<Renderer>(true);
+            if (renderers == null || renderers.Length == 0)
             {
-                Debug.LogWarning("[OAR DIAG] Authored raft contains no renderers.");
+                Debug.LogError("[OAR DIAG] Authored raft has no renderers.");
                 return false;
             }
 
-            HashSet<Renderer> seeds = new HashSet<Renderer>();
-            AddAnimationSeeds(exactModel, seeds);
-            AddNamedSeeds(all, seeds);
-            AddGeometrySeeds(all, seeds);
-
-            if (seeds.Count == 0)
+            List<ComponentInfo> components = BuildComponents(renderers, root.transform);
+            if (components.Count == 0)
             {
-                Debug.LogError("[OAR DIAG] No paddle/oar renderer could be identified. No raft renderer was modified.");
-                LogRendererInventory(exactModel, all, null);
+                Debug.LogError("[OAR DIAG] No readable triangle components were found in the authored raft mesh.");
                 return false;
             }
 
-            HashSet<Renderer> targets = new HashSet<Renderer>(seeds);
-            ExpandToAssembly(all, seeds, targets);
-
-            foreach (Renderer renderer in targets)
-                AssignEverySubmesh(renderer, oarMaterial);
-
-            // Remove all older direct repair markers so the prefab records only the
-            // current applied version and future migrations are deterministic.
-            for (int i = wrapper.childCount - 1; i >= 0; i--)
+            Vector3 overallCenter = CalculateOverallCenter(renderers);
+            SelectOarPair(components, root.transform, overallCenter, out ComponentInfo left, out ComponentInfo right);
+            if (left == null || right == null)
             {
-                Transform child = wrapper.GetChild(i);
-                if (child != null && child.name.StartsWith("RaftOarUserTexture_v", StringComparison.Ordinal))
-                    UnityEngine.Object.DestroyImmediate(child.gameObject);
+                Debug.LogError("[OAR DIAG] Could not identify a mirrored diagonal oar pair. No raft material was changed.");
+                LogComponentInventory(model, components, overallCenter);
+                return false;
             }
+
+            HashSet<ComponentInfo> selected = new HashSet<ComponentInfo> { left, right };
+            IncludeEndpointCompanions(components, selected);
+
+            int splitRendererCount = 0;
+            int movedTriangles = 0;
+            foreach (IGrouping<Renderer,ComponentInfo> group in selected.GroupBy(c => c.renderer))
+            {
+                int moved = SplitRendererOarTriangles(group.Key, group.ToList(), oarMaterial, splitRendererCount);
+                if (moved > 0)
+                {
+                    movedTriangles += moved;
+                    splitRendererCount++;
+                }
+            }
+
+            if (movedTriangles <= 0)
+            {
+                Debug.LogError("[OAR DIAG] Oar components were identified, but no triangles could be moved to the oar material submesh.");
+                LogComponentInventory(model, components, overallCenter);
+                return false;
+            }
+
+            RemoveOldMarkers(wrapper);
             GameObject marker = new GameObject(MarkerName);
             marker.transform.SetParent(wrapper, false);
 
@@ -132,24 +205,25 @@ public static class RaftOarUserTextureFix
             AssetDatabase.Refresh();
 
             StringBuilder report = new StringBuilder();
-            report.AppendLine("[OAR DIAG] User oar texture applied successfully.");
+            report.AppendLine("[OAR DIAG] v7 SUCCESS — merged raft mesh was split by connected geometry.");
             report.AppendLine("Texture: " + TexturePath + "  " + texture.width + "x" + texture.height);
-            report.AppendLine("Material: " + MaterialPath);
-            report.AppendLine("Seed renderers: " + seeds.Count + "  Final textured renderers: " + targets.Count);
-            foreach (Renderer renderer in targets.OrderBy(r => AnimationUtility.CalculateTransformPath(r.transform, exactModel)))
-            {
-                string path = AnimationUtility.CalculateTransformPath(renderer.transform, exactModel);
-                int submeshes = GetSubMeshCount(renderer);
-                report.AppendLine("  OAR TARGET: " + path + " | " + renderer.GetType().Name + " | submeshes=" + submeshes + " | slots=" + renderer.sharedMaterials.Length);
-            }
+            report.AppendLine("Oar material: " + MaterialPath);
+            report.AppendLine("Selected components: " + selected.Count + "  renderers split: " + splitRendererCount + "  triangles moved: " + movedTriangles);
+            foreach (ComponentInfo c in selected.OrderBy(c => c.center.x))
+                report.AppendLine(ComponentLine(c, overallCenter, "OAR"));
             Debug.Log(report.ToString());
 
             if (force)
                 EditorUtility.DisplayDialog(
-                    "Raft Oar Texture Fixed",
-                    "The supplied Oar Texture.jpg is now forced onto every identified oar submesh and end-cap renderer. A detailed OAR DIAG renderer report was written to the Console.",
+                    "Raft Oars Fixed",
+                    "The actual merged raft mesh was separated at triangle/component level. Only the two oars and their endpoint pieces now use Oar Texture.jpg; the deck retains its raft material.",
                     "OK");
             return true;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError("[OAR DIAG] v7 exception: " + exception);
+            return false;
         }
         finally
         {
@@ -157,182 +231,336 @@ public static class RaftOarUserTextureFix
         }
     }
 
-    private static void AddAnimationSeeds(Transform exactModel, HashSet<Renderer> seeds)
+    private static void EnsureBlendReadable()
     {
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(BlendPath) == null) return;
-        UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(BlendPath);
-        foreach (UnityEngine.Object asset in assets)
+        ModelImporter importer = AssetImporter.GetAtPath(BlendPath) as ModelImporter;
+        if (importer == null || importer.isReadable) return;
+        importer.isReadable = true;
+        importer.SaveAndReimport();
+    }
+
+    private static List<ComponentInfo> BuildComponents(Renderer[] renderers, Transform boatRoot)
+    {
+        List<ComponentInfo> result = new List<ComponentInfo>();
+        int nextId = 0;
+
+        foreach (Renderer renderer in renderers)
         {
-            AnimationClip clip = asset as AnimationClip;
-            if (clip == null || clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase)) continue;
+            Mesh mesh = GetMesh(renderer);
+            if (mesh == null || mesh.vertexCount == 0 || mesh.subMeshCount == 0) continue;
 
-            foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(clip))
+            Vector3[] vertices;
+            try { vertices = mesh.vertices; }
+            catch (Exception e)
             {
-                string property = binding.propertyName ?? string.Empty;
-                if (property.IndexOf("Rotation", StringComparison.OrdinalIgnoreCase) < 0 &&
-                    property.IndexOf("Euler", StringComparison.OrdinalIgnoreCase) < 0 &&
-                    property.IndexOf("Position", StringComparison.OrdinalIgnoreCase) < 0)
-                    continue;
-
-                Transform animated = ResolvePath(exactModel, binding.path);
-                if (animated == null) continue;
-                Renderer[] descendants = animated.GetComponentsInChildren<Renderer>(true);
-                foreach (Renderer r in descendants)
-                    if (LooksLikeOarByName(r) || LooksElongated(r)) seeds.Add(r);
-
-                Renderer own = animated.GetComponent<Renderer>();
-                if (own != null) seeds.Add(own);
+                Debug.LogWarning("[OAR DIAG] Mesh is not CPU-readable: " + renderer.name + " / " + e.Message);
+                continue;
             }
-        }
-    }
+            if (vertices == null || vertices.Length == 0) continue;
 
-    private static Transform ResolvePath(Transform root, string path)
-    {
-        if (string.IsNullOrEmpty(path)) return root;
-        Transform direct = root.Find(path);
-        if (direct != null) return direct;
-
-        string prefix = root.name + "/";
-        if (path.StartsWith(prefix, StringComparison.Ordinal))
-        {
-            direct = root.Find(path.Substring(prefix.Length));
-            if (direct != null) return direct;
-        }
-
-        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
-        {
-            string relative = AnimationUtility.CalculateTransformPath(t, root);
-            if (string.Equals(relative, path, StringComparison.Ordinal) ||
-                path.EndsWith("/" + relative, StringComparison.Ordinal))
-                return t;
-        }
-        return null;
-    }
-
-    private static void AddNamedSeeds(Renderer[] renderers, HashSet<Renderer> seeds)
-    {
-        foreach (Renderer renderer in renderers)
-            if (LooksLikeOarByName(renderer)) seeds.Add(renderer);
-    }
-
-    private static bool LooksLikeOarByName(Renderer renderer)
-    {
-        if (renderer == null) return false;
-        string name = renderer.name ?? string.Empty;
-        if (ContainsOarWord(name)) return true;
-        foreach (Material material in renderer.sharedMaterials)
-        {
-            if (material == null) continue;
-            if (ContainsOarWord(material.name)) return true;
-            Texture main = material.mainTexture;
-            if (main != null && ContainsOarWord(main.name)) return true;
-        }
-        return false;
-    }
-
-    private static bool ContainsOarWord(string value)
-    {
-        return !string.IsNullOrEmpty(value) &&
-            (value.IndexOf("oar", StringComparison.OrdinalIgnoreCase) >= 0 ||
-             value.IndexOf("paddle", StringComparison.OrdinalIgnoreCase) >= 0);
-    }
-
-    private static void AddGeometrySeeds(Renderer[] renderers, HashSet<Renderer> seeds)
-    {
-        // Geometry fallback is deliberately conservative: choose at most the two
-        // strongest long/narrow authored meshes. Local mesh bounds make this safe
-        // even though the visible paddles are diagonally rotated in the prefab.
-        List<Tuple<Renderer, float>> candidates = new List<Tuple<Renderer, float>>();
-        foreach (Renderer renderer in renderers)
-        {
-            if (!LooksElongated(renderer)) continue;
-            Bounds local = LocalMeshBounds(renderer);
-            Vector3 s = local.size;
-            float largest = Mathf.Max(s.x, Mathf.Max(s.y, s.z));
-            float smallest = Mathf.Min(s.x, Mathf.Min(s.y, s.z));
-            float middle = s.x + s.y + s.z - largest - smallest;
-            float ratio = largest / Mathf.Max(.01f, middle);
-            float score = ratio * 10f + largest - middle - smallest;
-            candidates.Add(Tuple.Create(renderer, score));
-        }
-
-        foreach (Tuple<Renderer, float> candidate in candidates.OrderByDescending(c => c.Item2).Take(2))
-            seeds.Add(candidate.Item1);
-    }
-
-    private static bool LooksElongated(Renderer renderer)
-    {
-        Bounds b = LocalMeshBounds(renderer);
-        Vector3 s = b.size;
-        float largest = Mathf.Max(s.x, Mathf.Max(s.y, s.z));
-        float smallest = Mathf.Min(s.x, Mathf.Min(s.y, s.z));
-        float middle = s.x + s.y + s.z - largest - smallest;
-        return largest >= 1.45f && largest <= 5.0f && middle <= 1.15f &&
-               largest / Mathf.Max(.01f, middle) >= 3.0f && smallest <= .55f;
-    }
-
-    private static Bounds LocalMeshBounds(Renderer renderer)
-    {
-        SkinnedMeshRenderer skinned = renderer as SkinnedMeshRenderer;
-        if (skinned != null && skinned.sharedMesh != null) return skinned.sharedMesh.bounds;
-        MeshFilter filter = renderer.GetComponent<MeshFilter>();
-        if (filter != null && filter.sharedMesh != null) return filter.sharedMesh.bounds;
-        return new Bounds(Vector3.zero, renderer.bounds.size);
-    }
-
-    private static void ExpandToAssembly(Renderer[] all, HashSet<Renderer> seeds, HashSet<Renderer> targets)
-    {
-        foreach (Renderer seed in seeds)
-        {
-            if (seed == null) continue;
-            Bounds expanded = seed.bounds;
-            expanded.Expand(.34f);
-
-            foreach (Renderer candidate in all)
+            UnionFind uf = new UnionFind(vertices.Length);
+            for (int s = 0; s < mesh.subMeshCount; s++)
             {
-                if (candidate == null || targets.Contains(candidate)) continue;
-
-                // Direct hierarchy relationships are the strongest evidence for a
-                // separately-authored paddle cap/handle component.
-                if (candidate.transform.IsChildOf(seed.transform) || seed.transform.IsChildOf(candidate.transform) ||
-                    candidate.transform.parent == seed.transform.parent)
+                if (mesh.GetTopology(s) != MeshTopology.Triangles) continue;
+                int[] indices = mesh.GetIndices(s);
+                for (int i = 0; i + 2 < indices.Length; i += 3)
                 {
-                    if (IsSmallCompanion(candidate) || LooksLikeOarByName(candidate)) targets.Add(candidate);
-                    continue;
+                    int a = indices[i], b = indices[i + 1], c = indices[i + 2];
+                    if (!ValidVertex(a, vertices.Length) || !ValidVertex(b, vertices.Length) || !ValidVertex(c, vertices.Length)) continue;
+                    uf.Union(a, b); uf.Union(b, c); uf.Union(c, a);
                 }
+            }
 
-                // End caps can import as tiny sibling objects with generic names.
-                // Only absorb small renderers physically touching an identified oar.
-                if (IsSmallCompanion(candidate) && expanded.Intersects(candidate.bounds))
-                    targets.Add(candidate);
+            Dictionary<int,ComponentInfo> byRoot = new Dictionary<int,ComponentInfo>();
+            for (int s = 0; s < mesh.subMeshCount; s++)
+            {
+                if (mesh.GetTopology(s) != MeshTopology.Triangles) continue;
+                int[] indices = mesh.GetIndices(s);
+                for (int i = 0, ordinal = 0; i + 2 < indices.Length; i += 3, ordinal++)
+                {
+                    int a = indices[i], b = indices[i + 1], c = indices[i + 2];
+                    if (!ValidVertex(a, vertices.Length) || !ValidVertex(b, vertices.Length) || !ValidVertex(c, vertices.Length)) continue;
+                    int rootVertex = uf.Find(a);
+                    if (!byRoot.TryGetValue(rootVertex, out ComponentInfo info))
+                    {
+                        info = new ComponentInfo { id = nextId++, rootVertex = rootVertex, renderer = renderer, mesh = mesh };
+                        byRoot.Add(rootVertex, info);
+                    }
+                    info.vertices.Add(a); info.vertices.Add(b); info.vertices.Add(c);
+                    info.triangleCount++;
+                    if (!info.triangleOrdinals.TryGetValue(s, out List<int> ordinals))
+                    {
+                        ordinals = new List<int>();
+                        info.triangleOrdinals.Add(s, ordinals);
+                    }
+                    ordinals.Add(ordinal);
+                }
+            }
+
+            foreach (ComponentInfo info in byRoot.Values)
+            {
+                FinalizeComponent(info, vertices, boatRoot);
+                result.Add(info);
+            }
+        }
+        return result;
+    }
+
+    private static void FinalizeComponent(ComponentInfo info, Vector3[] vertices, Transform boatRoot)
+    {
+        List<Vector3> points = new List<Vector3>(info.vertices.Count);
+        bool haveBounds = false;
+        Bounds bounds = default;
+        Vector3 sum = Vector3.zero;
+
+        foreach (int index in info.vertices)
+        {
+            Vector3 p = info.renderer.transform.TransformPoint(vertices[index]);
+            points.Add(p);
+            sum += p;
+            if (!haveBounds) { bounds = new Bounds(p, Vector3.zero); haveBounds = true; }
+            else bounds.Encapsulate(p);
+        }
+
+        info.worldBounds = bounds;
+        info.center = points.Count > 0 ? sum / points.Count : bounds.center;
+        if (points.Count < 2) return;
+
+        Vector3 a = Farthest(points, info.center);
+        Vector3 b = Farthest(points, a);
+        Vector3 direction = b - a;
+        info.length = direction.magnitude;
+        if (info.length < .0001f) return;
+        info.direction = direction / info.length;
+        info.endpointA = a;
+        info.endpointB = b;
+
+        float radius = 0f;
+        for (int i = 0; i < points.Count; i++)
+        {
+            Vector3 delta = points[i] - info.center;
+            Vector3 perpendicular = delta - info.direction * Vector3.Dot(delta, info.direction);
+            radius = Mathf.Max(radius, perpendicular.magnitude);
+        }
+        info.width = Mathf.Max(.015f, radius * 2f);
+        info.ratio = info.length / info.width;
+
+        Vector3 horizontal = Vector3.ProjectOnPlane(info.direction, boatRoot.up);
+        if (horizontal.sqrMagnitude > .0001f)
+        {
+            horizontal.Normalize();
+            float forward = Mathf.Abs(Vector3.Dot(horizontal, boatRoot.forward));
+            float side = Mathf.Abs(Vector3.Dot(horizontal, boatRoot.right));
+            info.diagonal = Mathf.Clamp01(2f * Mathf.Min(forward, side));
+        }
+    }
+
+    private static Vector3 Farthest(List<Vector3> points, Vector3 from)
+    {
+        Vector3 best = points[0];
+        float bestDistance = -1f;
+        for (int i = 0; i < points.Count; i++)
+        {
+            float d = (points[i] - from).sqrMagnitude;
+            if (d > bestDistance) { bestDistance = d; best = points[i]; }
+        }
+        return best;
+    }
+
+    private static void SelectOarPair(List<ComponentInfo> components, Transform boatRoot, Vector3 overallCenter,
+        out ComponentInfo bestA, out ComponentInfo bestB)
+    {
+        bestA = null; bestB = null;
+        float bestScore = float.NegativeInfinity;
+
+        List<ComponentInfo> candidates = new List<ComponentInfo>();
+        foreach (ComponentInfo c in components)
+        {
+            c.lateral = Vector3.Dot(c.center - overallCenter, boatRoot.right);
+            if (c.length < .55f || c.ratio < 2.15f || c.diagonal < .12f || c.triangleCount < 4) continue;
+            candidates.Add(c);
+        }
+
+        for (int i = 0; i < candidates.Count; i++)
+        for (int j = i + 1; j < candidates.Count; j++)
+        {
+            ComponentInfo a = candidates[i], b = candidates[j];
+            if (a.lateral * b.lateral >= 0f) continue;
+            if (Mathf.Abs(a.lateral) < .10f || Mathf.Abs(b.lateral) < .10f) continue;
+
+            float lengthSimilarity = Mathf.Min(a.length, b.length) / Mathf.Max(.001f, Mathf.Max(a.length, b.length));
+            float widthSimilarity = Mathf.Min(a.width, b.width) / Mathf.Max(.001f, Mathf.Max(a.width, b.width));
+            if (lengthSimilarity < .55f || widthSimilarity < .28f) continue;
+
+            float score = PairScore(a) + PairScore(b) + lengthSimilarity * 12f + widthSimilarity * 4f;
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestA = a;
+                bestB = b;
             }
         }
     }
 
-    private static bool IsSmallCompanion(Renderer renderer)
+    private static float PairScore(ComponentInfo c)
     {
-        Vector3 s = renderer.bounds.size;
-        float largest = Mathf.Max(s.x, Mathf.Max(s.y, s.z));
-        return largest <= .85f;
+        return c.length * 5f + Mathf.Min(c.ratio, 15f) * 2.4f + c.diagonal * 14f + Mathf.Abs(c.lateral) * 3f;
     }
 
-    private static void AssignEverySubmesh(Renderer renderer, Material material)
+    private static void IncludeEndpointCompanions(List<ComponentInfo> all, HashSet<ComponentInfo> selected)
     {
-        int submeshes = GetSubMeshCount(renderer);
-        int existing = renderer.sharedMaterials != null ? renderer.sharedMaterials.Length : 0;
-        int count = Mathf.Max(1, Mathf.Max(submeshes, existing));
-        Material[] slots = new Material[count];
-        for (int i = 0; i < slots.Length; i++) slots[i] = material;
-        renderer.sharedMaterials = slots;
+        // Blade tips / handle caps may be disconnected mesh islands. Add only small
+        // components touching the OUTER endpoints of a selected oar. Repeating this
+        // twice catches a blade plus a tiny cap without swallowing deck planks at the
+        // inner pivot where an oar crosses the raft.
+        for (int pass = 0; pass < 2; pass++)
+        {
+            List<ComponentInfo> add = new List<ComponentInfo>();
+            foreach (ComponentInfo candidate in all)
+            {
+                if (selected.Contains(candidate)) continue;
+                float largest = candidate.worldBounds.size.magnitude;
+                if (largest > .85f || candidate.triangleCount > 2500) continue;
+
+                float best = float.PositiveInfinity;
+                foreach (ComponentInfo core in selected)
+                {
+                    Vector3 outer = Mathf.Abs(core.lateral) > .001f
+                        ? (Vector3.Dot(core.endpointA - core.center, core.center) >= Vector3.Dot(core.endpointB - core.center, core.center) ? core.endpointA : core.endpointB)
+                        : core.endpointA;
+
+                    // Use both endpoints but require the companion to be small; this
+                    // is safer across Blender coordinate/origin differences.
+                    float da = DistanceToBounds(candidate.worldBounds, core.endpointA);
+                    float db = DistanceToBounds(candidate.worldBounds, core.endpointB);
+                    best = Mathf.Min(best, Mathf.Min(da, db));
+                }
+                if (best <= .24f) add.Add(candidate);
+            }
+            if (add.Count == 0) break;
+            foreach (ComponentInfo c in add) selected.Add(c);
+        }
+    }
+
+    private static float DistanceToBounds(Bounds bounds, Vector3 point)
+    {
+        return Vector3.Distance(bounds.ClosestPoint(point), point);
+    }
+
+    private static int SplitRendererOarTriangles(Renderer renderer, List<ComponentInfo> selected, Material oarMaterial, int rendererOrdinal)
+    {
+        Mesh source = GetMesh(renderer);
+        if (source == null || selected == null || selected.Count == 0) return 0;
+
+        Dictionary<int,HashSet<int>> selectedOrdinals = new Dictionary<int,HashSet<int>>();
+        foreach (ComponentInfo component in selected)
+        {
+            foreach (KeyValuePair<int,List<int>> pair in component.triangleOrdinals)
+            {
+                if (!selectedOrdinals.TryGetValue(pair.Key, out HashSet<int> set))
+                {
+                    set = new HashSet<int>();
+                    selectedOrdinals.Add(pair.Key, set);
+                }
+                for (int i = 0; i < pair.Value.Count; i++) set.Add(pair.Value[i]);
+            }
+        }
+
+        List<int>[] keepBySubmesh = new List<int>[source.subMeshCount];
+        List<int> oarTriangles = new List<int>();
+        int moved = 0;
+
+        for (int s = 0; s < source.subMeshCount; s++)
+        {
+            int[] indices = source.GetIndices(s);
+            List<int> keep = new List<int>(indices.Length);
+            keepBySubmesh[s] = keep;
+            selectedOrdinals.TryGetValue(s, out HashSet<int> moveSet);
+
+            if (source.GetTopology(s) != MeshTopology.Triangles)
+            {
+                keep.AddRange(indices);
+                continue;
+            }
+
+            for (int i = 0, ordinal = 0; i + 2 < indices.Length; i += 3, ordinal++)
+            {
+                if (moveSet != null && moveSet.Contains(ordinal))
+                {
+                    oarTriangles.Add(indices[i]);
+                    oarTriangles.Add(indices[i + 1]);
+                    oarTriangles.Add(indices[i + 2]);
+                    moved++;
+                }
+                else
+                {
+                    keep.Add(indices[i]);
+                    keep.Add(indices[i + 1]);
+                    keep.Add(indices[i + 2]);
+                }
+            }
+        }
+
+        if (moved == 0) return 0;
+
+        Mesh split = UnityEngine.Object.Instantiate(source);
+        split.name = source.name + "_OarSplit_v7";
+        int originalSubmeshes = source.subMeshCount;
+        split.subMeshCount = originalSubmeshes + 1;
+        for (int s = 0; s < originalSubmeshes; s++)
+            split.SetTriangles(keepBySubmesh[s], s, false);
+        split.SetTriangles(oarTriangles, originalSubmeshes, false);
+        split.RecalculateBounds();
+
+        string meshPath = AssetFolder + "/RaftOarSplit_" + SafeName(renderer.name) + "_" + rendererOrdinal + ".asset";
+        if (AssetDatabase.LoadAssetAtPath<Mesh>(meshPath) != null) AssetDatabase.DeleteAsset(meshPath);
+        AssetDatabase.CreateAsset(split, meshPath);
+        split = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
+
+        MeshFilter filter = renderer.GetComponent<MeshFilter>();
+        SkinnedMeshRenderer skinned = renderer as SkinnedMeshRenderer;
+        if (filter != null) filter.sharedMesh = split;
+        else if (skinned != null) skinned.sharedMesh = split;
+        else return 0;
+
+        Material[] current = renderer.sharedMaterials ?? Array.Empty<Material>();
+        Material fallback = current.FirstOrDefault(m => m != null);
+        Material[] materials = new Material[originalSubmeshes + 1];
+        for (int s = 0; s < originalSubmeshes; s++)
+            materials[s] = s < current.Length && current[s] != null ? current[s] : fallback;
+        materials[originalSubmeshes] = oarMaterial;
+        renderer.sharedMaterials = materials;
+
         EditorUtility.SetDirty(renderer);
+        if (filter != null) EditorUtility.SetDirty(filter);
+        if (skinned != null) EditorUtility.SetDirty(skinned);
+        return moved;
     }
 
-    private static int GetSubMeshCount(Renderer renderer)
+    private static Mesh GetMesh(Renderer renderer)
     {
         SkinnedMeshRenderer skinned = renderer as SkinnedMeshRenderer;
-        if (skinned != null && skinned.sharedMesh != null) return skinned.sharedMesh.subMeshCount;
+        if (skinned != null) return skinned.sharedMesh;
         MeshFilter filter = renderer.GetComponent<MeshFilter>();
-        return filter != null && filter.sharedMesh != null ? filter.sharedMesh.subMeshCount : 0;
+        return filter != null ? filter.sharedMesh : null;
+    }
+
+    private static bool ValidVertex(int index, int count)
+    {
+        return index >= 0 && index < count;
+    }
+
+    private static Vector3 CalculateOverallCenter(Renderer[] renderers)
+    {
+        bool have = false;
+        Bounds bounds = default;
+        foreach (Renderer renderer in renderers)
+        {
+            if (renderer == null) continue;
+            if (!have) { bounds = renderer.bounds; have = true; }
+            else bounds.Encapsulate(renderer.bounds);
+        }
+        return have ? bounds.center : Vector3.zero;
     }
 
     private static Transform FindAuthoredModelRoot(Transform wrapper)
@@ -345,10 +573,18 @@ public static class RaftOarUserTextureFix
         return null;
     }
 
+    private static void RemoveOldMarkers(Transform wrapper)
+    {
+        for (int i = wrapper.childCount - 1; i >= 0; i--)
+        {
+            Transform child = wrapper.GetChild(i);
+            if (child != null && child.name.StartsWith("RaftOarUserTexture_v", StringComparison.Ordinal))
+                UnityEngine.Object.DestroyImmediate(child.gameObject);
+        }
+    }
+
     private static Material BuildMaterial(Texture2D texture)
     {
-        Directory.CreateDirectory(MaterialFolder);
-        AssetDatabase.Refresh();
         Shader shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Standard");
         if (shader == null) throw new InvalidOperationException("No supported lit shader exists for the oar material.");
@@ -390,23 +626,37 @@ public static class RaftOarUserTextureFix
         importer.SaveAndReimport();
     }
 
-    private static void LogRendererInventory(Transform root, Renderer[] renderers, HashSet<Renderer> targets)
+    private static string SafeName(string value)
     {
-        StringBuilder report = new StringBuilder("[OAR DIAG] Authored renderer inventory:\n");
-        foreach (Renderer renderer in renderers)
-        {
-            string path = AnimationUtility.CalculateTransformPath(renderer.transform, root);
-            Bounds local = LocalMeshBounds(renderer);
-            report.Append("  ").Append(path)
-                .Append(" | ").Append(renderer.GetType().Name)
-                .Append(" | local=").Append(local.size)
-                .Append(" | world=").Append(renderer.bounds.size)
-                .Append(" | mats=");
-            foreach (Material mat in renderer.sharedMaterials)
-                report.Append(mat != null ? mat.name : "<null>").Append(",");
-            if (targets != null && targets.Contains(renderer)) report.Append("  [TARGET]");
-            report.AppendLine();
-        }
+        if (string.IsNullOrEmpty(value)) return "Renderer";
+        foreach (char c in Path.GetInvalidFileNameChars()) value = value.Replace(c, '_');
+        return value.Replace('/', '_').Replace('\\', '_').Replace(' ', '_');
+    }
+
+    private static void LogComponentInventory(Transform model, List<ComponentInfo> components, Vector3 overallCenter)
+    {
+        StringBuilder report = new StringBuilder("[OAR DIAG] Component inventory (the old renderer-level diagnosis was insufficient):\n");
+        foreach (ComponentInfo c in components.OrderByDescending(PairScore))
+            report.AppendLine(ComponentLine(c, overallCenter, "COMP"));
         Debug.Log(report.ToString());
+    }
+
+    private static string ComponentLine(ComponentInfo c, Vector3 overallCenter, string prefix)
+    {
+        string path = AnimationUtility.CalculateTransformPath(c.renderer.transform, c.renderer.transform.root);
+        string submeshes = string.Join(",", c.triangleOrdinals.Keys.OrderBy(v => v));
+        return "  " + prefix + " id=" + c.id + " path=" + path +
+               " tris=" + c.triangleCount + " submeshes=[" + submeshes + "]" +
+               " center=" + Vec(c.center - overallCenter) +
+               " len=" + c.length.ToString("0.000") +
+               " width=" + c.width.ToString("0.000") +
+               " ratio=" + c.ratio.ToString("0.00") +
+               " diagonal=" + c.diagonal.ToString("0.00") +
+               " lateral=" + c.lateral.ToString("0.000");
+    }
+
+    private static string Vec(Vector3 v)
+    {
+        return "(" + v.x.ToString("0.00") + "," + v.y.ToString("0.00") + "," + v.z.ToString("0.00") + ")";
     }
 }
