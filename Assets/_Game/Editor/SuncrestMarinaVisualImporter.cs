@@ -223,10 +223,10 @@ public static class SuncrestMarinaVisualImporter
                 float x=BitConverter.ToSingle(bytes,offset);offset+=4;
                 float y=BitConverter.ToSingle(bytes,offset);offset+=4;
                 float z=BitConverter.ToSingle(bytes,offset);offset+=4;
-                // Both supplied models use Z as thickness/height differently. This
-                // consistent Blender/STL -> Unity remap makes Dock: X width, Y thin,
-                // Z length and Post: X width, Y height, Z width.
-                Vector3 p=new Vector3(x,z,y);
+                // Proper-handed Blender/STL -> Unity rotation: Dock becomes X width,
+                // Y thin, Z length; Post becomes X width, Y height, Z width. Negating
+                // source Y avoids mirroring the triangle winding/back-face direction.
+                Vector3 p=new Vector3(x,z,-y);
                 source[vi++]=p;
                 min=Vector3.Min(min,p);max=Vector3.Max(max,p);
             }
