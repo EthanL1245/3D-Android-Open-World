@@ -4,9 +4,11 @@ using UnityEngine;
 
 /// <summary>
 /// Fight-movement companion.
-/// - Plans 20 m ahead through the terrain/water-depth field before a fish reaches shore.
+/// - Plans up to 20 m ahead through the terrain/water-depth field before a fish reaches shore.
 /// - Chooses a safe heading fan and remembers which side of an island it is rounding,
 ///   so boat-to-shore casts do not make the fish repeatedly run straight onto land.
+/// - Redirects the core fight's existing per-frame movement distance onto that planned
+///   heading; it does not give the fish extra escape speed.
 /// - Uses stable base-water depth (not the moving wave crest) for routing decisions.
 /// - Keeps a small emergency recovery only for an already critically-shallow fish.
 /// - Runs the existing unconscious retrieve step one extra time while REEL is held,
@@ -48,6 +50,10 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     private float nextPhaseShuffle;
     private float routeSideTimer;
     private int routeSideSign;
+    private bool steeringActive;
+    private Vector3 steeringDirection;
+    private bool havePreviousBobberPosition;
+    private Vector3 previousBobberPosition;
     private float previousDistance = -1f;
     private float stalledSeconds;
 
@@ -93,10 +99,11 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
 
         bool reeling = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
         bool unconscious = (bool)UnconsciousField.GetValue(fishing);
+        GameObject bobber = BobberField.GetValue(fishing) as GameObject;
 
         if (unconscious)
         {
-            ResetTracking();
+            ResetRouteOnly();
             if (reeling && !(bool)FishOnShoreField.GetValue(fishing))
             {
                 UpdateUnconsciousBobberMethod.Invoke(fishing, null);
@@ -105,18 +112,29 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             return;
         }
 
-        // Palm Pond is intentionally separate from island/ocean fight routing.
-        if ((bool)PondCastField.GetValue(fishing) || reeling)
+        if (bobber == null || !bobber.activeSelf)
         {
             ResetTracking();
             return;
         }
 
-        GameObject bobber = BobberField.GetValue(fishing) as GameObject;
-        if (bobber == null || !bobber.activeSelf)
+        // Palm Pond and active player reeling use FishingSystem's normal movement.
+        // Preserve our previous-position baseline so releasing REEL cannot produce a
+        // fake giant planner step from an old position.
+        if ((bool)PondCastField.GetValue(fishing) || reeling)
         {
-            ResetTracking();
+            ResetRouteOnly();
+            previousBobberPosition = bobber.transform.position;
+            havePreviousBobberPosition = true;
+            previousDistance = HorizontalDistance(bobber.transform.position, fishing.transform.position);
             return;
+        }
+
+        Vector3 corePosition = bobber.transform.position;
+        if (!havePreviousBobberPosition)
+        {
+            previousBobberPosition = corePosition;
+            havePreviousBobberPosition = true;
         }
 
         nextPhaseShuffle -= Time.deltaTime;
@@ -132,49 +150,93 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             if (routeSideTimer <= 0f) routeSideSign = 0;
         }
 
-        Vector3 position = bobber.transform.position;
-        Vector3 away = HorizontalDirection(position - fishing.transform.position, fishing.transform.forward);
-        Vector3 currentDirection = FightTravelDirectionField.GetValue(fishing) is Vector3 value
-            ? HorizontalDirection(value, away)
-            : away;
+        Vector3 routeOrigin = previousBobberPosition;
+        Vector3 away = HorizontalDirection(routeOrigin - fishing.transform.position, fishing.transform.forward);
+        Vector3 currentDirection = steeringActive
+            ? HorizontalDirection(steeringDirection, away)
+            : HorizontalDirection(corePosition - previousBobberPosition, away);
 
-        float currentDepth = StableWaterDepth(position);
+        float originDepth = StableWaterDepth(routeOrigin);
         bool fishAlreadyOnShore = (bool)FishOnShoreField.GetValue(fishing);
-
-        // Only physically nudge when the fish is already in critically shallow water.
-        // Normal avoidance is direction planning only, so it does not add free speed.
-        if (fishAlreadyOnShore || currentDepth < EmergencyDepth)
-            EmergencyRecover(bobber, away);
 
         plannerCooldown -= Time.deltaTime;
         if (plannerCooldown <= 0f)
         {
-            float currentRouteMinimum = RouteMinimumDepth(position, currentDirection);
+            float currentRouteMinimum = RouteMinimumDepth(routeOrigin, currentDirection);
             bool routeThreatened = currentRouteMinimum < SafeRouteDepth;
 
-            // While rounding an island, keep planning on the chosen side even if the
-            // next metre happens to be safe. This prevents left/right oscillation.
+            // Once the planner commits to circling one side of the island, keep
+            // evaluating that route before each turn rather than waiting for another
+            // shallow-water collision.
             if (routeThreatened || routeSideSign != 0)
-                PlanRoute(position, away, currentDirection, routeThreatened);
+                PlanRoute(routeOrigin, away, currentDirection, routeThreatened);
+            else
+                steeringActive = false;
 
             plannerCooldown = PlannerInterval;
         }
 
-        float distance = HorizontalDistance(bobber.transform.position, fishing.transform.position);
-        if (previousDistance < 0f || distance > previousDistance + MinimumProgressMetres || routeSideSign != 0)
+        // FishingSystem already moved the bobber this frame. If a route is active,
+        // preserve that exact horizontal step length but rotate the step onto the
+        // planned safe heading. This is steering, not an extra movement impulse.
+        if (steeringActive)
+        {
+            Vector3 coreStep = corePosition - previousBobberPosition;
+            coreStep.y = 0f;
+            float stepLength = coreStep.magnitude;
+
+            if (stepLength > 0.0001f)
+            {
+                Vector3 candidate = previousBobberPosition + steeringDirection * stepLength;
+                if (StableWaterDepth(candidate) >= MinimumEscapeDepth)
+                {
+                    if (ocean != null) candidate.y = ocean.GetSurfaceHeight(candidate) - 0.08f;
+                    bobber.transform.position = candidate;
+                    CastPointField.SetValue(fishing, candidate);
+                    FightTravelDirectionField.SetValue(fishing, steeringDirection);
+                    corePosition = candidate;
+                }
+                else
+                {
+                    // Terrain can have a tiny spike between planner samples. Replan
+                    // immediately instead of letting one frame cross into the beach.
+                    PlanRoute(previousBobberPosition, away, steeringDirection, true);
+                    candidate = previousBobberPosition + steeringDirection * stepLength;
+                    if (StableWaterDepth(candidate) >= MinimumEscapeDepth)
+                    {
+                        if (ocean != null) candidate.y = ocean.GetSurfaceHeight(candidate) - 0.08f;
+                        bobber.transform.position = candidate;
+                        CastPointField.SetValue(fishing, candidate);
+                        FightTravelDirectionField.SetValue(fishing, steeringDirection);
+                        corePosition = candidate;
+                    }
+                }
+            }
+        }
+
+        // Emergency recovery is intentionally last-resort only. Normal shoreline
+        // avoidance should happen many metres before this branch is ever necessary.
+        if (fishAlreadyOnShore || originDepth < EmergencyDepth || StableWaterDepth(corePosition) < EmergencyDepth)
+        {
+            EmergencyRecover(bobber, away);
+            corePosition = bobber.transform.position;
+        }
+
+        float distance = HorizontalDistance(corePosition, fishing.transform.position);
+        if (previousDistance < 0f || distance > previousDistance + MinimumProgressMetres || steeringActive)
             stalledSeconds = 0f;
         else
             stalledSeconds += Time.deltaTime;
         previousDistance = distance;
 
-        // Stall detection is now only a fallback that requests another route plan;
-        // it is no longer the primary shoreline-avoidance trigger.
         if (stalledSeconds >= StallGraceSeconds)
         {
-            PlanRoute(bobber.transform.position, away, currentDirection, true);
+            PlanRoute(corePosition, away, currentDirection, true);
             stalledSeconds = 0f;
             plannerCooldown = PlannerInterval;
         }
+
+        previousBobberPosition = corePosition;
     }
 
     private void PlanRoute(Vector3 position, Vector3 away, Vector3 currentDirection, bool threatened)
@@ -186,11 +248,10 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         for (int i = 0; i < CandidateAngles.Length; i++)
         {
             float angle = CandidateAngles[i];
-            Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * away;
-            direction = HorizontalDirection(direction, away);
+            Vector3 direction = HorizontalDirection(Quaternion.AngleAxis(angle, Vector3.up) * away, away);
 
-            // Rounding an island sometimes requires temporarily moving partly back
-            // toward the player. More than ~125 degrees inward is never considered.
+            // Rounding a shoreline can require a temporary partly-inward arc. More
+            // than ~125 degrees back toward the player is never considered.
             float outward = Vector3.Dot(direction, away);
             if (outward < -0.58f) continue;
 
@@ -210,8 +271,6 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             if (routeSideSign != 0 && sign != 0)
                 score += sign == routeSideSign ? 2.8f : -3.6f;
 
-            // A tiny random term prevents two otherwise-identical routes from always
-            // choosing the exact same side while remaining dominated by water depth.
             score += UnityEngine.Random.Range(-0.08f, 0.08f);
 
             if (score > bestScore)
@@ -222,6 +281,8 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             }
         }
 
+        steeringDirection = bestDirection;
+        steeringActive = true;
         FightTravelDirectionField.SetValue(fishing, bestDirection);
         FightMovePhaseField.SetValue(fishing, UnityEngine.Random.Range(0f, Mathf.PI * 2f));
         nextPhaseShuffle = UnityEngine.Random.Range(0.55f, 1.35f);
@@ -251,8 +312,8 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             float distance = RouteDistances[i];
             Vector3 center = origin + direction * distance;
 
-            // Three-point corridor means a route is rejected before the fish's weave
-            // or body width can clip a shallow sandbar beside the centerline.
+            // A three-point corridor rejects a route before the fish's weave/body
+            // can clip a shallow sandbar beside the route centerline.
             float centerDepth = StableWaterDepth(center);
             float leftDepth = StableWaterDepth(center + side * 0.70f);
             float rightDepth = StableWaterDepth(center - side * 0.70f);
@@ -279,7 +340,8 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     {
         Vector3 position = bobber.transform.position;
         Vector3 bestDirection = away;
-        float bestDepth = StableWaterDepth(position);
+        float currentDepth = StableWaterDepth(position);
+        float bestDepth = currentDepth;
 
         for (int i = 0; i < CandidateAngles.Length; i++)
         {
@@ -293,7 +355,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             }
         }
 
-        if (bestDepth <= StableWaterDepth(position) + 0.02f) return;
+        if (bestDepth <= currentDepth + 0.02f) return;
 
         Vector3 recovered = position + bestDirection * 0.32f;
         if (ocean != null) recovered.y = ocean.GetSurfaceHeight(recovered) - 0.08f;
@@ -301,6 +363,10 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         CastPointField.SetValue(fishing, recovered);
         FightTravelDirectionField.SetValue(fishing, bestDirection);
         FishOnShoreField.SetValue(fishing, false);
+        steeringDirection = bestDirection;
+        steeringActive = true;
+        previousBobberPosition = recovered;
+        havePreviousBobberPosition = true;
     }
 
     private float StableWaterDepth(Vector3 position)
@@ -345,12 +411,19 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         return delta.magnitude;
     }
 
-    private void ResetTracking()
+    private void ResetRouteOnly()
     {
         plannerCooldown = 0f;
         routeSideTimer = 0f;
         routeSideSign = 0;
-        previousDistance = -1f;
+        steeringActive = false;
         stalledSeconds = 0f;
+    }
+
+    private void ResetTracking()
+    {
+        ResetRouteOnly();
+        havePreviousBobberPosition = false;
+        previousDistance = -1f;
     }
 }
