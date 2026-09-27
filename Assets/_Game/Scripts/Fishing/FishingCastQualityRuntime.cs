@@ -3,31 +3,29 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Applies one cast-quality multiplier to island/ocean catches after the species and
-/// biome-normal weight have already been rolled.
+/// Applies a biome-wide depth-quality multiplier after the normal species/weight roll.
 ///
-/// Quality uses both real cast distance and the cast point's stable water depth
-/// compared with the deepest stable water found in a 30 m scan around that landing.
-/// The distance endpoints are deliberate gameplay anchors:
-///   5 m cast  -> 20% potential (80% size/HP penalty)
-///   30 m cast -> 100% potential (no penalty)
-/// Between those endpoints, locally deeper water earns substantially more of the
-/// remaining potential than a shallow/sandbar cast.
+/// For Suncrest and Brinebreak, the reference depth is NOT local to the landing point.
+/// It is computed once for the whole biome by sampling many shoreline points and finding
+/// the deepest stable water reachable within a 30 m outward cast from those shores.
+/// Every ocean cast in that biome -- from land OR from a boat -- is compared with that
+/// same reference. Shallow casts therefore produce much smaller/weaker fish, while a
+/// cast that reaches the biome's shore-cast reference depth receives full potential.
 ///
-/// The same multiplier is applied to caught weight and starting fight HP. Because
-/// every later length/value calculation reads the reduced caught weight, the game's
-/// existing biological length table and sale-value parabola stay authoritative.
-/// Palm Pond is exempt and retains its dedicated tiny-fish rules.
+/// Palm Pond is exempt and keeps its dedicated tiny-fish rules.
 /// </summary>
 [DefaultExecutionOrder(2000)]
 public sealed class FishingCastQualityRuntime : MonoBehaviour
 {
-    private const float MinimumGameplayCastMetres = 5f;
-    private const float FullQualityCastMetres = 30f;
-    private const float ScanRadiusMetres = 30f;
-    private const float ScanRingStepMetres = 5f;
-    private const int ScanDirections = 16;
-    private const float MinimumQuality = 0.20f;
+    private const float ShoreReferenceCastMetres = 30f;
+    private const float MinimumQuality = 0.20f; // maximum penalty = 80%
+    private const float DepthCurveExponent = 1.55f;
+    private const int ShoreDirections = 96;
+    private const float ShoreSearchInsideMetres = 24f;
+    private const float ShoreSearchOutsideMetres = 28f;
+    private const float ShoreSearchStepMetres = 1f;
+    private const float ReferenceSampleStepMetres = 1f;
+    private const float ShoreWaterThreshold = 0.08f;
 
     private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly FieldInfo StateField = typeof(FishingSystem).GetField("state", Flags);
@@ -40,6 +38,8 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     private static readonly FieldInfo FishHealthField = typeof(FishingSystem).GetField("fishHealth", Flags);
     private static readonly FieldInfo OceanWaterField = typeof(FishingSystem).GetField("oceanWater", Flags);
 
+    private readonly float[] biomeReferenceDepth = { -1f, -1f, -1f };
+
     private FishingSystem fishing;
     private OceanWater ocean;
     private Terrain terrain;
@@ -47,9 +47,10 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     private bool measured;
     private bool applied;
     private bool pond;
+    private int biome;
     private float castDistance;
     private float castDepth;
-    private float deepestDepth;
+    private float referenceDepth;
     private float depthRatio = 1f;
     private float quality = 1f;
 
@@ -86,17 +87,13 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
 
         string state = StateName();
 
-        // A new cast begins here. Waiting is deliberately not used for reset because
-        // permanent lures continuously move castPoint while they are retrieved.
         if ((state == "Charging" || state == "Casting") && state != previousState)
             ResetForNewCast();
 
-        // Capture the landing exactly once, before a retrieval lure can move inland.
+        // Capture the original landing before a retrieval lure moves castPoint.
         if (state == "Waiting" && !measured)
             MeasureLandingQuality();
 
-        // Normal bait may transition through Bite quickly, so Fighting has a safe
-        // fallback measurement. Apply after FishingSystem.StartFight has created HP.
         if (state == "Fighting" && !applied)
         {
             if (!measured) MeasureLandingQuality();
@@ -114,9 +111,10 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         measured = false;
         applied = false;
         pond = false;
+        biome = 0;
         castDistance = 0f;
         castDepth = 0f;
-        deepestDepth = 0f;
+        referenceDepth = 0f;
         depthRatio = 1f;
         quality = 1f;
     }
@@ -125,9 +123,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     {
         measured = true;
         pond = PondCastField != null && (bool)PondCastField.GetValue(fishing);
-        castDistance = OriginalCastDistanceField != null
-            ? Mathf.Clamp((float)OriginalCastDistanceField.GetValue(fishing), MinimumGameplayCastMetres, FullQualityCastMetres)
-            : FullQualityCastMetres;
+        castDistance = OriginalCastDistanceField != null ? Mathf.Max(0f, (float)OriginalCastDistanceField.GetValue(fishing)) : 0f;
 
         if (pond)
         {
@@ -137,25 +133,23 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         }
 
         Vector3 landing = (Vector3)CastPointField.GetValue(fishing);
+        biome = ResolveBiome(landing);
         castDepth = StableWaterDepth(landing);
-        deepestDepth = DeepestDepthWithin30Metres(landing);
-        depthRatio = deepestDepth > 0.001f ? Mathf.Clamp01(castDepth / deepestDepth) : 1f;
-        quality = QualityFromDistanceAndDepth(castDistance, depthRatio);
+        referenceDepth = ReferenceDepthForBiome(biome);
+        depthRatio = referenceDepth > 0.001f ? Mathf.Clamp01(castDepth / referenceDepth) : 1f;
+        quality = QualityFromDepthRatio(depthRatio);
     }
 
     /// <summary>
-    /// Distance owns the exact endpoints. At 5 m the catch has 20% potential; at
-    /// 30 m it has 100%. Between them, deeper local water bends the curve upward.
+    /// Depth alone owns quality. The absolute floor is 20% potential, so a very
+    /// shallow cast can lose up to 80% of both size and fight HP. The curved response
+    /// keeps shallow/intermediate water meaningfully worse instead of becoming nearly
+    /// full-quality too early.
     /// </summary>
-    public static float QualityFromDistanceAndDepth(float distanceMetres, float localDepthRatio)
+    public static float QualityFromDepthRatio(float ratio)
     {
-        float distance01 = Mathf.InverseLerp(MinimumGameplayCastMetres, FullQualityCastMetres, distanceMetres);
-        float depth01 = Mathf.Clamp01(localDepthRatio);
-
-        // Shallow intermediate casts rise slowly; a cast into the deepest nearby
-        // water rises much faster. Both converge exactly at 20% / 100% endpoints.
-        float exponent = Mathf.Lerp(2.0f, 0.65f, Mathf.Sqrt(depth01));
-        float progress = Mathf.Pow(distance01, exponent);
+        float depth01 = Mathf.Clamp01(ratio);
+        float progress = Mathf.Pow(depth01, DepthCurveExponent);
         return Mathf.Lerp(MinimumQuality, 1f, progress);
     }
 
@@ -176,31 +170,141 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         FishHealthField.SetValue(fishing, 1f);
 
         Debug.Log(
-            "[FISH CAST QUALITY] distance=" + castDistance.ToString("0.0") + "m" +
+            "[FISH CAST QUALITY] biome=" + FishingTuning.BiomeId(biome) +
+            " cast=" + castDistance.ToString("0.0") + "m" +
             " depth=" + castDepth.ToString("0.00") + "m" +
-            " deepest30m=" + deepestDepth.ToString("0.00") + "m" +
+            " biomeShore30mRef=" + referenceDepth.ToString("0.00") + "m" +
             " depthRatio=" + (depthRatio * 100f).ToString("0") + "%" +
             " quality=" + (quality * 100f).ToString("0") + "%" +
             " weight=" + oldWeight.ToString("0.###") + "->" + newWeight.ToString("0.###") + "kg" +
             " HP=" + oldMaxHealth + "->" + newMaxHealth);
     }
 
-    private float DeepestDepthWithin30Metres(Vector3 center)
+    private int ResolveBiome(Vector3 point)
     {
-        float deepest = StableWaterDepth(center);
-        for (float radius = ScanRingStepMetres; radius <= ScanRadiusMetres + 0.01f; radius += ScanRingStepMetres)
+        IslandExpansionWorld expansion = IslandExpansionWorld.Active;
+        if (expansion != null && expansion.Ready)
+            return Mathf.Clamp(expansion.BiomeAt(point), 0, 2);
+        return 0;
+    }
+
+    private float ReferenceDepthForBiome(int targetBiome)
+    {
+        targetBiome = Mathf.Clamp(targetBiome, 0, 2);
+        if (biomeReferenceDepth[targetBiome] > 0.001f)
+            return biomeReferenceDepth[targetBiome];
+
+        float reference = 0f;
+        IslandExpansionWorld expansion = IslandExpansionWorld.Active;
+        ReefZone reef = ReefZone.Active;
+
+        if (targetBiome == 0 && reef != null)
         {
-            for (int i = 0; i < ScanDirections; i++)
+            reference = ScanIslandShoreReference(
+                reef.center,
+                new Vector2(reef.islandRadiusX, reef.islandRadiusZ),
+                0);
+        }
+        else if (targetBiome == 1 && expansion != null && expansion.Ready && expansion.Config != null)
+        {
+            reference = ScanIslandShoreReference(expansion.NewCenter, expansion.Config.IslandRadii, 1);
+        }
+        else if (targetBiome == 2 && expansion != null && expansion.Ready && expansion.Config != null)
+        {
+            // Deep Ocean has no land shoreline of its own. Its authored ocean depth
+            // is the stable full-potential reference for boat casts in that biome.
+            reference = Mathf.Max(1f, expansion.Config.OceanDepth);
+        }
+
+        // Safe fallback for old scenes without the expansion geometry.
+        if (reference <= 0.001f)
+            reference = Mathf.Max(1f, DeepestTerrainWaterDepth());
+
+        biomeReferenceDepth[targetBiome] = reference;
+        Debug.Log("[FISH CAST REFERENCE] " + FishingTuning.BiomeId(targetBiome) +
+                  " full-potential depth=" + reference.ToString("0.00") +
+                  "m (deepest water reachable by a 30m shore cast; Deep Ocean uses authored ocean depth).");
+        return reference;
+    }
+
+    private float ScanIslandShoreReference(Vector3 center, Vector2 radii, int targetBiome)
+    {
+        float best = 0f;
+
+        for (int i = 0; i < ShoreDirections; i++)
+        {
+            float angle = i * (Mathf.PI * 2f / ShoreDirections);
+            Vector3 ellipseEdge = center + new Vector3(Mathf.Cos(angle) * radii.x, 0f, Mathf.Sin(angle) * radii.y);
+            Vector3 outward = ellipseEdge - center;
+            outward.y = 0f;
+            if (outward.sqrMagnitude < 0.0001f) continue;
+            outward.Normalize();
+
+            Vector3 shore;
+            if (!TryFindActualShore(ellipseEdge, outward, targetBiome, out shore))
+                continue;
+
+            for (float distance = 0f; distance <= ShoreReferenceCastMetres + 0.01f; distance += ReferenceSampleStepMetres)
             {
-                float angle = i * (360f / ScanDirections);
-                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * Vector3.forward;
-                deepest = Mathf.Max(deepest, StableWaterDepth(center + direction * radius));
+                Vector3 sample = shore + outward * distance;
+                if (ResolveBiome(sample) != targetBiome) continue;
+                best = Mathf.Max(best, StableWaterDepth(sample));
             }
         }
-        return Mathf.Max(0f, deepest);
+
+        return best;
+    }
+
+    private bool TryFindActualShore(Vector3 approximateEdge, Vector3 outward, int targetBiome, out Vector3 shore)
+    {
+        shore = approximateEdge;
+        bool sawLand = false;
+
+        for (float offset = -ShoreSearchInsideMetres; offset <= ShoreSearchOutsideMetres; offset += ShoreSearchStepMetres)
+        {
+            Vector3 sample = approximateEdge + outward * offset;
+            float depth = StableWaterDepthSigned(sample);
+
+            if (depth <= ShoreWaterThreshold)
+            {
+                sawLand = true;
+                continue;
+            }
+
+            if (sawLand && ResolveBiome(sample) == targetBiome)
+            {
+                shore = sample;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private float DeepestTerrainWaterDepth()
+    {
+        if (terrain == null || ocean == null) return 1f;
+        TerrainData data = terrain.terrainData;
+        float best = 0f;
+        const int grid = 28;
+        for (int z = 0; z <= grid; z++)
+        for (int x = 0; x <= grid; x++)
+        {
+            Vector3 p = terrain.transform.position + new Vector3(
+                data.size.x * x / grid,
+                0f,
+                data.size.z * z / grid);
+            best = Mathf.Max(best, StableWaterDepth(p));
+        }
+        return best;
     }
 
     private float StableWaterDepth(Vector3 position)
+    {
+        return Mathf.Max(0f, StableWaterDepthSigned(position));
+    }
+
+    private float StableWaterDepthSigned(Vector3 position)
     {
         if (terrain == null || ocean == null) return 0f;
         TerrainData data = terrain.terrainData;
@@ -209,7 +313,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
             return 0f;
 
         float ground = terrain.SampleHeight(position) + terrain.transform.position.y;
-        return Mathf.Max(0f, ocean.BaseWaterLevel - ground);
+        return ocean.BaseWaterLevel - ground;
     }
 
     private string StateName()
