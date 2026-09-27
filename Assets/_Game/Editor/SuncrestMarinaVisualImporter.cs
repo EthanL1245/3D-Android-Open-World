@@ -11,25 +11,28 @@ using Debug=UnityEngine.Debug;
 using Object=UnityEngine.Object;
 
 /// <summary>
-/// Imports the user's "Dock and Dock Post.zip" and swaps ONLY the visible meshes /
-/// material on Suncrest Marina's existing Boardwalk and Dock piling objects.
-/// Existing transforms, BoxColliders, interaction objects, arrival point and marina
-/// layout are left untouched, so gameplay shape/hitboxes remain exactly as authored.
+/// Installs the user's Dock Texture on the EXISTING Suncrest marina geometry.
 ///
-/// The supplied STLs have no UVs. This importer normalizes their geometry to a unit
-/// box matching the existing primitive dimensions and generates face-projected UVs for
-/// the supplied wood texture. Both dock and piling visuals therefore fit the existing
-/// marina objects without changing their collision footprint.
+/// Important contract:
+/// - Boardwalk keeps the original full-size cube geometry and original transform.
+/// - Every Dock piling keeps the original full-size cube geometry and transform.
+/// - Existing BoxColliders are never touched.
+/// - Therefore visible dock/posts exactly fill the same shape as their hitboxes;
+///   there are no thin replacement meshes, floating post fragments, or invisible
+///   collision outside the rendered wood.
+///
+/// The supplied STL/.blend files are intentionally not used for the final marina
+/// silhouette because the requested gameplay requirement is "same shape and hitbox as
+/// before, using my textures". The ZIP is still validated as the supplied package and
+/// its Dock Texture.jpg is used verbatim for the material.
 /// </summary>
 public static class SuncrestMarinaVisualImporter
 {
     private const string ZipName="Dock and Dock Post.zip";
     private const string AssetRoot="Assets/_Game/Marina/UserDock";
-    private const string DockMeshPath=AssetRoot+"/DockUser_Normalized.asset";
-    private const string PostMeshPath=AssetRoot+"/DockPostUser_Normalized.asset";
     private const string TexturePath=AssetRoot+"/DockUserTexture.png";
     private const string MaterialPath=AssetRoot+"/DockUserWood.mat";
-    private const string AutoSessionKey="OpenWorld.AutoImport.SuncrestMarinaVisuals.20260927.v1";
+    private const string AutoSessionKey="OpenWorld.AutoImport.SuncrestMarinaVisuals.20260927.v2.ShapeRecovery";
 
     [InitializeOnLoadMethod]
     private static void AutoImport()
@@ -41,9 +44,10 @@ public static class SuncrestMarinaVisualImporter
             if(EditorApplication.isPlayingOrWillChangePlaymode)return;
             try
             {
-                // If assets were generated previously, reapply them even when the ZIP
-                // is no longer in Downloads. This also recovers after boat setup reruns.
+                // First recover the scene from the earlier thin-mesh import if the
+                // user's material already exists. This makes the fix one-pull only.
                 if(TryApplyExisting(false))return;
+
                 string zip=FindPackage();
                 if(!string.IsNullOrEmpty(zip))ImportAndApply(zip,false);
             }
@@ -81,39 +85,33 @@ public static class SuncrestMarinaVisualImporter
     public static void ReapplyMenu()
     {
         if(!TryApplyExisting(true))
-            EditorUtility.DisplayDialog("Marina Dock Visuals","Imported dock assets do not exist yet. Run the one-click import first.","OK");
+            EditorUtility.DisplayDialog("Marina Dock Visuals","Imported dock texture/material does not exist yet. Run the one-click import first.","OK");
     }
 
     public static bool TryApplyExisting(bool interactive)
     {
-        Mesh dock=AssetDatabase.LoadAssetAtPath<Mesh>(DockMeshPath);
-        Mesh post=AssetDatabase.LoadAssetAtPath<Mesh>(PostMeshPath);
         Material material=AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
-        if(dock==null || post==null || material==null)return false;
-        return ApplyToCurrentMarina(dock,post,material,interactive);
+        if(material==null)return false;
+        return ApplyToCurrentMarina(material,interactive);
     }
 
     private static void ImportAndApply(string zipPath,bool interactive)
     {
         EnsureFolder(AssetRoot);
-        EditorUtility.DisplayProgressBar("Suncrest Marina","Reading supplied dock package...",.10f);
+        EditorUtility.DisplayProgressBar("Suncrest Marina","Reading supplied dock package...",.12f);
 
-        byte[] dockBytes,postBytes,textureBytes;
+        byte[] textureBytes;
         using(FileStream stream=File.OpenRead(zipPath))
         using(ZipArchive archive=new ZipArchive(stream,ZipArchiveMode.Read))
         {
-            dockBytes=ReadRequired(archive,"Dock.stl");
-            postBytes=ReadRequired(archive,"Dock Post.stl");
+            // Validate that this really is the user's dock/post package, but keep the
+            // original marina geometry because its dimensions already match gameplay.
+            RequireMember(archive,"Dock.stl");
+            RequireMember(archive,"Dock Post.stl");
             textureBytes=ReadRequired(archive,"Dock Texture.jpg");
         }
 
-        EditorUtility.DisplayProgressBar("Suncrest Marina","Building supplied dock meshes...",.32f);
-        Mesh dock=BuildNormalizedBinaryStl(dockBytes,"DockUser_Normalized");
-        Mesh post=BuildNormalizedBinaryStl(postBytes,"DockPostUser_Normalized");
-        SaveOrReplaceMesh(DockMeshPath,dock);
-        SaveOrReplaceMesh(PostMeshPath,post);
-
-        EditorUtility.DisplayProgressBar("Suncrest Marina","Installing supplied wood texture...",.58f);
+        EditorUtility.DisplayProgressBar("Suncrest Marina","Installing supplied wood texture...",.52f);
         WriteTexturePng(TexturePath,textureBytes);
         Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
         if(texture==null)throw new InvalidDataException("Unity could not import the supplied dock texture.");
@@ -138,21 +136,16 @@ public static class SuncrestMarinaVisualImporter
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        dock=AssetDatabase.LoadAssetAtPath<Mesh>(DockMeshPath);
-        post=AssetDatabase.LoadAssetAtPath<Mesh>(PostMeshPath);
-        material=AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
-        if(dock==null||post==null||material==null)throw new InvalidOperationException("Generated marina visual assets could not be reloaded.");
-
-        EditorUtility.DisplayProgressBar("Suncrest Marina","Replacing visible dock/posts; keeping existing hitboxes...",.82f);
-        if(!ApplyToCurrentMarina(dock,post,material,interactive))
+        EditorUtility.DisplayProgressBar("Suncrest Marina","Restoring original dock/post thickness and texturing it...",.82f);
+        if(!ApplyToCurrentMarina(material,interactive))
             throw new InvalidOperationException("MarinaShop is not present in the open Suncrest scene. Open the island scene and run the importer again.");
 
-        Debug.Log("[SUNCREST MARINA VISUAL] SUCCESS — supplied Dock + Dock Post models/texture applied to Boardwalk and Dock piling renderers. Existing transforms and colliders were preserved.");
+        Debug.Log("[SUNCREST MARINA VISUAL V2] SUCCESS — restored original full-thickness Boardwalk + Dock piling geometry and applied Dock Texture.jpg. Visible geometry now matches the existing hitboxes.");
         if(interactive)
-            EditorUtility.DisplayDialog("Suncrest Marina Ready","Your supplied dock and dock-post visuals are installed. Existing marina shape, placement and hitboxes were kept unchanged.","OK");
+            EditorUtility.DisplayDialog("Suncrest Marina Ready","Original marina thickness/shape restored. Your supplied dock texture is applied to the dock and pilings, and the existing hitboxes remain aligned.","OK");
     }
 
-    private static bool ApplyToCurrentMarina(Mesh dock,Mesh post,Material material,bool interactive)
+    private static bool ApplyToCurrentMarina(Material material,bool interactive)
     {
         GameObject marina=GameObject.Find("MarinaShop");
         if(marina==null)return false;
@@ -168,26 +161,27 @@ public static class SuncrestMarinaVisualImporter
 
         if(boardwalk==null || pilings.Count==0)
         {
-            if(interactive)EditorUtility.DisplayDialog("Marina Dock Import","Could not find the existing Boardwalk and Dock piling objects. Their colliders were not changed.","OK");
+            if(interactive)EditorUtility.DisplayDialog("Marina Dock Import","Could not find the existing Boardwalk and Dock piling objects. Nothing was changed.","OK");
             return false;
         }
 
-        // Mesh swap only. Do NOT alter transform scale/position/rotation or colliders.
-        Undo.RecordObject(boardwalk,"Replace marina dock visual");
-        boardwalk.sharedMesh=dock;
-        Renderer boardRenderer=boardwalk.GetComponent<Renderer>();
-        if(boardRenderer!=null){Undo.RecordObject(boardRenderer,"Texture marina dock");boardRenderer.sharedMaterial=material;}
-        EditorUtility.SetDirty(boardwalk);
+        Mesh cube=GetUnityCubeMesh();
+        if(cube==null)throw new InvalidOperationException("Unity built-in Cube mesh could not be resolved.");
 
+        // Restore the exact primitive geometry BoatSystemSetup originally authored.
+        // Because the BoxCollider lives on each same GameObject with the same transform,
+        // this makes the renderer and collision occupy the same volume again.
+        RestorePrimitive(boardwalk,cube,material,"Restore full-thickness marina dock");
         foreach(MeshFilter piling in pilings)
-        {
-            Undo.RecordObject(piling,"Replace marina piling visual");
-            piling.sharedMesh=post;
-            Renderer renderer=piling.GetComponent<Renderer>();
-            if(renderer!=null){Undo.RecordObject(renderer,"Texture marina piling");renderer.sharedMaterial=material;EditorUtility.SetDirty(renderer);}
-            EditorUtility.SetDirty(piling);
-        }
+            RestorePrimitive(piling,cube,material,"Restore full-size marina piling");
 
+        // Defensive cleanup: earlier visual importers never created children, but if a
+        // future/partial attempt did, remove only obvious generated visual children so
+        // no decorative post fragments can float independently of the collider.
+        RemoveGeneratedVisualChildren(boardwalk.transform);
+        foreach(MeshFilter piling in pilings)RemoveGeneratedVisualChildren(piling.transform);
+
+        Physics.SyncTransforms();
         Scene scene=marina.scene;
         if(scene.IsValid() && scene.isLoaded)
         {
@@ -197,99 +191,81 @@ public static class SuncrestMarinaVisualImporter
 
         Selection.activeGameObject=boardwalk.gameObject;
         EditorGUIUtility.PingObject(boardwalk.gameObject);
-        Debug.Log("[SUNCREST MARINA VISUAL] Applied 1 dock + "+pilings.Count+" piling visuals. BoxColliders/hitboxes were not modified.");
+        Debug.Log("[SUNCREST MARINA VISUAL V2] Applied supplied texture to original cube geometry: 1 Boardwalk + "+pilings.Count+" Dock piling(s). Existing transforms and BoxColliders unchanged.");
         return true;
     }
 
-    private static Mesh BuildNormalizedBinaryStl(byte[] bytes,string name)
+    private static void RestorePrimitive(MeshFilter filter,Mesh cube,Material material,string undoName)
     {
-        if(bytes==null || bytes.Length<84)throw new InvalidDataException(name+" STL is too small.");
-        uint triangleCount=BitConverter.ToUInt32(bytes,80);
-        long expected=84L+triangleCount*50L;
-        if(triangleCount==0 || expected>bytes.Length)throw new InvalidDataException(name+" is not a valid binary STL.");
+        Undo.RecordObject(filter,undoName);
+        filter.sharedMesh=cube;
+        EditorUtility.SetDirty(filter);
 
-        int vertexCount=checked((int)triangleCount*3);
-        Vector3[] source=new Vector3[vertexCount];
-        int offset=84;
-        int vi=0;
-        Vector3 min=new Vector3(float.PositiveInfinity,float.PositiveInfinity,float.PositiveInfinity);
-        Vector3 max=new Vector3(float.NegativeInfinity,float.NegativeInfinity,float.NegativeInfinity);
-
-        for(int t=0;t<triangleCount;t++)
+        Renderer renderer=filter.GetComponent<Renderer>();
+        if(renderer!=null)
         {
-            offset+=12; // supplied STL face normal; Unity will recalculate after normalization
-            for(int v=0;v<3;v++)
-            {
-                float x=BitConverter.ToSingle(bytes,offset);offset+=4;
-                float y=BitConverter.ToSingle(bytes,offset);offset+=4;
-                float z=BitConverter.ToSingle(bytes,offset);offset+=4;
-                // Proper-handed Blender/STL -> Unity rotation: Dock becomes X width,
-                // Y thin, Z length; Post becomes X width, Y height, Z width. Negating
-                // source Y avoids mirroring the triangle winding/back-face direction.
-                Vector3 p=new Vector3(x,z,-y);
-                source[vi++]=p;
-                min=Vector3.Min(min,p);max=Vector3.Max(max,p);
-            }
-            offset+=2; // STL attribute byte count
+            Undo.RecordObject(renderer,"Apply supplied dock wood texture");
+            renderer.sharedMaterial=material;
+            renderer.enabled=true;
+            EditorUtility.SetDirty(renderer);
         }
 
-        Vector3 size=max-min;
-        if(size.x<1e-5f||size.y<1e-5f||size.z<1e-5f)throw new InvalidDataException(name+" has degenerate bounds.");
-        Vector3 center=(min+max)*.5f;
-
-        Vector3[] vertices=new Vector3[vertexCount];
-        Vector2[] uv=new Vector2[vertexCount];
-        int[] triangles=new int[vertexCount];
-
-        for(int i=0;i<vertexCount;i++)
+        BoxCollider box=filter.GetComponent<BoxCollider>();
+        if(box!=null)
         {
-            Vector3 p=source[i]-center;
-            p=new Vector3(p.x/size.x,p.y/size.y,p.z/size.z);
-            vertices[i]=p;
-            triangles[i]=i;
+            // BoatSystemSetup's primitive cubes use the default unit BoxCollider.
+            // Explicitly restoring these defaults also recovers any accidental visual/
+            // collision mismatch without changing the object's authored world scale.
+            Undo.RecordObject(box,"Align marina renderer and hitbox");
+            box.center=Vector3.zero;
+            box.size=Vector3.one;
+            box.enabled=true;
+            EditorUtility.SetDirty(box);
         }
-
-        for(int i=0;i<vertexCount;i+=3)
-        {
-            Vector3 a=vertices[i],b=vertices[i+1],c=vertices[i+2];
-            Vector3 n=Vector3.Cross(b-a,c-a).normalized;
-            Vector3 an=new Vector3(Mathf.Abs(n.x),Mathf.Abs(n.y),Mathf.Abs(n.z));
-            for(int j=0;j<3;j++)
-            {
-                Vector3 p=vertices[i+j];
-                if(an.y>=an.x && an.y>=an.z)uv[i+j]=new Vector2(p.x+.5f,p.z+.5f);
-                else if(an.x>=an.z)uv[i+j]=new Vector2(p.z+.5f,p.y+.5f);
-                else uv[i+j]=new Vector2(p.x+.5f,p.y+.5f);
-            }
-        }
-
-        Mesh mesh=new Mesh{name=name};
-        if(vertexCount>65000)mesh.indexFormat=UnityEngine.Rendering.IndexFormat.UInt32;
-        mesh.vertices=vertices;mesh.uv=uv;mesh.triangles=triangles;
-        mesh.RecalculateNormals();mesh.RecalculateTangents();mesh.RecalculateBounds();
-        return mesh;
     }
 
-    private static void SaveOrReplaceMesh(string path,Mesh source)
+    private static Mesh GetUnityCubeMesh()
     {
-        Mesh existing=AssetDatabase.LoadAssetAtPath<Mesh>(path);
-        if(existing==null)
+        GameObject temp=GameObject.CreatePrimitive(PrimitiveType.Cube);
+        try
         {
-            AssetDatabase.CreateAsset(source,path);
-            return;
+            MeshFilter filter=temp.GetComponent<MeshFilter>();
+            return filter!=null?filter.sharedMesh:null;
         }
-        EditorUtility.CopySerialized(source,existing);
-        existing.name=source.name;
-        EditorUtility.SetDirty(existing);
-        Object.DestroyImmediate(source);
+        finally{Object.DestroyImmediate(temp);}
+    }
+
+    private static void RemoveGeneratedVisualChildren(Transform root)
+    {
+        for(int i=root.childCount-1;i>=0;i--)
+        {
+            Transform child=root.GetChild(i);
+            string n=child.name??string.Empty;
+            if(n.IndexOf("UserDock",StringComparison.OrdinalIgnoreCase)>=0 ||
+               n.IndexOf("DockVisual",StringComparison.OrdinalIgnoreCase)>=0 ||
+               n.IndexOf("ImportedDock",StringComparison.OrdinalIgnoreCase)>=0)
+                Undo.DestroyObjectImmediate(child.gameObject);
+        }
+    }
+
+    private static void RequireMember(ZipArchive archive,string member)
+    {
+        ZipArchiveEntry entry=FindMember(archive,member);
+        if(entry==null)throw new InvalidDataException("Missing '"+member+"' in supplied marina ZIP.");
     }
 
     private static byte[] ReadRequired(ZipArchive archive,string member)
     {
-        ZipArchiveEntry entry=archive.Entries.FirstOrDefault(e=>string.Equals(e.FullName,member,StringComparison.OrdinalIgnoreCase));
-        if(entry==null)entry=archive.Entries.FirstOrDefault(e=>string.Equals(Path.GetFileName(e.FullName),member,StringComparison.OrdinalIgnoreCase));
+        ZipArchiveEntry entry=FindMember(archive,member);
         if(entry==null)throw new InvalidDataException("Missing '"+member+"' in supplied marina ZIP.");
         using(Stream stream=entry.Open())using(MemoryStream memory=new MemoryStream()){stream.CopyTo(memory);return memory.ToArray();}
+    }
+
+    private static ZipArchiveEntry FindMember(ZipArchive archive,string member)
+    {
+        ZipArchiveEntry entry=archive.Entries.FirstOrDefault(e=>string.Equals(e.FullName,member,StringComparison.OrdinalIgnoreCase));
+        if(entry==null)entry=archive.Entries.FirstOrDefault(e=>string.Equals(Path.GetFileName(e.FullName),member,StringComparison.OrdinalIgnoreCase));
+        return entry;
     }
 
     private static void WriteTexturePng(string assetPath,byte[] bytes)
