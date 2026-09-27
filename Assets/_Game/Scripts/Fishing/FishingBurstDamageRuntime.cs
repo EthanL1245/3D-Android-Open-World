@@ -21,6 +21,11 @@ using UnityEngine;
 /// held advances damage. This removes the tap-spam exploit while keeping continuous
 /// reeling at the same 0.35-second burst cadence.
 ///
+/// A held pointer is intentionally carried across both fight transitions: permanent
+/// lures auto-hook while REEL is held, and consumable bait switches the same held
+/// HOOK button into REEL. In both cases the 0.35-second reel timer starts immediately
+/// without requiring the player to release and press again.
+///
 /// IMPORTANT: this compatibility layer can be the code that actually delivers the
 /// KO. FishingSystem normally creates the unconscious/dead fish surface visual inside
 /// its own zero-health branch. Because this component runs later in the frame, a burst
@@ -48,7 +53,6 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private static readonly FieldInfo UnconsciousField = typeof(FishingSystem).GetField("fishUnconscious", Flags);
     private static readonly FieldInfo BobberField = typeof(FishingSystem).GetField("bobber", Flags);
     private static readonly FieldInfo PlayerCameraField = typeof(FishingSystem).GetField("playerCamera", Flags);
-    private static readonly FieldInfo ActiveBaitField = typeof(FishingSystem).GetField("activeBait", Flags);
     private static readonly MethodInfo EnsureUnconsciousFishVisualMethod =
         typeof(FishingSystem).GetMethod("EnsureUnconsciousFishVisual", Flags);
 
@@ -58,7 +62,6 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private Level2FishingRodRuntime legacyUpgradeRuntime;
 
     private bool inFight;
-    private bool waitForHookRelease;
     private float accumulatedReelSeconds;
     private int authoritativeHp;
 
@@ -140,15 +143,9 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             inFight = true;
             authoritativeHp = maxHp;
             accumulatedReelSeconds = 0f;
-
-            bool heldNow = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
-            int activeBait = ActiveBaitField != null ? (int)ActiveBaitField.GetValue(fishing) : ShopCatalog.StarterLure;
-
-            // Consumable bait enters Fighting from a manual HOOK press, so that
-            // press must be released before it can begin earning reel time. Permanent
-            // lures auto-hook while REEL is already held; that same continuous hold
-            // must start the 0.35 s damage clock immediately without a release/repress.
-            waitForHookRelease = activeBait != ShopCatalog.StarterLure && heldNow;
+            // Do not wait for a pointer-up here. The action button deliberately stays
+            // held when HOOK changes to REEL (and when a lure auto-hooks), so the
+            // existing press should immediately become reel hold time.
         }
 
         // FishingSystem.Update ran earlier this frame. Restore the authoritative HP
@@ -164,12 +161,6 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         }
 
         bool reeling = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
-        if (waitForHookRelease)
-        {
-            if (!reeling) waitForHookRelease = false;
-            return;
-        }
-
         if (reeling)
         {
             // The only thing that advances damage is real time spent holding REEL.
@@ -278,7 +269,6 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         }
 
         inFight = false;
-        waitForHookRelease = false;
         accumulatedReelSeconds = 0f;
         FishingDamagePresentation.ClearPendingCritical();
 
