@@ -1,41 +1,41 @@
-# Skewable weight distribution by biome/species.
-# FishStats.csv supplies species-wide physical min/max. This file supplies biome-specific hard min/max and percentile anchors.
-# Exact probability mass: 1% min->P01, 24% P01->P25, 25% P25->P50, 25% P50->P75, 24% P75->P99, 1% P99->max.
-# Sampling interpolates between percentile anchors; there is NO clamping/pile-up at min/max.
-biomeId,speciesId,speciesName,minKg,p01Kg,p25Kg,p50Kg,p75Kg,p99Kg,maxKg
-suncrest-reef,0,Blue Mackerel,0.250,0.265,0.378,0.531,0.718,0.993,1.100
-suncrest-reef,1,Red Snapper,0.700,0.745,1.075,1.525,2.075,2.885,3.200
-suncrest-reef,2,Sea Bass,0.900,0.970,1.485,2.187,3.045,4.309,4.800
-suncrest-reef,3,Yellowtail,1.400,1.492,2.165,3.083,4.205,5.857,6.500
-suncrest-reef,5,Yellowfin Tuna,4.000,4.432,7.600,11.920,17.200,24.976,28.000
-suncrest-reef,6,Yellow Goatfish,0.350,0.383,0.627,0.960,1.368,1.967,2.200
-suncrest-reef,7,Black Spot Goatfish,0.300,0.327,0.525,0.795,1.125,1.611,1.800
-suncrest-reef,8,Bigeye Tuna,3.000,3.666,8.550,15.210,23.350,35.338,40.000
-suncrest-reef,9,Bonito,0.500,0.581,1.175,1.985,2.975,4.433,5.000
-suncrest-reef,10,Black Sea Bass,0.350,0.380,0.597,0.894,1.257,1.792,2.000
-suncrest-reef,11,Striped Bass,0.900,1.334,4.515,8.853,14.155,21.963,25.000
-suncrest-reef,12,Spotted Sand Bass,0.250,0.281,0.512,0.827,1.213,1.780,2.000
-brinebreak-isle,0,Blue Mackerel,0.250,0.295,0.628,0.968,1.383,1.654,1.760
-brinebreak-isle,1,Red Snapper,0.700,0.833,1.805,2.800,4.015,4.811,5.120
-brinebreak-isle,2,Sea Bass,0.900,1.103,2.595,4.120,5.985,7.205,7.680
-brinebreak-isle,3,Yellowtail,1.400,1.670,3.650,5.675,8.150,9.770,10.400
-brinebreak-isle,5,Yellowfin Tuna,5.040,6.233,14.980,23.926,34.860,42.017,44.800
-brinebreak-isle,6,Yellow Goatfish,0.396,0.490,1.177,1.880,2.739,3.301,3.520
-brinebreak-isle,7,Black Spot Goatfish,0.324,0.401,0.963,1.538,2.241,2.701,2.880
-brinebreak-isle,8,Bigeye Tuna,7.200,8.904,21.400,34.180,49.800,60.024,64.000
-brinebreak-isle,9,Bonito,0.900,1.113,2.675,4.272,6.225,7.503,8.000
-brinebreak-isle,10,Black Sea Bass,0.360,0.445,1.070,1.709,2.490,3.001,3.200
-brinebreak-isle,11,Striped Bass,4.500,5.565,13.375,21.363,31.125,37.515,40.000
-brinebreak-isle,12,Spotted Sand Bass,0.360,0.445,1.070,1.709,2.490,3.001,3.200
-deep-ocean,0,Blue Mackerel,0.250,0.317,0.806,1.307,1.919,2.319,2.475
-deep-ocean,1,Red Snapper,0.700,0.895,2.325,3.788,5.575,6.745,7.200
-deep-ocean,2,Sea Bass,0.900,1.197,3.375,5.602,8.325,10.107,10.800
-deep-ocean,3,Yellowtail,1.400,1.797,4.706,7.682,11.319,13.699,14.625
-deep-ocean,5,Yellowfin Tuna,4.000,5.770,18.750,32.025,48.250,58.870,63.000
-deep-ocean,6,Yellow Goatfish,0.350,0.488,1.500,2.535,3.800,4.628,4.950
-deep-ocean,7,Black Spot Goatfish,0.300,0.413,1.238,2.081,3.112,3.787,4.050
-deep-ocean,8,Bigeye Tuna,3.000,5.610,24.750,44.325,68.250,83.910,90.000
-deep-ocean,9,Bonito,0.500,0.823,3.188,5.606,8.562,10.497,11.250
-deep-ocean,10,Black Sea Bass,0.350,0.475,1.388,2.322,3.463,4.210,4.500
-deep-ocean,11,Striped Bass,0.900,2.561,14.738,27.192,42.413,52.376,56.250
-deep-ocean,12,Spotted Sand Bass,0.250,0.377,1.312,2.269,3.438,4.203,4.500
+# Weight distribution by biome/species.
+# Edit ONLY minKg and maxKg. Runtime builds a bounded normal distribution automatically.
+# Internally: underlying P01=min+1% of range, P99=max-1% of range, then the normal curve is truncated/renormalized at min/max.
+# Result: catches stay inside min/max with a bell-shaped distribution and no clamp pile-up at the endpoints.
+biomeId,speciesId,speciesName,minKg,maxKg
+suncrest-reef,0,Blue Mackerel,0.250,1.100
+suncrest-reef,1,Red Snapper,0.700,3.200
+suncrest-reef,2,Sea Bass,0.900,4.800
+suncrest-reef,3,Yellowtail,1.400,6.500
+suncrest-reef,5,Yellowfin Tuna,4.000,28.000
+suncrest-reef,6,Yellow Goatfish,0.350,2.200
+suncrest-reef,7,Black Spot Goatfish,0.300,1.800
+suncrest-reef,8,Bigeye Tuna,3.000,40.000
+suncrest-reef,9,Bonito,0.500,5.000
+suncrest-reef,10,Black Sea Bass,0.350,2.000
+suncrest-reef,11,Striped Bass,0.900,25.000
+suncrest-reef,12,Spotted Sand Bass,0.250,2.000
+brinebreak-isle,0,Blue Mackerel,0.250,1.760
+brinebreak-isle,1,Red Snapper,0.700,5.120
+brinebreak-isle,2,Sea Bass,0.900,7.680
+brinebreak-isle,3,Yellowtail,1.400,10.400
+brinebreak-isle,5,Yellowfin Tuna,5.040,44.800
+brinebreak-isle,6,Yellow Goatfish,0.396,3.520
+brinebreak-isle,7,Black Spot Goatfish,0.324,2.880
+brinebreak-isle,8,Bigeye Tuna,7.200,64.000
+brinebreak-isle,9,Bonito,0.900,8.000
+brinebreak-isle,10,Black Sea Bass,0.360,3.200
+brinebreak-isle,11,Striped Bass,4.500,40.000
+brinebreak-isle,12,Spotted Sand Bass,0.360,3.200
+deep-ocean,0,Blue Mackerel,0.250,2.475
+deep-ocean,1,Red Snapper,0.700,7.200
+deep-ocean,2,Sea Bass,0.900,10.800
+deep-ocean,3,Yellowtail,1.400,14.625
+deep-ocean,5,Yellowfin Tuna,4.000,63.000
+deep-ocean,6,Yellow Goatfish,0.350,4.950
+deep-ocean,7,Black Spot Goatfish,0.300,4.050
+deep-ocean,8,Bigeye Tuna,3.000,90.000
+deep-ocean,9,Bonito,0.500,11.250
+deep-ocean,10,Black Sea Bass,0.350,4.500
+deep-ocean,11,Striped Bass,0.900,56.250
+deep-ocean,12,Spotted Sand Bass,0.250,4.500
