@@ -38,10 +38,10 @@ public sealed class FishIndexTuningWording : MonoBehaviour
                 string bait=equipped>0?current.Substring(0,equipped):"Equipped bait";
                 bool lure=current.IndexOf("bites only while reeling",StringComparison.OrdinalIgnoreCase)>=0;
                 bool palm=current.IndexOf("Palm Pond: 5–12 cm",StringComparison.OrdinalIgnoreCase)>=0;
-                label.text=bait+" equipped • species odds use this biome + bait/lure tuning table. "+
-                    "Fish weights use this biome's configured MIN / P01 / P25 / P50 / P75 / P99 / MAX percentile curve."+
+                label.text=bait+" equipped • species odds are whole-number percentages from this biome + bait/lure table. "+
+                    "Fish weight uses this biome's configured MIN–MAX bounded normal distribution."+
                     (lure?" Lure bites occur while reeling.":string.Empty)+
-                    (palm?" Palm Pond remains 5–12 cm.":string.Empty);
+                    (palm?" Palm Pond remains a separate 5–12 cm tiny-fish area.":string.Empty);
                 continue;
             }
 
