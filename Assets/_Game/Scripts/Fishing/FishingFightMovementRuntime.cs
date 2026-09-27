@@ -3,11 +3,12 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Small runtime companion for fight movement.
+/// Runtime companion for fight movement.
 /// - Changes the weave phase at irregular intervals so escaping fish do not repeat
 ///   the same predictable path forever.
-/// - Detects a conscious, non-reeled fish whose player distance has stopped growing
-///   near shore and gives it a mostly-sideways escape nudge through usable water.
+/// - Proactively detects nearby shallow shoreline and steers a conscious fish mostly
+///   sideways around the island instead of continuing straight into the beach.
+/// - If player distance still stops growing, performs a stronger lateral recovery.
 /// - Runs the existing unconscious retrieve step one extra time while REEL is held,
 ///   making unconscious fish retrieval exactly 2x the normal base movement per frame.
 /// </summary>
@@ -16,7 +17,10 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
 {
     private const float StallGraceSeconds = 0.42f;
     private const float MinimumProgressMetres = 0.004f;
-    private const float MinimumEscapeDepth = 0.12f;
+    private const float MinimumEscapeDepth = 0.75f;
+    private const float ShoreProbeDistance = 1.15f;
+    private const float ShoreProbeDepth = 0.95f;
+    private const float ShoreSteerInterval = 0.16f;
 
     private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly FieldInfo StateField = typeof(FishingSystem).GetField("state", Flags);
@@ -38,6 +42,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     private float previousDistance = -1f;
     private float stalledSeconds;
     private float nextPhaseShuffle;
+    private float shoreSteerCooldown;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -97,7 +102,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         }
 
         // Palm Pond is deliberately tiny and uses its own confined-water behavior;
-        // the anti-beaching assist is for shoreline/ocean fights only.
+        // shoreline circumnavigation is for island/ocean fights only.
         if ((bool)PondCastField.GetValue(fishing) || reeling)
         {
             ResetTracking();
@@ -118,6 +123,20 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             nextPhaseShuffle = UnityEngine.Random.Range(0.55f, 1.35f);
         }
 
+        // Don't wait until the fish is already stuck. If any probe around it detects
+        // shallow shoreline, bias the route sideways around the island. The small
+        // cooldown prevents this helper from adding excessive speed to normal fights.
+        shoreSteerCooldown -= Time.deltaTime;
+        if (shoreSteerCooldown <= 0f && NearShore(bobber.transform.position))
+        {
+            if (TrySideEscape(bobber, true))
+            {
+                previousDistance = HorizontalDistance(bobber.transform.position, fishing.transform.position);
+                stalledSeconds = 0f;
+            }
+            shoreSteerCooldown = ShoreSteerInterval;
+        }
+
         Vector3 delta = bobber.transform.position - fishing.transform.position;
         delta.y = 0f;
         float distance = delta.magnitude;
@@ -131,13 +150,13 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
 
         if (stalledSeconds >= StallGraceSeconds)
         {
-            if (TrySideEscape(bobber))
+            if (TrySideEscape(bobber, false))
                 previousDistance = HorizontalDistance(bobber.transform.position, fishing.transform.position);
             stalledSeconds = 0f;
         }
     }
 
-    private bool TrySideEscape(GameObject bobber)
+    private bool TrySideEscape(GameObject bobber, bool gentle)
     {
         Vector3 current = bobber.transform.position;
         Vector3 away = current - fishing.transform.position;
@@ -149,17 +168,25 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         float sign = UnityEngine.Random.value < 0.5f ? -1f : 1f;
 
         // Prefer a lateral route with a small outward component. If that side is
-        // shallow/blocked, try the other side and progressively wider outward arcs.
+        // shallow/blocked, try the other side and progressively wider arcs. A slight
+        // temporary inward component is allowed so a fish can actually round an
+        // island instead of getting trapped against a concave shoreline.
         Vector3[] directions =
         {
-            (side * sign + away * UnityEngine.Random.Range(0.18f, 0.38f)).normalized,
-            (-side * sign + away * UnityEngine.Random.Range(0.18f, 0.38f)).normalized,
-            Quaternion.AngleAxis(62f * sign, Vector3.up) * away,
-            Quaternion.AngleAxis(-62f * sign, Vector3.up) * away,
-            Quaternion.AngleAxis(38f * sign, Vector3.up) * away,
-            Quaternion.AngleAxis(-38f * sign, Vector3.up) * away
+            (side * sign + away * UnityEngine.Random.Range(0.16f, 0.34f)).normalized,
+            (-side * sign + away * UnityEngine.Random.Range(0.16f, 0.34f)).normalized,
+            Quaternion.AngleAxis(72f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(-72f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(96f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(-96f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(108f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(-108f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(42f * sign, Vector3.up) * away,
+            Quaternion.AngleAxis(-42f * sign, Vector3.up) * away
         };
-        float[] distances = { 0.52f, 0.34f, 0.20f };
+        float[] distances = gentle
+            ? new float[] { 0.22f, 0.14f, 0.08f }
+            : new float[] { 0.52f, 0.34f, 0.20f };
 
         for (int d = 0; d < distances.Length; d++)
         {
@@ -170,9 +197,10 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
                 if (direction.sqrMagnitude < 0.0001f) continue;
                 direction.Normalize();
 
-                // Never use the recovery nudge to pull a free-swimming fish back
-                // toward the player; tangent or outward motion only.
-                if (Vector3.Dot(direction, away) < -0.01f) continue;
+                // Allow only a modest inward arc. This is enough to round an island
+                // while preventing a free-swimming fish from simply charging back at
+                // the player.
+                if (Vector3.Dot(direction, away) < -0.32f) continue;
 
                 Vector3 candidate = current + direction * distances[d];
                 if (!IsEscapeWater(candidate)) continue;
@@ -192,18 +220,35 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         return false;
     }
 
-    private bool IsEscapeWater(Vector3 position)
+    private bool NearShore(Vector3 position)
     {
-        if (terrain == null || ocean == null) return true;
+        if (terrain == null || ocean == null) return false;
+        if (WaterDepth(position) < ShoreProbeDepth) return true;
 
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = i * 45f;
+            Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * Vector3.forward;
+            if (WaterDepth(position + direction * ShoreProbeDistance) < ShoreProbeDepth)
+                return true;
+        }
+        return false;
+    }
+
+    private float WaterDepth(Vector3 position)
+    {
+        if (terrain == null || ocean == null) return 1000f;
         TerrainData data = terrain.terrainData;
         Vector3 local = position - terrain.transform.position;
         if (local.x < 0f || local.z < 0f || local.x > data.size.x || local.z > data.size.z)
-            return true;
-
+            return 1000f;
         float ground = terrain.SampleHeight(position) + terrain.transform.position.y;
-        float water = ocean.GetSurfaceHeight(position);
-        return water - ground > MinimumEscapeDepth;
+        return ocean.GetSurfaceHeight(position) - ground;
+    }
+
+    private bool IsEscapeWater(Vector3 position)
+    {
+        return WaterDepth(position) > MinimumEscapeDepth;
     }
 
     private bool IsFighting()
@@ -223,5 +268,6 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     {
         previousDistance = -1f;
         stalledSeconds = 0f;
+        shoreSteerCooldown = 0f;
     }
 }
