@@ -39,9 +39,10 @@ public sealed class FishIndexTuningWording : MonoBehaviour
                 bool lure=current.IndexOf("bites only while reeling",StringComparison.OrdinalIgnoreCase)>=0;
                 bool palm=current.IndexOf("Palm Pond: 5–12 cm",StringComparison.OrdinalIgnoreCase)>=0;
                 label.text=bait+" equipped • species odds are whole-number percentages from this biome + bait/lure table. "+
-                    "Fish weight uses this biome's configured MIN–MAX bounded normal distribution."+
+                    "Fish start from this biome's MIN–MAX bounded normal weight range. Island/ocean cast quality then scales both fish size and fight HP: "+
+                    "about 5 m gives 20% potential, 30 m gives full potential, and deeper local water improves intermediate casts."+
                     (lure?" Lure bites occur while reeling.":string.Empty)+
-                    (palm?" Palm Pond remains a separate 5–12 cm tiny-fish area.":string.Empty);
+                    (palm?" Palm Pond remains a separate 5–12 cm tiny-fish area and ignores cast-quality scaling.":string.Empty);
                 continue;
             }
 
