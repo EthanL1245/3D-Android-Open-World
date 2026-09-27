@@ -27,18 +27,20 @@ public static class FishingTuning
         public string BiomeId;
         public int SpeciesId;
         public float MinKg;
-        public float P01Kg;
-        public float P25Kg;
-        public float P50Kg;
-        public float P75Kg;
-        public float P99Kg;
         public float MaxKg;
     }
 
     private const string StatsResource="FishingTuning/FishStats";
     private const string WeightResource="FishingTuning/BiomeFishWeights";
     private const string ChanceResource="FishingTuning/BiomeBaitSpeciesChance";
-    private const float ChanceTotalTolerance=.01f;
+
+    // Human tuning now needs only min/max. Internally we define the underlying
+    // normal curve's P01 one percent of the range above min and its P99 one percent
+    // below max. The curve is then truncated/renormalized at min/max, so catches are
+    // always within the configured bounds and there is no clamped pile-up at either end.
+    private const float NormalP01Z=2.326347874f;
+    private const float BoundedNormalLowerCdf=0.008802461f;
+    private const float BoundedNormalUpperCdf=0.991197539f;
 
     // Stable save-game species IDs. Retired ID 4 must never be reused.
     private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12};
@@ -88,8 +90,6 @@ public static class FishingTuning
 
     public static bool TryGetSpeciesStats(int species,out SpeciesStats stats)
     {
-        // Assign first so C# definite-assignment rules are satisfied even when
-        // validation is false and the dictionary lookup is intentionally skipped.
         stats=null;
         EnsureLoaded();
         if(!valid)return false;
@@ -109,7 +109,10 @@ public static class FishingTuning
         WeightDistribution row;
         if(TryGetWeightDistribution(species,biome,out row))
         {
-            p25=row.P25Kg;p50=row.P50Kg;p75=row.P75Kg;return true;
+            p25=WeightAtPercentile(row,.25f);
+            p50=WeightAtPercentile(row,.50f);
+            p75=WeightAtPercentile(row,.75f);
+            return true;
         }
         p25=p50=p75=0f;return false;
     }
@@ -131,18 +134,74 @@ public static class FishingTuning
         return true;
     }
 
-    // This is deliberately percentile-defined instead of a textbook normal/skew-normal.
-    // It gives the tuning file exact, intuitive control and has no clamped pile-up at
-    // either hard bound. A uniform random percentile is mapped through these anchors:
-    //   0%, 1%, 25%, 50%, 75%, 99%, 100%.
-    private static float WeightAtPercentile(WeightDistribution row,float p)
+    private static float WeightAtPercentile(WeightDistribution row,float percentile)
     {
-        if(p<=.01f)return Mathf.Lerp(row.MinKg,row.P01Kg,p/.01f);
-        if(p<=.25f)return Mathf.Lerp(row.P01Kg,row.P25Kg,(p-.01f)/.24f);
-        if(p<=.50f)return Mathf.Lerp(row.P25Kg,row.P50Kg,(p-.25f)/.25f);
-        if(p<=.75f)return Mathf.Lerp(row.P50Kg,row.P75Kg,(p-.50f)/.25f);
-        if(p<=.99f)return Mathf.Lerp(row.P75Kg,row.P99Kg,(p-.75f)/.24f);
-        return Mathf.Lerp(row.P99Kg,row.MaxKg,(p-.99f)/.01f);
+        float range=row.MaxKg-row.MinKg;
+        if(range<=0f)return row.MinKg;
+
+        float mean=(row.MinKg+row.MaxKg)*.5f;
+        float p01=row.MinKg+range*.01f;
+        float p99=row.MaxKg-range*.01f;
+        float sigma=(p99-p01)/(2f*NormalP01Z);
+
+        // Sample the underlying normal only between the configured hard bounds.
+        // This is a proper bounded/truncated normal, not a clamp: probability is
+        // renormalized across min..max so exact min/max do not accumulate a pile-up.
+        float boundedProbability=Mathf.Lerp(
+            BoundedNormalLowerCdf,
+            BoundedNormalUpperCdf,
+            Mathf.Clamp01(percentile));
+        float z=InverseNormalCdf(boundedProbability);
+        return Mathf.Clamp(mean+sigma*z,row.MinKg,row.MaxKg);
+    }
+
+    // Peter J. Acklam inverse-normal approximation. More than sufficient for game
+    // tuning and deterministic from the single random percentile already passed in.
+    private static float InverseNormalCdf(float probability)
+    {
+        double p=Math.Max(1e-12,Math.Min(1.0-1e-12,probability));
+        const double a1=-3.969683028665376e+01;
+        const double a2= 2.209460984245205e+02;
+        const double a3=-2.759285104469687e+02;
+        const double a4= 1.383577518672690e+02;
+        const double a5=-3.066479806614716e+01;
+        const double a6= 2.506628277459239e+00;
+        const double b1=-5.447609879822406e+01;
+        const double b2= 1.615858368580409e+02;
+        const double b3=-1.556989798598866e+02;
+        const double b4= 6.680131188771972e+01;
+        const double b5=-1.328068155288572e+01;
+        const double c1=-7.784894002430293e-03;
+        const double c2=-3.223964580411365e-01;
+        const double c3=-2.400758277161838e+00;
+        const double c4=-2.549732539343734e+00;
+        const double c5= 4.374664141464968e+00;
+        const double c6= 2.938163982698783e+00;
+        const double d1= 7.784695709041462e-03;
+        const double d2= 3.224671290700398e-01;
+        const double d3= 2.445134137142996e+00;
+        const double d4= 3.754408661907416e+00;
+        const double low=.02425;
+        const double high=1.0-low;
+
+        double x;
+        if(p<low)
+        {
+            double q=Math.Sqrt(-2.0*Math.Log(p));
+            x=(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/((((d1*q+d2)*q+d3)*q+d4)*q+1.0);
+        }
+        else if(p>high)
+        {
+            double q=Math.Sqrt(-2.0*Math.Log(1.0-p));
+            x=-(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6)/((((d1*q+d2)*q+d3)*q+d4)*q+1.0);
+        }
+        else
+        {
+            double q=p-.5;
+            double r=q*q;
+            x=((((((a1*r+a2)*r+a3)*r+a4)*r+a5)*r+a6)*q)/(((((b1*r+b2)*r+b3)*r+b4)*r+b5)*r+1.0);
+        }
+        return (float)x;
     }
 
     public static bool TryGetChance(int species,int bait,int biome,out float percent)
@@ -266,28 +325,26 @@ public static class FishingTuning
             string line=lines[lineIndex].Trim();
             if(Ignore(line) || line.StartsWith("biomeId,"))continue;
             string[] c=line.Split(',');
-            if(c.Length!=10)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" must have 10 columns.");
+            if(c.Length!=5)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" must have 5 columns: biomeId,speciesId,speciesName,minKg,maxKg.");
 
             string biome=c[0].Trim();
-            int id;
-            float min,p01,p25,p50,p75,p99,max;
+            int id;float min,max;
             if(BiomeIndex(biome)<0)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" has unknown biome '"+biome+"'.");
-            if(!Int(c[1],out id) || !Float(c[3],out min) || !Float(c[4],out p01) || !Float(c[5],out p25) ||
-               !Float(c[6],out p50) || !Float(c[7],out p75) || !Float(c[8],out p99) || !Float(c[9],out max))
+            if(!Int(c[1],out id) || !Float(c[3],out min) || !Float(c[4],out max))
                 return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" contains an invalid number.");
 
             id=Canonical(id);
             SpeciesStats stats;
             if(!Stats.TryGetValue(id,out stats))return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" references species "+id+" before/without FishStats.");
-            if(!(min<p01 && p01<p25 && p25<p50 && p50<p75 && p75<p99 && p99<max))
-                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires min < P01 < P25 < P50 < P75 < P99 < max.");
+            if(min<=0f || max<=min)
+                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires 0 < minKg < maxKg.");
             if(min<stats.MinWeightKg || max>stats.MaxWeightKg)
-                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" hard min/max must stay inside FishStats species min/max ("+
+                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" min/max must stay inside FishStats species min/max ("+
                     stats.MinWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+"–"+stats.MaxWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+" kg).");
 
             string key=WeightKey(biome,id);
             if(WeightRows.ContainsKey(key))return Fail("BiomeFishWeights.csv has duplicate row for "+biome+" species "+id+".");
-            WeightRows[key]=new WeightDistribution{BiomeId=biome,SpeciesId=id,MinKg=min,P01Kg=p01,P25Kg=p25,P50Kg=p50,P75Kg=p75,P99Kg=p99,MaxKg=max};
+            WeightRows[key]=new WeightDistribution{BiomeId=biome,SpeciesId=id,MinKg=min,MaxKg=max};
         }
         return true;
     }
@@ -305,15 +362,16 @@ public static class FishingTuning
             string biome=c[0].Trim();string bait=c[1].Trim();
             if(BiomeIndex(biome)<0)return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" has unknown biome '"+biome+"'.");
             if(!RequiredBait(bait))return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" has unknown baitKey '"+bait+"'.");
-            float[] chances=new float[ActiveSpecies.Length];float total=0f;
+            float[] chances=new float[ActiveSpecies.Length];int total=0;
             for(int i=0;i<chances.Length;i++)
             {
-                if(!Float(c[i+2],out chances[i]) || chances[i]<0f)
-                    return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" has an invalid/negative probability in species column "+ActiveSpecies[i]+".");
-                total+=chances[i];
+                int wholeChance;
+                if(!Int(c[i+2],out wholeChance) || wholeChance<0)
+                    return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" requires whole-number, non-negative percentages in species column "+ActiveSpecies[i]+".");
+                chances[i]=wholeChance;total+=wholeChance;
             }
-            if(Mathf.Abs(total-100f)>ChanceTotalTolerance)
-                return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" totals "+total.ToString("0.######",CultureInfo.InvariantCulture)+"%, not 100%. Fix the row; probabilities are NOT auto-normalized.");
+            if(total!=100)
+                return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" totals "+total+"%, not 100%. Fix the row; probabilities are NOT auto-normalized.");
             string key=ChanceKey(biome,bait);
             if(ChanceRows.ContainsKey(key))return Fail("BiomeBaitSpeciesChance.csv has duplicate row for "+biome+" + "+bait+".");
             ChanceRows[key]=chances;
