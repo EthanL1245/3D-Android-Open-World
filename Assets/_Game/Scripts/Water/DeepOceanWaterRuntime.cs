@@ -6,8 +6,8 @@ using UnityEngine;
 /// threatening while keeping the existing OceanWater simulation authoritative.
 /// Water visibility is driven by actual seabed depth instead of an abrupt biome
 /// boundary; deep-ocean waves then build gradually as the player travels offshore.
-/// Brinebreak deliberately uses a lower-smoothness surface so the darker shelf does
-/// not turn into a broad white/specular sheet in direct light.
+/// Brinebreak deliberately suppresses bright specular/foam glare so the water keeps
+/// its colour instead of becoming a large white sheet at low viewing angles.
 /// </summary>
 [DefaultExecutionOrder(-650)]
 public sealed class DeepOceanWaterRuntime : MonoBehaviour
@@ -15,7 +15,9 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
     private const float DeepWaveMultiplier = 4.5f;
     private const float DeepWaveSpeedMultiplier = 1.35f;
     private const float DeepAlpha = 1f;
-    private const float BrinebreakSmoothness = 0.48f;
+    private const float BrinebreakSmoothness = 0.55f;
+    private const float BrinebreakSpecularStrength = 0.08f;
+    private const float BrinebreakFoamStrength = 0.25f;
 
     private static readonly Color DeepShallowColor = new Color(0.004f, 0.020f, 0.032f, 1f);
     private static readonly Color DeepDeepColor = new Color(0.001f, 0.006f, 0.014f, 1f);
@@ -31,7 +33,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
     private float baseAmplitude1, baseAmplitude2, baseAmplitude3;
     private float baseSpeed1, baseSpeed2, baseSpeed3;
     private Color baseShallowColor, baseDeepColor;
-    private float baseAlpha, baseSmoothness, baseFoamStrength;
+    private float baseAlpha, baseSmoothness, baseFoamStrength, baseSpecularStrength;
     private float roughBlend, darkBlend, brinebreakMatteBlend;
     private bool cached;
 
@@ -121,8 +123,10 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         block.SetFloat("_Alpha", Mathf.Lerp(baseAlpha, DeepAlpha, darkBlend));
 
         float depthSmoothness = Mathf.Lerp(baseSmoothness, 0.93f, darkBlend);
+        float normalFoam = Mathf.Lerp(baseFoamStrength, 1f, roughBlend);
         block.SetFloat("_Smoothness", Mathf.Lerp(depthSmoothness, BrinebreakSmoothness, brinebreakMatteBlend));
-        block.SetFloat("_FoamStrength", Mathf.Lerp(baseFoamStrength, 1f, roughBlend));
+        block.SetFloat("_FoamStrength", Mathf.Lerp(normalFoam, BrinebreakFoamStrength, brinebreakMatteBlend));
+        block.SetFloat("_SpecularStrength", Mathf.Lerp(baseSpecularStrength, BrinebreakSpecularStrength, brinebreakMatteBlend));
         rendererRef.SetPropertyBlock(block);
     }
 
@@ -148,6 +152,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         baseAlpha = material != null && material.HasProperty("_Alpha") ? material.GetFloat("_Alpha") : 0.72f;
         baseSmoothness = material != null && material.HasProperty("_Smoothness") ? material.GetFloat("_Smoothness") : 0.82f;
         baseFoamStrength = material != null && material.HasProperty("_FoamStrength") ? material.GetFloat("_FoamStrength") : 1f;
+        baseSpecularStrength = material != null && material.HasProperty("_SpecularStrength") ? material.GetFloat("_SpecularStrength") : 0.8f;
         cached = true;
     }
 
@@ -192,6 +197,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
             block.SetFloat("_Alpha", baseAlpha);
             block.SetFloat("_Smoothness", baseSmoothness);
             block.SetFloat("_FoamStrength", baseFoamStrength);
+            block.SetFloat("_SpecularStrength", baseSpecularStrength);
             rendererRef.SetPropertyBlock(block);
         }
     }
