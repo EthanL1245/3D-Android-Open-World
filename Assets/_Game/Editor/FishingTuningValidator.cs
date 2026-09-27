@@ -24,7 +24,7 @@ public static class FishingTuningValidator
         FishingTuning.Reload();
         if(FishingTuning.IsValid)
         {
-            const string message="Fishing tuning OK: species stats, biome percentile distributions, and every biome + bait probability row are valid.";
+            const string message="Fishing tuning OK: species stats, biome min/max normal weight distributions, and every whole-number biome + bait probability row are valid.";
             Debug.Log("[FISH TUNING] "+message);
             if(showDialog)EditorUtility.DisplayDialog("Fishing Tuning Valid",message,"OK");
         }
