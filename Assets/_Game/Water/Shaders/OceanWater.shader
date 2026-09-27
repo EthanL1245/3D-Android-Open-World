@@ -8,6 +8,7 @@ Shader "OpenWorld/OceanWater"
         _FoamStrength ("Foam Strength", Range(0,1)) = 1
         _Alpha ("Base Alpha", Range(0.1, 0.95)) = 0.72
         _Smoothness ("Smoothness", Range(0, 1)) = 0.82
+        _SpecularStrength ("Specular Strength", Range(0, 1)) = 0.8
 
         _WaveAmplitude1 ("Wave Amplitude 1", Float) = 0.45
         _WaveLength1 ("Wave Length 1", Float) = 20
@@ -65,6 +66,7 @@ Shader "OpenWorld/OceanWater"
                 float _Alpha;
                 float _FoamStrength;
                 float _Smoothness;
+                float _SpecularStrength;
 
                 float _WaveAmplitude1;
                 float _WaveLength1;
@@ -324,7 +326,7 @@ Shader "OpenWorld/OceanWater"
                 color +=
                     specular *
                     mainLight.color *
-                    0.8;
+                    _SpecularStrength;
 
                 float alpha =
                     saturate(
@@ -340,5 +342,3 @@ Shader "OpenWorld/OceanWater"
         }
     }
 }
-
-
