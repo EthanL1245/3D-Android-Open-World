@@ -12,7 +12,7 @@ public static class FishingContentUpdateSetup
 {
     public const string Source="Assets/_Game/ContentUpdate/Source";
     private const string Generated="Assets/_Game/ContentUpdate/Generated";
-    private const string Stamp="Library/FishingContentUpdate-v1.txt";
+    private const string Stamp="Library/FishingContentUpdate-v2.txt";
     private static bool running;
     private static readonly string[] Fish={"Albacore","GreaterAmberjack"};
     private static readonly string[] Prefabs={
@@ -54,8 +54,6 @@ public static class FishingContentUpdateSetup
             Directory.CreateDirectory("Assets/Resources/Boats");
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
             foreach(string fish in Fish)SeaBassImporter.InstallModel(fish,"Assets/Resources/Fishing/"+fish+".prefab");
-            ConfigureTexture(Source+"/Level4RodTexture.jpg");
-            ConfigureTexture(Source+"/Level4ReelTexture.jpg");
             FishingRodLevel3Importer.InstallPrepared(Source+"/Level4Rod.json",Source+"/Level4RodTexture.jpg",Prefabs[2],Generated+"/Level4Rod");
             FishingReelLevel3Importer.InstallPrepared(Source+"/Level4Reel.json",Source+"/Level4ReelTexture.jpg",Prefabs[3],Generated+"/Level4Reel");
             InstallDock();
@@ -63,27 +61,14 @@ public static class FishingContentUpdateSetup
             if(!FishingTuning.IsValid)throw new InvalidDataException(FishingTuning.ValidationError);
             AssetDatabase.SaveAssets();
             if(Prefabs.Any(p=>AssetDatabase.LoadAssetAtPath<GameObject>(p)==null))throw new InvalidOperationException("A prepared prefab was not saved.");
-            File.WriteAllText(Stamp,"Installed prepared fish/gear/dock v1");
+            File.WriteAllText(Stamp,"Installed prepared fish/gear/dock v2");
             Debug.Log("Fishing content ready: Albacore, Greater Amberjack, Level 4 rod/reel and authored marina dock. The existing scene is preserved; the dock replaces its old parts on Play/build startup.");
         }
         finally { running=false; EditorUtility.ClearProgressBar(); }
     }
 
-    private static void ConfigureTexture(string path)
-    {
-        AssetDatabase.ImportAsset(path,ImportAssetOptions.ForceSynchronousImport);
-        var importer=AssetImporter.GetAtPath(path) as TextureImporter;
-        if(importer==null)throw new InvalidOperationException("Texture missing: "+path);
-        importer.textureType=TextureImporterType.Default;importer.sRGBTexture=true;
-        importer.mipmapEnabled=true;importer.wrapMode=TextureWrapMode.Repeat;
-        importer.maxTextureSize=2048;importer.filterMode=FilterMode.Trilinear;
-        importer.textureCompression=TextureImporterCompression.CompressedHQ;
-        importer.SaveAndReimport();
-    }
-
     private static void InstallDock()
     {
-        ConfigureTexture(Source+"/DockTexture.jpg");
         var geometry=JsonUtility.FromJson<Geometry>(File.ReadAllText(Source+"/Dock.json"));
         if(geometry?.parts==null || geometry.parts.Length!=3)throw new InvalidDataException("Expected authored Deck, EdgeTrim and Post.");
         var shader=Resources.Load<Shader>("Fishing/FishingEquipment");
@@ -92,7 +77,7 @@ public static class FishingContentUpdateSetup
         var material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
         if(material==null){material=new Material(shader);AssetDatabase.CreateAsset(material,materialPath);}
         material.shader=shader;material.SetColor("_BaseColor",Color.white);
-        material.SetTexture("_BaseMap",AssetDatabase.LoadAssetAtPath<Texture2D>(Source+"/DockTexture.jpg"));
+        material.SetTexture("_BaseMap",AuthoredTextureAsset.Load(Source+"/DockTexture.jpg",Generated+"/DockTexture.asset"));
         material.SetFloat("_Smoothness",.16f);material.SetFloat("_Metallic",0f);
         EditorUtility.SetDirty(material);
         var dock=new GameObject("Authored Marina Dock");var post=new GameObject("Authored Dock Post");

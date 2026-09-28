@@ -236,7 +236,11 @@ finally: eo.to_mesh_clear()
     private static Material BuildMaterial(string materialPath,string texturePath)
     {
         Shader shader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/FishingEquipment.shader");if(shader==null || ShaderUtil.ShaderHasError(shader))throw new InvalidOperationException("FishingEquipment shader is missing or invalid.");
-        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);if(texture==null)throw new InvalidOperationException("Level 3 rod texture failed to import.");
+        // Prepared Level 4 sources use native atlases, as the fish importer does.
+        // A valid JPEG can still have an unavailable TextureImporter artifact during reload.
+        Texture2D texture=texturePath.StartsWith(FishingContentUpdateSetup.Source+"/",StringComparison.Ordinal)
+            ? AuthoredTextureAsset.Load(texturePath,Path.GetDirectoryName(materialPath).Replace('\\','/')+"/AuthoredTexture.asset")
+            : AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);if(texture==null)throw new InvalidOperationException("Rod texture failed to import: "+texturePath);
         Material material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
         if(material==null){material=new Material(shader){name="Level3FishingRod"};AssetDatabase.CreateAsset(material,materialPath);}
         material.shader=shader;material.shaderKeywords=Array.Empty<string>();material.SetColor("_BaseColor",Color.white);material.SetTexture("_BaseMap",texture);material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);material.SetFloat("_Metallic",.05f);material.SetFloat("_Smoothness",.42f);

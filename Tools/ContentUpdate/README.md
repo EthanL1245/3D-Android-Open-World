@@ -1,6 +1,10 @@
 # Authored fish, gear and marina pipeline
 
 This update auto-installs prepared source assets on editor reload, and checks them before builds.
+After pulling the texture-loading repair, installer v2 automatically retries, including a
+previously interrupted installation. Wait for the “Fishing content ready” Console message
+before Play. The updated dock is visible during Play/build startup, not in the saved edit-mode scene.
+
 Manual retry: **Tools → Open World → Install Fish, Level 4 Gear and Dock**.
 It does not require Blender on the player's/developer's machine, modify PrototypeWorld.unity,
 reset catches, or overwrite fish-tuning CSVs. A runtime replacement updates MarinaShop on Play.
@@ -46,7 +50,9 @@ pull now also uses the exact reel multiplier (previously live-fish inward pull o
 4. Prepared Level 4 files live in `Assets/_Game/ContentUpdate/Source`; generated meshes/materials
    live in `Assets/_Game/ContentUpdate/Generated/Level4Rod` and `Level4Reel`.
    The two prefabs are `Resources/Fishing/FishingRodReelLevel4Rod` and `FishingRodReelLevel4`.
-   The installer configures textures as sRGB, mipmapped, repeat wrap, up to 2048 pixels.
+   The installer decodes the supplied images directly into persistent native Texture2D assets
+   (sRGB, mipmapped, repeat wrap), avoiding unavailable TextureImporter artifacts during reload.
+   Level 4 textures are 1024×1024; the dock atlas is 1408×768.
 5. Wire prices, names, max tiers and resource paths in **ShopCatalog**. Saved tiers start at zero.
    Wire rod damage/critical values in **FishingBurstDamageRuntime** and reel multiplier in
    **Level2FishingReelRuntime.ReelMultiplier**. The existing legacy class names are retained

@@ -387,8 +387,12 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         if(shader==null || ShaderUtil.ShaderHasError(shader))
             throw new InvalidOperationException("FishingEquipment shader is missing or has errors.");
 
-        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
-        if(texture==null)throw new InvalidOperationException("Level 3 reel texture did not import.");
+        // Prepared Level 4 sources use native atlases, as the fish importer does.
+        // A valid JPEG can still have an unavailable TextureImporter artifact during reload.
+        Texture2D texture=texturePath.StartsWith(FishingContentUpdateSetup.Source+"/",StringComparison.Ordinal)
+            ? AuthoredTextureAsset.Load(texturePath,Path.GetDirectoryName(materialPath).Replace('\\','/')+"/AuthoredTexture.asset")
+            : AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
+        if(texture==null)throw new InvalidOperationException("Reel texture failed to import: "+texturePath);
 
         Material material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
         if(material==null)
