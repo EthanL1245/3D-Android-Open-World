@@ -1,18 +1,18 @@
-# Species-wide physical/gameplay bounds. Health and cost are independent of biome.
-# Runtime curve: t=(weight-minWeight)/(maxWeight-minWeight), value=min+(max-min)*t^2.
-# BiomeFishWeights.csv may use narrower biome-specific hard catch ranges, but never outside these species bounds.
+# Species-wide physical/gameplay bounds. Health and cost are independent of biome.,,,,,,,,
+# Runtime curve: t=(weight-minWeight)/(maxWeight-minWeight),value=min+(max-min)*t^2.,,,,,,,
+# BiomeFishWeights.csv may use narrower biome-specific hard catch ranges,but never outside these species bounds.,,,,,,,
 speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,maxCostCoins,yellowSpeedMps
-0,Blue Mackerel,0.25,2.475,73,175,11,57,2.965
-1,Red Snapper,0.70,7.20,115,342,24,124,3.152
-2,Sea Bass,0.90,10.80,129,441,36,189,3.262
-3,Yellowtail,1.40,14.625,176,603,64,335,3.438
-5,Yellowfin Tuna,4.00,63.00,356,2015,196,1018,3.680
-6,Yellow Goatfish,0.35,4.95,87,266,34,174,3.196
-7,Black Spot Goatfish,0.30,4.05,82,237,31,161,3.163
-8,Bigeye Tuna,3.00,90.00,276,2358,154,800,3.636
-9,Bonito,0.50,11.25,115,499,55,283,3.328
-10,Black Sea Bass,0.35,4.50,105,307,52,270,3.438
-11,Striped Bass,0.90,56.25,129,1321,90,465,3.262
-12,Spotted Sand Bass,0.25,4.50,95,307,50,262,3.438
-13,Albacore,2,45,240,1700,120,950,3.650
-14,Greater Amberjack,1.5,70,250,2100,130,1100,3.700
+0,Blue Mackerel,0.25,5,90,400,30,250,2.965
+1,Red Snapper,0.7,7.2,115,342,40,300,3.152
+2,Sea Bass,0.9,10.8,210,450,110,350,3.262
+3,Yellowtail,1.4,14.625,240,603,150,1100,3.438
+5,Yellowfin Tuna,1,63,450,7000,400,9000,4.2
+6,Yellow Goatfish,0.35,4.95,87,266,34,174,2.75
+7,Black Spot Goatfish,0.3,4.05,82,237,31,161,2.75
+8,Bigeye Tuna,1,90,350,7000,340,9000,4
+9,Bonito,0.5,11.25,230,499,150,800,3.328
+10,Black Sea Bass,0.35,4.5,210,550,150,700,3.438
+11,Striped Bass,0.9,56.25,215,3000,130,5000,3.262
+12,Spotted Sand Bass,0.25,4.5,230,430,160,700,3.438
+13,Albacore,2,45,200,3500,200,4000,3.65
+14,Greater Amberjack,1.5,70,320,5000,260,8000,3.7
