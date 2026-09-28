@@ -157,6 +157,8 @@ public sealed class ShopPreview : MonoBehaviour
         for(int i=0;i<8 && row!=null;i++,row=row.parent)
         {
             Text[] labels=row.GetComponentsInChildren<Text>(true);
+            if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.Contains("Level 4 Fishing Reel")))return "Reel3";
+            if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.Contains("Level 4 Fishing Rod")))return "Rod3";
             if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 3 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel2";
             if(reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 2 Fishing Reel",System.StringComparison.OrdinalIgnoreCase)>=0))return "Reel1";
             if(!reel && labels.Any(t=>t!=null && t.text!=null && t.text.IndexOf("Level 3 Fishing Rod",System.StringComparison.OrdinalIgnoreCase)>=0))return "Rod2";
@@ -287,3 +289,4 @@ public sealed class ShopPreview : MonoBehaviour
     }
     private void OnDestroy(){Clear();if(stage!=null)Destroy(stage);if(itemMaterial!=null)Destroy(itemMaterial);}
 }
+

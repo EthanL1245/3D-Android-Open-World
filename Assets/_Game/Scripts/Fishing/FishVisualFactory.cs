@@ -73,6 +73,8 @@ public static class FishVisualFactory
             case FishCatalog.BonitoId:return "Fishing/Bonito";
             case FishCatalog.BlackSeaBassId:return "Fishing/BlackSeaBass";
             case FishCatalog.StripedBassId:return "Fishing/StripedBass";
+            case FishCatalog.AlbacoreId:return "Fishing/Albacore";
+            case FishCatalog.GreaterAmberjackId:return "Fishing/GreaterAmberjack";
             case FishCatalog.SpottedSandBassId:return "Fishing/SpottedSandBass";
             default:return null;
         }
@@ -105,3 +107,4 @@ public static class FishVisualFactory
         tailMesh.triangles=new[]{0,1,2,0,2,1,0,4,3,0,3,4};tailMesh.RecalculateNormals();tailMesh.RecalculateBounds();return tailMesh;
     }
 }
+

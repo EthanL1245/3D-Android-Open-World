@@ -39,3 +39,9 @@ deep-ocean,9,Bonito,0.500,11.250
 deep-ocean,10,Black Sea Bass,0.350,4.500
 deep-ocean,11,Striped Bass,0.900,56.250
 deep-ocean,12,Spotted Sand Bass,0.250,4.500
+suncrest-reef,13,Albacore,2,18
+suncrest-reef,14,Greater Amberjack,1.5,22
+brinebreak-isle,13,Albacore,4,32
+brinebreak-isle,14,Greater Amberjack,4,48
+deep-ocean,13,Albacore,2,45
+deep-ocean,14,Greater Amberjack,1.5,70

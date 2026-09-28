@@ -371,6 +371,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
 
     private float StableWaterDepth(Vector3 position)
     {
+        if (!MarinaDockExtensionRuntime.WaterClear(position,.4f))return 0f;
         if (terrain == null || ocean == null) return 1000f;
         TerrainData data = terrain.terrainData;
         Vector3 local = position - terrain.transform.position;
@@ -427,3 +428,4 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         previousDistance = -1f;
     }
 }
+

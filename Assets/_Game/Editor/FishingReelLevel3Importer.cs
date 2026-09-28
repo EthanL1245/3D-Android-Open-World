@@ -265,8 +265,23 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
             throw new InvalidDataException("Level 3 reel geometry contains " + triangles + " triangles; expected " + ExpectedTriangles + ".");
     }
 
-    private static void BuildPrefab(GeometryFile geometry)
+    // Prepared geometry uses the same tested hierarchy/animation contract as Level 3.
+    // The caller owns the output paths, so future tiers do not need copied importers.
+    public static void InstallPrepared(string jsonPath,string texturePath,string prefabPath,string generatedPath)
     {
+        EnsureFolder(generatedPath);
+        AssetDatabase.ImportAsset(texturePath,ImportAssetOptions.ForceSynchronousImport);
+        var geometry=JsonUtility.FromJson<GeometryFile>(File.ReadAllText(jsonPath));
+        ValidateGeometry(geometry);
+        BuildPrefab(geometry,prefabPath,texturePath,generatedPath);
+    }
+
+    private static void BuildPrefab(GeometryFile geometry,string prefabPath=null,string texturePath=null,string generatedPath=null)
+    {
+        prefabPath= prefabPath ?? Level3PrefabPath;
+        texturePath= texturePath ?? TexturePath;
+        generatedPath= generatedPath ?? Generated;
+
         GameObject starter = AssetDatabase.LoadAssetAtPath<GameObject>(StarterPrefabPath);
         if (starter == null) throw new InvalidOperationException("Starter FishingRodReel prefab is missing.");
 
@@ -276,7 +291,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         {
             if (PrefabUtility.IsPartOfPrefabInstance(root))
                 PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
-            root.name = "FishingRodReelLevel3";
+            root.name = Path.GetFileNameWithoutExtension(prefabPath);
 
             Transform reel = FindDeepChild(root.transform, "ReelMount");
             FishingRodView rodView = root.GetComponent<FishingRodView>();
@@ -298,12 +313,12 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
                 snapshots[name] = new TransformSnapshot(target);
             }
 
-            Material material = BuildMaterial();
+            Material material = BuildMaterial((generatedPath==Generated?MaterialPath:generatedPath+"/Material.mat"),texturePath);
             foreach (GeometryPart part in geometry.parts)
             {
                 Transform target = targets[part.name];
                 Mesh mesh = BuildMesh(part, target.localPosition);
-                string meshPath = Generated + "/" + part.name + ".asset";
+                string meshPath = generatedPath + "/" + part.name + ".asset";
                 Mesh persistent = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
                 if (persistent == null)
                 {
@@ -326,7 +341,7 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
                 if (!snapshots[name].Matches(targets[name]))
                     throw new InvalidOperationException("Level 3 import changed animated transform '" + name + "'.");
 
-            GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, Level3PrefabPath);
+            GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             if (saved == null) throw new InvalidOperationException("Unity could not save FishingRodReelLevel3.prefab.");
         }
         finally { if (root != null) Object.DestroyImmediate(root); }
@@ -366,20 +381,20 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
         mesh.RecalculateBounds();mesh.RecalculateTangents();return mesh;
     }
 
-    private static Material BuildMaterial()
+    private static Material BuildMaterial(string materialPath,string texturePath)
     {
         Shader shader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/FishingEquipment.shader");
         if(shader==null || ShaderUtil.ShaderHasError(shader))
             throw new InvalidOperationException("FishingEquipment shader is missing or has errors.");
 
-        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
+        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);
         if(texture==null)throw new InvalidOperationException("Level 3 reel texture did not import.");
 
-        Material material=AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
+        Material material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
         if(material==null)
         {
             material=new Material(shader){name="Level3FishingReel"};
-            AssetDatabase.CreateAsset(material,MaterialPath);
+            AssetDatabase.CreateAsset(material,materialPath);
         }
         material.shader=shader;
         material.shaderKeywords=Array.Empty<string>();
@@ -465,3 +480,4 @@ with open(out_path,'w',encoding='utf-8') as f: json.dump({'parts':parts},f,separ
     private static void EnsureFolder(string path){if(AssetDatabase.IsValidFolder(path))return;int slash=path.LastIndexOf('/');if(slash<=0)return;string parent=path.Substring(0,slash);EnsureFolder(parent);if(!AssetDatabase.IsValidFolder(path))AssetDatabase.CreateFolder(parent,path.Substring(slash+1));}
     private static string Quote(string value)=>"\""+value.Replace("\"","\\\"")+"\"";
 }
+

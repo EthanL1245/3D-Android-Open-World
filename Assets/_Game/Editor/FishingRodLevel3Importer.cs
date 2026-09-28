@@ -161,14 +161,29 @@ finally: eo.to_mesh_clear()
             throw new InvalidDataException("The exported Level 3 rod geometry is invalid or does not match 1340 triangles.");
     }
 
-    private static void BuildPrefab(Geometry g)
+    // Prepared geometry uses the same tested hierarchy/animation contract as Level 3.
+    // The caller owns the output paths, so future tiers do not need copied importers.
+    public static void InstallPrepared(string jsonPath,string texturePath,string prefabPath,string generatedPath)
     {
+        EnsureFolder(generatedPath);
+        AssetDatabase.ImportAsset(texturePath,ImportAssetOptions.ForceSynchronousImport);
+        var geometry=JsonUtility.FromJson<Geometry>(File.ReadAllText(jsonPath));
+        ValidateGeometry(geometry);
+        BuildPrefab(geometry,prefabPath,texturePath,generatedPath);
+    }
+
+    private static void BuildPrefab(Geometry g,string prefabPath=null,string texturePath=null,string generatedPath=null)
+    {
+        prefabPath= prefabPath ?? Level3PrefabPath;
+        texturePath= texturePath ?? TexturePath;
+        generatedPath= generatedPath ?? Generated;
+
         GameObject starter=AssetDatabase.LoadAssetAtPath<GameObject>(StarterPrefabPath);if(starter==null)throw new InvalidOperationException("Starter rod prefab is missing.");
         GameObject root=PrefabUtility.InstantiatePrefab(starter) as GameObject;if(root==null)root=Object.Instantiate(starter);
         try
         {
             if(PrefabUtility.IsPartOfPrefabInstance(root))PrefabUtility.UnpackPrefabInstance(root,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);
-            root.name="FishingRodReelLevel3Rod";
+            root.name=Path.GetFileNameWithoutExtension(prefabPath);
             Transform blank=FindDeepChild(root.transform,"RodBlank"),tip=FindDeepChild(root.transform,"RodTip"),mount=FindDeepChild(root.transform,"ReelMount");
             FishingRodView view=root.GetComponent<FishingRodView>();
             if(blank==null || tip==null || mount==null || view==null)throw new InvalidOperationException("Starter prefab is missing RodBlank, RodTip, ReelMount or FishingRodView.");
@@ -179,13 +194,13 @@ finally: eo.to_mesh_clear()
             Vector3 tipPosition=tip.localPosition,mountPosition=mount.localPosition;Quaternion mountRotation=mount.localRotation;
 
             Mesh mesh=BuildMesh(g,Mathf.Max(.25f,tip.localPosition.y));
-            Mesh persistent=AssetDatabase.LoadAssetAtPath<Mesh>(MeshPath);
-            if(persistent==null){AssetDatabase.CreateAsset(mesh,MeshPath);persistent=mesh;}else{EditorUtility.CopySerialized(mesh,persistent);Object.DestroyImmediate(mesh);EditorUtility.SetDirty(persistent);}
-            filter.sharedMesh=persistent;renderer.sharedMaterial=BuildMaterial();renderer.SetPropertyBlock(null);renderer.shadowCastingMode=ShadowCastingMode.Off;
+            Mesh persistent=AssetDatabase.LoadAssetAtPath<Mesh>((generatedPath==Generated?MeshPath:generatedPath+"/RodMesh.asset"));
+            if(persistent==null){AssetDatabase.CreateAsset(mesh,(generatedPath==Generated?MeshPath:generatedPath+"/RodMesh.asset"));persistent=mesh;}else{EditorUtility.CopySerialized(mesh,persistent);Object.DestroyImmediate(mesh);EditorUtility.SetDirty(persistent);}
+            filter.sharedMesh=persistent;renderer.sharedMaterial=BuildMaterial((generatedPath==Generated?MaterialPath:generatedPath+"/Material.mat"),texturePath);renderer.SetPropertyBlock(null);renderer.shadowCastingMode=ShadowCastingMode.Off;
 
             if(Vector3.Distance(tip.localPosition,tipPosition)>.000001f || Vector3.Distance(mount.localPosition,mountPosition)>.000001f || Quaternion.Angle(mount.localRotation,mountRotation)>.0001f || animation.clip!=clip)
                 throw new InvalidOperationException("Level 3 rod import attempted to change gameplay transforms or reel animation.");
-            GameObject saved=PrefabUtility.SaveAsPrefabAsset(root,Level3PrefabPath);if(saved==null)throw new InvalidOperationException("Unity could not save the Level 3 rod prefab.");
+            GameObject saved=PrefabUtility.SaveAsPrefabAsset(root,prefabPath);if(saved==null)throw new InvalidOperationException("Unity could not save the Level 3 rod prefab.");
         }
         finally{if(root!=null)Object.DestroyImmediate(root);}
     }
@@ -218,12 +233,12 @@ finally: eo.to_mesh_clear()
     private static Vector3 MapDirection(Vector3 v,int longAxis,int a,int b,float sign)=>new Vector3(Axis(v,a),Axis(v,longAxis)*sign,Axis(v,b));
     private static float Axis(Vector3 v,int axis)=>axis==0?v.x:axis==1?v.y:v.z;
 
-    private static Material BuildMaterial()
+    private static Material BuildMaterial(string materialPath,string texturePath)
     {
         Shader shader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Fishing/FishingEquipment.shader");if(shader==null || ShaderUtil.ShaderHasError(shader))throw new InvalidOperationException("FishingEquipment shader is missing or invalid.");
-        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);if(texture==null)throw new InvalidOperationException("Level 3 rod texture failed to import.");
-        Material material=AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
-        if(material==null){material=new Material(shader){name="Level3FishingRod"};AssetDatabase.CreateAsset(material,MaterialPath);}
+        Texture2D texture=AssetDatabase.LoadAssetAtPath<Texture2D>(texturePath);if(texture==null)throw new InvalidOperationException("Level 3 rod texture failed to import.");
+        Material material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+        if(material==null){material=new Material(shader){name="Level3FishingRod"};AssetDatabase.CreateAsset(material,materialPath);}
         material.shader=shader;material.shaderKeywords=Array.Empty<string>();material.SetColor("_BaseColor",Color.white);material.SetTexture("_BaseMap",texture);material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);material.SetFloat("_Metallic",.05f);material.SetFloat("_Smoothness",.42f);
         if(material.HasProperty("_Cull"))material.SetFloat("_Cull",0f);EditorUtility.SetDirty(material);return material;
     }
@@ -270,3 +285,4 @@ finally: eo.to_mesh_clear()
 
     private static string Quote(string value)=>"\""+value.Replace("\"","\\\"")+"\"";
 }
+

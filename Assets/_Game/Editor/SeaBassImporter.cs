@@ -13,6 +13,7 @@ public static class SeaBassImporter
     public static void InstallModel(string assetName,string prefabPath)
     {
         string fbx=Folder+"/"+assetName+".fbx", png=Folder+"/"+assetName+"Texture.png";
+        if(!File.Exists(png))png=Folder+"/"+assetName+"Texture.jpg";
         AssetDatabase.ImportAsset(fbx,ImportAssetOptions.ForceSynchronousImport);
         var importer=AssetImporter.GetAtPath(fbx) as ModelImporter;
         if(importer==null)throw new InvalidOperationException("Fish FBX was not imported.");
@@ -152,3 +153,4 @@ public static class SeaBassImporter
         var bounds=renderers[0].bounds;foreach(var r in renderers)bounds.Encapsulate(r.bounds);return bounds;
     }
 }
+

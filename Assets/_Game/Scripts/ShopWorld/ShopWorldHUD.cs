@@ -225,7 +225,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     {
         int equipped=progress.Data.baitEquipped;
         Row(ReefCatalog.Zones[indexBiome].name, ShopCatalog.BaitNames[equipped]+" equipped • whole-percent odds (rounded) apply when a fish bites. "+(equipped==ShopCatalog.StarterLure?"Longer casts favor bigger fish; bites only while reeling.":"Deeper water favors bigger fish.")+(indexBiome==0?" Palm Pond: 5–12 cm.":" Stronger fish: "+ReefCatalog.HealthMultiplier(indexBiome).ToString("0.0")+"× base health, plus size scaling."), "ISLAND INDEX",()=>Open("islands"));
-        foreach(int id in FishCatalog.ActiveIds.OrderByDescending(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)))
+        foreach(int id in FishCatalog.ActiveIds.Where(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)>0f).OrderByDescending(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)))
         {
             var species=FishCatalog.Get(id);
             Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.EquippedChance(id,equipped,indexBiome).ToString("0")+"% equipped chance\n"+ReefCatalog.Zones[indexBiome].name+" size: "+FishCatalog.FormatWeight(ReefCatalog.MinimumWeight(id,indexBiome))+" – "+FishCatalog.FormatWeight(ReefCatalog.MaximumWeight(id,indexBiome))+"\nLength: "+ShopCatalog.FishLength(id,ReefCatalog.MinimumWeight(id,indexBiome)).ToString("0.00")+" – "+ShopCatalog.FishLength(id,ReefCatalog.MaximumWeight(id,indexBiome)).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
@@ -311,7 +311,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             {
                 int t=tier; GearKind k=kind; bool owned=t<=progress.Data.Owned(k), equipped=t==progress.Data.Equipped(k);
                 if((!shop && !owned) || (shop && owned)) continue;
-                string stats=k==GearKind.Rod?$"{t*18}% more tension control":k==GearKind.Reel?$"{t*22}% faster tiring and retrieval":$"40 m line / 30 m maximum cast; {t*12}% more line tolerance";
+                string stats=k==GearKind.Rod?$"{FishingBurstDamageRuntime.NormalMinimumForTier(t)}–{FishingBurstDamageRuntime.NormalMaximumForTier(t)} damage / {FishingBurstDamageRuntime.CriticalChanceForTier(t)*100:0}% critical (2×)":k==GearKind.Reel?$"{(Level2FishingReelRuntime.ReelMultiplier(t)-1f)*100:0}% faster reeling":$"40 m line / 30 m maximum cast; {t*12}% more line tolerance";
                 string action=equipped?"EQUIPPED":owned?"EQUIP":$"BUY {ShopCatalog.GearPrice(k,t):N0}";
                 bool can=owned?!equipped:t==progress.Data.Owned(k)+1 && progress.Data.coins>=ShopCatalog.GearPrice(k,t);
                 Row(ShopCatalog.GearName(k,t),stats+(owned?"":" / Requires previous tier"),action,()=>
@@ -498,5 +498,6 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 
 

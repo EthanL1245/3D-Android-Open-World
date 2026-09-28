@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Runtime support for all three fishing reels. Reel upgrades keep the starter
+/// Runtime support for all four fishing reels. Reel upgrades keep the starter
 /// reel's mechanics, hierarchy and authored animation; only the visible five reel
 /// meshes/materials and the reeling-speed multiplier change.
-/// Starter = 1.00x, Level 2 = 1.20x, Level 3 = 1.40x.
+/// Starter = 1.00x, Level 2 = 1.20x, Level 3 = 1.40x, Level 4 = 1.60x.
 /// </summary>
 [DefaultExecutionOrder(-420)]
 public sealed class Level2FishingReelRuntime : MonoBehaviour
@@ -69,9 +69,10 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
         ApplyVisual(tier);
     }
 
-    private static float ReelMultiplier(int tier)
+    public static float ReelMultiplier(int tier)
     {
-        if(tier>=2)return 1.40f;
+        if(tier>=3)return 1.60f;
+        if(tier==2)return 1.40f;
         if(tier==1)return 1.20f;
         return 1f;
     }
@@ -87,7 +88,7 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
             if(tier>0 && warnedTier!=tier)
             {
                 warnedTier=tier;
-                string level=tier==2?"Level 3":"Level 2";
+                string level="Level "+(tier+1);
                 Debug.LogWarning(level+" reel model is not installed yet. Run Tools > Open World > Import "+level+" Fishing Reel (One Click). The previous visual is being used temporarily.");
             }
             return;
@@ -157,3 +158,4 @@ public sealed class ReelShopCleanup : MonoBehaviour
         return null;
     }
 }
+

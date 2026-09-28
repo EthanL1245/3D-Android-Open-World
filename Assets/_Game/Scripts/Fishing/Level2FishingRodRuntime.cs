@@ -173,8 +173,8 @@ public sealed class Level2FishingRodRuntime : MonoBehaviour
         int woodlandDamage=observedHp-current;
         if(tier>0 && woodlandDamage>0 && current>0)
         {
-            int normalMultiplier=tier>=2?3:2;
-            float criticalChance=tier>=2?0.08f:0.05f;
+            int normalMultiplier=tier>=3?5:tier==2?3:2;
+            float criticalChance=FishingBurstDamageRuntime.CriticalChanceForTier(tier);
 
             if(!criticalRolledForBurst)
             {
@@ -349,3 +349,4 @@ public sealed class RodShopCleanup : MonoBehaviour
         return null;
     }
 }
+

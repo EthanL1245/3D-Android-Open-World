@@ -1,78 +1,206 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Extends the existing Suncrest Marina boardwalk into water deep enough to deploy
-/// the boat catalog. The original setup boardwalk ends around local Z=13, which can
-/// leave the player standing too far inland for the 18 m placement ray to reach a
-/// valid full-hull clearance area. This adds a narrower walkable pier at runtime in
-/// both Editor Play Mode and builds; no boat installer rerun is required.
-/// </summary>
+/// <summary>Replaces old primitive dock geometry without changing the user's saved scene.</summary>
 [DefaultExecutionOrder(-500)]
 public sealed class MarinaDockExtensionRuntime : MonoBehaviour
 {
-    private const string ExtensionName="Deep Water Dock Extension";
-    private const float ExistingDockEnd=13f;
-    private const float MinimumDockEnd=21f;
-    private const float MaximumDockEnd=42f;
-    private const float PlacementGap=8f;
-
+    private const string ExtensionName="Authored Marina Installation";
+    private const float MinimumDockEnd=22f,MaximumDockEnd=42f,PlacementGap=8f;
+    private const float WideEnd=2f,SourceEnd=21.942202f;
+    private static MarinaDockExtensionRuntime active;
     private BoatSystem boats;
+    private Collider[] solids;
+    private static readonly Collider[] waterHits=new Collider[64];
+    private Bounds worldBounds;
+    private readonly List<Mesh> stretchedMeshes=new List<Mesh>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
     {
-        foreach(BoatSystem system in FindObjectsByType<BoatSystem>(FindObjectsSortMode.None))
-        {
-            if(system!=null && system.GetComponent<MarinaDockExtensionRuntime>()==null)
-                system.gameObject.AddComponent<MarinaDockExtensionRuntime>();
-        }
+        active=null;
+        foreach(var system in FindObjectsByType<BoatSystem>(FindObjectsSortMode.None))
+            if(system.GetComponent<MarinaDockExtensionRuntime>()==null)system.gameObject.AddComponent<MarinaDockExtensionRuntime>();
     }
-
-    private void Start()
-    {
-        boats=GetComponent<BoatSystem>();
-        BuildExtension();
-    }
+    private void Start(){boats=GetComponent<BoatSystem>();BuildExtension();}
 
     private void BuildExtension()
     {
-        if(boats==null)return;
         GameObject marina=GameObject.Find("MarinaShop");
-        if(marina==null)return;
+        var dockPrefab=Resources.Load<GameObject>("Boats/AuthoredMarinaDock");
+        var postPrefab=Resources.Load<GameObject>("Boats/AuthoredDockPost");
+        if(boats==null || marina==null || dockPrefab==null || postPrefab==null)return;
         Transform root=marina.transform;
         if(root.Find(ExtensionName)!=null)return;
-
-        Transform boardwalk=FindDeepChild(root,"Boardwalk");
-        Renderer boardRenderer=boardwalk!=null?boardwalk.GetComponent<Renderer>():null;
-        Material wood=boardRenderer!=null?boardRenderer.sharedMaterial:null;
         OceanWater water=boats.Water!=null?boats.Water:FindFirstObjectByType<OceanWater>();
         if(water==null)return;
-
         float end=FindSafeDockEnd(root,water);
-        float length=Mathf.Max(2f,end-ExistingDockEnd);
-
-        GameObject extension=new GameObject(ExtensionName);
-        extension.transform.SetParent(root,false);
-
-        // Slight overlap with the old boardwalk removes any seam while keeping the
-        // deep-water part narrow enough that boats have clear water beside/ahead.
-        CreatePart(extension.transform,"Pier Deck",
-            new Vector3(0f,0f,ExistingDockEnd+length*.5f),
-            new Vector3(4.5f,.30f,length+.35f),wood,true);
-
-        CreatePart(extension.transform,"Pier End Cap",
-            new Vector3(0f,0f,end),
-            new Vector3(5.5f,.30f,1.8f),wood,true);
-
-        for(float z=ExistingDockEnd+2f;z<=end+.01f;z+=4f)
+        var installation=new GameObject(ExtensionName);installation.transform.SetParent(root,false);
+        var dock=Instantiate(dockPrefab,installation.transform,false);
+        foreach(var filter in dock.GetComponentsInChildren<MeshFilter>())
         {
-            CreatePart(extension.transform,"Dock Piling L",
-                new Vector3(-2.05f,-1.65f,z),new Vector3(.26f,3.6f,.26f),wood,true);
-            CreatePart(extension.transform,"Dock Piling R",
-                new Vector3(2.05f,-1.65f,z),new Vector3(.26f,3.6f,.26f),wood,true);
+            Mesh mesh=Instantiate(filter.sharedMesh);mesh.name=filter.name+" fitted pier";
+            Vector3[] vertices=mesh.vertices;
+            for(int i=0;i<vertices.Length;i++)
+                if(vertices[i].z>WideEnd)vertices[i].z=WideEnd+(vertices[i].z-WideEnd)*(end-WideEnd)/(SourceEnd-WideEnd);
+            mesh.vertices=vertices;mesh.RecalculateBounds();mesh.RecalculateNormals();mesh.RecalculateTangents();
+            filter.sharedMesh=mesh;filter.GetComponent<MeshCollider>().sharedMesh=mesh;stretchedMeshes.Add(mesh);
         }
+
+        // Shop stays over the wide authored platform. The ramp meets its landward edge.
+        // Check the actual triangle surfaces, not a box across the surrounding water.
+        if(!FindClearSite(root,installation.transform))
+        {
+            installation.SetActive(false);Destroy(installation);
+            Debug.LogError("Marina replacement found an obstructed dock footprint. Clear the shoreline around MarinaShop, then restart Play. The existing marina was kept.");
+            return;
+        }
+        foreach(Transform child in root)
+        {
+            if(child==installation.transform)continue;
+            string n=child.name;
+            if(n=="Boardwalk" || n=="Dock piling" || n=="Deep Water Dock Extension" ||
+               n.StartsWith("UserDock") || n.StartsWith("DockVisual") || n.StartsWith("ImportedDock"))
+            {child.gameObject.SetActive(false);Destroy(child.gameObject);}
+        }
+        FitRamp(root);
+        // The supplied post has its own UVs. Only height is fitted to the seabed;
+        // its small individual collider leaves all the water between posts open.
+        foreach(float x in new[]{-4.65f,4.65f})foreach(float z in new[]{-4.5f,1.4f})
+            AddPost(installation.transform,postPrefab,new Vector3(x,0,z));
+        for(float z=4f;z<end-5f;z+=4f)
+            foreach(float x in new[]{-.49f,.49f})AddPost(installation.transform,postPrefab,new Vector3(x,0,z));
+        foreach(float x in new[]{-1.4f,1.4f})
+            AddPost(installation.transform,postPrefab,new Vector3(x,0,end-1f));
+        solids=installation.GetComponentsInChildren<Collider>();active=this;
+        Physics.SyncTransforms();
+        worldBounds=new Bounds(installation.transform.position,Vector3.zero);
+        foreach(var solid in solids)worldBounds.Encapsulate(solid.bounds);
+        Physics.SyncTransforms();
     }
 
+    private static void AddPost(Transform parent,GameObject prefab,Vector3 local)
+    {
+        Vector3 top=parent.TransformPoint(new Vector3(local.x,.015f,local.z));
+        float bottom=Ground(top)-.30f;
+        float height=Mathf.Max(.4f,top.y-bottom);
+        var post=Instantiate(prefab,parent,false);post.name="Authored dock post";
+        post.transform.position=new Vector3(top.x,top.y-height*.5f,top.z);
+        post.transform.localScale=new Vector3(.24f,height/Mathf.Max(.001f,parent.lossyScale.y),.24f);
+    }
+
+    private static float Ground(Vector3 point)
+    {
+        foreach(var terrain in Terrain.activeTerrains)
+        {
+            Vector3 p=point-terrain.transform.position,s=terrain.terrainData.size;
+            if(p.x>=0 && p.z>=0 && p.x<=s.x && p.z<=s.z)return terrain.SampleHeight(point)+terrain.transform.position.y;
+        }
+        return point.y-8f;
+    }
+
+    private static bool FindClearSite(Transform marina,Transform dock)
+    {
+        Vector3 origin=marina.position;
+        // Include visible scenery without colliders (e.g. foliage), and cache it once.
+        var scenery=new List<Renderer>();
+        foreach(var renderer in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
+        {
+            if(!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.transform.IsChildOf(marina) ||
+               renderer.GetComponentInParent<OceanWater>()!=null || renderer.GetComponentInParent<FirstPersonController>()!=null ||
+               renderer.GetComponentInParent<AmbientFishAgent>()!=null || renderer.GetComponentInParent<BoatController>()!=null)continue;
+            if((renderer.bounds.center-origin).sqrMagnitude<100f*100f)scenery.Add(renderer);
+        }
+        var nearby=new List<Bounds>();
+        var placementHits=new Collider[64];
+        foreach(float seaward in new[]{0f,2f,4f,6f})
+        foreach(float lateral in new[]{0f,-2f,2f,-4f,4f,-6f,6f})
+        {
+            marina.position=origin+marina.rotation*new Vector3(lateral,0,seaward);
+            Physics.SyncTransforms();
+            bool clear=true;
+            Bounds footprint=new Bounds(dock.position,Vector3.zero);
+            foreach(var renderer in dock.GetComponentsInChildren<Renderer>())footprint.Encapsulate(renderer.bounds);
+            footprint.Expand(new Vector3(1f,5f,1f));
+            nearby.Clear();
+            foreach(var renderer in scenery)
+                if(renderer!=null && footprint.Intersects(renderer.bounds))nearby.Add(renderer.bounds);
+            foreach(var filter in dock.GetComponentsInChildren<MeshFilter>())
+            {
+                Vector3[] v=filter.sharedMesh.vertices;int[] indices=filter.sharedMesh.triangles;
+                for(int i=0;i<indices.Length && clear;i+=3)
+                {
+                    Vector3 a=filter.transform.TransformPoint(v[indices[i]]),b=filter.transform.TransformPoint(v[indices[i+1]]),c=filter.transform.TransformPoint(v[indices[i+2]]);
+                    if(Vector3.Cross(b-a,c-a).y<=0.001f)continue;
+                    // Sample every ~0.5 m over each top triangle for scenery/terrain intersections.
+                    int steps=Mathf.CeilToInt(Mathf.Max((b-a).magnitude,(c-a).magnitude)*2f);
+                    for(int u=0;u<=steps && clear;u++)for(int w=0;w<=steps-u && clear;w++)
+                    {
+                        Vector3 p=a+(b-a)*(u/(float)steps)+(c-a)*(w/(float)steps);
+                        if(Ground(p)>p.y+.03f){clear=false;break;}
+                        var walkingSpace=new Bounds(p+Vector3.up*1f,new Vector3(.5f,2f,.5f));
+                        foreach(var obstacle in nearby)if(obstacle.Intersects(walkingSpace)){clear=false;break;}
+                        if(!clear)break;
+                        int hitCount=Physics.OverlapSphereNonAlloc(p+Vector3.up*.65f,.65f,placementHits,Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+                        if(hitCount==placementHits.Length){clear=false;break;}
+                        for(int hitIndex=0;hitIndex<hitCount;hitIndex++)
+                        {
+                            var hit=placementHits[hitIndex];
+                            if(hit is TerrainCollider || hit.transform.IsChildOf(marina) || hit.GetComponentInParent<FirstPersonController>()!=null || hit.GetComponentInParent<BoatController>()!=null)continue;
+                            clear=false;break;
+                        }
+                    }
+                }
+                if(!clear)break;
+            }
+            if(clear)return true;
+        }
+        marina.position=origin;Physics.SyncTransforms();return false;
+    }
+
+    private static void FitRamp(Transform root)
+    {
+        Transform ramp=root.Find("Beach access ramp");if(ramp==null)return;
+        Vector3 top=root.TransformPoint(new Vector3(0,.15f,-5f));
+        Vector3 bottom=root.TransformPoint(new Vector3(0,0,-10f));bottom.y=Ground(bottom)+.08f;
+        Vector3 delta=top-bottom;
+        ramp.position=(top+bottom)*.5f;ramp.rotation=Quaternion.LookRotation(delta,Vector3.up);
+        // End exactly at the authored deck edge; do not overlap its top faces.
+        ramp.localScale=new Vector3(4f,.15f,delta.magnitude);
+    }
+
+    public static bool WaterClear(Vector3 point,float radius)
+    {
+        if(active==null || active.solids==null)return true;
+        Bounds region=active.worldBounds;region.Expand(radius*2f);
+        if(!region.Contains(point))return true;
+        foreach(var solid in active.solids)
+        {
+            if(solid==null || !solid.enabled)continue;
+            Bounds b=solid.bounds;b.Expand(radius*2f);
+            if(!b.Contains(point))continue;
+            // Non-convex deck's AABB must NOT close the open water beside the pier.
+            // Posts are exact cuboids. Deck overlap uses a small sphere query below.
+            if(solid.name=="Authored dock post")return false;
+        }
+        int layer=LayerMask.NameToLayer("Terrain");
+        int count=Physics.OverlapSphereNonAlloc(point,radius,waterHits,layer>=0?1<<layer:Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+        for(int i=0;i<count;i++)if(System.Array.IndexOf(active.solids,waterHits[i])>=0)return false;
+        if(count==waterHits.Length)return false;
+        return true;
+    }
+    public static bool WaterSegmentClear(Vector3 from,Vector3 to,float radius)
+    {
+        if(active==null || active.solids==null)return true;
+        float distance=Vector3.Distance(from,to);int count=Mathf.Max(1,Mathf.CeilToInt(distance/Mathf.Max(.1f,radius)));
+        for(int i=0;i<=count;i++)if(!WaterClear(Vector3.Lerp(from,to,i/(float)count),radius))return false;
+        return true;
+    }
+    private void OnDestroy()
+    {
+        if(active==this)active=null;
+        foreach(var mesh in stretchedMeshes)if(mesh!=null)Destroy(mesh);
+    }
     private float FindSafeDockEnd(Transform marina,OceanWater water)
     {
         float fallback=MinimumDockEnd;
@@ -135,27 +263,5 @@ public sealed class MarinaDockExtensionRuntime : MonoBehaviour
         return true;
     }
 
-    private static GameObject CreatePart(Transform parent,string name,Vector3 localPosition,Vector3 localScale,Material material,bool collider)
-    {
-        GameObject go=GameObject.CreatePrimitive(PrimitiveType.Cube);
-        go.name=name;
-        go.transform.SetParent(parent,false);
-        go.transform.localPosition=localPosition;
-        go.transform.localScale=localScale;
-        Renderer renderer=go.GetComponent<Renderer>();
-        if(renderer!=null && material!=null)renderer.sharedMaterial=material;
-        if(!collider)
-        {
-            Collider c=go.GetComponent<Collider>();
-            if(c!=null)Destroy(c);
-        }
-        return go;
-    }
 
-    private static Transform FindDeepChild(Transform root,string name)
-    {
-        foreach(Transform child in root.GetComponentsInChildren<Transform>(true))
-            if(child!=null && child.name==name)return child;
-        return null;
-    }
 }

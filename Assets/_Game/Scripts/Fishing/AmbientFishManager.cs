@@ -78,6 +78,7 @@ public class AmbientFishManager : MonoBehaviour
     public bool Safe(Vector3 position,float clearance=0.6f)
     {
         if(!InReef||oceanWater==null||terrain==null)return false;
+        if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
@@ -171,4 +172,5 @@ public class AmbientFishAgent : MonoBehaviour
         trail.Record();
     }
 }
+
 

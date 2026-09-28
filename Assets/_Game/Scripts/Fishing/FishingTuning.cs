@@ -20,6 +20,7 @@ public static class FishingTuning
         public int MaxHealth;
         public int MinCostCoins;
         public int MaxCostCoins;
+        public float YellowSpeedMps;
     }
 
     public sealed class WeightDistribution
@@ -43,7 +44,7 @@ public static class FishingTuning
     private const float BoundedNormalUpperCdf=0.991197539f;
 
     // Stable save-game species IDs. Retired ID 4 must never be reused.
-    private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12};
+    private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12,13,14};
     private static readonly string[] Biomes={"suncrest-reef","brinebreak-isle","deep-ocean"};
     private static readonly string[] RequiredBaits={
         "worms","worms-legacy","shrimp","squid",
@@ -94,6 +95,15 @@ public static class FishingTuning
         EnsureLoaded();
         if(!valid)return false;
         return Stats.TryGetValue(Canonical(species),out stats);
+    }
+
+    public const float GreenToYellowSpeed = 0.95f / 1.35f;
+    public const float RedToYellowSpeed = 1.75f / 1.35f;
+    public static float YellowSpeed(int species, float legacyDifficulty)
+    {
+        SpeciesStats stats;
+        return TryGetSpeciesStats(species,out stats) ? stats.YellowSpeedMps
+            : Mathf.Lerp(1.85f,2.95f,legacyDifficulty)*1.35f;
     }
 
     public static bool TryGetWeightDistribution(int species,int biome,out WeightDistribution row)
@@ -228,11 +238,12 @@ public static class FishingTuning
         float cumulative=0f;
         for(int i=0;i<ActiveSpecies.Length;i++)
         {
+            if(row[i]<=0f)continue;
+            species=ActiveSpecies[i];
             cumulative+=row[i];
-            if(target<=cumulative || i==ActiveSpecies.Length-1)
-            {species=ActiveSpecies[i];return true;}
+            if(target<cumulative)return true;
         }
-        return false;
+        return cumulative>0f;
     }
 
     public static bool TryGetHealth(int species,float weightKg,out int health)
@@ -300,19 +311,20 @@ public static class FishingTuning
             string line=lines[lineIndex].Trim();
             if(Ignore(line) || line.StartsWith("speciesId,"))continue;
             string[] c=line.Split(',');
-            if(c.Length!=8)return Fail("FishStats.csv line "+(lineIndex+1)+" must have 8 columns.");
-            int id,minHealth,maxHealth,minCost,maxCost;float minWeight,maxWeight;
+            if(c.Length!=9)return Fail("FishStats.csv line "+(lineIndex+1)+" must have 9 columns (including yellowSpeedMps).");
+            int id,minHealth,maxHealth,minCost,maxCost;float minWeight,maxWeight,yellowSpeed;
             if(!Int(c[0],out id) || !Float(c[2],out minWeight) || !Float(c[3],out maxWeight) ||
-               !Int(c[4],out minHealth) || !Int(c[5],out maxHealth) || !Int(c[6],out minCost) || !Int(c[7],out maxCost))
+               !Int(c[4],out minHealth) || !Int(c[5],out maxHealth) || !Int(c[6],out minCost) || !Int(c[7],out maxCost) || !Float(c[8],out yellowSpeed))
                 return Fail("FishStats.csv line "+(lineIndex+1)+" contains an invalid number.");
             id=Canonical(id);
             if(ActiveIndex(id)<0)return Fail("FishStats.csv line "+(lineIndex+1)+" uses inactive/unknown species ID "+id+".");
             if(Stats.ContainsKey(id))return Fail("FishStats.csv has duplicate species ID "+id+".");
+            if(yellowSpeed<=0f)return Fail("FishStats.csv yellowSpeedMps must be positive for species "+id+".");
             if(minWeight<=0f || maxWeight<=minWeight)return Fail("FishStats.csv species "+id+" requires 0 < minWeightKg < maxWeightKg.");
             if(minHealth<1 || maxHealth<minHealth)return Fail("FishStats.csv species "+id+" requires 1 <= minHealth <= maxHealth.");
             if(minCost<1 || maxCost<minCost)return Fail("FishStats.csv species "+id+" requires 1 <= minCost <= maxCost.");
             Stats[id]=new SpeciesStats{SpeciesId=id,SpeciesName=c[1].Trim(),MinWeightKg=minWeight,MaxWeightKg=maxWeight,
-                MinHealth=minHealth,MaxHealth=maxHealth,MinCostCoins=minCost,MaxCostCoins=maxCost};
+                MinHealth=minHealth,MaxHealth=maxHealth,MinCostCoins=minCost,MaxCostCoins=maxCost,YellowSpeedMps=yellowSpeed};
         }
         return true;
     }
@@ -405,7 +417,7 @@ public static class FishingTuning
     private static string[] Lines(string text)=>text.Replace("\r",string.Empty).Split('\n');
     private static bool Ignore(string line)=>string.IsNullOrWhiteSpace(line) || line.StartsWith("#");
     private static bool Int(string s,out int value)=>int.TryParse(s.Trim(),NumberStyles.Integer,CultureInfo.InvariantCulture,out value);
-    private static bool Float(string s,out float value)=>float.TryParse(s.Trim(),NumberStyles.Float,CultureInfo.InvariantCulture,out value);
+    private static bool Float(string s,out float value)=>float.TryParse(s.Trim(),NumberStyles.Float,CultureInfo.InvariantCulture,out value) && !float.IsNaN(value) && !float.IsInfinity(value);
     private static int Canonical(int id)=>id==4?5:id;
     private static string WeightKey(string biome,int species)=>biome+"|"+species;
     private static string ChanceKey(string biome,string bait)=>biome+"|"+bait;
@@ -428,3 +440,4 @@ public static class FishingTuning
         return false;
     }
 }
+

@@ -21,11 +21,11 @@ public static class ReefCatalog
     // Embedded odds remain only as a fallback if an editable tuning CSV is invalid.
     public static readonly Zone[] Zones={
         new Zone(StarterId,StarterName,"A palm-lined beginner island, sandy coves and a broad shallow reef.",true,
-            new float[]{20,11,13,6,0,2,22,22,4,6,6,13,6}),
+            new float[]{20,11,13,6,0,2,22,22,4,6,6,13,6,4,6}),
         new Zone(RuggedId,"Brinebreak Isle","Rocky low hills, steep sandy shores and restless water. Land here to unlock fast travel.",false,
-            new float[]{8,13,12,18,0,10,5,5,20,12,12,10,12}),
+            new float[]{8,13,12,18,0,10,5,5,20,12,12,10,12,4,6}),
         new Zone("deep-ocean","Deep Ocean","Beyond the shared outer shelf. Pelagic fish, giant catches and demanding fights.",true,
-            new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6})
+            new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6})
     };
 
     public static Zone Starter=>Zones[0];
@@ -38,15 +38,15 @@ public static class ReefCatalog
     }
     public static string Rarity(int id)=>Weight(id)>=18?"Common":Weight(id)>=10?"Uncommon":Weight(id)>=4?"Rare":"Very rare";
 
-    private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2,4,8,6,12};
-    private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12,8,4,8,10};
+    private static readonly float[] ShrimpOdds={11,15,8,3,0,1,30,30,2,4,8,6,12,2,4};
+    private static readonly float[] SquidOdds={14,8,10,20,0,6,15,15,12,8,4,8,10,4,6};
     private static readonly float[][] LureOdds=
     {
-        new float[]{4,21,36,19,0,6,4,4,6,6,7,8,9},
-        new float[]{4,20,42,16,0,6,3,3,6,4,10,10,12},
-        new float[]{4,45,22,9,0,6,4,4,6,5,5,7,10},
-        new float[]{3,24,34,16,0,9,3,3,8,10,4,12,8},
-        new float[]{4,21,36,19,0,6,4,4,6,6,7,8,10}
+        new float[]{4,21,36,19,0,6,4,4,6,6,7,8,9,4,6},
+        new float[]{4,20,42,16,0,6,3,3,6,4,10,10,12,4,6},
+        new float[]{4,45,22,9,0,6,4,4,6,5,5,7,10,4,6},
+        new float[]{3,24,34,16,0,9,3,3,8,10,4,12,8,4,6},
+        new float[]{4,21,36,19,0,6,4,4,6,6,7,8,10,4,6}
     };
 
     private static float[] BaseEquippedWeights(int bait)
@@ -122,3 +122,4 @@ public static class ReefCatalog
         return legacyFallback;
     }
 }
+

@@ -40,7 +40,7 @@ public sealed class FishIndexTuningWording : MonoBehaviour
                 bool palm=current.IndexOf("Palm Pond: 5–12 cm",StringComparison.OrdinalIgnoreCase)>=0;
                 label.text=bait+" equipped • species odds are whole-number percentages from this biome + bait/lure table. "+
                     "Fish start from this biome's MIN–MAX bounded normal weight range. For each island biome, full cast quality is the deepest water reachable by a 30 m cast from that biome's shoreline. "+
-                    "Every ocean cast, including boat casts, is compared with that same depth: shallow water can reduce fish size and fight HP by as much as 80%, while reaching the reference depth gives full potential."+
+                    "Every ocean cast, including boat casts, is compared with that same depth: shallow water can reduce fish weight by as much as 80%, but fight HP/difficulty by at most 40%, while reaching the reference depth gives full potential."+
                     (lure?" Lure bites occur while reeling.":string.Empty)+
                     (palm?" Palm Pond remains a separate 5–12 cm tiny-fish area and ignores cast-quality scaling.":string.Empty);
                 continue;
@@ -52,3 +52,4 @@ public sealed class FishIndexTuningWording : MonoBehaviour
         }
     }
 }
+

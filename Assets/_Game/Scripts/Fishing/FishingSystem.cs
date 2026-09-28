@@ -154,7 +154,7 @@ public class FishingSystem : MonoBehaviour
         if(shopProgress==null) return;
         var gear=shopProgress.Data;
         rodPower=1f+gear.rodEquipped*0.18f;
-        reelPower=1f+gear.reelEquipped*0.22f;
+        reelPower=Level2FishingReelRuntime.ReelMultiplier(gear.reelEquipped);
         lineGuard=1f+gear.lineEquipped*0.12f;
         float extension=0f; // Cast envelope stays 5–30 m and line stays 40 m for every loadout.
         maximumCastDistance=baseCastRange+extension;
@@ -1475,6 +1475,10 @@ public class FishingSystem : MonoBehaviour
         FishSpeciesDefinition species,
         float weightKg)
     {
+        var castQuality = GetComponent<FishingCastQualityRuntime>();
+        float fightQuality = castQuality != null ? castQuality.DifficultyMultiplier : 1f;
+        if(castQuality != null && castQuality.OriginalWeight > 0f)
+            weightKg = castQuality.OriginalWeight;
         float sizeDifficulty =
             Mathf.InverseLerp(
                 species.MinWeightKg,
@@ -1488,7 +1492,7 @@ public class FishingSystem : MonoBehaviour
                 (pondCast ? 0.20f : 0.74f) +
                 sizeDifficulty *
                 0.26f
-            );
+            ) * fightQuality;
     }
 
     private FishTemperament RollTemperament(
@@ -1849,15 +1853,15 @@ public class FishingSystem : MonoBehaviour
         switch (hookedTemperament)
         {
             case FishTemperament.Calm:
-                moodSwimMultiplier = 0.95f;
+                moodSwimMultiplier = FishingTuning.GreenToYellowSpeed;
                 break;
 
             case FishTemperament.Angry:
-                moodSwimMultiplier = 1.75f;
+                moodSwimMultiplier = FishingTuning.RedToYellowSpeed;
                 break;
 
             default:
-                moodSwimMultiplier = 1.35f;
+                moodSwimMultiplier = 1f;
                 break;
         }
 
@@ -1872,11 +1876,7 @@ public class FishingSystem : MonoBehaviour
                 : 1f;
 
         float outwardSpeed =
-            Mathf.Lerp(
-                1.85f,
-                2.95f,
-                effectiveDifficulty
-            ) *
+            FishingTuning.YellowSpeed(hookedSpeciesId,effectiveDifficulty) *
             moodSwimMultiplier *
             initialBurstMultiplier *
             (
@@ -1932,7 +1932,7 @@ public class FishingSystem : MonoBehaviour
 
                 float reelPullSpeed =
                     radialOutwardSpeed +
-                    inwardGain;
+                    inwardGain * reelPower;
 
                 velocity +=
                     toPlayer *
@@ -2149,7 +2149,7 @@ public class FishingSystem : MonoBehaviour
             ) -
             0.08f;
 
-        if (!IsValidFishingWater(
+        if (!MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) || !IsValidFishingWater(
                 candidate))
         {
             next = current;
@@ -4028,5 +4028,6 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 

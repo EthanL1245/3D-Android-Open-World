@@ -15,6 +15,7 @@ using UnityEngine;
 ///   Woodland: 2-4
 ///   Level 2:  4-8, 5% critical, critical = 8-16
 ///   Level 3:  6-12, 8% critical, critical = 12-24
+///   Level 4:  10-20, 10% critical, critical = 20-40
 ///
 /// Pressing REEL does not deal an instant hit. Releasing and rapidly tapping also
 /// does not reset or accelerate the clock: only the sum of time the input is truly
@@ -68,19 +69,19 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     public static int NormalMinimumForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return 2 * (tier + 1);
+        return tier == 3 ? 10 : 2 * (tier + 1);
     }
 
     public static int NormalMaximumForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return 4 * (tier + 1);
+        return tier == 3 ? 20 : 4 * (tier + 1);
     }
 
     public static float CriticalChanceForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
+        return tier == 3 ? 0.10f : tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
     }
 
     /// <summary>
@@ -282,3 +283,4 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             legacyUpgradeRuntime.enabled = true;
     }
 }
+

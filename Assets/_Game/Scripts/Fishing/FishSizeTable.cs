@@ -17,8 +17,13 @@ public static class FishSizeTable
         new float[] {0.0011716f,0.0097708f,0.0337885f,0.0814857f,0.1612969f,0.2817868f,0.4516248f,0.6795683f,0.9744507f,1.3451719f,1.8006918f,2.3500245f,3.0022333f,3.7664271f,4.6517571f,5.6674138f,6.8226246f,8.1266516f,9.5887897f,11.2183648f}, // Sarda sarda (Bonito)
         new float[] {0.0015304f,0.0125876f,0.0431777f,0.1035316f,0.2040232f,0.3551326f,0.5674254f,0.8515384f,1.2181701f,1.6780724f,2.2420457f,2.9209336f,3.7256195f,4.6670229f}, // Centropristis striata (Black Sea Bass)
         new float[] {0.0012638f,0.0104739f,0.0360643f,0.0867113f,0.1713634f,0.2993969f,0.4803911f,0.7241117f,1.0403645f,1.4388422f,1.9291215f,2.5207841f,3.2224173f,4.0426136f,4.9909739f,6.0771070f,7.3114208f,8.7049088f,10.2677553f,12.0100439f,13.9427033f,16.0766441f,18.4227125f,20.9915967f,23.7950314f,26.8456014f,30.1558458f,33.7372705f,37.6033315f,41.7674472f,46.2430008f,51.0433423f,56.1827902f,61.6756332f,67.5361320f,73.7785204f,80.4170063f,87.4667726f,94.9429787f,102.8607615f}, // Morone saxatilis (Striped Bass)
-        new float[] {0.0015652f,0.0128817f,0.0441847f,0.1058547f,0.2086845f,0.3638955f,0.5824606f,0.8754019f,1.2537384f,1.7286444f,2.3114468f,3.0136274f} // Paralabrax maculatofasciatus (Spotted Sand Bass)
+        new float[] {0.0015652f,0.0128817f,0.0441847f,0.1058547f,0.2086845f,0.3638955f,0.5824606f,0.8754019f,1.2537384f,1.7286444f,2.3114468f,3.0136274f}, // Paralabrax maculatofasciatus (Spotted Sand Bass)
+        GameplayCurve(18f,32), // Albacore: gameplay approximation kg = 18 * metres^3
+        GameplayCurve(14f,40) // Greater Amberjack: gameplay approximation kg = 14 * metres^3
     };
+
+    private static float[] GameplayCurve(float kgAtOneMetre,int samples)
+    { var row=new float[samples];for(int i=0;i<samples;i++){float m=(i+1)*.05f;row[i]=kgAtOneMetre*m*m*m;}return row; }
 
     // Inverse of LengthMetres, so tiny pond catches retain their size in every view/save.
     public static float WeightForLength(int species,float metres)
@@ -50,3 +55,4 @@ public static class FishSizeTable
         return Math.Max(.05f,(hi+t)*.05f);
     }
 }
+

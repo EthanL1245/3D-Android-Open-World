@@ -53,6 +53,9 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     private float referenceDepth;
     private float depthRatio = 1f;
     private float quality = 1f;
+    public float OriginalWeight { get; private set; }
+    public float DifficultyMultiplier => applied && !pond ? FightQuality(quality) : 1f;
+    public static float FightQuality(float sizeQuality) => 0.5f + 0.5f * Mathf.Clamp01(sizeQuality);
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -117,6 +120,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         referenceDepth = 0f;
         depthRatio = 1f;
         quality = 1f;
+        OriginalWeight = 0f;
     }
 
     private void MeasureLandingQuality()
@@ -142,7 +146,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
 
     /// <summary>
     /// Depth alone owns quality. The absolute floor is 20% potential, so a very
-    /// shallow cast can lose up to 80% of both size and fight HP. The curved response
+    /// shallow cast can lose up to 80% of weight, but only 40% of fight HP/difficulty. The curved response
     /// keeps shallow/intermediate water meaningfully worse instead of becoming nearly
     /// full-quality too early.
     /// </summary>
@@ -162,7 +166,8 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         int oldMaxHealth = Mathf.Max(1, (int)FishMaxHealthField.GetValue(fishing));
 
         float newWeight = Mathf.Max(0.001f, oldWeight * quality);
-        int newMaxHealth = Mathf.Max(1, Mathf.RoundToInt(oldMaxHealth * quality));
+        OriginalWeight = oldWeight;
+        int newMaxHealth = Mathf.Max(1, Mathf.RoundToInt(oldMaxHealth * FightQuality(quality)));
 
         HookedWeightKgField.SetValue(fishing, newWeight);
         FishMaxHealthField.SetValue(fishing, newMaxHealth);
@@ -322,3 +327,4 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         return value != null ? value.ToString() : string.Empty;
     }
 }
+

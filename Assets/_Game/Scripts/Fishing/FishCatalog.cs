@@ -29,6 +29,8 @@ public static class FishCatalog
     public const int BlackSeaBassId=10;
     public const int StripedBassId=11;
     public const int SpottedSandBassId=12;
+    public const int AlbacoreId=13;
+    public const int GreaterAmberjackId=14;
 
     // These embedded definitions are deliberately retained as a safe legacy fallback.
     // Editable min/max weight, health, value and catch odds live in Resources/FishingTuning.
@@ -46,11 +48,13 @@ public static class FishCatalog
         new FishSpeciesDefinition("Bonito",new Color(.08f,.23f,.38f),new Color(.72f,.82f,.86f),.50f,5f,.58f,6f,78),
         new FishSpeciesDefinition("Black Sea Bass",new Color(.10f,.14f,.18f),new Color(.50f,.57f,.62f),.35f,2f,.68f,6f,74),
         new FishSpeciesDefinition("Striped Bass",new Color(.34f,.40f,.39f),new Color(.76f,.78f,.69f),.90f,25f,.52f,13f,128),
-        new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,6f,72)
+        new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,6f,72),
+        new FishSpeciesDefinition("Albacore",new Color(.12f,.24f,.36f),new Color(.8f,.85f,.9f),2f,45f,.84f,4f,185),
+        new FishSpeciesDefinition("Greater Amberjack",new Color(.3f,.4f,.42f),new Color(.84f,.72f,.3f),1.5f,70f,.88f,4f,195)
     };
 
     public static int Count=>Species.Length;
-    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12};
+    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14};
     public static int CanonicalId(int id)=>id==4?YellowfinTunaId:id;
 
     public static FishSpeciesDefinition Get(int id)
@@ -103,3 +107,4 @@ public static class FishCatalog
 
     public static float GetVisualScale(int speciesId,float weightKg)=>FishSizeTable.LengthMetres(speciesId,weightKg);
 }
+
