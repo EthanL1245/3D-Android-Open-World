@@ -122,7 +122,8 @@ public static class FishingRules
     {
         if(!LureBiteAllowed)return 0f;
         float biteMultiplier=ShopCatalog.ActiveLureVariant==1 ? 1.15f : ShopCatalog.ActiveLureVariant==3 ? .85f : 1f;
-        float fullChance=Mathf.Clamp01(.5f*Mathf.Clamp01(castDistance/30f)*biteMultiplier);
+        // Base lure: 70% over a complete 30 m retrieve; retain lure-specific bonuses.
+        float fullChance=Mathf.Clamp01(.7f*Mathf.Clamp01(castDistance/30f)*biteMultiplier);
         return 1f-Mathf.Pow(1f-fullChance,Mathf.Clamp01(retrievedFraction));
     }
 

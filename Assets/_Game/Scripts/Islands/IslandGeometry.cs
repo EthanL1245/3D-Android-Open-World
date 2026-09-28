@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// Shared world-space boundaries: terrain, loot, offshore size and water all use these.
+// World-space geometry helpers. Fishing zones are circular; terrain retains its shared shelf.
 public static class IslandGeometry
 {
     public static float Ellipse(Vector3 p,Vector3 center,Vector2 radii)
@@ -13,9 +13,20 @@ public static class IslandGeometry
         => sea-Mathf.Lerp(depth,oceanDepth,Mathf.SmoothStep(0,1,beyond/width));
     public static float CoastalFloor(float shelf,float sea,float coastDistance,float depth)
         => coastDistance>=65?shelf:Mathf.Max(shelf,sea-Mathf.Lerp(0,depth,Mathf.SmoothStep(0,1,coastDistance/65)));
-    public static int Biome(Vector3 p,Vector3 newCenter,Vector2 islandRadii,Vector3 shelfCenter,Vector2 shelfRadii)
+    public static float ZoneRadius(Vector3 suncrestCenter,Vector3 brinebreakCenter)
+        => Mathf.Sqrt(HorizontalDistanceSquared(suncrestCenter,brinebreakCenter))*.5f;
+    private static float HorizontalDistanceSquared(Vector3 a,Vector3 b)
+    {float dx=a.x-b.x,dz=a.z-b.z;return dx*dx+dz*dz;}
+    public static int Biome(Vector3 p,Vector3 suncrestCenter,Vector3 brinebreakCenter)
     {
-        if(Ellipse(p,shelfCenter,shelfRadii)>1)return 2;
-        return Ellipse(p,newCenter,islandRadii+new Vector2(95,95))<=1?1:0;
+        // Equal circles meet halfway between island centers. Neither island is
+        // a fallback for points outside the other island's waters.
+        float radius=ZoneRadius(suncrestCenter,brinebreakCenter);
+        float sun=HorizontalDistanceSquared(p,suncrestCenter);
+        float brine=HorizontalDistanceSquared(p,brinebreakCenter);
+        float limit=radius*radius;
+        if(sun<=limit && sun<=brine)return 0;
+        if(brine<=limit)return 1;
+        return 2;
     }
 }

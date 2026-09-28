@@ -34,11 +34,14 @@ class Program
   var newCenter=new Vector3(400,0,35);var radii=new Vector2(95,65);var shelfCenter=new Vector3(170,0,17.5f);var shelf=new Vector2(475,355);
   for(int x=0;x<=400;x++)
   {
-   var p=new Vector3(x,0,0);Check(IslandGeometry.Biome(p,newCenter,radii,shelfCenter,shelf)!=2,"No ocean biome between islands");
+   var p=new Vector3(x,0,35f*x/400f);Check(IslandGeometry.Biome(p,Vector3.zero,newCenter)!=2,"No ocean biome between islands");
    Check(IslandGeometry.Beyond(p,shelfCenter,shelf)==0,"No outer drop between islands");
   }
-  Check(IslandGeometry.Biome(newCenter,newCenter,radii,shelfCenter,shelf)==1,"New island biome");
-  Check(IslandGeometry.Biome(new Vector3(1000,0,0),newCenter,radii,shelfCenter,shelf)==2,"Outer ocean biome");
+  Check(IslandGeometry.Biome(newCenter,Vector3.zero,newCenter)==1,"New island biome");
+  Check(IslandGeometry.Biome(new Vector3(1000,0,0),Vector3.zero,newCenter)==2,"Outer ocean biome");
+  Check(IslandGeometry.Biome(newCenter+new Vector3(0,0,220),Vector3.zero,newCenter)==2,"Outside Brinebreak must not fall back to Suncrest");
+  Check(IslandGeometry.Biome(new Vector3(-220,0,0),Vector3.zero,newCenter)==2,"Outside Suncrest radius is ocean");
+  Check(IslandGeometry.Biome(new Vector3(0,500,0),Vector3.zero,newCenter)==0,"Zone ignores elevation");
   Check(IslandGeometry.ShelfFloor(0,14,65,0,130)==-14,"Deep shared shelf");
   Check(IslandGeometry.ShelfFloor(0,14,65,130,130)==-65,"Outer abyss");
   Check(IslandGeometry.CoastalFloor(-65,0,500,14)==-65,"Distant coast cannot erase outer drop");
