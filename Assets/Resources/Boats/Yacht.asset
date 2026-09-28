@@ -11,11 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71368a00cbca5980ad4dac33f257dc99, type: 3}
   m_Name: Yacht
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   ID: yacht
   Cost: 9000
   Speed: 9
   MaxCapacity: 8
   HullSize: {x: 5, y: 1.4, z: 10}
   Draft: 0.95
-  Prefab: {fileID: 0}
+  Prefab: {fileID: 5037755252521636014, guid: ab945c56d451b474d8728280af8f0b97, type: 3}

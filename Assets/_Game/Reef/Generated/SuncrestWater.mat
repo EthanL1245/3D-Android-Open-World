@@ -26,6 +26,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha: 0.48
+    - _FoamStrength: 1
     - _OceanTime: 0
     - _Smoothness: 0.84
     - _WaveAmplitude1: 0.45
