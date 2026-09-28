@@ -6,7 +6,18 @@
 Edit only:
 `minKg, maxKg`
 
-Runtime automatically builds a bounded normal (bell-curve) distribution between those values.
+**Set both `minKg` and `maxKg` to `0` to disable that species in this biome.**
+Its column in `BiomeBaitSpeciesChance.csv` must then be `0` for **every** bait/lure row
+in that biome, including `worms-legacy` and all five lures. Validation reports the exact
+biome, species and bait/lure if they disagree. Redistribute removed odds yourself so each
+row still totals 100%; the validator never rewrites your numbers.
+
+A single zero, negative bounds, or reversed/equal positive bounds is still invalid.
+Positive ranges may have 0% chance for some or even all baits; they are simply not selected.
+The `0,0` sentinel applies only to biome ranges, not the global FishStats bounds.
+Disabled species remain absent from the fish index and cannot be rolled in that biome.
+
+For positive ranges, runtime automatically builds a bounded normal (bell-curve) distribution between those values.
 
 Internally it defines the underlying normal curve as:
 - `P01 = minKg + 1% of (maxKg-minKg)`

@@ -29,6 +29,7 @@ public static class FishingTuning
         public int SpeciesId;
         public float MinKg;
         public float MaxKg;
+        public bool Unavailable => MinKg==0f && MaxKg==0f;
     }
 
     private const string StatsResource="FishingTuning/FishStats";
@@ -117,7 +118,7 @@ public static class FishingTuning
     public static bool TryGetQuartiles(int species,int biome,out float p25,out float p50,out float p75)
     {
         WeightDistribution row;
-        if(TryGetWeightDistribution(species,biome,out row))
+        if(TryGetWeightDistribution(species,biome,out row) && !row.Unavailable)
         {
             p25=WeightAtPercentile(row,.25f);
             p50=WeightAtPercentile(row,.50f);
@@ -139,7 +140,7 @@ public static class FishingTuning
     {
         kg=0f;
         WeightDistribution row;
-        if(!TryGetWeightDistribution(species,biome,out row))return false;
+        if(!TryGetWeightDistribution(species,biome,out row) || row.Unavailable)return false;
         kg=WeightAtPercentile(row,Mathf.Clamp01(random01));
         return true;
     }
@@ -348,9 +349,10 @@ public static class FishingTuning
             id=Canonical(id);
             SpeciesStats stats;
             if(!Stats.TryGetValue(id,out stats))return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" references species "+id+" before/without FishStats.");
-            if(min<=0f || max<=min)
-                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires 0 < minKg < maxKg.");
-            if(min<stats.MinWeightKg || max>stats.MaxWeightKg)
+            bool unavailable=min==0f && max==0f;
+            if(!unavailable && (min<=0f || max<=min))
+                return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires either minKg=0 and maxKg=0 (unavailable), or 0 < minKg < maxKg.");
+            if(!unavailable && (min<stats.MinWeightKg || max>stats.MaxWeightKg))
                 return Fail("BiomeFishWeights.csv "+biome+" species "+id+" min/max must stay inside FishStats species min/max ("+
                     stats.MinWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+"–"+stats.MaxWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+" kg).");
 
@@ -380,6 +382,9 @@ public static class FishingTuning
                 int wholeChance;
                 if(!Int(c[i+2],out wholeChance) || wholeChance<0)
                     return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" requires whole-number, non-negative percentages in species column "+ActiveSpecies[i]+".");
+                WeightDistribution weights;
+                if(wholeChance>0 && WeightRows.TryGetValue(WeightKey(biome,ActiveSpecies[i]),out weights) && weights.Unavailable)
+                    return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" gives species "+ActiveSpecies[i]+" ("+Stats[ActiveSpecies[i]].SpeciesName+") "+wholeChance+"%, but BiomeFishWeights.csv marks it unavailable with minKg=0 and maxKg=0. Set its chance to 0% for EVERY bait/lure in this biome, or restore a positive weight range. Keep each chance row totaling 100%.");
                 chances[i]=wholeChance;total+=wholeChance;
             }
             if(total!=100)

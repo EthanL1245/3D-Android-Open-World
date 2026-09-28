@@ -25,6 +25,6 @@ namespace UnityEngine {
 
 namespace UnityEngine {
  public class TextAsset {public string text;public TextAsset(string s){text=s;}}
- public static class Resources {public static string Root;public static T Load<T>(string path) where T:class => new TextAsset(System.IO.File.ReadAllText(System.IO.Path.Combine(Root,"Assets/Resources",path+".csv"))) as T;}
+ public static class Resources {public static string Root;public static System.Collections.Generic.Dictionary<string,string> Overrides=new System.Collections.Generic.Dictionary<string,string>();public static T Load<T>(string path) where T:class => new TextAsset(Overrides.TryGetValue(path,out var text)?text:System.IO.File.ReadAllText(System.IO.Path.Combine(Root,"Assets/Resources",path+".csv"))) as T;}
  public static class Debug {public static void LogError(object o)=>System.Console.Error.WriteLine(o);}
 }

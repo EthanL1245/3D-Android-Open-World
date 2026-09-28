@@ -9,7 +9,13 @@ for row in chances:
  values=[int(v) for k,v in row.items() if k not in ('biomeId','baitKey')];assert len(values)==14 and sum(values)==100 and min(values)>=0
 weights=rows('BiomeFishWeights.csv');assert len(weights)==42
 for row in weights:
- s=next(s for s in stats if s['speciesId']==row['speciesId']);assert float(s['minWeightKg'])<=float(row['minKg'])<float(row['maxKg'])<=float(s['maxWeightKg'])
+ s=next(s for s in stats if s['speciesId']==row['speciesId'])
+ if float(row['minKg'])==0 and float(row['maxKg'])==0:
+  for chance in chances:
+   if chance['biomeId']==row['biomeId']:
+    key=next(k for k in chance if k.startswith(row['speciesId']+'_'))
+    assert int(chance[key])==0,('Unavailable species has positive chance',row['biomeId'],row['speciesId'],chance['baitKey'])
+ else:assert float(s['minWeightKg'])<=float(row['minKg'])<float(row['maxKg'])<=float(s['maxWeightKg'])
 def part(p):
  v=p['vertices'];uv=p['uv'];tri=p['triangles'];assert len(v)%3==0 and len(tri)%3==0 and len(uv)==len(v)//3*2
  assert all(math.isfinite(x) for x in v+uv) and min(tri)>=0 and max(tri)<len(v)//3
