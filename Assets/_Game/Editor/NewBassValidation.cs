@@ -33,7 +33,11 @@ public static class NewBassValidation
             ok&=Check(spotted.MaxHealth>=spotted.MinHealth&&spotted.MaxCostCoins>=spotted.MinCostCoins,"Spotted Sand Bass health/value tuning is not monotonic.");
 
         ok&=Check(FishSizeTable.LengthMetres(FishCatalog.StripedBassId,20f)>FishSizeTable.LengthMetres(2,4f),"Striped Bass size curve did not extend to trophy sizes.");
-        ok&=Check(ReefCatalog.EquippedChance(FishCatalog.StripedBassId,ShopCatalog.StarterLure)>0f&&ReefCatalog.EquippedChance(FishCatalog.SpottedSandBassId,ShopCatalog.StarterLure)>0f,"New bass are missing from fishing odds.");
+        // Zero odds are intentional exclusions, including 0/0 biome weight ranges.
+        // The shared validator checks every required biome/bait/species row,
+        // whole-number totals, and that unavailable species have zero chance.
+        // Do not require bass to appear in Suncrest or with the equipped lure.
+        ok&=Check(FishingTuning.IsValid,"Fishing odds/tuning are invalid: "+FishingTuning.ValidationError);
 
         ValidatePrefab("Assets/Resources/Fishing/StripedBass.prefab","Striped Bass",ref ok);
         ValidatePrefab("Assets/Resources/Fishing/SpottedSandBass.prefab","Spotted Sand Bass",ref ok);
