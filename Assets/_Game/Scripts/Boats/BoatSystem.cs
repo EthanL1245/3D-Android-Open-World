@@ -42,7 +42,21 @@ public sealed class BoatSystem : MonoBehaviour
         passenger=GetComponent<BoatPassenger>();view=GetComponentInChildren<Camera>();
     }
 
-    private void Start(){BuildUI();}
+    private void Start(){MergeBoatCatalog();BuildUI();}
+
+    private void MergeBoatCatalog()
+    {
+        var boats=new System.Collections.Generic.List<BoatData>();
+        foreach(string id in new[]{"raft","rowboat","sailboat","yacht"})
+        {
+            var data=Catalog!=null?Array.Find(Catalog,b=>b!=null && b.ID==id):null;
+            if(data==null)data=Resources.Load<BoatData>("Boats/"+(id=="rowboat"?"Rowboat":id=="raft"?"Raft":id=="sailboat"?"Sailboat":"Yacht"));
+            if(data!=null && data.Prefab!=null)boats.Add(data);
+        }
+        if(Catalog!=null)foreach(var data in Catalog)
+            if(data!=null && data.Prefab!=null && !boats.Exists(b=>b.ID==data.ID))boats.Add(data);
+        Catalog=boats.ToArray();
+    }
 
     public void BindSlot(GameObject slot)
     {
@@ -95,9 +109,9 @@ public sealed class BoatSystem : MonoBehaviour
         if(slotLabel!=null){slotLabel.text=Selected!=null?Selected.name.ToUpperInvariant():"BOAT";slotImage.color=PlacementMode?new Color(.05f,.45f,.35f,.95f):new Color(.05f,.07f,.09f,.72f);}
 
         bool board=passenger.Boat==null && ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4;
-        bool helm=passenger.Boat!=null && (passenger.Driving || Vector3.Distance(transform.position,passenger.Boat.DriverSeat.position)<2.5f);
+        bool helm=passenger.Boat!=null && passenger.Boat.CanUseSeat(passenger);
         interact.gameObject.SetActive(!otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
-        interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?"LEAVE HELM":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
+        interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?(passenger.Boat.IsRowboat?"STOP ROWING":"LEAVE HELM"):passenger.Boat.IsRowboat?"ROW BOAT":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
 
         if(Keyboard.current!=null && Keyboard.current.digit2Key.wasPressedThisFrame && !shop.activeSelf && !otherMenu)TogglePlacement();
         if(Keyboard.current!=null && Keyboard.current.eKey.wasPressedThisFrame && interact.gameObject.activeSelf)Interact();
@@ -167,12 +181,12 @@ public sealed class BoatSystem : MonoBehaviour
     private void RefreshShop()
     {
         foreach(Transform child in shop.transform)Destroy(child.gameObject);
-        Label(shop.transform,"SUNCREST MARINA   ·   "+progress.Data.coins+" coins",27,new Vector2(0,205),new Vector2(650,55));
+        Label(shop.transform,"SUNCREST MARINA   ·   "+progress.Data.coins+" coins",27,new Vector2(0,280),new Vector2(650,55));
         for(int i=0;i<Catalog.Length;i++)
         {
             var data=Catalog[i];bool owned=progress.Data.OwnsBoat(data.ID);
-            string detail=data.name+"  ·  "+data.Speed+" m/s  ·  "+data.MaxCapacity+" aboard\n"+(owned?(Selected==data?"EQUIPPED":"OWNED — EQUIP"):data.Cost+" coins — PERMANENT UNLOCK");
-            var button=MakeButton(shop.transform,detail,new Vector2(0,105-i*110),new Vector2(620,96),()=>
+            string detail=data.name+"  ·  "+(data.ID=="rowboat"?data.Speed+" / "+(data.Speed*2)+" m/s":data.Speed+" m/s")+"  ·  "+data.MaxCapacity+" aboard\n"+(owned?(Selected==data?"EQUIPPED":"OWNED — EQUIP"):data.Cost+" coins — PERMANENT UNLOCK");
+            var button=MakeButton(shop.transform,detail,new Vector2(0,175-i*110),new Vector2(620,96),()=>
             {
                 if(!NearMarina || progress.ReadOnly)return;
                 bool changed=owned?progress.Data.EquipBoat(data.ID):progress.Data.BuyBoat(data.ID,data.Cost);
@@ -180,7 +194,7 @@ public sealed class BoatSystem : MonoBehaviour
             });
             button.interactable=!progress.ReadOnly && (owned || progress.Data.coins>=data.Cost);
         }
-        MakeButton(shop.transform,"CLOSE",new Vector2(0,-235),new Vector2(220,55),CloseShop);
+        MakeButton(shop.transform,"CLOSE",new Vector2(0,-265),new Vector2(220,55),CloseShop);
     }
 
     private void Notice(string text,float seconds=DefaultNoticeSeconds,bool placementOnly=false)
@@ -208,7 +222,7 @@ public sealed class BoatSystem : MonoBehaviour
         place=MakeButton(root.transform,"PLACE BOAT",new Vector2(650,-180),new Vector2(245,90),Place);place.gameObject.SetActive(false);
         interact=MakeButton(root.transform,"MARINA SHOP",new Vector2(0,-300),new Vector2(280,75),Interact);
         shop=new GameObject("Marina Inventory",typeof(RectTransform),typeof(Image));shop.transform.SetParent(root.transform,false);
-        shop.GetComponent<RectTransform>().sizeDelta=new Vector2(700,570);shop.GetComponent<Image>().color=new Color(.035f,.1f,.13f,.98f);shop.SetActive(false);
+        shop.GetComponent<RectTransform>().sizeDelta=new Vector2(700,660);shop.GetComponent<Image>().color=new Color(.035f,.1f,.13f,.98f);shop.SetActive(false);
     }
 
     private static Text Label(Transform parent,string text,int size,Vector2 position,Vector2 dimensions)
@@ -228,3 +242,4 @@ public sealed class BoatSystem : MonoBehaviour
 
     private void OnDestroy(){CancelPlacement();if(ActiveBoat!=null)Destroy(ActiveBoat.gameObject);}
 }
+

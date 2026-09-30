@@ -7,7 +7,7 @@ public sealed class BoatPassenger : MonoBehaviour
 {
     public FirstPersonController Controls {get;private set;}
     public BoatController Boat {get;private set;}
-    public bool Driving => Boat!=null && Boat.Driver==this;
+    public bool Driving => Boat!=null && (Boat.Driver==this || Boat.SecondRower==this);
     public bool GroundedOnBoat {get;private set;}
 
     private CharacterController capsule;
@@ -28,7 +28,7 @@ public sealed class BoatPassenger : MonoBehaviour
             // normal FirstPersonController movement run later this frame.
             Vector3 relative=transform.position-lastPosition;
             Vector3 target=Boat.transform.position+Boat.transform.rotation*Quaternion.Inverse(lastRotation)*relative;
-            if(Driving)target=Boat.DriverSeat.position;
+            if(Driving)target=Boat.SeatFor(this).position;
             if(capsule!=null && capsule.enabled)capsule.Move(target-transform.position);
             lastPosition=Boat.transform.position;
             lastRotation=Boat.transform.rotation;
@@ -119,7 +119,7 @@ public sealed class BoatPassenger : MonoBehaviour
             Controls.ResetMotion();
             return;
         }
-        if(Vector3.Distance(transform.position,Boat.DriverSeat.position)>2.5f)return;
+        if(!Boat.CanUseSeat(this))return;
         if(Boat.TakeHelm(this))
         {
             GetComponent<FishingSystem>()?.UnequipHands();
@@ -137,3 +137,4 @@ public sealed class BoatPassenger : MonoBehaviour
 
     private void OnDisable(){Detach();}
 }
+

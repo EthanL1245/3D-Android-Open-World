@@ -15,7 +15,8 @@ MonoBehaviour:
   ID: raft
   Cost: 150
   Speed: 3.5
-  MaxCapacity: 2
+  MaxCapacity: 1
   HullSize: {x: 4.6807213, y: 1.7538714, z: 4.740077}
   Draft: 0.45
   Prefab: {fileID: 7757793844984507605, guid: 74ca18c4cd1f9784aaa53b55332d39ce, type: 3}
+

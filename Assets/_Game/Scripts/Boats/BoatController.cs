@@ -6,6 +6,16 @@ public sealed class BoatController : MonoBehaviour
     public BoatData Data;
     public Transform DriverSeat;
     public Transform DeckExit;
+    public Transform SecondRowingSeat;
+    public BoatPassenger SecondRower {get;private set;}
+    public bool IsRowboat => Data!=null && Data.ID=="rowboat";
+    public int ActivePaddlers => (HasInput(Driver)?1:0)+(IsRowboat && HasInput(SecondRower)?1:0);
+    public float RowingSpeed => Data==null?0f:Data.Speed*(IsRowboat?Mathf.Max(1,ActivePaddlers):1);
+    private static bool HasInput(BoatPassenger p) => p!=null && p.Controls!=null && p.Controls.BoatInput.sqrMagnitude>.0025f;
+    public Transform SeatFor(BoatPassenger p) => p==SecondRower?SecondRowingSeat:DriverSeat;
+    public bool CanUseSeat(BoatPassenger p) => p!=null && (p.Driving ||
+        (Driver==null && Vector3.Distance(p.transform.position,DriverSeat.position)<2.5f) ||
+        (IsRowboat && SecondRower==null && SecondRowingSeat!=null && Vector3.Distance(p.transform.position,SecondRowingSeat.position)<2.5f));
     public BoatPassenger Driver {get;private set;}
     public int PassengerCount {get;private set;}
 
@@ -31,27 +41,32 @@ public sealed class BoatController : MonoBehaviour
 
     public void Leave(BoatPassenger passenger)
     {
-        if(Driver==passenger)
-        {
-            Driver=null;
-            driverView=null;
-        }
+        ReleaseHelm(passenger);
         PassengerCount=Mathf.Max(0,PassengerCount-1);
     }
 
     public bool TakeHelm(BoatPassenger passenger)
     {
-        if(Driver!=null && Driver!=passenger)return false;
+        if(passenger==null || passenger.Boat!=this)return false;
+        if(Driver==passenger || SecondRower==passenger)return true;
+        if(Driver!=null)
+        {
+            if(!IsRowboat || SecondRower!=null || SecondRowingSeat==null)return false;
+            SecondRower=passenger;
+            return true;
+        }
         Driver=passenger;
-        driverView=passenger!=null?passenger.GetComponentInChildren<Camera>():null;
+        driverView=passenger.GetComponentInChildren<Camera>();
         return true;
     }
 
     public void ReleaseHelm(BoatPassenger passenger)
     {
+        if(SecondRower==passenger)SecondRower=null;
         if(Driver!=passenger)return;
-        Driver=null;
-        driverView=null;
+        // The remaining rower takes the front seat so solo always uses the front pair.
+        Driver=SecondRower;SecondRower=null;
+        driverView=Driver!=null?Driver.GetComponentInChildren<Camera>():null;
     }
 
     private void FixedUpdate()
@@ -68,6 +83,11 @@ public sealed class BoatController : MonoBehaviour
 
         Vector2 input=Driver!=null?Driver.Controls.BoatInput:Vector2.zero;
         float inputAmount=Mathf.Clamp01(input.magnitude);
+        // Only the driver steers. A rear rower can propel the current heading while
+        // the driver rests, but never contributes merely by being aboard.
+        bool rearPaddling=IsRowboat && HasInput(SecondRower);
+        float propulsion=rearPaddling?1f:inputAmount;
+        float speed=RowingSpeed;
         Vector3 desiredDirection=Vector3.zero;
         float headingError=0f;
         Quaternion futureHeading=body.rotation;
@@ -105,8 +125,9 @@ public sealed class BoatController : MonoBehaviour
             }
         }
 
+        if(rearPaddling && inputAmount<=.05f)desiredDirection=transform.forward;
         Vector3 predictedForward=futureHeading*Vector3.forward;
-        Vector3 future=body.position+planarVelocity*.8f+predictedForward*(inputAmount*1.5f);
+        Vector3 future=body.position+planarVelocity*.8f+predictedForward*(propulsion*1.5f);
         if(!BoatClearance.Valid(Data,future,futureHeading,water,transform,Driver!=null?Driver.transform:null))
         {
             body.AddForce(-planarVelocity*12f,ForceMode.Acceleration);
@@ -114,7 +135,7 @@ public sealed class BoatController : MonoBehaviour
             return;
         }
 
-        if(inputAmount>.05f && desiredDirection.sqrMagnitude>.0001f)
+        if(propulsion>.05f && desiredDirection.sqrMagnitude>.0001f)
         {
             float forwardSpeed=Vector3.Dot(planarVelocity,transform.forward);
             float alignment=Mathf.Clamp01(1f-Mathf.Abs(headingError)/120f);
@@ -122,8 +143,17 @@ public sealed class BoatController : MonoBehaviour
 
             // Turn first, then smoothly build forward motion as the bow lines up
             // with the camera-relative joystick direction.
-            if(forwardSpeed<Data.Speed)
+            if(IsRowboat)
+            {
+                // Closed-loop thrust reaches the stated speed despite drag. A second
+                // active rower doubles the target (including on partial stick input).
+                float target=speed*propulsion*thrustScale;
+                float acceleration=(target-forwardSpeed)*2.5f+forwardSpeed*body.linearDamping;
+                body.AddForce(transform.forward*acceleration,ForceMode.Acceleration);
+            }
+            else if(forwardSpeed<Data.Speed)
                 body.AddForce(transform.forward*inputAmount*Data.Speed*.8f*thrustScale,ForceMode.Acceleration);
         }
     }
 }
+
