@@ -19,7 +19,8 @@ public static class FishSizeTable
         new float[] {0.0012638f,0.0104739f,0.0360643f,0.0867113f,0.1713634f,0.2993969f,0.4803911f,0.7241117f,1.0403645f,1.4388422f,1.9291215f,2.5207841f,3.2224173f,4.0426136f,4.9909739f,6.0771070f,7.3114208f,8.7049088f,10.2677553f,12.0100439f,13.9427033f,16.0766441f,18.4227125f,20.9915967f,23.7950314f,26.8456014f,30.1558458f,33.7372705f,37.6033315f,41.7674472f,46.2430008f,51.0433423f,56.1827902f,61.6756332f,67.5361320f,73.7785204f,80.4170063f,87.4667726f,94.9429787f,102.8607615f}, // Morone saxatilis (Striped Bass)
         new float[] {0.0015652f,0.0128817f,0.0441847f,0.1058547f,0.2086845f,0.3638955f,0.5824606f,0.8754019f,1.2537384f,1.7286444f,2.3114468f,3.0136274f}, // Paralabrax maculatofasciatus (Spotted Sand Bass)
         GameplayCurve(18f,32), // Albacore: gameplay approximation kg = 18 * metres^3
-        GameplayCurve(14f,40) // Greater Amberjack: gameplay approximation kg = 14 * metres^3
+        GameplayCurve(14f,40), // Greater Amberjack: gameplay approximation kg = 14 * metres^3
+        GameplayCurve(5f,40) // Blacktip reef shark gameplay approximation: kg = 5 * metres^3
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)

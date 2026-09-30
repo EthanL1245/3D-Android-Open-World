@@ -16,3 +16,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 12,Spotted Sand Bass,0.25,4.5,230,430,160,700,3.438
 13,Albacore,2,45,200,3500,200,4000,3.65
 14,Greater Amberjack,1,70,320,5000,260,8000,3.7
+15,Blacktip Reef Shark,5,30,9000,20000,1200,12000,5.2

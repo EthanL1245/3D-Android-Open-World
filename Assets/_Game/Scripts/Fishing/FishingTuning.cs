@@ -45,7 +45,7 @@ public static class FishingTuning
     private const float BoundedNormalUpperCdf=0.991197539f;
 
     // Stable save-game species IDs. Retired ID 4 must never be reused.
-    private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12,13,14};
+    private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15};
     private static readonly string[] Biomes={"suncrest-reef","brinebreak-isle","deep-ocean"};
     private static readonly string[] RequiredBaits={
         "worms","worms-legacy","shrimp","squid",

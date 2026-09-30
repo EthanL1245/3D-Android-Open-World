@@ -74,6 +74,7 @@ public static class FishVisualFactory
             case FishCatalog.BlackSeaBassId:return "Fishing/BlackSeaBass";
             case FishCatalog.StripedBassId:return "Fishing/StripedBass";
             case FishCatalog.AlbacoreId:return "Fishing/Albacore";
+            case FishCatalog.BlacktipSharkId:return "Fishing/BlacktipShark";
             case FishCatalog.GreaterAmberjackId:return "Fishing/GreaterAmberjack";
             case FishCatalog.SpottedSandBassId:return "Fishing/SpottedSandBass";
             default:return null;

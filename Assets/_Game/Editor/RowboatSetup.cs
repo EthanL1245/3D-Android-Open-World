@@ -35,7 +35,7 @@ public static class RowboatSetup
     {
         var old=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         var existing=AssetDatabase.LoadAssetAtPath<BoatData>(DataPath);
-        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==2)return;
+        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==3)return;
         Directory.CreateDirectory(Generated);Directory.CreateDirectory("Assets/Resources/Boats");AssetDatabase.Refresh();
         Source solo=Read("Solo",3),tandem=Read("Tandem",5);
         var hull=MakeMaterial("Hull","Rowboat Textures.png");
@@ -61,7 +61,8 @@ public static class RowboatSetup
             anim.SoloParts=BuildOars(anim.SoloOars.transform,solo,oars,"Solo");
             anim.TandemParts=BuildOars(anim.TandemOars.transform,tandem,oars,"Tandem");
             anim.SoloStroke=BuildStroke(solo,"Solo");anim.TandemStroke=BuildStroke(tandem,"Tandem");
-            anim.TandemOars.SetActive(false);
+            anim.TandemOars.SetActive(true);
+            for(int i=0;i<2;i++)anim.TandemParts[i].gameObject.SetActive(false);
             // Convex pieces follow the authored floor, curved shell, benches and
             // stationary mounts. No broad box fills the walkable hollow interior.
             BuildCollision(root.transform);
@@ -158,4 +159,5 @@ public sealed class RowboatBuildCheck : IPreprocessBuildWithReport
     public int callbackOrder=>0;
     public void OnPreprocessBuild(BuildReport report){RowboatSetup.EnsureInstalled();}
 }
+
 
