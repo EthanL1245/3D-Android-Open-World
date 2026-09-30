@@ -67,14 +67,38 @@ public sealed class BoatController : MonoBehaviour
         // The remaining rower takes the front seat so solo always uses the front pair.
         Driver=SecondRower;SecondRower=null;
         driverView=Driver!=null?Driver.GetComponentInChildren<Camera>():null;
+        if(Driver!=null)Driver.SnapToRowingSeat();
+    }
+
+    public static float FloatingHeight(BoatData data,OceanWater ocean,Vector3 position,Quaternion rotation)
+    {
+        float surface=ocean.GetSurfaceHeight(position);
+        if(data==null || data.ID!="rowboat")return surface;
+        // The authored inner floor is at -0.247 m; clear the highest wave across
+        // the entire hull rather than allowing bow/stern crests through the floor.
+        for(int x=-1;x<=1;x++)for(int z=-4;z<=4;z++)
+            surface=Mathf.Max(surface,ocean.GetSurfaceHeight(position+rotation*new Vector3(x*1.2f,0,z*.96f)));
+        return surface+.38f;
     }
 
     private void FixedUpdate()
     {
         if(body==null || water==null || Data==null)return;
 
-        float height=water.GetSurfaceHeight(transform.position);
-        body.AddForce(Vector3.up*((height-body.position.y)*18f-body.linearVelocity.y*7f),ForceMode.Acceleration);
+        float height=FloatingHeight(Data,water,body.position,body.rotation);
+        if(IsRowboat)
+        {
+            // A rising crest must not flood the shallow interior while the spring
+            // catches up. Descent stays damped, and horizontal momentum is preserved.
+            float minimum=height-.06f;
+            if(body.position.y<minimum)
+            {
+                var p=body.position;p.y=minimum;body.position=p;
+                var velocity=body.linearVelocity;velocity.y=Mathf.Max(0,velocity.y);body.linearVelocity=velocity;
+            }
+            body.AddForce(Vector3.up*((height-body.position.y)*80f-body.linearVelocity.y*18f),ForceMode.Acceleration);
+        }
+        else body.AddForce(Vector3.up*((height-body.position.y)*18f-body.linearVelocity.y*7f),ForceMode.Acceleration);
 
         // Boats should track cleanly rather than skating sideways across the water.
         Vector3 planarVelocity=Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
@@ -156,4 +180,5 @@ public sealed class BoatController : MonoBehaviour
         }
     }
 }
+
 

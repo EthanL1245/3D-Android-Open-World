@@ -39,7 +39,7 @@ ONLY `Oar Texture.jpg`:
 
 The hull is instantiated once. Separate solo/tandem oar groups use the respective
 supplied animations. Only one group is visible: one active paddler -> solo front
-pair; two -> both pairs; none -> no oars. There is no stationary duplicate oar
+pair; two -> both pairs; none -> retain the last visible configuration and pose. There is no stationary duplicate oar
 mesh, hull overlay, or synthesized rowing motion. Oars have no physics colliders.
 
 The action's full authored loop is frames 1–37 at 24 fps (1.5 seconds). Frame 37
@@ -85,3 +85,29 @@ rowboat, open RowboatPaddleAnimator's component context menu and select Preview
 two paddlers. Preview one paddler checks the front-only layout; End rowing preview
 returns to actual input. These editor-only previews do not add occupants, grant
 speed, create multiplayer, or exist in Android builds.
+
+## Rowboat correction (source version 2)
+
+Hotbar text fits the actual slot rectangle automatically. Idle rowing keeps the
+last oar pose/configuration, starts at the supplied first pose, and resumes the
+same stroke phase. The float target samples waves across the whole hull and
+adds 0.38 m; a minimum-height guard protects the shallow interior from rising
+crests. Raft buoyancy is unchanged.
+
+Collision.json contains 34 convex pieces derived from the stationary source mesh:
+clipped floor/side sections plus both benches and all four fixed mounts. Each
+piece is below PhysX's convex triangle limit. The hollow interior is not filled
+by a single convex hull. Oars remain non-colliding. Feet anchors avoid benches;
+entering a seat moves directly to its clear anchor, while ordinary walking
+continues to collide normally. Only upward-facing contacts count as deck support.
+
+Run `python Tools/Rowboat/build_collision.py` from the repository root to regenerate
+collision data after changing the exported hull (numpy/scipy required only for
+this offline tool). Unity automatically upgrades the prefab to version 2 on
+import, preserving its GUID and existing BoatData prices/speed. Do not rerun
+Setup Boat System. Check Rowboat remains available for diagnostics.
+
+Checks: geometry tests verify solid floor/benches and empty rowing spaces; all
+34 convex pieces have at most 52 triangles. C# syntax passes. Unity and Android
+play-testing is still required, especially swim-under collision, boarding,
+walking over benches, and flotation near Brinebreak's larger waves.

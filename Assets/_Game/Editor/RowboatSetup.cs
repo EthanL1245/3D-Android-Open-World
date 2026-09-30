@@ -15,6 +15,8 @@ public static class RowboatSetup
     private const string Generated=Root+"/Generated";
     private const string PrefabPath="Assets/Resources/Boats/Rowboat.prefab";
     private const string DataPath="Assets/Resources/Boats/Rowboat.asset";
+    [Serializable] private sealed class CollisionSource {public CollisionPiece[] pieces;}
+    [Serializable] private sealed class CollisionPiece {public string name;public Vector3[] vertices;public int[] triangles;}
     [Serializable] private sealed class Source {public float fps,duration;public Part[] parts;}
     [Serializable] private sealed class Part
     {
@@ -33,7 +35,7 @@ public static class RowboatSetup
     {
         var old=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         var existing=AssetDatabase.LoadAssetAtPath<BoatData>(DataPath);
-        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==1)return;
+        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==2)return;
         Directory.CreateDirectory(Generated);Directory.CreateDirectory("Assets/Resources/Boats");AssetDatabase.Refresh();
         Source solo=Read("Solo",3),tandem=Read("Tandem",5);
         var hull=MakeMaterial("Hull","Rowboat Textures.png");
@@ -60,25 +62,34 @@ public static class RowboatSetup
             anim.TandemParts=BuildOars(anim.TandemOars.transform,tandem,oars,"Tandem");
             anim.SoloStroke=BuildStroke(solo,"Solo");anim.TandemStroke=BuildStroke(tandem,"Tandem");
             anim.TandemOars.SetActive(false);
-            // Separate deck/side colliders leave the interior walkable and keep the
-            // oars non-colliding; animated blades never kick the hull's rigidbody.
-            Box(root.transform,"Floor",new Vector3(0,-.13f,0),new Vector3(1.65f,.18f,5.5f));
-            Box(root.transform,"Port",new Vector3(-1.12f,.13f,0),new Vector3(.18f,.65f,5.4f));
-            Box(root.transform,"Starboard",new Vector3(1.12f,.13f,0),new Vector3(.18f,.65f,5.4f));
-            foreach(float sign in new[]{-1f,1f})
-            {
-                var end=Box(root.transform,"Taper",new Vector3(sign*.66f,.10f,3.05f),new Vector3(.18f,.65f,1.65f));
-                end.localRotation=Quaternion.Euler(0,-sign*33f,0);
-            }
-            Box(root.transform,"Stern",new Vector3(0,.1f,-3.45f),new Vector3(1.55f,.65f,.18f));
-            controller.DriverSeat=Child(root.transform,"FrontRowingSeat",new Vector3(0,-.03f,.97f));
-            controller.SecondRowingSeat=Child(root.transform,"RearRowingSeat",new Vector3(0,-.03f,-1.42f));
-            controller.DeckExit=Child(root.transform,"DeckExit",new Vector3(0,0,-2.4f));
+            // Convex pieces follow the authored floor, curved shell, benches and
+            // stationary mounts. No broad box fills the walkable hollow interior.
+            BuildCollision(root.transform);
+            controller.DriverSeat=Child(root.transform,"FrontRowingSeat",new Vector3(0,-.22f,1.25f));
+            controller.SecondRowingSeat=Child(root.transform,"RearRowingSeat",new Vector3(0,-.22f,-1.12f));
+            controller.DeckExit=Child(root.transform,"DeckExit",new Vector3(0,-.20f,-2.65f));
             data.Prefab=PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);EditorUtility.SetDirty(data);AssetDatabase.SaveAssets();
         }
         finally{Object.DestroyImmediate(root);}
         Debug.Log("[ROWBOAT] Installed: raft 1 seat, rowboat 2 seats; 4.5 m/s solo, 9 m/s tandem defaults. No scene setup needed.");
     }
+    private static void BuildCollision(Transform root)
+    {
+        var source=JsonUtility.FromJson<CollisionSource>(File.ReadAllText(Root+"/Source/Collision.json"));
+        if(source?.pieces==null || source.pieces.Length==0)throw new InvalidOperationException("Missing authored rowboat collision shapes.");
+        var parent=Child(root,"HullCollision");
+        foreach(var part in source.pieces)
+        {
+            string path=Generated+"/Collision-"+part.name+".asset";
+            var mesh=AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if(mesh==null){mesh=new Mesh();AssetDatabase.CreateAsset(mesh,path);}else mesh.Clear();
+            mesh.name="Collision-"+part.name;mesh.vertices=part.vertices;mesh.triangles=part.triangles;
+            mesh.RecalculateBounds();EditorUtility.SetDirty(mesh);
+            var collider=Child(parent,part.name).gameObject.AddComponent<MeshCollider>();
+            collider.sharedMesh=mesh;collider.convex=true;
+        }
+    }
+
     private static Source Read(string name,int parts)
     {
         var result=JsonUtility.FromJson<Source>(File.ReadAllText(Root+"/Source/"+name+".json"));
@@ -147,3 +158,4 @@ public sealed class RowboatBuildCheck : IPreprocessBuildWithReport
     public int callbackOrder=>0;
     public void OnPreprocessBuild(BuildReport report){RowboatSetup.EnsureInstalled();}
 }
+

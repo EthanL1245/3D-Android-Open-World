@@ -75,7 +75,7 @@ public sealed class BoatPassenger : MonoBehaviour
         float bestDistance=float.PositiveInfinity;
         foreach(var hit in hits)
         {
-            if(hit.collider==null || hit.collider.transform.IsChildOf(transform))continue;
+            if(hit.collider==null || hit.normal.y<.45f || hit.collider.transform.IsChildOf(transform))continue;
             BoatController candidate=hit.collider.GetComponentInParent<BoatController>();
             if(candidate==null || hit.distance>=bestDistance)continue;
             best=candidate;bestDistance=hit.distance;
@@ -93,7 +93,7 @@ public sealed class BoatPassenger : MonoBehaviour
         float halfZ=size.z*.5f+.22f;
         // Wide enough vertically for a normal jump, but not enough to keep a player
         // attached after genuinely leaving/falling away from the boat.
-        return Mathf.Abs(local.x)<=halfX && Mathf.Abs(local.z)<=halfZ && local.y>-1.1f && local.y<3.25f;
+        return Mathf.Abs(local.x)<=halfX && Mathf.Abs(local.z)<=halfZ && local.y>(boat.IsRowboat?-.38f:-1.1f) && local.y<3.25f;
     }
 
     public bool BoardFromWater(BoatController boat)
@@ -122,10 +122,22 @@ public sealed class BoatPassenger : MonoBehaviour
         if(!Boat.CanUseSeat(this))return;
         if(Boat.TakeHelm(this))
         {
+            SnapToRowingSeat();
             GetComponent<FishingSystem>()?.UnequipHands();
             Controls.ResetMotion();
             GroundedOnBoat=false;
         }
+    }
+
+    public void SnapToRowingSeat()
+    {
+        if(!Driving || capsule==null)return;
+        // Boarding a seat crosses benches; do not sweep the capsule through them.
+        bool enabled=capsule.enabled;capsule.enabled=false;
+        transform.position=Boat.SeatFor(this).position;
+        capsule.enabled=enabled;
+        lastPosition=Boat.transform.position;lastRotation=Boat.transform.rotation;
+        Controls.ResetMotion();
     }
 
     public void Detach()
@@ -137,4 +149,5 @@ public sealed class BoatPassenger : MonoBehaviour
 
     private void OnDisable(){Detach();}
 }
+
 

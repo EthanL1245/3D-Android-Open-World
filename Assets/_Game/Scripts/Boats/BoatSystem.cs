@@ -62,7 +62,11 @@ public sealed class BoatSystem : MonoBehaviour
     {
         slotImage=slot.GetComponent<Image>();
         var button=slot.GetComponent<Button>()??slot.AddComponent<Button>();button.onClick.AddListener(TogglePlacement);
-        slotLabel=Label(slot.transform,"BOAT",20,new Vector2(0,0),new Vector2(100,65));
+        slotLabel=Label(slot.transform,"BOAT",20,Vector2.zero,Vector2.zero);
+        var rect=slotLabel.rectTransform;rect.anchorMin=Vector2.zero;rect.anchorMax=Vector2.one;
+        rect.offsetMin=new Vector2(5,4);rect.offsetMax=new Vector2(-5,-4);
+        slotLabel.resizeTextForBestFit=true;slotLabel.resizeTextMinSize=9;slotLabel.resizeTextMaxSize=20;
+        slotLabel.horizontalOverflow=HorizontalWrapMode.Wrap;
     }
 
     public void TogglePlacement()
@@ -128,6 +132,7 @@ public sealed class BoatSystem : MonoBehaviour
         {
             target=hit.point;target.y=Water.GetSurfaceHeight(target);
             heading=Quaternion.Euler(0,view.transform.eulerAngles.y,0);
+            target.y=BoatController.FloatingHeight(Selected,Water,target,heading);
             ghost.transform.SetPositionAndRotation(target,heading);
             valid=BoatClearance.Valid(Selected,target,heading,Water,ActiveBoat!=null?ActiveBoat.transform:null,transform);
 
@@ -242,4 +247,5 @@ public sealed class BoatSystem : MonoBehaviour
 
     private void OnDestroy(){CancelPlacement();if(ActiveBoat!=null)Destroy(ActiveBoat.gameObject);}
 }
+
 
