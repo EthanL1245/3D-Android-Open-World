@@ -14,13 +14,13 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
 {
     private const float DeepWaveMultiplier = 4.5f;
     private const float DeepWaveSpeedMultiplier = 1.35f;
-    private const float DeepAlpha = 1f;
+    private const float DeepAlpha = 0.82f;
     private const float BrinebreakSmoothness = 0.55f;
     private const float BrinebreakSpecularStrength = 0.08f;
     private const float BrinebreakFoamStrength = 0.25f;
 
-    private static readonly Color DeepShallowColor = new Color(0.004f, 0.020f, 0.032f, 1f);
-    private static readonly Color DeepDeepColor = new Color(0.001f, 0.006f, 0.014f, 1f);
+    private static readonly Color DeepShallowColor = new Color(0.035f, 0.32f, 0.40f, 1f);
+    private static readonly Color DeepDeepColor = new Color(0.018f, 0.16f, 0.25f, 1f);
 
     private OceanWater ocean;
     private MeshRenderer rendererRef;
@@ -122,7 +122,7 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         block.SetColor("_DeepColor", Color.Lerp(baseDeepColor, DeepDeepColor, darkBlend));
         block.SetFloat("_Alpha", Mathf.Lerp(baseAlpha, DeepAlpha, darkBlend));
 
-        float depthSmoothness = Mathf.Lerp(baseSmoothness, 0.93f, darkBlend);
+        float depthSmoothness = Mathf.Lerp(baseSmoothness, 0.76f, darkBlend);
         float normalFoam = Mathf.Lerp(baseFoamStrength, 1f, roughBlend);
         block.SetFloat("_Smoothness", Mathf.Lerp(depthSmoothness, BrinebreakSmoothness, brinebreakMatteBlend));
         block.SetFloat("_FoamStrength", Mathf.Lerp(normalFoam, BrinebreakFoamStrength, brinebreakMatteBlend));
@@ -202,3 +202,4 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
         }
     }
 }
+

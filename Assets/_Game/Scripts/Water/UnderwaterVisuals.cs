@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Camera))]
@@ -20,10 +21,10 @@ public class UnderwaterVisuals : MonoBehaviour
     [SerializeField] private float transitionSpeed = 5f;
 
     private static readonly Color DeepFogColor =
-        new Color(0.001f, 0.012f, 0.018f, 1f);
+        new Color(0.025f, 0.19f, 0.27f, 1f);
 
     private static readonly Color DeepTint =
-        new Color(0.002f, 0.030f, 0.045f, 1f);
+        new Color(0.025f, 0.24f, 0.32f, 1f);
 
     private bool originalFogEnabled;
     private FogMode originalFogMode;
@@ -36,6 +37,12 @@ public class UnderwaterVisuals : MonoBehaviour
 
     private void Awake()
     {
+        // The ocean shader measures the visible water column, including from dry shore.
+        var camera=GetComponent<Camera>();
+        camera.depthTextureMode|=DepthTextureMode.Depth;
+        var additional=camera.GetComponent<UniversalAdditionalCameraData>();
+        if(additional==null)additional=camera.gameObject.AddComponent<UniversalAdditionalCameraData>();
+        additional.requiresDepthTexture=true;
         CacheOriginalFog();
         ResolveWater();
     }
@@ -170,7 +177,7 @@ public class UnderwaterVisuals : MonoBehaviour
         float activeOverlayAlpha =
             Mathf.Lerp(
                 overlayAlpha,
-                0.34f,
+                0.12f,
                 deepVisualBlend
             );
 
@@ -193,7 +200,7 @@ public class UnderwaterVisuals : MonoBehaviour
             float activeFogDensity =
                 Mathf.Lerp(
                     underwaterFogDensity,
-                    0.13f,
+                    0.055f,
                     deepVisualBlend
                 );
 
@@ -242,3 +249,4 @@ public class UnderwaterVisuals : MonoBehaviour
         RestoreFog();
     }
 }
+

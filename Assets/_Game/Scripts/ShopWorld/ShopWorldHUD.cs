@@ -46,7 +46,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         previews=gameObject.AddComponent<ShopPreview>();
         Build(); progress.Changed+=RefreshSoon; message=progress.Notice; MenuOpen=false;
     }
-    private void OnDestroy() { if(progress!=null) progress.Changed-=RefreshSoon; MenuOpen=false;if(islandThumbnail!=null)Destroy(islandThumbnail);if(rockyThumbnail!=null)Destroy(rockyThumbnail);if(deepThumbnail!=null)Destroy(deepThumbnail); }
+    private void OnDestroy() { if(progress!=null) progress.Changed-=RefreshSoon; MenuOpen=false;if(islandThumbnail!=null)Destroy(islandThumbnail);if(rockyThumbnail!=null)Destroy(rockyThumbnail);if(deepThumbnail!=null)Destroy(deepThumbnail);if(bluewaterThumbnail!=null)Destroy(bluewaterThumbnail); }
     private void RefreshSoon() => dirty=true;
     private void Update()
     {
@@ -232,9 +232,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
                 fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
         }
     }
+    private Texture2D bluewaterThumbnail;
     private Texture2D BiomeThumbnail(int biome)
     {
         if(biome==0)return IslandThumbnail();
+        if(biome==3 && bluewaterThumbnail!=null)return bluewaterThumbnail;
         if(biome==1 && rockyThumbnail!=null)return rockyThumbnail;
         if(biome==2 && deepThumbnail!=null)return deepThumbnail;
         var texture=new Texture2D(192,160,TextureFormat.RGBA32,false);var pixels=new Color[192*160];
@@ -242,11 +244,12 @@ public sealed class ShopWorldHUD : MonoBehaviour
         {
             float u=(x-96)/78f,v=(y-80)/48f;float q=u*u+v*v;
             Color c=new Color(.035f,.16f,.26f);
-            if(biome==1 && q<1)c=q>.80f?new Color(.65f,.57f,.39f):Color.Lerp(new Color(.22f,.26f,.24f),new Color(.48f,.47f,.4f),Mathf.PerlinNoise(x*.08f,y*.08f));
+            if(biome==3 && q<.65f)c=q>.43f?new Color(.83f,.77f,.55f):new Color(.23f,.40f,.25f);
+            else if(biome==1 && q<1)c=q>.80f?new Color(.65f,.57f,.39f):Color.Lerp(new Color(.22f,.26f,.24f),new Color(.48f,.47f,.4f),Mathf.PerlinNoise(x*.08f,y*.08f));
             else c*=.82f+.18f*Mathf.Sin(y*.30f+x*.05f);
             pixels[y*192+x]=c;
         }
-        texture.SetPixels(pixels);texture.Apply(false,true);if(biome==1)rockyThumbnail=texture;else deepThumbnail=texture;return texture;
+        texture.SetPixels(pixels);texture.Apply(false,true);if(biome==1)rockyThumbnail=texture;else if(biome==3)bluewaterThumbnail=texture;else deepThumbnail=texture;return texture;
     }
     private Texture2D IslandThumbnail()
     {
@@ -498,6 +501,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 
 
 

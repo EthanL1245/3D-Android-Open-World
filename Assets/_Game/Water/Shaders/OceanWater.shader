@@ -7,6 +7,7 @@ Shader "OpenWorld/OceanWater"
         _FoamColor ("Foam Color", Color) = (0.86, 0.96, 1.0, 1)
         _FoamStrength ("Foam Strength", Range(0,1)) = 1
         _Alpha ("Base Alpha", Range(0.1, 0.95)) = 0.72
+        _WaterFogDensity ("Water Column Fog Density", Range(0.01,0.25)) = 0.085
         _Smoothness ("Smoothness", Range(0, 1)) = 0.82
         _SpecularStrength ("Specular Strength", Range(0, 1)) = 0.8
 
@@ -58,6 +59,7 @@ Shader "OpenWorld/OceanWater"
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _ShallowColor;
@@ -65,6 +67,7 @@ Shader "OpenWorld/OceanWater"
                 float4 _FoamColor;
                 float _Alpha;
                 float _FoamStrength;
+                float _WaterFogDensity;
                 float _Smoothness;
                 float _SpecularStrength;
 
@@ -254,12 +257,21 @@ Shader "OpenWorld/OceanWater"
                         4.0
                     );
 
+                // Water-only distance fog. Measure the opaque scene behind this surface
+                // so an observer on ANY shore cannot see the distant bottom through it.
+                float2 screenUV=GetNormalizedScreenSpaceUV(input.positionCS);
+                float sceneDepth=LinearEyeDepth(SampleSceneDepth(screenUV),_ZBufferParams);
+                float surfaceDepth=max(.01,-TransformWorldToView(input.positionWS).z);
+                float rayScale=length(GetCameraPositionWS()-input.positionWS)/surfaceDepth;
+                float column=min(500.0,max(0.0,sceneDepth-surfaceDepth)*rayScale);
+                float waterFog=1.0-exp(-column*max(.01,_WaterFogDensity));
+
                 float3 baseColor =
                     lerp(
                         _ShallowColor.rgb,
                         _DeepColor.rgb,
                         saturate(
-                            0.25 + fresnel * 0.75
+                            max(waterFog,0.25 + fresnel * 0.75)
                         )
                     );
 
@@ -312,9 +324,7 @@ Shader "OpenWorld/OceanWater"
                     0.35 + diffuse * 0.65;
 
                 float3 color =
-                    baseColor *
-                    lighting *
-                    mainLight.color;
+                    baseColor * (0.55 + mainLight.color * diffuse * 0.45);
 
                 color =
                     lerp(
@@ -335,6 +345,8 @@ Shader "OpenWorld/OceanWater"
                         foam * 0.10
                     );
 
+                // Long paths become opaque blue-green instead of transparent or black.
+                alpha=lerp(alpha,1.0,waterFog);
                 return half4(color, alpha);
             }
 
@@ -342,3 +354,4 @@ Shader "OpenWorld/OceanWater"
         }
     }
 }
+

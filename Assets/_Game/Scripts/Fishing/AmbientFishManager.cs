@@ -45,7 +45,7 @@ public class AmbientFishManager : MonoBehaviour
             }
             foreach(var animator in visual.GetComponentsInChildren<Animator>())animator.cullingMode=AnimatorCullingMode.CullCompletely;
             var agent=visual.AddComponent<AmbientFishAgent>();
-            agent.Configure(this,Random.Range(0.45f,0.95f),i);
+            agent.Configure(this,Random.Range(0.45f,0.95f),i,biome);
             return agent;
     }
     private void Update()
@@ -75,9 +75,12 @@ public class AmbientFishManager : MonoBehaviour
         return p.z>0f && p.z<42f && p.x>-0.15f && p.x<1.15f && p.y>-0.15f && p.y<1.15f;
     }
     public bool IsTooFar(Vector3 position) => player==null || (position-player.position).sqrMagnitude>48f*48f;
-    public bool Safe(Vector3 position,float clearance=0.6f)
+    public bool Safe(Vector3 position,float clearance=0.6f,int biome=-1)
     {
         if(!InReef||oceanWater==null||terrain==null)return false;
+        if(biome>=0 && IslandExpansionWorld.FishingBiome(position)!=biome)return false;
+        var world=IslandExpansionWorld.Active;
+        if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin)return false;
         if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
@@ -88,7 +91,7 @@ public class AmbientFishManager : MonoBehaviour
         return position.y>floor+clearance && position.y<oceanWater.GetSurfaceHeight(position)-clearance;
     }
     public bool TryGetSwimPoint(out Vector3 point) => TryGetSwimPoint(out point,0.6f);
-    public bool TryGetSwimPoint(out Vector3 point,float clearance)
+    public bool TryGetSwimPoint(out Vector3 point,float clearance,int biome=-1)
     {
         point=Vector3.zero;if(player==null||oceanWater==null||terrain==null||!InReef)return false;
         for(int attempt=0;attempt<32;attempt++)
@@ -99,7 +102,7 @@ public class AmbientFishManager : MonoBehaviour
             float surface=oceanWater.GetSurfaceHeight(p);
             if(surface-floor<clearance*2+0.25f)continue;
             p.y=Random.Range(Mathf.Max(floor+clearance+0.12f,surface-6f),surface-clearance-0.12f);
-            if(!Safe(p,clearance))continue;
+            if(!Safe(p,clearance,biome))continue;
             // Do not visibly pop a recycled fish into the camera view.
             if(Visible(p)&&Vector3.Distance(player.position,p)<18f)continue;
             point=p;return true;
@@ -113,14 +116,15 @@ public class AmbientFishAgent : MonoBehaviour
     private AmbientFishManager manager;
     private Vector3 target;
     private bool hasTarget;
+    private int spawnBiome;
     private float speed, retry, clearance, decisionTime;
     private bool shown=true;
     private Renderer[] renderers;
     private Animator[] animators;
     private ReefFishTrail trail;
-    public void Configure(AmbientFishManager owner,float swimSpeed,float offset)
+    public void Configure(AmbientFishManager owner,float swimSpeed,float offset,int biome)
     {
-        manager=owner;speed=swimSpeed;
+        manager=owner;speed=swimSpeed;spawnBiome=biome;
         renderers=GetComponentsInChildren<Renderer>();animators=GetComponentsInChildren<Animator>();
         trail=gameObject.AddComponent<ReefFishTrail>();
         clearance=Mathf.Clamp(trail.BodyLength*0.5f,0.5f,1.3f);
@@ -143,7 +147,7 @@ public class AmbientFishAgent : MonoBehaviour
         {
             SetVisible(false);retry-=Time.deltaTime;
             if(retry>0)return;retry=0.6f;
-            if(!manager.TryGetSwimPoint(out var point,clearance))return;
+            if(!manager.TryGetSwimPoint(out var point,clearance,spawnBiome))return;
             transform.position=point;transform.rotation=Quaternion.Euler(0,Random.Range(0,360f),0);
             target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;
         }
@@ -157,7 +161,7 @@ public class AmbientFishAgent : MonoBehaviour
             {
                 var p=transform.position+Random.insideUnitSphere*5f;
                 p.y=Mathf.Lerp(transform.position.y,p.y,0.15f);
-                if(manager.Safe(p,clearance)){target=p;break;}
+                if(manager.Safe(p,clearance,spawnBiome)){target=p;break;}
             }
         }
         Vector3 direction=target-transform.position;
@@ -165,12 +169,13 @@ public class AmbientFishAgent : MonoBehaviour
             transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(direction),55f*Time.deltaTime);
         var next=transform.position+transform.forward*speed*Time.deltaTime;
         var ahead=next+transform.forward*Mathf.Max(0.8f,clearance);
-        if(manager.Safe(next,clearance)&&manager.Safe(ahead,clearance))transform.position=next;
+        if(manager.Safe(next,clearance,spawnBiome)&&manager.Safe(ahead,clearance,spawnBiome))transform.position=next;
         else { target=transform.position-transform.forward*3f;decisionTime=0.8f; }
         // Rendering already culls naturally; avoid train/bone work offscreen.
         trail.SetActive(manager.Visible(transform.position));
         trail.Record();
     }
 }
+
 
 

@@ -3,6 +3,7 @@ using UnityEngine;
 // Stable zone/species IDs are save-safe; add future zones here without renumbering.
 public static class ReefCatalog
 {
+    public static bool BluewaterDiscovered {get;set;}
     public const string RuggedId="brinebreak-isle";
     public static bool BrinebreakDiscovered {get;set;}
     public const string StarterId="suncrest-reef";
@@ -15,7 +16,7 @@ public static class ReefCatalog
         public readonly float[] weights;
         public Zone(string id,string name,string description,bool unlocked,float[] weights)
         {this.id=id;this.name=name;this.description=description;unlockedByDefault=unlocked;this.weights=weights;}
-        public bool Unlocked=>unlockedByDefault||(id==RuggedId&&BrinebreakDiscovered);
+        public bool Unlocked=>unlockedByDefault||(id==RuggedId&&BrinebreakDiscovered)||(id==PelagicIslandGeometry.Id&&BluewaterDiscovered);
     }
 
     // Embedded odds remain only as a fallback if an editable tuning CSV is invalid.
@@ -25,7 +26,9 @@ public static class ReefCatalog
         new Zone(RuggedId,"Brinebreak Isle","Rocky low hills, steep sandy shores and restless water. Land here to unlock fast travel.",false,
             new float[]{8,13,12,18,0,10,5,5,20,12,12,10,12,4,6}),
         new Zone("deep-ocean","Deep Ocean","Beyond the shared outer shelf. Pelagic fish, giant catches and demanding fights.",true,
-            new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6})
+            new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6}),
+        new Zone(PelagicIslandGeometry.Id,PelagicIslandGeometry.Name,"A southern cay with pelagic fishing waters extending 75 m beyond the shore. Land here to unlock travel.",false,
+            new float[]{35,0,0,0,0,20,0,0,15,15,0,0,0,15,0})
     };
 
     public static Zone Starter=>Zones[0];
@@ -122,4 +125,5 @@ public static class ReefCatalog
         return legacyFallback;
     }
 }
+
 

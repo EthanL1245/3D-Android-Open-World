@@ -11,6 +11,7 @@ using System.Collections.Generic;
 {
     public int version = 1, coins;
     public bool brinebreakDiscovered;
+    public bool bluewaterDiscovered;
     public List<string> boats = new List<string>();
     public string boatEquipped;
     public bool OwnsBoat(string id) => !string.IsNullOrEmpty(id) && boats!=null && boats.Contains(id);
@@ -235,5 +236,6 @@ using System.Collections.Generic;
         coins+=value; return true;
     }
 }
+
 
 

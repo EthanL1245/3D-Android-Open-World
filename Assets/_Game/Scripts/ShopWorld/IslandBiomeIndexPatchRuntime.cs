@@ -111,9 +111,9 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
     {
         ReefCatalog.Zone entry = ReefCatalog.Zones[biome];
         bool unlocked = entry.Unlocked;
-        bool island = biome == 0 || biome == 1;
+        bool island = biome == 0 || biome == 1 || biome == 3;
         bool here = travel != null && travel.Destination == 0 && currentBiome == biome;
-        bool worldReady = biome != 1 || (IslandExpansionWorld.Active != null && IslandExpansionWorld.Active.Ready);
+        bool worldReady = biome == 0 || biome == 2 || (IslandExpansionWorld.Active != null && IslandExpansionWorld.Active.Ready);
         bool fishingBusy = IsFishingBusy();
 
         Color cardColor = biome == 0
@@ -187,15 +187,15 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
     {
         if (IsFishingBusy() || travel == null || travel.Traveling) return;
         if (biome < 0 || biome >= ReefCatalog.Zones.Length || !ReefCatalog.Zones[biome].Unlocked) return;
-        if (biome != 0 && biome != 1) return; // Deep Ocean intentionally has no teleport.
-        if (biome == 1 && (IslandExpansionWorld.Active == null || !IslandExpansionWorld.Active.Ready)) return;
+        if (biome != 0 && biome != 1 && biome != 3) return; // Deep Ocean intentionally has no teleport.
+        if ((biome == 1 || biome == 3) && (IslandExpansionWorld.Active == null || !IslandExpansionWorld.Active.Ready)) return;
 
         if (menuSafety != null && SafeCloseIndexMethod != null)
             SafeCloseIndexMethod.Invoke(menuSafety, null);
         else
             hud.Close();
 
-        travel.TravelIsland(biome == 1);
+        travel.TravelIsland(biome);
     }
 
     private bool IsFishingBusy()

@@ -10,6 +10,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     public Terrain Terrain {get;private set;}
     public OceanWater Water {get;private set;}
     public Vector3 NewCenter {get;private set;}
+    public Vector3 PelagicCenter {get;private set;}
+    public Transform PelagicArrival {get;private set;}
     public Vector3 ShelfCenter {get;private set;}
     public Vector2 ShelfRadii {get;private set;}
     public Transform Arrival {get;private set;}
@@ -39,12 +41,13 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(Config==null){Debug.LogError("Brinebreak expansion configuration missing.");return;}
         Active=this;sea=Water.BaseWaterLevel;originalData=Terrain.terrainData;originalPosition=Terrain.transform.position;
         NewCenter=reef.center+new Vector3(reef.islandRadiusX+Config.OffsetBeyondSuncrest,0,35);
+        PelagicCenter=PelagicIslandGeometry.Center(NewCenter,Config.IslandRadii);
         float left=reef.center.x-reef.islandRadiusX-reef.reefWidth-60;
         float right=NewCenter.x+Config.IslandRadii.x+150;
         ShelfCenter=new Vector3((left+right)*.5f,sea,reef.center.z+17.5f);
         // Oversize the outer ellipse so both complete coastal shelves fit inside.
         ShelfRadii=new Vector2((right-left)*.5f,Mathf.Max(reef.islandRadiusZ+reef.reefWidth+95,Config.IslandRadii.y+190));
-        BuildTerrain();BuildScenery();ResizeWaterQuery();Ready=true;
+        BuildTerrain();BuildScenery();BuildPelagicScenery();ResizeWaterQuery();Ready=true;
     }
     private float SourceHeight(Vector3 p)
     {
@@ -52,7 +55,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(q.x<0 || q.z<0 || q.x>size.x || q.z>size.z)return sea-Config.OceanDepth;
         return originalPosition.y+originalData.GetInterpolatedHeight(q.x/size.x,q.z/size.z);
     }
-    public float Height(Vector3 p)=>SeabedRelief.Height(p.x,p.z,BaseHeight(p),sea);
+    public float Height(Vector3 p)=>SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
     private float BaseHeight(Vector3 p)
     {
         float beyond=IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii);
@@ -97,7 +100,14 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         {
             Vector3 p=origin+new Vector3(x/511f*size,0,z/511f*size);
             float q=IslandGeometry.Ellipse(p,NewCenter,Config.IslandRadii);
-            if(q<1.2f)
+            float pelagicDistance=Vector2.Distance(new Vector2(p.x,p.z),new Vector2(PelagicCenter.x,PelagicCenter.z));
+            if(pelagicDistance<=PelagicIslandGeometry.Radius)
+            {
+                float inland=Mathf.SmoothStep(0,1,Mathf.InverseLerp(PelagicIslandGeometry.Radius*.88f,PelagicIslandGeometry.Radius*.45f,pelagicDistance));
+                alpha[z,x,0]=1-inland;
+                alpha[z,x,sourceLayers.Length>1?1:0]+=inland;
+            }
+            else if(q<1.2f)
             {
                 float rocky=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.96f,.75f,q));
                 alpha[z,x,0]=1-rocky;alpha[z,x,islandRock]=rocky;
@@ -189,6 +199,37 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;box.size=new Vector3(Config.IslandRadii.x*2,30,Config.IslandRadii.y*2);
         var rb=trigger.AddComponent<Rigidbody>();rb.isKinematic=true;rb.useGravity=false;trigger.AddComponent<IslandDiscovery>();
     }
+    private void BuildPelagicScenery()
+    {
+        PelagicArrival=new GameObject("BluewaterArrival").transform;PelagicArrival.SetParent(transform,false);
+        Vector3 approach=PelagicCenter+new Vector3(0,0,PelagicIslandGeometry.Radius*.70f);
+        approach.y=Terrain.SampleHeight(approach)+Terrain.transform.position.y+.15f;
+        PelagicArrival.SetPositionAndRotation(approach,Quaternion.Euler(0,180,0));
+        var random=new System.Random(Config.ScenerySeed+73);
+        for(int i=0;i<55;i++)
+        {
+            float angle=(float)random.NextDouble()*Mathf.PI*2;
+            float radius=Mathf.Sqrt((float)random.NextDouble())*PelagicIslandGeometry.Radius*.82f;
+            Vector3 p=PelagicCenter+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius);
+            if(Vector3.ProjectOnPlane(p-approach,Vector3.up).magnitude<10)continue;
+            bool scrub=i%3==0;float size=1.2f+(float)random.NextDouble()*2.2f;
+            var prop=GameObject.CreatePrimitive(scrub?PrimitiveType.Sphere:PrimitiveType.Cube);
+            prop.name=scrub?"Bluewater coastal scrub":"Bluewater weathered stone";
+            prop.transform.SetParent(transform,false);prop.transform.localScale=new Vector3(size,scrub?.8f:size*.65f,size*.8f);
+            prop.transform.rotation=Quaternion.Euler(scrub?0:random.Next(-15,16),random.Next(360),scrub?0:random.Next(-15,16));
+            p.y=Terrain.SampleHeight(p)+Terrain.transform.position.y;prop.transform.position=p;
+            var renderer=prop.GetComponent<Renderer>();renderer.sharedMaterial=scrub?grass:rock;
+            prop.transform.position+=Vector3.up*renderer.bounds.extents.y*.4f;
+            if(scrub)Destroy(prop.GetComponent<Collider>());prop.isStatic=true;
+        }
+        Vector3 signPoint=approach+new Vector3(4,0,-3);signPoint.y=Terrain.SampleHeight(signPoint)+Terrain.transform.position.y;
+        IslandWelcomeSign.Create(transform,"BLUEWATER CAY",signPoint,Quaternion.identity,wood);
+        var trigger=new GameObject("Bluewater Land Discovery");trigger.transform.SetParent(transform,false);
+        trigger.transform.position=new Vector3(PelagicCenter.x,sea+12,PelagicCenter.z);
+        var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;box.size=new Vector3(PelagicIslandGeometry.Radius*2,30,PelagicIslandGeometry.Radius*2);
+        var body=trigger.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
+        trigger.AddComponent<IslandDiscovery>().Biome=PelagicIslandGeometry.BiomeId;
+    }
     private void ResizeWaterQuery()
     {
         var query=GameObject.Find("BoatPlacementWater");if(query==null)return;
@@ -196,7 +237,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         query.transform.position=new Vector3(Terrain.transform.position.x+Terrain.terrainData.size.x*.5f,sea-.025f,Terrain.transform.position.z+Terrain.terrainData.size.z*.5f);
         box.size=new Vector3(Terrain.terrainData.size.x,.05f,Terrain.terrainData.size.z);
     }
-    public int BiomeAt(Vector3 p)=>IslandGeometry.Biome(p,reef.center,NewCenter);
+    public int BiomeAt(Vector3 p)=>PelagicIslandGeometry.Contains(p,PelagicCenter)?PelagicIslandGeometry.BiomeId:IslandGeometry.Biome(p,reef.center,NewCenter);
     public float OffshoreAt(Vector3 p)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,180,IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii)));
     public static int FishingBiome(Vector3 p)=>Active!=null && Active.Ready?Active.BiomeAt(p):0;
     private void OnDestroy()
@@ -208,4 +249,5 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(rock!=null)Destroy(rock);if(wood!=null)Destroy(wood);if(grass!=null)Destroy(grass);
     }
 }
+
 

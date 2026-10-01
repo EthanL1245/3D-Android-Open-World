@@ -211,9 +211,9 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     {
         var entry=ReefCatalog.Zones[biome];
         bool unlocked=entry.Unlocked;
-        bool isIsland=biome==0 || biome==1;
+        bool isIsland=biome==0 || biome==1 || biome==3;
         bool here=travel!=null && travel.Destination==0 && currentBiome==biome;
-        bool worldReady=biome!=1 || (IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready);
+        bool worldReady=biome==0 || biome==2 || (IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready);
         bool fishingBusy=IsFishingBusy();
 
         Color cardColor=biome==0?new Color(.045f,.24f,.30f,1f):biome==1?new Color(.20f,.23f,.25f,1f):new Color(.025f,.12f,.20f,1f);
@@ -271,11 +271,11 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         if(IsFishingBusy())return;
         if(travel==null || travel.Traveling || biome<0 || biome>=ReefCatalog.Zones.Length)return;
         if(!ReefCatalog.Zones[biome].Unlocked)return;
-        if(biome!=0 && biome!=1)return; // Deep Ocean and future non-island biomes have no teleport.
-        if(biome==1 && (IslandExpansionWorld.Active==null || !IslandExpansionWorld.Active.Ready))return;
+        if(biome!=0 && biome!=1 && biome!=3)return; // Deep Ocean and future non-island biomes have no teleport.
+        if((biome==1 || biome==3) && (IslandExpansionWorld.Active==null || !IslandExpansionWorld.Active.Ready))return;
 
         CapturePlacedBoat();
-        travel.TravelIsland(biome==1);
+        travel.TravelIsland(biome);
     }
 
     private void OpenFishIndex(int biome)
@@ -446,3 +446,4 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         rect.offsetMin=new Vector2(left,bottom);rect.offsetMax=new Vector2(right,top);
     }
 }
+

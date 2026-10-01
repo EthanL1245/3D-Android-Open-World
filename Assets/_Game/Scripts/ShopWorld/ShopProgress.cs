@@ -39,6 +39,7 @@ public sealed class ShopProgress : MonoBehaviour
             Debug.LogError(Notice+" "+ex.Message);
         }
         ReefCatalog.BrinebreakDiscovered=Data!=null && Data.brinebreakDiscovered;
+        ReefCatalog.BluewaterDiscovered=Data!=null && Data.bluewaterDiscovered;
     }
     private static ShopLedger Read(string json)
     {
@@ -116,4 +117,5 @@ public sealed class ShopProgress : MonoBehaviour
         return id;
     }
 }
+
 
