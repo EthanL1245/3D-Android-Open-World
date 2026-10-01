@@ -45,7 +45,7 @@ public static class BlacktipSharkSetup
             && prefab.GetComponentsInChildren<Transform>(true).Any(t=>t.name=="AuthoredMouthAnchor")
             && prefab.GetComponentsInChildren<Renderer>(true).All(r=>r.sharedMaterials.All(m=>m!=null && m.GetTexture("_BaseMap")!=null));
     }
-    [MenuItem("Tools/Open World/Install Blacktip Reef Shark")]
+    [MenuItem("Tools/Open World/Install Blacktip Shark")]
     public static void Install()
     {
         if(running)return;

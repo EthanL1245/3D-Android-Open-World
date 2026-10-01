@@ -20,7 +20,8 @@ public static class FishSizeTable
         new float[] {0.0015652f,0.0128817f,0.0441847f,0.1058547f,0.2086845f,0.3638955f,0.5824606f,0.8754019f,1.2537384f,1.7286444f,2.3114468f,3.0136274f}, // Paralabrax maculatofasciatus (Spotted Sand Bass)
         GameplayCurve(18f,32), // Albacore: gameplay approximation kg = 18 * metres^3
         GameplayCurve(14f,40), // Greater Amberjack: gameplay approximation kg = 14 * metres^3
-        GameplayCurve(5f,40) // Blacktip reef shark gameplay approximation: kg = 5 * metres^3
+        GameplayCurve(5f,40), // Blacktip shark gameplay approximation: kg = 5 * metres^3
+        GameplayCurve(10f,16) // Yellowtail snapper gameplay approximation: kg = 10 * metres^3
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)

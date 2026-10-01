@@ -32,6 +32,7 @@ public static class FishCatalog
     public const int AlbacoreId=13;
     public const int GreaterAmberjackId=14;
     public const int BlacktipSharkId=15;
+    public const int YellowtailSnapperId=16;
 
     // These embedded definitions are deliberately retained as a safe legacy fallback.
     // Editable min/max weight, health, value and catch odds live in Resources/FishingTuning.
@@ -52,11 +53,12 @@ public static class FishCatalog
         new FishSpeciesDefinition("Spotted Sand Bass",new Color(.42f,.37f,.28f),new Color(.76f,.66f,.43f),.25f,2f,.68f,6f,72),
         new FishSpeciesDefinition("Albacore",new Color(.12f,.24f,.36f),new Color(.8f,.85f,.9f),2f,45f,.84f,4f,185),
         new FishSpeciesDefinition("Greater Amberjack",new Color(.3f,.4f,.42f),new Color(.84f,.72f,.3f),1.5f,70f,.88f,4f,195),
-        new FishSpeciesDefinition("Blacktip Reef Shark",new Color(.38f,.42f,.43f),new Color(.12f,.14f,.15f),5f,30f,1f,0f,1200)
+        new FishSpeciesDefinition("Blacktip Shark",new Color(.38f,.42f,.43f),new Color(.12f,.14f,.15f),5f,30f,1f,0f,1200),
+        new FishSpeciesDefinition("Yellowtail Snapper",new Color(.64f,.70f,.72f),new Color(.98f,.82f,.16f),.25f,4.1f,.46f,13f,48)
     };
 
     public static int Count=>Species.Length;
-    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15};
+    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16};
     public static int CanonicalId(int id)=>id==4?YellowfinTunaId:id;
 
     public static FishSpeciesDefinition Get(int id)

@@ -10,10 +10,11 @@ public static class SeaBassImporter
     private const string Folder="Assets/_Game/Reef/Source";
     public const string PrefabPath="Assets/Resources/Fishing/SeaBass.prefab";
     public static void Install() => InstallModel("SeaBass",PrefabPath);
-    public static void InstallModel(string assetName,string prefabPath)
+    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null)
     {
-        string fbx=Folder+"/"+assetName+".fbx", png=Folder+"/"+assetName+"Texture.png";
-        if(!File.Exists(png))png=Folder+"/"+assetName+"Texture.jpg";
+        string folder=sourceFolder??Folder;
+        string fbx=folder+"/"+assetName+".fbx", png=texturePath??(folder+"/"+assetName+"Texture.png");
+        if(!File.Exists(png))png=folder+"/"+assetName+"Texture.jpg";
         AssetDatabase.ImportAsset(fbx,ImportAssetOptions.ForceSynchronousImport);
         var importer=AssetImporter.GetAtPath(fbx) as ModelImporter;
         if(importer==null)throw new InvalidOperationException("Fish FBX was not imported.");
@@ -26,13 +27,13 @@ public static class SeaBassImporter
         take.name="Swim";take.loopTime=true;take.loopPose=true;
         importer.clipAnimations=new[]{take};importer.SaveAndReimport();
         var clip=AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>().First(c=>c.name=="Swim");
-        string controllerPath=Folder+"/"+assetName+".controller";
+        string controllerPath=folder+"/"+assetName+".controller";
         var controller=AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
         if(controller==null)controller=AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
         var machine=controller.layers[0].stateMachine;
         var state=machine.states.Select(s=>s.state).FirstOrDefault(s=>s.name=="Swim")??machine.AddState("Swim");
         state.motion=clip;machine.defaultState=state;EditorUtility.SetDirty(controller);
-        string matPath=Folder+"/"+assetName+".mat";
+        string matPath=folder+"/"+assetName+".mat";
         var material=AssetDatabase.LoadAssetAtPath<Material>(matPath);
         if(material==null)
         {
@@ -43,7 +44,7 @@ public static class SeaBassImporter
         // Explicit atlas sampling uses the same verified shader as the authored rod.
         material.shader=Resources.Load<Shader>("Fishing/FishingEquipment");
         if(material.shader==null)throw new InvalidOperationException("FishingEquipment shader missing.");
-        var atlas=BuildAtlas(png,assetName);
+        var atlas=BuildAtlas(png,assetName,folder);
         material.SetTexture("_BaseMap",atlas);
         material.SetTextureScale("_BaseMap",Vector2.one);material.SetTextureOffset("_BaseMap",Vector2.zero);
         material.SetColor("_BaseColor",Color.white);material.SetFloat("_Smoothness",0.4f);material.SetFloat("_Metallic",0.06f);
@@ -116,7 +117,7 @@ public static class SeaBassImporter
     }
     // Decode the supplied PNG without depending on its TextureImporter artifact.
     // Native assets retain their GUID across reinstalls and are build dependencies.
-    private static Texture2D BuildAtlas(string png,string assetName)
+    private static Texture2D BuildAtlas(string png,string assetName,string folder)
     {
         string source=Path.GetFullPath(Path.Combine(Application.dataPath,"..",png));
         if(!File.Exists(source))throw new FileNotFoundException("Fish source PNG is missing. Pull the complete update.",source);
@@ -129,7 +130,7 @@ public static class SeaBassImporter
             decoded.name=assetName+" Authored Atlas";
             decoded.wrapMode=TextureWrapMode.Repeat;decoded.filterMode=FilterMode.Trilinear;
             decoded.anisoLevel=2;decoded.Apply(true,false);
-            string path=Folder+"/"+assetName+"Atlas.asset";
+            string path=folder+"/"+assetName+"Atlas.asset";
             var atlas=AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             if(atlas==null)
             {

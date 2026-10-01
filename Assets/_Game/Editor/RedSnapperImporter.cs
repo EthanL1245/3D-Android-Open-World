@@ -263,38 +263,7 @@ public static class RedSnapperImporter
 
         try
         {
-            ConfigureTexture();
-            ConfigureFbxImporter();
-
-            GameObject sourceAsset =
-                AssetDatabase.LoadAssetAtPath<GameObject>(
-                    FbxPath
-                );
-
-            AnimationClip swimClip =
-                FindSwimClip();
-
-            if (sourceAsset == null ||
-                swimClip == null)
-            {
-                throw new InvalidOperationException(
-                    "The imported Red Snapper source could not be rebuilt."
-                );
-            }
-
-            Material material =
-                BuildMaterial();
-
-            AnimatorController controller =
-                BuildController(
-                    swimClip
-                );
-
-            BuildPrefab(
-                sourceAsset,
-                material,
-                controller
-            );
+            InstallPrepared();
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -321,6 +290,13 @@ public static class RedSnapperImporter
         {
             EditorUtility.ClearProgressBar();
         }
+    }
+
+    // Shared authored-fish presentation: train-track swimming, held flops and lip anchor.
+    // SaveAsPrefabAsset overwrites in place and preserves saved references.
+    public static void InstallPrepared()
+    {
+        SeaBassImporter.InstallModel("RedSnapper",PrefabPath,SourceFolder,TexturePath);
     }
 
     private static void CleanOldGeneratedAssets()
@@ -1671,3 +1647,4 @@ print('RED_SNAPPER_FRAMES=' + str(int(swim.frame_range[0])) + ':' + str(int(swim
         }
     }
 }
+

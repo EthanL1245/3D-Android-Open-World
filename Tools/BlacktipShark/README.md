@@ -1,4 +1,4 @@
-# Blacktip reef shark and resting rear paddles
+# Blacktip shark and resting rear paddles
 
 Pull and let Unity finish importing. `BlacktipSharkSetup` installs the prepared FBX,
 texture, Animator and resource prefab automatically, with a Play/build gate.
