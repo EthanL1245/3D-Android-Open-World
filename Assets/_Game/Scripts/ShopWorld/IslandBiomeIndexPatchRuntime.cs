@@ -97,7 +97,7 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
         ClearList(list);
         int currentBiome = player != null ? IslandExpansionWorld.FishingBiome(player.transform.position) : 0;
 
-        for (int biome = 0; biome < ReefCatalog.Zones.Length; biome++)
+        foreach (int biome in ReefCatalog.IslandIndexOrder)
             CreateIslandCard(list, biome, currentBiome);
 
         GameObject marker = new GameObject(MarkerName, typeof(RectTransform), typeof(LayoutElement));

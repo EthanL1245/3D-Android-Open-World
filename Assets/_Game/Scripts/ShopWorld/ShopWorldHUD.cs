@@ -205,7 +205,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void IslandIndex()
     {
-        for(int zoneIndex=0;zoneIndex<ReefCatalog.Zones.Length;zoneIndex++)
+        foreach(int zoneIndex in ReefCatalog.IslandIndexOrder)
         {
             int selectedBiome=zoneIndex;var entry=ReefCatalog.Zones[zoneIndex];
             var card=ButtonAt(list,entry.name+(entry.Unlocked?"\nUNLOCKED":"\nLOCKED")+" • FISHING AREA\n\n"+entry.description+"\n\nOPEN FISH INDEX →",()=>{if(SelectIndexBiome(selectedBiome))Open("reef-fish");});

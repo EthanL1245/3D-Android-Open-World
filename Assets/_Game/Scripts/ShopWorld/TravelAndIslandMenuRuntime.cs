@@ -201,7 +201,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         ClearList(list);
         int currentBiome=player!=null?IslandExpansionWorld.FishingBiome(player.transform.position):0;
 
-        for(int biome=0;biome<ReefCatalog.Zones.Length;biome++)
+        foreach(int biome in ReefCatalog.IslandIndexOrder)
             CreateIslandCard(list,biome,currentBiome);
 
         AddMarker(list);

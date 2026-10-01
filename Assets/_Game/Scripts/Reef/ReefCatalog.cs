@@ -3,6 +3,8 @@ using UnityEngine;
 // Stable zone/species IDs are save-safe; add future zones here without renumbering.
 public static class ReefCatalog
 {
+    // Menu order is independent of the stable biome IDs used by saves and fishing.
+    public static readonly int[] IslandIndexOrder = { 0, 1, 3, 2 };
     public static bool BluewaterDiscovered {get;set;}
     public const string RuggedId="brinebreak-isle";
     public static bool BrinebreakDiscovered {get;set;}
