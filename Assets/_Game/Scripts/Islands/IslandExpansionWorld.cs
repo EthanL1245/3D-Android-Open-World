@@ -18,8 +18,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     private Vector3 originalPosition;
     private ReefZone reef;
     private float sea;
-    private Texture2D rockTexture;
-    private TerrainLayer rockLayer;
+    private Texture2D rockTexture,seabedTexture,seabedNormal;
+    private TerrainLayer rockLayer,seabedLayer;
     private Material rock,wood,grass;
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void InstallForExistingScenes()
@@ -52,7 +52,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(q.x<0 || q.z<0 || q.x>size.x || q.z>size.z)return sea-Config.OceanDepth;
         return originalPosition.y+originalData.GetInterpolatedHeight(q.x/size.x,q.z/size.z);
     }
-    public float Height(Vector3 p)
+    public float Height(Vector3 p)=>SeabedRelief.Height(p.x,p.z,BaseHeight(p),sea);
+    private float BaseHeight(Vector3 p)
     {
         float beyond=IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii);
         float shelf=IslandGeometry.ShelfFloor(sea,Config.ShelfDepth,Config.OceanDepth,beyond,Config.DropoffWidth);
@@ -74,10 +75,10 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         float extent=Mathf.Max(ShelfRadii.x,ShelfRadii.y)+Config.DropoffWidth+150;
         float size=extent*2;
-        Vector3 origin=new Vector3(ShelfCenter.x-extent,sea-Config.OceanDepth-10,ShelfCenter.z-extent);
+        Vector3 origin=new Vector3(ShelfCenter.x-extent,sea-Config.OceanDepth-10-SeabedRelief.ExtraDepth,ShelfCenter.z-extent);
         int n=Mathf.ClosestPowerOfTwo(Mathf.Clamp(Config.HeightResolution-1,256,2048))+1;
         generatedData=new TerrainData{name="Suncrest + Brinebreak Shared Shelf",heightmapResolution=n,alphamapResolution=512,baseMapResolution=1024};
-        generatedData.size=new Vector3(size,Config.OceanDepth+40,size);
+        generatedData.size=new Vector3(size,Config.OceanDepth+40+SeabedRelief.ExtraDepth,size);
         var heights=new float[n,n];
         for(int z=0;z<n;z++)for(int x=0;x<n;x++)
         {var p=origin+new Vector3(x/(float)(n-1)*size,0,z/(float)(n-1)*size);heights[z,x]=Mathf.Clamp01((Height(p)-origin.y)/generatedData.size.y);}
@@ -86,7 +87,10 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         rockTexture=new Texture2D(32,32,TextureFormat.RGBA32,false);rockTexture.wrapMode=TextureWrapMode.Repeat;
         var pixels=new Color[1024];for(int i=0;i<pixels.Length;i++){float noise=Mathf.PerlinNoise(i%32*.3f,i/32*.3f);pixels[i]=Color.Lerp(new Color(.23f,.25f,.26f),new Color(.49f,.47f,.41f),noise);}rockTexture.SetPixels(pixels);rockTexture.Apply();
         rockLayer=new TerrainLayer{diffuseTexture=rockTexture,tileSize=new Vector2(7,7)};
-        var layers=new TerrainLayer[sourceLayers.Length+1];sourceLayers.CopyTo(layers,0);layers[layers.Length-1]=rockLayer;generatedData.terrainLayers=layers;
+        BuildSeabedTexture();
+        int islandRock=sourceLayers.Length,underwaterRock=sourceLayers.Length+1;
+        var layers=new TerrainLayer[sourceLayers.Length+2];sourceLayers.CopyTo(layers,0);
+        layers[islandRock]=rockLayer;layers[underwaterRock]=seabedLayer;generatedData.terrainLayers=layers;
         var oldAlpha=originalData.GetAlphamaps(0,0,originalData.alphamapWidth,originalData.alphamapHeight);
         var alpha=new float[512,512,layers.Length];
         for(int z=0;z<512;z++)for(int x=0;x<512;x++)
@@ -96,7 +100,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
             if(q<1.2f)
             {
                 float rocky=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.96f,.75f,q));
-                alpha[z,x,0]=1-rocky;alpha[z,x,layers.Length-1]=rocky;
+                alpha[z,x,0]=1-rocky;alpha[z,x,islandRock]=rocky;
             }
             else
             {
@@ -104,12 +108,54 @@ public sealed class IslandExpansionWorld : MonoBehaviour
                 for(int l=0;l<sourceLayers.Length;l++)alpha[z,x,l]=oldAlpha[oz,ox,l];
                 if(sourceLayers.Length==0)alpha[z,x,0]=1;
             }
+            // Start from the original island paint, then add stone only below the shore buffer.
+            float depth=sea-(origin.y+generatedData.GetInterpolatedHeight(x/511f,z/511f));
+            float cliff=SeabedRelief.RockWeight(depth,generatedData.GetSteepness(x/511f,z/511f));
+            float submerged=SeabedRelief.RockWeight(depth,90f);
+            for(int l=0;l<underwaterRock;l++)alpha[z,x,l]*=1-submerged;
+            alpha[z,x,0]+=submerged-cliff;
+            alpha[z,x,underwaterRock]=cliff;
         }
         generatedData.SetAlphamaps(0,0,alpha);
         Terrain.transform.position=origin;Terrain.terrainData=generatedData;
         var collider=Terrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=generatedData;
         Terrain.heightmapPixelError=6;Terrain.drawInstanced=true;Terrain.basemapDistance=350;
         Physics.SyncTransforms();
+    }
+    private void BuildSeabedTexture()
+    {
+        const int n=256;
+        seabedTexture=new Texture2D(n,n,TextureFormat.RGBA32,true);
+        seabedTexture.name="Submerged fractured stone";seabedTexture.wrapMode=TextureWrapMode.Repeat;
+        seabedTexture.filterMode=FilterMode.Trilinear;seabedTexture.anisoLevel=4;
+        seabedNormal=new Texture2D(n,n,TextureFormat.RGBA32,true,true);
+        seabedNormal.name="Submerged stone normal";seabedNormal.wrapMode=TextureWrapMode.Repeat;
+        var colors=new Color[n*n];var normals=new Color[n*n];var relief=new float[n*n];
+        for(int z=0;z<n;z++)for(int x=0;x<n;x++)
+        {
+            float u=x/(float)n,v=z/(float)n;
+            // Periodic fields keep every edge of the repeating texture seamless.
+            float strata=Mathf.Sin(v*Mathf.PI*12f+.6f*Mathf.Sin(u*Mathf.PI*4f));
+            float cross=Mathf.Sin(u*Mathf.PI*10f+.9f*Mathf.Sin(v*Mathf.PI*6f));
+            float grain=Mathf.Sin(u*Mathf.PI*94f+Mathf.Sin(v*Mathf.PI*66f))*Mathf.Sin(v*Mathf.PI*82f);
+            float crack=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.025f,.12f,Mathf.Min(Mathf.Abs(strata),Mathf.Abs(cross))));
+            float tone=Mathf.Clamp01(.48f+.14f*strata+.065f*grain-.33f*crack);
+            colors[z*n+x]=Color.Lerp(new Color(.18f,.22f,.23f),new Color(.50f,.51f,.46f),tone);
+            relief[z*n+x]=.55f+.12f*strata+.035f*grain-.2f*crack;
+        }
+        for(int z=0;z<n;z++)for(int x=0;x<n;x++)
+        {
+            float dx=relief[z*n+(x+1)%n]-relief[z*n+(x+n-1)%n];
+            float dz=relief[((z+1)%n)*n+x]-relief[((z+n-1)%n)*n+x];
+            Vector3 normal=new Vector3(-dx*2f,-dz*2f,1).normalized;
+            // RGBA packing works with Unity's RGB and RG/AG terrain normal paths.
+            float nx=normal.x*.5f+.5f,ny=normal.y*.5f+.5f;
+            normals[z*n+x]=new Color(nx,ny,normal.z*.5f+.5f,1);
+        }
+        seabedTexture.SetPixels(colors);seabedTexture.Apply(true,false);
+        seabedNormal.SetPixels(normals);seabedNormal.Apply(true,false);
+        seabedLayer=new TerrainLayer{name="Underwater cliff stone",diffuseTexture=seabedTexture,
+            normalMapTexture=seabedNormal,tileSize=new Vector2(9,9),normalScale=.75f,smoothness=.2f};
     }
     private Material Surface(Color color)
     {
@@ -158,6 +204,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(Active==this)Active=null;
         if(Terrain!=null && originalData!=null){Terrain.terrainData=originalData;Terrain.transform.position=originalPosition;var c=Terrain.GetComponent<TerrainCollider>();if(c!=null)c.terrainData=originalData;}
         if(generatedData!=null)Destroy(generatedData);if(rockLayer!=null)Destroy(rockLayer);if(rockTexture!=null)Destroy(rockTexture);
+        if(seabedLayer!=null)Destroy(seabedLayer);if(seabedTexture!=null)Destroy(seabedTexture);if(seabedNormal!=null)Destroy(seabedNormal);
         if(rock!=null)Destroy(rock);if(wood!=null)Destroy(wood);if(grass!=null)Destroy(grass);
     }
 }
+
