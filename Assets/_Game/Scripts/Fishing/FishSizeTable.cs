@@ -21,7 +21,8 @@ public static class FishSizeTable
         GameplayCurve(18f,32), // Albacore: gameplay approximation kg = 18 * metres^3
         GameplayCurve(14f,40), // Greater Amberjack: gameplay approximation kg = 14 * metres^3
         GameplayCurve(5f,40), // Blacktip shark gameplay approximation: kg = 5 * metres^3
-        GameplayCurve(10f,16) // Yellowtail snapper gameplay approximation: kg = 10 * metres^3
+        GameplayCurve(10f,16), // Yellowtail snapper gameplay approximation: kg = 10 * metres^3
+        GameplayCurve(16f,22) // Mutton snapper gameplay approximation: kg = 16 * metres^3 (~13.3 kg at 0.94 m)
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
@@ -57,4 +58,3 @@ public static class FishSizeTable
         return Math.Max(.05f,(hi+t)*.05f);
     }
 }
-
