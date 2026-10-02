@@ -4,10 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// ShopWorldHUD predates the fifth rod and still builds four gear rows per category.
-/// This appends the Level 5 rod through the HUD's existing Row/Result methods so it
-/// has exactly the same visual style, purchase flow and equip behavior without
-/// disturbing reel/line tier counts.
+/// ShopWorldHUD's legacy EQUIPMENT page still builds only four rod tiers. The
+/// Tackle Store itself is now handled by TabbedTackleStoreExtension, so this
+/// compatibility component only appends an owned Level 5 rod to EQUIPMENT.
 /// </summary>
 [DefaultExecutionOrder(1800)]
 public sealed class Level5FishingRodShopRuntime : MonoBehaviour
@@ -35,7 +34,7 @@ public sealed class Level5FishingRodShopRuntime : MonoBehaviour
         progress=FindFirstObjectByType<ShopProgress>();
         if(hud==null || PageField==null || RowMethod==null || ResultMethod==null)
         {
-            Debug.LogError("Level5FishingRodShopRuntime could not bind the existing shop UI and was disabled.");
+            Debug.LogError("Level5FishingRodShopRuntime could not bind the existing equipment UI and was disabled.");
             enabled=false;
         }
     }
@@ -48,28 +47,20 @@ public sealed class Level5FishingRodShopRuntime : MonoBehaviour
         if(progress==null)return;
 
         string page=PageField.GetValue(hud) as string;
-        bool shop=string.Equals(page,"gear",StringComparison.Ordinal);
-        bool equipment=string.Equals(page,"equipment",StringComparison.Ordinal);
-        if(!shop && !equipment)return;
+        if(!string.Equals(page,"equipment",StringComparison.Ordinal))return;
 
         bool owned=progress.Data.OwnsGear(GearKind.Rod,4);
-        if((shop && owned) || (equipment && !owned))return;
-        if(HasLevel5Row())return;
+        if(!owned || HasLevel5Row())return;
 
-        bool equipped=owned && progress.Data.rodEquipped==4;
+        bool equipped=progress.Data.rodEquipped==4;
         string stats=FishingBurstDamageRuntime.NormalMinimumForTier(4)+"–"+FishingBurstDamageRuntime.NormalMaximumForTier(4)+
                      " damage / "+(FishingBurstDamageRuntime.CriticalChanceForTier(4)*100f).ToString("0")+"% critical (2×)";
-        string action=equipped?"EQUIPPED":owned?"EQUIP":"BUY 25,000";
-        bool nearGear=ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.Near("gear");
-        bool can=owned?!equipped:(nearGear && progress.Data.coins>=ShopCatalog.RodPrices[4]);
+        string action=equipped?"EQUIPPED":"EQUIP";
 
         Action callback=()=>
         {
-            bool wasOwned=progress.Data.OwnsGear(GearKind.Rod,4);
-            bool result=wasOwned
-                ? (!progress.ReadOnly && progress.Commit(progress.Data.Equip(GearKind.Rod,4)))
-                : progress.BuyGear(GearKind.Rod,4);
-            ResultMethod.Invoke(hud,new object[]{result,wasOwned?"Equipment updated.":"Purchased and equipped."});
+            bool result=!progress.ReadOnly && progress.Commit(progress.Data.Equip(GearKind.Rod,4));
+            ResultMethod.Invoke(hud,new object[]{result,"Equipment updated."});
         };
 
         RowMethod.Invoke(hud,new object[]{
@@ -77,7 +68,7 @@ public sealed class Level5FishingRodShopRuntime : MonoBehaviour
             stats,
             action,
             callback,
-            can && !progress.ReadOnly,
+            !equipped && !progress.ReadOnly,
             null,
             GearKind.Rod.ToString()
         });
