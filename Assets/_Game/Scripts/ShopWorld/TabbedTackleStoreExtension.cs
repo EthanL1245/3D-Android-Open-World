@@ -1,0 +1,421 @@
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// Replaces the flat Tackle Store list with five focused tabs while it is open:
+/// Rods, Reels, Lines, Lures and Bait.
+///
+/// Every durable item stays visible and uses one consistent action state:
+/// BUY -> EQUIP -> EQUIPPED. Consumable bait mirrors that presentation by treating
+/// a positive stack as owned. The underlying ShopLedger remains authoritative.
+///
+/// This is a presentation companion rather than a replacement for ShopWorldHUD, so
+/// travel, inventory, the standalone BAIT / LURES page and shop proximity rules keep
+/// their existing behavior.
+/// </summary>
+[DefaultExecutionOrder(5000)]
+public sealed class TabbedTackleStoreExtension : MonoBehaviour
+{
+    private enum TackleTab { Rods, Reels, Lines, Lures, Bait }
+
+    private static readonly Color Ink=new Color(.07f,.12f,.14f,1f);
+    private static readonly Color Teal=new Color(.04f,.36f,.39f,1f);
+    private static readonly Color Gold=new Color(.89f,.72f,.40f,1f);
+    private static readonly Color Detail=new Color(.65f,.79f,.8f,1f);
+    private static readonly Color Disabled=new Color(.17f,.23f,.24f,1f);
+
+    private ShopWorldHUD hud;
+    private ShopProgress progress;
+    private ShopPreview preview;
+    private TackleLureShopExtension legacyLureExtension;
+    private Font font;
+    private GameObject section;
+    private TackleTab selected=TackleTab.Rods;
+    private bool wasTackle;
+    private bool rebuild;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void InstallAfterLoad()
+    {
+        foreach(ShopWorldHUD target in FindObjectsByType<ShopWorldHUD>(FindObjectsSortMode.None))
+            if(target!=null && target.GetComponent<TabbedTackleStoreExtension>()==null)
+                target.gameObject.AddComponent<TabbedTackleStoreExtension>();
+    }
+
+    private void Awake()
+    {
+        hud=GetComponent<ShopWorldHUD>();
+        progress=FindFirstObjectByType<ShopProgress>();
+        preview=GetComponent<ShopPreview>();
+        if(preview==null)preview=gameObject.AddComponent<ShopPreview>();
+        legacyLureExtension=GetComponent<TackleLureShopExtension>();
+        font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+    }
+
+    private void LateUpdate()
+    {
+        if(hud==null || progress==null)return;
+        bool tackle=ShopWorldHUD.MenuOpen && HasHeading("TACKLE STORE");
+
+        if(!tackle)
+        {
+            if(wasTackle)LeaveTackleStore();
+            wasTackle=false;
+            return;
+        }
+
+        if(!wasTackle)
+        {
+            selected=TackleTab.Rods;
+            rebuild=true;
+        }
+        wasTackle=true;
+
+        if(legacyLureExtension==null)legacyLureExtension=GetComponent<TackleLureShopExtension>();
+        if(legacyLureExtension!=null && legacyLureExtension.enabled)legacyLureExtension.enabled=false;
+
+        RectTransform rows=FindRows();
+        if(rows==null)return;
+
+        // ShopWorldHUD rebuilds Rows after purchases/equips. Unity-null semantics make
+        // the destroyed section compare as null, so this recreates our selected tab
+        // automatically without losing the user's category selection.
+        if(section==null || section.transform.parent!=rows)rebuild=true;
+        if(rebuild)BuildStore(rows);
+        HideCoreRows(rows);
+    }
+
+    private void LeaveTackleStore()
+    {
+        RectTransform rows=FindRows();
+        if(section!=null)
+        {
+            section.SetActive(false);
+            Destroy(section);
+            section=null;
+        }
+        if(rows!=null)
+            for(int i=0;i<rows.childCount;i++)
+                if(rows.GetChild(i)!=null)rows.GetChild(i).gameObject.SetActive(true);
+        if(legacyLureExtension!=null)legacyLureExtension.enabled=true;
+        rebuild=false;
+    }
+
+    private void OnDisable()
+    {
+        if(legacyLureExtension!=null)legacyLureExtension.enabled=true;
+    }
+
+    private bool HasHeading(string caption)
+    {
+        Text[] labels=hud.GetComponentsInChildren<Text>(true);
+        for(int i=0;i<labels.Length;i++)
+            if(labels[i]!=null && string.Equals(labels[i].text,caption,StringComparison.OrdinalIgnoreCase))return true;
+        return false;
+    }
+
+    private RectTransform FindRows()
+    {
+        RectTransform[] transforms=hud.GetComponentsInChildren<RectTransform>(true);
+        for(int i=0;i<transforms.Length;i++)
+            if(transforms[i]!=null && transforms[i].name=="Rows")return transforms[i];
+        return null;
+    }
+
+    private void HideCoreRows(RectTransform rows)
+    {
+        for(int i=0;i<rows.childCount;i++)
+        {
+            Transform child=rows.GetChild(i);
+            if(child==null)continue;
+            bool ours=section!=null && child==section.transform;
+            child.gameObject.SetActive(ours);
+        }
+    }
+
+    private void BuildStore(RectTransform rows)
+    {
+        rebuild=false;
+        if(section!=null)
+        {
+            section.SetActive(false);
+            Destroy(section);
+        }
+
+        HideAllChildren(rows);
+        section=new GameObject("TabbedTackleStore",typeof(RectTransform),typeof(LayoutElement),typeof(VerticalLayoutGroup));
+        section.transform.SetParent(rows,false);
+        VerticalLayoutGroup layout=section.GetComponent<VerticalLayoutGroup>();
+        layout.spacing=10f;
+        layout.childControlWidth=true;
+        layout.childForceExpandWidth=true;
+        layout.childControlHeight=true;
+        layout.childForceExpandHeight=false;
+
+        CreateTabs(section.transform);
+        CreateCategoryHeading(section.transform);
+        int itemCount=BuildSelectedRows(section.transform);
+        section.GetComponent<LayoutElement>().preferredHeight=74f+48f+20f+itemCount*194f;
+        Canvas.ForceUpdateCanvases();
+    }
+
+    private static void HideAllChildren(RectTransform rows)
+    {
+        for(int i=0;i<rows.childCount;i++)
+            if(rows.GetChild(i)!=null)rows.GetChild(i).gameObject.SetActive(false);
+    }
+
+    private void CreateTabs(Transform parent)
+    {
+        GameObject bar=new GameObject("TackleTabs",typeof(RectTransform),typeof(LayoutElement));
+        bar.transform.SetParent(parent,false);
+        bar.GetComponent<LayoutElement>().preferredHeight=74f;
+
+        string[] captions={"RODS","REELS","LINES","LURES","BAIT"};
+        for(int i=0;i<captions.Length;i++)
+        {
+            int index=i;
+            TackleTab tab=(TackleTab)i;
+            Button button=CreateButton(bar.transform,captions[i],()=>SelectTab((TackleTab)index));
+            float x0=i/5f,x1=(i+1)/5f;
+            Anchor(button.GetComponent<RectTransform>(),x0,0,x1,1,5,3,-5,-3);
+            bool active=tab==selected;
+            button.interactable=!active;
+            button.GetComponent<Image>().color=active?Gold:Teal;
+            Text label=button.GetComponentInChildren<Text>();
+            if(label!=null)label.color=active?Ink:Color.white;
+        }
+    }
+
+    private void CreateCategoryHeading(Transform parent)
+    {
+        GameObject heading=new GameObject("CategoryHeading",typeof(RectTransform),typeof(LayoutElement));
+        heading.transform.SetParent(parent,false);
+        heading.GetComponent<LayoutElement>().preferredHeight=48f;
+        Text text=CreateText(heading.transform,selected.ToString().ToUpperInvariant(),30,Gold,TextAnchor.MiddleLeft);
+        Full(text.rectTransform);
+        text.rectTransform.offsetMin=new Vector2(8,0);
+        text.rectTransform.offsetMax=new Vector2(-8,0);
+    }
+
+    private int BuildSelectedRows(Transform parent)
+    {
+        switch(selected)
+        {
+            case TackleTab.Rods:return BuildGearRows(parent,GearKind.Rod,ShopCatalog.MaxRodTier);
+            case TackleTab.Reels:return BuildGearRows(parent,GearKind.Reel,ShopCatalog.MaxReelTier);
+            case TackleTab.Lines:return BuildGearRows(parent,GearKind.Line,ShopCatalog.LineNames.Length-1);
+            case TackleTab.Lures:return BuildLureRows(parent);
+            default:return BuildBaitRows(parent);
+        }
+    }
+
+    private int BuildGearRows(Transform parent,GearKind kind,int maxTier)
+    {
+        for(int tier=0;tier<=maxTier;tier++)CreateGearRow(parent,kind,tier);
+        return maxTier+1;
+    }
+
+    private void CreateGearRow(Transform parent,GearKind kind,int tier)
+    {
+        bool owned=progress.Data.OwnsGear(kind,tier);
+        bool equipped=progress.Data.Equipped(kind)==tier;
+        int price=ShopCatalog.GearPrice(kind,tier);
+        string action=equipped?"EQUIPPED":owned?"EQUIP":"BUY "+price.ToString("N0");
+        bool enabled=!progress.ReadOnly && !equipped && (owned || progress.Data.coins>=price);
+
+        string detail;
+        string previewKey;
+        if(kind==GearKind.Rod)
+        {
+            detail=FishingBurstDamageRuntime.NormalMinimumForTier(tier)+"–"+FishingBurstDamageRuntime.NormalMaximumForTier(tier)+
+                " damage per burst • "+(FishingBurstDamageRuntime.CriticalChanceForTier(tier)*100f).ToString("0")+"% critical chance • critical hits deal 2× damage";
+            previewKey="Rod"+tier;
+        }
+        else if(kind==GearKind.Reel)
+        {
+            detail=((Level2FishingReelRuntime.ReelMultiplier(tier)-1f)*100f).ToString("0")+"% faster reeling";
+            previewKey="Reel"+tier;
+        }
+        else
+        {
+            detail="40 m line • 30 m maximum cast • "+(tier*12)+"% more line tolerance";
+            previewKey="Line";
+        }
+
+        GearKind selectedKind=kind;
+        int selectedTier=tier;
+        CreateItemRow(parent,ShopCatalog.GearName(kind,tier),detail,action,enabled,previewKey,()=>
+        {
+            bool result=owned
+                ? (!progress.ReadOnly && progress.Commit(progress.Data.Equip(selectedKind,selectedTier)))
+                : progress.BuyGear(selectedKind,selectedTier);
+            if(result)rebuild=true;
+        });
+    }
+
+    private int BuildLureRows(Transform parent)
+    {
+        for(int variant=0;variant<ShopCatalog.LureVariantCount;variant++)CreateLureRow(parent,variant);
+        return ShopCatalog.LureVariantCount;
+    }
+
+    private void CreateLureRow(Transform parent,int variant)
+    {
+        bool owned=progress.Data.OwnsLure(variant);
+        bool equipped=owned && progress.Data.baitEquipped==ShopCatalog.StarterLure && progress.Data.lureEquipped==variant;
+        int price=ShopCatalog.LurePrices[variant];
+        string action=equipped?"EQUIPPED":owned?"EQUIP":"BUY "+price.ToString("N0");
+        bool enabled=!progress.ReadOnly && !equipped && (owned || progress.Data.coins>=price);
+        int selectedVariant=variant;
+        CreateItemRow(parent,ShopCatalog.LureNames[variant],"Permanent lure • "+ShopCatalog.LureDescriptions[variant],action,enabled,ShopCatalog.LurePreviewKey(variant),()=>
+        {
+            bool result=owned?progress.EquipLure(selectedVariant):progress.BuyLure(selectedVariant);
+            if(result)
+            {
+                ShopCatalog.SetActiveLureVariant(progress.Data.lureEquipped);
+                rebuild=true;
+            }
+        });
+    }
+
+    private int BuildBaitRows(Transform parent)
+    {
+        CreateBaitRow(parent,0);
+        CreateBaitRow(parent,2);
+        CreateBaitRow(parent,3);
+        return 3;
+    }
+
+    private void CreateBaitRow(Transform parent,int id)
+    {
+        bool permanent=id==0;
+        int amount=permanent?int.MaxValue:progress.Data.bait[id];
+        bool owned=permanent || amount>0;
+        bool equipped=progress.Data.baitEquipped==id;
+        int price=ShopCatalog.BaitPrices[id];
+        string action=equipped?"EQUIPPED":owned?"EQUIP":"BUY "+price.ToString("N0");
+        bool enabled=!progress.ReadOnly && !equipped && (owned || progress.Data.coins>=price);
+
+        string detail;
+        if(id==0)detail="Unlimited • Infinite worms • Standard catch chances.";
+        else if(id==2)detail=amount+" remaining • Pack of 10 • 20% shorter wait; favors snapper and goatfish.";
+        else detail=amount+" remaining • Pack of 10 • Favors yellowtail and tuna; one squid per cast.";
+
+        int selectedId=id;
+        CreateItemRow(parent,ShopCatalog.BaitNames[id],detail,action,enabled,"Bait"+id,()=>
+        {
+            bool result;
+            if(owned)
+            {
+                if(progress.ReadOnly)result=false;
+                else
+                {
+                    progress.Data.baitEquipped=selectedId;
+                    result=progress.Commit(true);
+                }
+            }
+            else result=progress.BuyBait(selectedId);
+            if(result)rebuild=true;
+        });
+    }
+
+    private void CreateItemRow(Transform parent,string title,string detail,string action,bool enabled,string previewKey,Action callback)
+    {
+        GameObject row=Panel(title,parent,Ink);
+        row.AddComponent<LayoutElement>().preferredHeight=184f;
+
+        GameObject accent=Panel("Accent",row.transform,Gold);
+        Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
+        accent.GetComponent<Image>().raycastTarget=false;
+
+        GameObject picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));
+        picture.transform.SetParent(row.transform,false);
+        Rect(picture.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(14,0),new Vector2(140,140));
+        RawImage raw=picture.GetComponent<RawImage>();
+        raw.raycastTarget=false;
+        preview.Attach(raw,0,1f,previewKey);
+
+        Text name=CreateText(row.transform,title,31,Color.white,TextAnchor.MiddleLeft);
+        Anchor(name.rectTransform,0,.5f,1,1,170,0,-232,-10);
+        Text description=CreateText(row.transform,detail,25,Detail,TextAnchor.MiddleLeft);
+        Anchor(description.rectTransform,0,0,1,.55f,170,10,-232,0);
+
+        Button button=CreateButton(row.transform,action,callback);
+        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-14,0),new Vector2(205,76));
+        button.interactable=enabled;
+        button.GetComponent<Image>().color=enabled?Teal:Disabled;
+    }
+
+    private void SelectTab(TackleTab tab)
+    {
+        if(selected==tab)return;
+        selected=tab;
+        rebuild=true;
+    }
+
+    private Text CreateText(Transform parent,string value,int size,Color color,TextAnchor alignment)
+    {
+        GameObject go=new GameObject("Label",typeof(RectTransform),typeof(Text));
+        go.transform.SetParent(parent,false);
+        Text text=go.GetComponent<Text>();
+        text.font=font;
+        text.text=value;
+        text.fontSize=size;
+        text.color=color;
+        text.alignment=alignment;
+        text.raycastTarget=false;
+        text.horizontalOverflow=HorizontalWrapMode.Wrap;
+        text.verticalOverflow=VerticalWrapMode.Truncate;
+        text.resizeTextForBestFit=true;
+        text.resizeTextMinSize=20;
+        text.resizeTextMaxSize=size;
+        return text;
+    }
+
+    private Button CreateButton(Transform parent,string caption,Action action)
+    {
+        GameObject go=Panel(caption,parent,Teal);
+        Button button=go.AddComponent<Button>();
+        button.targetGraphic=go.GetComponent<Image>();
+        button.transition=Selectable.Transition.None;
+        button.onClick.AddListener(()=>action());
+        Text label=CreateText(go.transform,caption,27,Color.white,TextAnchor.MiddleCenter);
+        Full(label.rectTransform);
+        return button;
+    }
+
+    private static GameObject Panel(string name,Transform parent,Color color)
+    {
+        GameObject go=new GameObject(name,typeof(RectTransform),typeof(Image));
+        go.transform.SetParent(parent,false);
+        go.GetComponent<Image>().color=color;
+        return go;
+    }
+
+    private static void Full(RectTransform rect)
+    {
+        rect.anchorMin=Vector2.zero;
+        rect.anchorMax=Vector2.one;
+        rect.offsetMin=Vector2.zero;
+        rect.offsetMax=Vector2.zero;
+    }
+
+    private static void Rect(RectTransform rect,Vector2 min,Vector2 max,Vector2 pivot,Vector2 position,Vector2 size)
+    {
+        rect.anchorMin=min;
+        rect.anchorMax=max;
+        rect.pivot=pivot;
+        rect.sizeDelta=size;
+        rect.anchoredPosition=position;
+    }
+
+    private static void Anchor(RectTransform rect,float x0,float y0,float x1,float y1,float left,float bottom,float right,float top)
+    {
+        rect.anchorMin=new Vector2(x0,y0);
+        rect.anchorMax=new Vector2(x1,y1);
+        rect.offsetMin=new Vector2(left,bottom);
+        rect.offsetMax=new Vector2(right,top);
+    }
+}
