@@ -61,6 +61,14 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
     // visible reel animation all read the exact tier multiplier in the same frame.
     private void Update(){Apply();}
 
+    // FishingSystem still contains a legacy placeholder gear tint. Catching a fish
+    // saves/changes ShopProgress, which calls that old tint code after our reel mesh
+    // has already been installed. On the authored blue Level 4 reel, the legacy
+    // yellow/gold _BaseColor property block makes the reel look green and persists
+    // until the reel visual is rebuilt. Clear only the reel property blocks in
+    // LateUpdate so authored reel materials always render their real colours.
+    private void LateUpdate(){ClearReelTint();}
+
     private void Apply()
     {
         if(progress==null || fishing==null || reelPowerField==null || rodRootField==null)return;
@@ -118,6 +126,22 @@ public sealed class Level2FishingReelRuntime : MonoBehaviour
         warnedTier=-1;
     }
 
+    private void ClearReelTint()
+    {
+        if(fishing==null || rodRootField==null)return;
+        GameObject rodRoot=rodRootField.GetValue(fishing) as GameObject;
+        if(rodRoot==null)return;
+        Transform targetMount=FindDeepChild(rodRoot.transform,"ReelMount");
+        if(targetMount==null)return;
+
+        foreach(string partName in ReelParts)
+        {
+            Transform target=targetMount.Find(partName);
+            MeshRenderer renderer=target!=null?target.GetComponent<MeshRenderer>():null;
+            if(renderer!=null)renderer.SetPropertyBlock(null);
+        }
+    }
+
     private static Transform FindDeepChild(Transform root,string name)
     {
         foreach(Transform t in root.GetComponentsInChildren<Transform>(true))if(t!=null && t.name==name)return t;
@@ -158,4 +182,3 @@ public sealed class ReelShopCleanup : MonoBehaviour
         return null;
     }
 }
-
