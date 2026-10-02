@@ -47,8 +47,11 @@ public sealed class ShopProgress : MonoBehaviour
         var d=JsonUtility.FromJson<ShopLedger>(json);
         if(d==null || d.version!=1 || d.bag==null || d.habitats==null || d.bait==null || d.bait.Length!=4) throw new InvalidOperationException("Invalid save");
         foreach(GearKind kind in Enum.GetValues(typeof(GearKind)))
-            if(d.Owned(kind)<0 || d.Owned(kind)>3 || d.Equipped(kind)<0 || d.Equipped(kind)>3)
+        {
+            int maxTier=kind==GearKind.Rod?ShopCatalog.MaxRodTier:kind==GearKind.Reel?ShopCatalog.MaxReelTier:ShopCatalog.LineNames.Length-1;
+            if(d.Owned(kind)<0 || d.Owned(kind)>maxTier || d.Equipped(kind)<0 || d.Equipped(kind)>maxTier)
                 throw new InvalidOperationException("Invalid saved equipment");
+        }
         if(d.coins<0 || d.baitEquipped<0 || d.baitEquipped>ShopCatalog.StarterLure || d.lureEquipped<0 || d.lureEquipped>=ShopCatalog.LureVariantCount || d.lureOwnedMask<0) throw new InvalidOperationException("Invalid saved balance, bait, or lure");
         foreach(int amount in d.bait) if(amount<0) throw new InvalidOperationException("Invalid bait quantity");
         foreach(var habitat in d.habitats) if(habitat==null || ShopCatalog.Habitat(habitat.id)==null || habitat.fish==null)
@@ -117,5 +120,3 @@ public sealed class ShopProgress : MonoBehaviour
         return id;
     }
 }
-
-
