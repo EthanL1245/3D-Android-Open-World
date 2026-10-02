@@ -1,0 +1,1 @@
+These text assets contain authored terrain texture data supplied by the user. They are decoded by AuthoredSurfaceTextures at editor/runtime so the exact supplied sand, grass, and stone appearance replaces the older procedural terrain textures.
