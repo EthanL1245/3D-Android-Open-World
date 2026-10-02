@@ -69,16 +69,17 @@ using System.Collections.Generic;
 
     private static int LegacyGearMask(int highest)
     {
-        highest=Math.Max(0,Math.Min(3,highest));
+        highest=Math.Max(0,Math.Min(ShopCatalog.MaxRodTier,highest));
         return (1<<(highest+1))-1;
     }
 
     private static int HighestOwnedTier(int mask)
     {
-        for(int tier=3;tier>=0;tier--)if((mask&(1<<tier))!=0)return tier;
+        for(int tier=ShopCatalog.MaxRodTier;tier>=0;tier--)if((mask&(1<<tier))!=0)return tier;
         return 0;
     }
 
+    private static int MaxTier(GearKind kind)=>kind==GearKind.Rod?ShopCatalog.MaxRodTier:kind==GearKind.Reel?ShopCatalog.MaxReelTier:ShopCatalog.LineNames.Length-1;
     private int GearMask(GearKind kind) => kind==GearKind.Rod?rodOwnedMask:kind==GearKind.Reel?reelOwnedMask:lineOwnedMask;
     private void SetGearMask(GearKind kind,int mask)
     {
@@ -86,7 +87,7 @@ using System.Collections.Generic;
         else if(kind==GearKind.Reel)reelOwnedMask=mask;
         else lineOwnedMask=mask;
     }
-    public bool OwnsGear(GearKind kind,int tier) => tier>=0 && tier<=3 && (GearMask(kind)&(1<<tier))!=0;
+    public bool OwnsGear(GearKind kind,int tier) => tier>=0 && tier<=MaxTier(kind) && (GearMask(kind)&(1<<tier))!=0;
 
     public bool EnsureLures()
     {
@@ -169,7 +170,7 @@ using System.Collections.Generic;
     public bool Spend(int price) { if (price < 0 || price==int.MaxValue || coins < price) return false; coins -= price; return true; }
     public bool BuyGear(GearKind kind, int tier)
     {
-        if(tier<1 || tier>3 || OwnsGear(kind,tier))return false;
+        if(tier<1 || tier>MaxTier(kind) || OwnsGear(kind,tier))return false;
         int price=ShopCatalog.GearPrice(kind,tier);
         if(!Spend(price))return false;
         SetGearMask(kind,GearMask(kind)|LegacyGearMask(tier));
