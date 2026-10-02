@@ -36,16 +36,16 @@ public static class FishingTuning
     private const string WeightResource="FishingTuning/BiomeFishWeights";
     private const string ChanceResource="FishingTuning/BiomeBaitSpeciesChance";
 
-    // Human tuning now needs only min/max. Internally we define the underlying
-    // normal curve's P01 one percent of the range above min and its P99 one percent
-    // below max. The curve is then truncated/renormalized at min/max, so catches are
-    // always within the configured bounds and there is no clamped pile-up at either end.
+    // Human tuning needs only min/max. Internally P01 sits 1% of the range above
+    // min and P99 sits 1% below max; the normal curve is truncated/renormalized at
+    // the hard endpoints so there is no probability pile-up at min/max.
     private const float NormalP01Z=2.326347874f;
     private const float BoundedNormalLowerCdf=0.008802461f;
     private const float BoundedNormalUpperCdf=0.991197539f;
 
-    // Stable save-game species IDs. Retired ID 4 must never be reused.
-    private static readonly int[] ActiveSpecies={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16};
+    // Use the catalog's stable active IDs directly so adding a species in one place
+    // cannot silently leave the editable tuning system one fish behind.
+    private static readonly int[] ActiveSpecies=FishCatalog.ActiveIds;
     private static readonly string[] Biomes={"suncrest-reef","brinebreak-isle","deep-ocean","bluewater-cay"};
     private static readonly string[] RequiredBaits={
         "worms","worms-legacy","shrimp","squid",
@@ -98,12 +98,14 @@ public static class FishingTuning
         return Stats.TryGetValue(Canonical(species),out stats);
     }
 
-    public const float GreenToYellowSpeed = 0.95f / 1.35f;
-    public const float RedToYellowSpeed = 1.75f / 1.35f;
-    public static float YellowSpeed(int species, float legacyDifficulty)
+    public const float GreenToYellowSpeed=0.95f/1.35f;
+    public const float RedToYellowSpeed=1.75f/1.35f;
+
+    public static float YellowSpeed(int species,float legacyDifficulty)
     {
         SpeciesStats stats;
-        return TryGetSpeciesStats(species,out stats) ? stats.YellowSpeedMps
+        return TryGetSpeciesStats(species,out stats)
+            ? stats.YellowSpeedMps
             : Mathf.Lerp(1.85f,2.95f,legacyDifficulty)*1.35f;
     }
 
@@ -125,7 +127,8 @@ public static class FishingTuning
             p75=WeightAtPercentile(row,.75f);
             return true;
         }
-        p25=p50=p75=0f;return false;
+        p25=p50=p75=0f;
+        return false;
     }
 
     public static bool TryGetWeightRange(int species,int biome,out float minimum,out float maximum)
@@ -133,7 +136,9 @@ public static class FishingTuning
         minimum=maximum=0f;
         WeightDistribution row;
         if(!TryGetWeightDistribution(species,biome,out row))return false;
-        minimum=row.MinKg;maximum=row.MaxKg;return true;
+        minimum=row.MinKg;
+        maximum=row.MaxKg;
+        return true;
     }
 
     public static bool TryRollWeight(int species,int biome,float random01,out float kg)
@@ -154,10 +159,6 @@ public static class FishingTuning
         float p01=row.MinKg+range*.01f;
         float p99=row.MaxKg-range*.01f;
         float sigma=(p99-p01)/(2f*NormalP01Z);
-
-        // Sample the underlying normal only between the configured hard bounds.
-        // This is a proper bounded/truncated normal, not a clamp: probability is
-        // renormalized across min..max so exact min/max do not accumulate a pile-up.
         float boundedProbability=Mathf.Lerp(
             BoundedNormalLowerCdf,
             BoundedNormalUpperCdf,
@@ -166,8 +167,7 @@ public static class FishingTuning
         return Mathf.Clamp(mean+sigma*z,row.MinKg,row.MaxKg);
     }
 
-    // Peter J. Acklam inverse-normal approximation. More than sufficient for game
-    // tuning and deterministic from the single random percentile already passed in.
+    // Peter J. Acklam inverse-normal approximation.
     private static float InverseNormalCdf(float probability)
     {
         double p=Math.Max(1e-12,Math.Min(1.0-1e-12,probability));
@@ -252,7 +252,8 @@ public static class FishingTuning
         health=0;
         SpeciesStats stats;
         if(!TryGetSpeciesStats(species,out stats))return false;
-        health=Mathf.Max(1,Mathf.RoundToInt(QuadraticByWeight(weightKg,stats.MinWeightKg,stats.MaxWeightKg,stats.MinHealth,stats.MaxHealth)));
+        health=Mathf.Max(1,Mathf.RoundToInt(QuadraticByWeight(
+            weightKg,stats.MinWeightKg,stats.MaxWeightKg,stats.MinHealth,stats.MaxHealth)));
         return true;
     }
 
@@ -261,12 +262,11 @@ public static class FishingTuning
         coins=0;
         SpeciesStats stats;
         if(!TryGetSpeciesStats(species,out stats))return false;
-        coins=Mathf.Max(1,Mathf.RoundToInt(QuadraticByWeight(weightKg,stats.MinWeightKg,stats.MaxWeightKg,stats.MinCostCoins,stats.MaxCostCoins)));
+        coins=Mathf.Max(1,Mathf.RoundToInt(QuadraticByWeight(
+            weightKg,stats.MinWeightKg,stats.MaxWeightKg,stats.MinCostCoins,stats.MaxCostCoins)));
         return true;
     }
 
-    // Endpoint-defined parabola: t=0 at the species-wide minimum weight and t=1 at
-    // the species-wide maximum. The minimum endpoint is the parabola's vertex.
     public static float QuadraticByWeight(float weight,float minWeight,float maxWeight,float minValue,float maxValue)
     {
         if(maxWeight<=minWeight)return maxValue;
@@ -281,8 +281,13 @@ public static class FishingTuning
 
     private static void Load()
     {
-        loaded=true;valid=false;validationError=null;
-        Stats.Clear();WeightRows.Clear();ChanceRows.Clear();
+        loaded=true;
+        valid=false;
+        validationError=null;
+        Stats.Clear();
+        WeightRows.Clear();
+        ChanceRows.Clear();
+
         try
         {
             TextAsset statsAsset=Resources.Load<TextAsset>(StatsResource);
@@ -313,10 +318,14 @@ public static class FishingTuning
             if(Ignore(line) || line.StartsWith("speciesId,"))continue;
             string[] c=line.Split(',');
             if(c.Length!=9)return Fail("FishStats.csv line "+(lineIndex+1)+" must have 9 columns (including yellowSpeedMps).");
-            int id,minHealth,maxHealth,minCost,maxCost;float minWeight,maxWeight,yellowSpeed;
+
+            int id,minHealth,maxHealth,minCost,maxCost;
+            float minWeight,maxWeight,yellowSpeed;
             if(!Int(c[0],out id) || !Float(c[2],out minWeight) || !Float(c[3],out maxWeight) ||
-               !Int(c[4],out minHealth) || !Int(c[5],out maxHealth) || !Int(c[6],out minCost) || !Int(c[7],out maxCost) || !Float(c[8],out yellowSpeed))
+               !Int(c[4],out minHealth) || !Int(c[5],out maxHealth) ||
+               !Int(c[6],out minCost) || !Int(c[7],out maxCost) || !Float(c[8],out yellowSpeed))
                 return Fail("FishStats.csv line "+(lineIndex+1)+" contains an invalid number.");
+
             id=Canonical(id);
             if(ActiveIndex(id)<0)return Fail("FishStats.csv line "+(lineIndex+1)+" uses inactive/unknown species ID "+id+".");
             if(Stats.ContainsKey(id))return Fail("FishStats.csv has duplicate species ID "+id+".");
@@ -324,8 +333,12 @@ public static class FishingTuning
             if(minWeight<=0f || maxWeight<=minWeight)return Fail("FishStats.csv species "+id+" requires 0 < minWeightKg < maxWeightKg.");
             if(minHealth<1 || maxHealth<minHealth)return Fail("FishStats.csv species "+id+" requires 1 <= minHealth <= maxHealth.");
             if(minCost<1 || maxCost<minCost)return Fail("FishStats.csv species "+id+" requires 1 <= minCost <= maxCost.");
-            Stats[id]=new SpeciesStats{SpeciesId=id,SpeciesName=c[1].Trim(),MinWeightKg=minWeight,MaxWeightKg=maxWeight,
-                MinHealth=minHealth,MaxHealth=maxHealth,MinCostCoins=minCost,MaxCostCoins=maxCost,YellowSpeedMps=yellowSpeed};
+
+            Stats[id]=new SpeciesStats{
+                SpeciesId=id,SpeciesName=c[1].Trim(),MinWeightKg=minWeight,MaxWeightKg=maxWeight,
+                MinHealth=minHealth,MaxHealth=maxHealth,MinCostCoins=minCost,MaxCostCoins=maxCost,
+                YellowSpeedMps=yellowSpeed
+            };
         }
         return true;
     }
@@ -341,7 +354,8 @@ public static class FishingTuning
             if(c.Length!=5)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" must have 5 columns: biomeId,speciesId,speciesName,minKg,maxKg.");
 
             string biome=c[0].Trim();
-            int id;float min,max;
+            int id;
+            float min,max;
             if(BiomeIndex(biome)<0)return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" has unknown biome '"+biome+"'.");
             if(!Int(c[1],out id) || !Float(c[3],out min) || !Float(c[4],out max))
                 return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" contains an invalid number.");
@@ -349,12 +363,14 @@ public static class FishingTuning
             id=Canonical(id);
             SpeciesStats stats;
             if(!Stats.TryGetValue(id,out stats))return Fail("BiomeFishWeights.csv line "+(lineIndex+1)+" references species "+id+" before/without FishStats.");
+
             bool unavailable=min==0f && max==0f;
             if(!unavailable && (min<=0f || max<=min))
                 return Fail("BiomeFishWeights.csv "+biome+" species "+id+" requires either minKg=0 and maxKg=0 (unavailable), or 0 < minKg < maxKg.");
             if(!unavailable && (min<stats.MinWeightKg || max>stats.MaxWeightKg))
                 return Fail("BiomeFishWeights.csv "+biome+" species "+id+" min/max must stay inside FishStats species min/max ("+
-                    stats.MinWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+"–"+stats.MaxWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+" kg).");
+                    stats.MinWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+"–"+
+                    stats.MaxWeightKg.ToString("0.###",CultureInfo.InvariantCulture)+" kg).");
 
             string key=WeightKey(biome,id);
             if(WeightRows.ContainsKey(key))return Fail("BiomeFishWeights.csv has duplicate row for "+biome+" species "+id+".");
@@ -373,22 +389,32 @@ public static class FishingTuning
             string[] c=line.Split(',');
             if(c.Length!=2+ActiveSpecies.Length)
                 return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" must have "+(2+ActiveSpecies.Length)+" columns.");
-            string biome=c[0].Trim();string bait=c[1].Trim();
+
+            string biome=c[0].Trim();
+            string bait=c[1].Trim();
             if(BiomeIndex(biome)<0)return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" has unknown biome '"+biome+"'.");
             if(!RequiredBait(bait))return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" has unknown baitKey '"+bait+"'.");
-            float[] chances=new float[ActiveSpecies.Length];int total=0;
+
+            float[] chances=new float[ActiveSpecies.Length];
+            int total=0;
             for(int i=0;i<chances.Length;i++)
             {
                 int wholeChance;
                 if(!Int(c[i+2],out wholeChance) || wholeChance<0)
                     return Fail("BiomeBaitSpeciesChance.csv line "+(lineIndex+1)+" requires whole-number, non-negative percentages in species column "+ActiveSpecies[i]+".");
+
                 WeightDistribution weights;
                 if(wholeChance>0 && WeightRows.TryGetValue(WeightKey(biome,ActiveSpecies[i]),out weights) && weights.Unavailable)
-                    return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" gives species "+ActiveSpecies[i]+" ("+Stats[ActiveSpecies[i]].SpeciesName+") "+wholeChance+"%, but BiomeFishWeights.csv marks it unavailable with minKg=0 and maxKg=0. Set its chance to 0% for EVERY bait/lure in this biome, or restore a positive weight range. Keep each chance row totaling 100%.");
-                chances[i]=wholeChance;total+=wholeChance;
+                    return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" gives species "+ActiveSpecies[i]+" ("+
+                        Stats[ActiveSpecies[i]].SpeciesName+") "+wholeChance+"%, but BiomeFishWeights.csv marks it unavailable with minKg=0 and maxKg=0. Set its chance to 0% for EVERY bait/lure in this biome, or restore a positive weight range. Keep each chance row totaling 100%.");
+
+                chances[i]=wholeChance;
+                total+=wholeChance;
             }
+
             if(total!=100)
                 return Fail("BiomeBaitSpeciesChance.csv "+biome+" + "+bait+" totals "+total+"%, not 100%. Fix the row; probabilities are NOT auto-normalized.");
+
             string key=ChanceKey(biome,bait);
             if(ChanceRows.ContainsKey(key))return Fail("BiomeBaitSpeciesChance.csv has duplicate row for "+biome+" + "+bait+".");
             ChanceRows[key]=chances;
@@ -399,12 +425,15 @@ public static class FishingTuning
     private static bool ValidateCompleteness()
     {
         for(int i=0;i<ActiveSpecies.Length;i++)
-            if(!Stats.ContainsKey(ActiveSpecies[i]))return Fail("FishStats.csv is missing active species ID "+ActiveSpecies[i]+".");
+            if(!Stats.ContainsKey(ActiveSpecies[i]))
+                return Fail("FishStats.csv is missing active species ID "+ActiveSpecies[i]+".");
+
         for(int b=0;b<Biomes.Length;b++)
         {
             for(int i=0;i<ActiveSpecies.Length;i++)
                 if(!WeightRows.ContainsKey(WeightKey(Biomes[b],ActiveSpecies[i])))
                     return Fail("BiomeFishWeights.csv is missing "+Biomes[b]+" species "+ActiveSpecies[i]+".");
+
             for(int k=0;k<RequiredBaits.Length;k++)
                 if(!ChanceRows.ContainsKey(ChanceKey(Biomes[b],RequiredBaits[k])))
                     return Fail("BiomeBaitSpeciesChance.csv is missing "+Biomes[b]+" + "+RequiredBaits[k]+".");
@@ -414,7 +443,8 @@ public static class FishingTuning
 
     private static bool Fail(string message)
     {
-        valid=false;validationError=message;
+        valid=false;
+        validationError=message;
         Debug.LogError("[FISH TUNING] "+message);
         return false;
     }
@@ -435,15 +465,15 @@ public static class FishingTuning
 
     private static int BiomeIndex(string biome)
     {
-        for(int i=0;i<Biomes.Length;i++)if(string.Equals(Biomes[i],biome,StringComparison.OrdinalIgnoreCase))return i;
+        for(int i=0;i<Biomes.Length;i++)
+            if(string.Equals(Biomes[i],biome,StringComparison.OrdinalIgnoreCase))return i;
         return -1;
     }
 
     private static bool RequiredBait(string bait)
     {
-        for(int i=0;i<RequiredBaits.Length;i++)if(string.Equals(RequiredBaits[i],bait,StringComparison.OrdinalIgnoreCase))return true;
+        for(int i=0;i<RequiredBaits.Length;i++)
+            if(string.Equals(RequiredBaits[i],bait,StringComparison.OrdinalIgnoreCase))return true;
         return false;
     }
 }
-
-
