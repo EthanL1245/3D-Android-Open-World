@@ -24,7 +24,7 @@ public static class ShopCatalog
     public const int NeonBreachLureVariant=0;
     public const int FireShadLureVariant=2;
     public const int BloodyBaitLureVariant=4;
-    public const int MaxRodTier=3;
+    public const int MaxRodTier=4;
     public const int MaxReelTier=3;
 
     public static readonly string[] LureNames =
@@ -86,6 +86,7 @@ public static class ShopCatalog
     {
         switch(tier)
         {
+            case 4:return "Fishing/FishingRodReelLevel5Rod";
             case 3:return "Fishing/FishingRodReelLevel4Rod";
             case 2:return "Fishing/FishingRodReelLevel3Rod";
             case 1:return "Fishing/FishingRodReelLevel2Rod";
@@ -118,12 +119,12 @@ public static class ShopCatalog
         new HabitatDefinition("garden", "Garden Lagoon", 5000, 25, 105f, 720f, 18f, 4f, 14f, true, true),
         new HabitatDefinition("lake", "Sanctuary Lake", 15000, 50, 360f, 3600f, 32f, 6f, 24f, true, true)
     };
-    public static readonly string[] RodNames = { "Woodland Rod", "Level 2 Fishing Rod", "Level 3 Fishing Rod", "Level 4 Fishing Rod" };
+    public static readonly string[] RodNames = { "Woodland Rod", "Level 2 Fishing Rod", "Level 3 Fishing Rod", "Level 4 Fishing Rod", "Level 5 Fishing Rod" };
     public static readonly string[] ReelNames = { "Starter Reel", "Level 2 Fishing Reel", "Level 3 Fishing Reel", "Level 4 Fishing Reel" };
     public static readonly string[] LineNames = { "Standard Line", "Reinforced Line", "Braided Line", "Elite Braid" };
     public static readonly string[] BaitNames = { "Worms", "Worms (legacy)", "Shrimp", "Squid", "Neon Breach Crankbait" };
     public static readonly int[] BaitPrices = { 0, 35, 90, 180, 0 };
-    public static readonly int[] RodPrices = { 0, 2000, 6000, 10000 };
+    public static readonly int[] RodPrices = { 0, 2000, 6000, 10000, 25000 };
     public static readonly int[] ReelPrices = { 0, 1500, 4500, 6500 };
     public static readonly int[] LinePrices = { 0, 100, 400, 1100 };
     public static readonly float[] LineBonus = { 0, 0, 0, 0 };
@@ -132,4 +133,3 @@ public static class ShopCatalog
     public static int GearPrice(GearKind kind, int tier) => (kind == GearKind.Rod ? RodPrices : kind == GearKind.Reel ? ReelPrices : LinePrices)[tier];
     public static float FishLength(int species,float kg) => FishSizeTable.LengthMetres(species,kg);
 }
-
