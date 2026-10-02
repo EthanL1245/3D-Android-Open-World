@@ -18,3 +18,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 14,Greater Amberjack,1,70,320,5000,260,8000,3.7
 15,Blacktip Shark,5,30,9000,20000,1200,12000,5.2
 16,Yellowtail Snapper,0.25,4.1,90,300,40,250,2.85
+17,Mutton Snapper,0.5,13,150,650,80,900,3.152
