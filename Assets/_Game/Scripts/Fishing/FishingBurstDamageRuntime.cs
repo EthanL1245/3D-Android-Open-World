@@ -16,6 +16,7 @@ using UnityEngine;
 ///   Level 2:  4-8, 5% critical, critical = 8-16
 ///   Level 3:  6-12, 8% critical, critical = 12-24
 ///   Level 4:  10-20, 10% critical, critical = 20-40
+///   Level 5:  25-35, 13% critical, critical = 50-70
 ///
 /// Pressing REEL does not deal an instant hit. Releasing and rapidly tapping also
 /// does not reset or accelerate the clock: only the sum of time the input is truly
@@ -69,19 +70,25 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     public static int NormalMinimumForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return tier == 3 ? 10 : 2 * (tier + 1);
+        if (tier == 4) return 25;
+        if (tier == 3) return 10;
+        return 2 * (tier + 1);
     }
 
     public static int NormalMaximumForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return tier == 3 ? 20 : 4 * (tier + 1);
+        if (tier == 4) return 35;
+        if (tier == 3) return 20;
+        return 4 * (tier + 1);
     }
 
     public static float CriticalChanceForTier(int tier)
     {
         tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
-        return tier == 3 ? 0.10f : tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
+        if (tier == 4) return 0.13f;
+        if (tier == 3) return 0.10f;
+        return tier >= 2 ? 0.08f : tier >= 1 ? 0.05f : 0f;
     }
 
     /// <summary>
@@ -207,8 +214,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
                 screenPoint = camera.WorldToScreenPoint(bobber.transform.position);
 
             // Show the rolled attack value, not the remaining-HP-capped value. A
-            // finishing 12-damage critical against a 3-HP fish is still a 12-damage
-            // critical; only the health bar clamps at zero.
+            // finishing critical keeps its rolled attack number even if the fish had
+            // less health remaining; only the health bar clamps at zero.
             hud.ShowDamage(rolledDamage, screenPoint);
         }
     }
@@ -283,4 +290,3 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             legacyUpgradeRuntime.enabled = true;
     }
 }
-
