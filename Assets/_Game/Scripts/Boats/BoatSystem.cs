@@ -178,10 +178,10 @@ public sealed class BoatSystem : MonoBehaviour
             return;
         }
         if(!NearMarina)return;
-        CancelPlacement();GetComponent<FishingSystem>()?.PrepareForMenu();shop.SetActive(true);controls.SetUIBlocked(true);RefreshShop();
+        CancelPlacement();GetComponent<FishingSystem>()?.PrepareForMenu();shop.SetActive(true);controls.SetMenuOpen(true);RefreshShop();
     }
 
-    private void CloseShop(){if(shop!=null && shop.activeSelf){shop.SetActive(false);controls.SetUIBlocked(false);}}
+    private void CloseShop(){if(shop!=null && shop.activeSelf){shop.SetActive(false);controls.SetMenuOpen(ShopWorldHUD.MenuOpen);}}
 
     private void RefreshShop()
     {
@@ -247,5 +247,6 @@ public sealed class BoatSystem : MonoBehaviour
 
     private void OnDestroy(){CancelPlacement();if(ActiveBoat!=null)Destroy(ActiveBoat.gameObject);}
 }
+
 
 

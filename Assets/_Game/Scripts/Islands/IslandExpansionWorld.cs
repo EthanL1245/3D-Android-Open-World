@@ -17,6 +17,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     public Transform Arrival {get;private set;}
     public bool Ready {get;private set;}
     private TerrainData originalData,generatedData;
+    private readonly System.Collections.Generic.Dictionary<Transform,Vector3> sceneryPositions = new System.Collections.Generic.Dictionary<Transform,Vector3>();
     private Vector3 originalPosition;
     private ReefZone reef;
     private float sea;
@@ -47,7 +48,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         ShelfCenter=new Vector3((left+right)*.5f,sea,reef.center.z+17.5f);
         // Oversize the outer ellipse so both complete coastal shelves fit inside.
         ShelfRadii=new Vector2((right-left)*.5f,Mathf.Max(reef.islandRadiusZ+reef.reefWidth+95,Config.IslandRadii.y+190));
-        BuildTerrain();BuildScenery();BuildPelagicScenery();ResizeWaterQuery();Ready=true;
+        BuildTerrain();GroundExistingScenery();BuildScenery();BuildPelagicScenery();ResizeWaterQuery();Ready=true;
     }
     private float SourceHeight(Vector3 p)
     {
@@ -131,6 +132,45 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         var collider=Terrain.GetComponent<TerrainCollider>();if(collider!=null)collider.terrainData=generatedData;
         Terrain.heightmapPixelError=6;Terrain.drawInstanced=true;Terrain.basemapDistance=350;
         Physics.SyncTransforms();
+    }
+    // Suncrest props were placed on the saved heightmap. The runtime seabed can
+    // lower that floor by many metres, so move each complete prop by the floor
+    // difference while preserving its authored pivot/burial offset.
+    private void GroundExistingScenery()
+    {
+        foreach(Transform prop in reef.transform)
+        {
+            if(!prop.gameObject.activeSelf || prop.GetComponent<Terrain>()!=null ||
+                prop.GetComponent<PondWater>()!=null)continue;
+            if(prop.name=="Shell bank")
+            {
+                foreach(Transform shell in prop)GroundExistingProp(shell);
+            }
+            else if(prop.GetComponentInChildren<Renderer>()!=null || prop.name=="SuncrestArrival")
+                GroundExistingProp(prop);
+        }
+        Physics.SyncTransforms();
+    }
+    private void GroundExistingProp(Transform prop)
+    {
+        Vector3 position=prop.position;
+        float shift=Terrain.SampleHeight(position)+Terrain.transform.position.y-SourceHeight(position);
+        // Sample the base footprint too: wide reef props should sit into a
+        // sloping floor instead of balancing above its lower side.
+        string name=prop.name;
+        if(name.Contains("limestone") || name.Contains("coral") || name.Contains("shrub") ||
+            name=="Limestone" || name=="Coral" || name=="SeaGrape")
+        {
+            float radius=.65f*Mathf.Max(Mathf.Abs(prop.lossyScale.x),Mathf.Abs(prop.lossyScale.z));
+            for(int i=0;i<8;i++)
+            {
+                float angle=i*Mathf.PI/4;
+                Vector3 sample=position+new Vector3(Mathf.Cos(angle)*radius,0,Mathf.Sin(angle)*radius);
+                shift=Mathf.Min(shift,Terrain.SampleHeight(sample)+Terrain.transform.position.y-SourceHeight(sample));
+            }
+        }
+        sceneryPositions[prop]=position;
+        prop.position=position+Vector3.up*shift;
     }
     private void BuildSeabedTexture()
     {
@@ -243,11 +283,14 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     private void OnDestroy()
     {
         if(Active==this)Active=null;
+        foreach(var entry in sceneryPositions)if(entry.Key!=null)entry.Key.position=entry.Value;
+        sceneryPositions.Clear();
         if(Terrain!=null && originalData!=null){Terrain.terrainData=originalData;Terrain.transform.position=originalPosition;var c=Terrain.GetComponent<TerrainCollider>();if(c!=null)c.terrainData=originalData;}
         if(generatedData!=null)Destroy(generatedData);if(rockLayer!=null)Destroy(rockLayer);if(rockTexture!=null)Destroy(rockTexture);
         if(seabedLayer!=null)Destroy(seabedLayer);if(seabedTexture!=null)Destroy(seabedTexture);if(seabedNormal!=null)Destroy(seabedNormal);
         if(rock!=null)Destroy(rock);if(wood!=null)Destroy(wood);if(grass!=null)Destroy(grass);
     }
 }
+
 
 
