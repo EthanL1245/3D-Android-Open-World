@@ -29,10 +29,12 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
     private static readonly FieldInfo FightBiomeField=typeof(FishingSystem).GetField("fightBiome",Flags);
     private static readonly FieldInfo HookedSpeciesField=typeof(FishingSystem).GetField("hookedSpeciesId",Flags);
     private static readonly FieldInfo HookedWeightField=typeof(FishingSystem).GetField("hookedWeightKg",Flags);
+    private static readonly FieldInfo HookedTemperamentField=typeof(FishingSystem).GetField("hookedTemperament",Flags);
     private static readonly FieldInfo FishMaxHealthField=typeof(FishingSystem).GetField("fishMaxHealth",Flags);
     private static readonly FieldInfo FishHealthPointsField=typeof(FishingSystem).GetField("fishHealthPoints",Flags);
     private static readonly FieldInfo FishHealthField=typeof(FishingSystem).GetField("fishHealth",Flags);
     private static readonly FieldInfo OceanWaterField=typeof(FishingSystem).GetField("oceanWater",Flags);
+    private static readonly MethodInfo RollTemperamentMethod=typeof(FishingSystem).GetMethod("RollTemperament",Flags);
 
     private FishingSystem fishing;
     private Terrain terrain;
@@ -56,7 +58,8 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
         ocean=fishing!=null && OceanWaterField!=null?OceanWaterField.GetValue(fishing) as OceanWater:null;
         if(fishing==null || StateField==null || CastPointField==null || PondCastField==null ||
            ActiveBaitField==null || FightBiomeField==null || HookedSpeciesField==null ||
-           HookedWeightField==null || FishMaxHealthField==null || FishHealthPointsField==null || FishHealthField==null)
+           HookedWeightField==null || HookedTemperamentField==null || RollTemperamentMethod==null ||
+           FishMaxHealthField==null || FishHealthPointsField==null || FishHealthField==null)
         {
             Debug.LogError("SnapperIslandFishingRuntime could not bind FishingSystem fields and was disabled.");
             enabled=false;
@@ -84,8 +87,9 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
         Vector3 castPoint=(Vector3)CastPointField.GetValue(fishing);
         if(!SnapperIslandRuntime.Ready || !SnapperIslandGeometry.ContainsFishingWater(castPoint,SnapperIslandRuntime.Center))return;
 
-        // Core FishingSystem has already selected a normal biome fish by this point.
-        // Replace that result once, before the fight/cast-quality companion consumes it.
+        // CatchOrderRuntime normally performs this during Update so the regular cast
+        // quality pass sees the final snapper. Keep this LateUpdate path as a safety
+        // net for unusual execution-order/domain-reload cases.
         if(!appliedToCast && (state=="Bite" || state=="Fighting"))
         {
             ApplySnapperCatch(state);
@@ -111,6 +115,13 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
 
         HookedSpeciesField.SetValue(fishing,species);
         HookedWeightField.SetValue(fishing,weight);
+
+        // BeginBite rolled temperament using the core biome's temporary species before
+        // this companion replaced it. Re-roll here so movement/surges match the actual
+        // snapper that the player sees and catches.
+        object temperament=RollTemperamentMethod.Invoke(fishing,new object[]{species,weight});
+        HookedTemperamentField.SetValue(fishing,temperament);
+
         // Keep core fight logic on a safe existing biome ID; species selection is now
         // authoritative in this companion and the 50 m island boundary is cast-based.
         FightBiomeField.SetValue(fishing,0);
@@ -165,9 +176,9 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
     }
 
     /// <summary>
-    /// Called from the later companion below once FishingCastQualityRuntime has applied
-    /// its normal biome result. Replaces that result with this island's own shoreline
-    /// depth reference instead of leaving Snapper Island classified as Deep Ocean.
+    /// Called after FishingCastQualityRuntime applies its normal biome result. Replaces
+    /// that result with this island's own shoreline depth reference instead of leaving
+    /// Snapper Island classified as the surrounding ocean biome.
     /// </summary>
     internal bool TryCorrectCastQuality()
     {
@@ -239,7 +250,11 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
     }
 }
 
-/// <summary>Runs after FishingCastQualityRuntime so Snapper Island can replace its fallback Deep Ocean reference.</summary>
+/// <summary>
+/// Runs after FishingCastQualityRuntime but before FishingBurstDamageRuntime. Using
+/// Update (not LateUpdate) is important: the final Snapper Island max HP must exist
+/// before the burst-damage runtime snapshots authoritative HP on the first fight frame.
+/// </summary>
 [DefaultExecutionOrder(2100)]
 public sealed class SnapperIslandCastQualityRuntime : MonoBehaviour
 {
@@ -253,7 +268,7 @@ public sealed class SnapperIslandCastQualityRuntime : MonoBehaviour
 
     private SnapperIslandFishingRuntime rules;
     private void Awake(){rules=GetComponent<SnapperIslandFishingRuntime>();}
-    private void LateUpdate()
+    private void Update()
     {
         if(rules==null)rules=GetComponent<SnapperIslandFishingRuntime>();
         if(rules!=null)rules.TryCorrectCastQuality();
