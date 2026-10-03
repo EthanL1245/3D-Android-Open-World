@@ -4,13 +4,15 @@ Pull and Play; the existing FishingHUD and FishingBurstDamageRuntime build/use t
 
 | Mode | Outward fish speed | Reel-burst damage | Positive tension gain | Passive effect |
 |---|---:|---:|---:|---|
-| Low | 1.5x | 0.5x | 0.5x | Normal release recovery |
+| Low | 2x | 0.5x | 0.5x | Normal release recovery |
 | Medium | 1x | 1x | 1x | Existing behavior |
-| High | 1x | 2x | 1x + 0.025 per second | No release recovery; one normal noncritical rod hit per second; skill charge |
+| High | 1x | 2x | 2x reeling; 1x passive resistance + 0.025 per second | No release recovery; one normal noncritical rod hit per second; skill charge |
 
 Tension is internally 0–1, so 0.025 is 2.5 percentage points per second, in addition to ordinary fish resistance. Low scales positive resistance and reel tension, not recovery. The maximum-line-distance failure remains unchanged. Half damage retains fractional points between bursts; odd hits do not gain damage through rounding.
 
-The drag selector follows the top of the movement joystick in canvas coordinates. During a fight the skill meter replaces all hotbar slots; the normal hotbar returns on catch, escape, cancellation or component disable. Retrieval of an unconscious fish shows a subdued label and disables drag controls.
+Low's 2x escape multiplier applies to base swim speed before temperament, initial-burst and surge multipliers. High doubles only the reeling tension term; passive resistance and the extra 0.025 per second remain unchanged.
+
+The drag selector is a draggable slider with whole-number values 0/1/2, a handle, and labeled Low/Medium/High notches. It follows the top of the movement joystick in canvas coordinates. During a fight the skill meter replaces all hotbar slots; the normal hotbar returns on catch, escape, cancellation or component disable. Retrieval of an unconscious fish shows a subdued label and disables drag controls.
 
 High charges the meter in 12 seconds of active fight time. Other modes preserve earned charge. A full meter can be spent in any mode with a quick swipe beginning on TouchLookArea, completed in 0.04–0.35 seconds, at least 12% of the screen's shorter dimension (minimum 70 px), at a speed of at least 80% of that dimension per second. Joystick/reel/drag/menu pointer gestures cannot qualify. Existing camera look still works. The skill consumes its meter once and deals 10x a random **normal** damage roll of the equipped rod, independent of drag and crit multipliers.
 

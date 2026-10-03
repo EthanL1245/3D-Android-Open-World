@@ -27,8 +27,10 @@ class Program {
   Check(!r.TrySkillSwipe(new Vector2(400,0),.2f),"No strikes on unconscious fish");
   Set(f,"state","Idle");Tick(0);Check(!h.Fighting && r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fight cleanup");
   Set(f,"state","Fighting");Tick(0);Check(r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fresh fight");
-  Check(FishingDragRules.EscapeMultiplier(0)==1.5f && FishingDragRules.TensionMultiplier(0)==.5f,"Low escape/tension");
+  Check(FishingDragRules.EscapeMultiplier(0)==2f && FishingDragRules.TensionMultiplier(0)==.5f,"Low escape/tension");
   Check(FishingDragRules.EscapeMultiplier(1)==1 && FishingDragRules.DamageMultiplier(1)==1 && FishingDragRules.TensionMultiplier(1)==1,"Medium unchanged");
+  Check(FishingDragRules.ReelingTensionMultiplier(2)==2f && FishingDragRules.ReelingTensionMultiplier(1)==1f && FishingDragRules.ReelingTensionMultiplier(0)==.5f,"Reeling tension multipliers");
+  Check(FishingDragRules.TensionMultiplier(2)==1f && FishingDragRules.HighTensionPerSecond==.025f,"High passive tension unchanged");
   Console.WriteLine("PASS: live burst owner: Low/Medium/High damage, passive ticks, charge, swipe gates, one-shot consumption, skill KO, menu pause, fight reset.");
  }
 }

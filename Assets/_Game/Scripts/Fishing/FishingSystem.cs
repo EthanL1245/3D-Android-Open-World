@@ -1104,7 +1104,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
-                    FishingDragRules.TensionMultiplier(CurrentDrag) * 1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
+                    FishingDragRules.ReelingTensionMultiplier(CurrentDrag) * 1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
                     hookedTemperament ==

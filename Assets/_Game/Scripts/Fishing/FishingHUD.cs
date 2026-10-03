@@ -10,7 +10,7 @@ public class FishingHUD : MonoBehaviour
     private GameObject hotbarObject,dragPanel,skillPanel;
     private RectTransform skillFill,dragRect,joystickRect;
     private Text skillLabel,dragTitle;
-    private readonly Button[] dragNotches=new Button[3];
+    private Slider dragSlider;
     private readonly Vector3[] joystickCorners=new Vector3[4];
     private FishingBurstDamageRuntime dragOwner;
     public bool FishingUiVisible=>root!=null && root.activeInHierarchy;
@@ -168,11 +168,8 @@ public class FishingHUD : MonoBehaviour
         string[] names={"LOW","MEDIUM","HIGH"};
         mode=Mathf.Clamp(mode,0,2);
         dragTitle.text="DRAG • "+names[mode];
-        for(int i=0;i<dragNotches.Length;i++)
-        {
-            dragNotches[i].interactable=live;
-            dragNotches[i].GetComponent<Image>().color=i==mode?new Color(.06f,.60f,.53f,1f):new Color(.11f,.19f,.23f,.98f);
-        }
+        dragSlider.interactable=live;
+        dragSlider.SetValueWithoutNotify(mode);
         skillFill.anchorMax=new Vector2(Mathf.Clamp01(charge),1f);
         skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE QUICKLY • 10× HIT":
             "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
@@ -189,18 +186,44 @@ public class FishingHUD : MonoBehaviour
         dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,104);
         dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleCenter);
         var titleRect=dragTitle.rectTransform;titleRect.anchorMin=new Vector2(0,.65f);titleRect.anchorMax=Vector2.one;titleRect.offsetMin=titleRect.offsetMax=Vector2.zero;
+        // A single drag target with a handle and exactly three discrete values.
+        var sliderObject=CreatePanel("DragSlider",dragPanel.transform,Color.clear);
+        var sliderRect=sliderObject.GetComponent<RectTransform>();
+        sliderRect.anchorMin=sliderRect.anchorMax=Vector2.zero;sliderRect.pivot=Vector2.zero;
+        sliderRect.anchoredPosition=new Vector2(16,26);sliderRect.sizeDelta=new Vector2(308,40);
+        var rail=CreatePanel("Rail",sliderObject.transform,new Color(.18f,.30f,.34f,1));
+        rail.GetComponent<Image>().raycastTarget=false;
+        var railRect=rail.GetComponent<RectTransform>();railRect.anchorMin=new Vector2(0,.5f);railRect.anchorMax=new Vector2(1,.5f);
+        railRect.offsetMin=new Vector2(16,-4);railRect.offsetMax=new Vector2(-16,4);
         string[] names={"LOW","MEDIUM","HIGH"};
         for(int i=0;i<3;i++)
         {
-            int notch=i;
-            var box=CreatePanel("DragNotch"+i,dragPanel.transform,new Color(.11f,.19f,.23f,1));
-            var rect=box.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=new Vector2(0,0);
-            rect.pivot=Vector2.zero;rect.anchoredPosition=new Vector2(8+i*110,8);rect.sizeDelta=new Vector2(104,56);
-            var button=box.AddComponent<Button>();button.targetGraphic=box.GetComponent<Image>();
-            button.onClick.AddListener(()=>{if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();if(dragOwner!=null)dragOwner.SelectDrag(notch);});
-            dragNotches[i]=button;
-            var label=CreateText("Label",box.transform,names[i],22,TextAnchor.MiddleCenter);StretchFullScreen(label.rectTransform);
+            var tick=CreatePanel("Notch"+i,sliderObject.transform,new Color(.55f,.78f,.77f,1));
+            tick.GetComponent<Image>().raycastTarget=false;
+            var tickRect=tick.GetComponent<RectTransform>();tickRect.anchorMin=tickRect.anchorMax=new Vector2(0,.5f);
+            tickRect.sizeDelta=new Vector2(4,18);tickRect.anchoredPosition=new Vector2(16+i*138,0);
+            var label=CreateText("NotchLabel"+i,dragPanel.transform,names[i],18,TextAnchor.MiddleCenter);
+            var labelRect=label.rectTransform;labelRect.anchorMin=labelRect.anchorMax=Vector2.zero;
+            labelRect.sizeDelta=new Vector2(90,22);labelRect.anchoredPosition=new Vector2(Mathf.Clamp(32+i*138,45,295),13);
         }
+        var handleArea=new GameObject("HandleArea",typeof(RectTransform));
+        handleArea.transform.SetParent(sliderObject.transform,false);
+        var areaRect=handleArea.GetComponent<RectTransform>();StretchFullScreen(areaRect);
+        areaRect.offsetMin=new Vector2(16,0);areaRect.offsetMax=new Vector2(-16,0);
+        var handle=CreatePanel("Handle",handleArea.transform,new Color(.08f,.78f,.66f,1));
+        var handleRect=handle.GetComponent<RectTransform>();handleRect.sizeDelta=new Vector2(30,-4);
+        dragSlider=sliderObject.AddComponent<Slider>();
+        dragSlider.direction=Slider.Direction.LeftToRight;
+        dragSlider.minValue=FishingDragRules.Low;dragSlider.maxValue=FishingDragRules.High;
+        dragSlider.wholeNumbers=true;dragSlider.handleRect=handleRect;
+        dragSlider.targetGraphic=handle.GetComponent<Image>();
+        dragSlider.navigation=new Navigation{mode=Navigation.Mode.None};
+        dragSlider.SetValueWithoutNotify(FishingDragRules.Medium);
+        dragSlider.onValueChanged.AddListener(value=>
+        {
+            if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();
+            if(dragOwner!=null)dragOwner.SelectDrag(Mathf.RoundToInt(value));
+        });
         skillPanel=CreatePanel("FishingSkill",root.transform,new Color(.025f,.075f,.095f,.96f));
         skillPanel.GetComponent<Image>().raycastTarget=false;
         var sr=skillPanel.GetComponent<RectTransform>();sr.anchorMin=sr.anchorMax=new Vector2(.5f,0);sr.pivot=new Vector2(.5f,0);
