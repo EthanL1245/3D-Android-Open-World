@@ -2264,7 +2264,7 @@ public class FishingSystem : MonoBehaviour
             current +
             direction *
             (
-                1.85f * reelPower *
+                3.70f * reelPower *
                 Time.deltaTime
             );
 
@@ -2446,7 +2446,8 @@ public class FishingSystem : MonoBehaviour
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Calm"),
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Irritated"),
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Angry"),
-                Resources.Load<Texture2D>("Fishing/StatusIcons/LookingForCover")
+                Resources.Load<Texture2D>("Fishing/StatusIcons/LookingForCover"),
+                Resources.Load<Texture2D>("Fishing/StatusIcons/Fainted")
             };
         }
 
@@ -2567,19 +2568,22 @@ public class FishingSystem : MonoBehaviour
         bobberIndicatorRect.anchoredPosition = localPoint + new Vector2(0f, 72f);
 
         bool hasFish = state == FishingState.Bite || state == FishingState.Fighting;
-        bool showStatus = hasFish && !fishUnconscious;
+        bool showStatus = hasFish;
         bobberStatusIcon.gameObject.SetActive(showStatus);
         if (showStatus)
-            bobberStatusIcon.texture = fishStatusTextures[(int)hookedTemperament];
+            bobberStatusIcon.texture = fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
 
         if (fragileOutline != null)
-            fragileOutline.Progress = state == FishingState.Fighting && showStatus &&
+            fragileOutline.Progress = state == FishingState.Fighting && showStatus && !fishUnconscious &&
                 hookedTemperament == FishTemperament.Fragile
                 ? Mathf.Clamp01(fragileBreakTimer / FishingDragRules.FragileBreakSeconds) : 0f;
 
-        string distanceText = GetCurrentLineDistance().ToString("0.0") + " m";
-        bobberIndicatorText.text = hasFish && fishUnconscious
-            ? "UNCONSCIOUS\n" + distanceText : distanceText;
+        float lineDistance = GetCurrentLineDistance();
+        bobberIndicatorText.text = lineDistance.ToString("0.0") + " m";
+        bool nearLineLimit = hasFish && lineDistance >= maximumLineDistance - 10f;
+        bobberIndicatorText.color = nearLineLimit
+            ? Color.Lerp(Color.white, Color.red, FishingEscapeVignette.WarningPulse)
+            : Color.white;
         bobberIndicatorText.rectTransform.anchoredPosition =
             new Vector2(showStatus ? 72f : 0f, 0f);
     }

@@ -11,6 +11,9 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(1600)]
 public sealed class FishingEscapeVignette : MonoBehaviour
 {
+    // Shared phase keeps the distance text in sync with the screen edges.
+    public static float WarningPulse => 0.5f + 0.5f * Mathf.Sin(Time.time * 11f);
+
     private FishingSystem fishing;
     private FieldInfo stateField;
     private FieldInfo tensionField;
@@ -104,7 +107,7 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         overlay.gameObject.SetActive(true);
         overlay.transform.SetAsLastSibling();
 
-        float pulse = 0.86f + Mathf.Sin(Time.time * 11f) * 0.14f;
+        float pulse = 0.72f + WarningPulse * 0.28f;
         float alpha = Mathf.Lerp(0.03f, 0.58f, Mathf.SmoothStep(0f, 1f, visibleRisk)) * pulse;
         overlay.color = new Color(0.92f, 0.015f, 0.01f, alpha);
     }
@@ -291,3 +294,4 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         if (vignetteTexture != null) Destroy(vignetteTexture);
     }
 }
+
