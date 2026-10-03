@@ -9,6 +9,9 @@ public class TouchLookArea :
 {
     private int activePointerId = int.MinValue;
     private Vector2 accumulatedDelta;
+    private Vector2 swipeDelta;
+    private float swipeStart;
+    private FishingBurstDamageRuntime skillOwner;
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -17,6 +20,9 @@ public class TouchLookArea :
 
         activePointerId = eventData.pointerId;
         accumulatedDelta = Vector2.zero;
+        swipeDelta=Vector2.zero;
+        swipeStart=Time.unscaledTime;
+        if(skillOwner==null)skillOwner=FindFirstObjectByType<FishingBurstDamageRuntime>();
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -25,6 +31,7 @@ public class TouchLookArea :
             return;
 
         accumulatedDelta += eventData.delta;
+        swipeDelta+=eventData.delta;
     }
 
     public void OnPointerUp(PointerEventData eventData)
@@ -32,8 +39,10 @@ public class TouchLookArea :
         if (eventData.pointerId != activePointerId)
             return;
 
+        if(skillOwner!=null)skillOwner.TrySkillSwipe(swipeDelta,Time.unscaledTime-swipeStart);
         activePointerId = int.MinValue;
         accumulatedDelta = Vector2.zero;
+        swipeDelta=Vector2.zero;
     }
 
     public Vector2 ConsumeLookDelta()
@@ -45,7 +54,9 @@ public class TouchLookArea :
 
     private void OnDisable()
     {
+        swipeDelta=Vector2.zero;
         activePointerId = int.MinValue;
         accumulatedDelta = Vector2.zero;
     }
 }
+

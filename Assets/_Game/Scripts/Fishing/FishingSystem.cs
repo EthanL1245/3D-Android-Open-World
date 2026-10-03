@@ -44,6 +44,8 @@ public class FishingSystem : MonoBehaviour
     [SerializeField] private float hookWindow = 1.35f;
 
     private FishingHUD hud;
+    private FishingBurstDamageRuntime dragDamage;
+    private int CurrentDrag => dragDamage!=null && dragDamage.enabled?dragDamage.SelectedDrag:FishingDragRules.Medium;
     private FishingState state;
 
     private GameObject rodRoot;
@@ -998,6 +1000,7 @@ public class FishingSystem : MonoBehaviour
 
     private void UpdateFight(bool reeling)
     {
+        if(dragDamage==null)dragDamage=GetComponent<FishingBurstDamageRuntime>();
         FishSpeciesDefinition species =
             FishCatalog.Get(
                 hookedSpeciesId
@@ -1101,7 +1104,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
-                    1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
+                    FishingDragRules.TensionMultiplier(CurrentDrag) * 1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
                     hookedTemperament ==
@@ -1112,12 +1115,17 @@ public class FishingSystem : MonoBehaviour
                             ? 0.78f
                             : 0.96f;
 
-                damageFraction+=Time.deltaTime*8.5f*moodHealthFactor*reelPower;
-                int damage=Mathf.Min(fishHealthPoints,Mathf.FloorToInt(damageFraction));
-                damageFraction-=damage;fishHealthPoints-=damage;pendingDamage+=damage;
-                fishHealth=fishHealthPoints/(float)fishMaxHealth;
+                // The burst owner also handles passive drag and skill damage. Do not
+                // let legacy ticks trigger a premature KO before it runs this frame.
+                if(dragDamage==null || !dragDamage.enabled)
+                {
+                    damageFraction+=Time.deltaTime*8.5f*moodHealthFactor*reelPower;
+                    int damage=Mathf.Min(fishHealthPoints,Mathf.FloorToInt(damageFraction));
+                    damageFraction-=damage;fishHealthPoints-=damage;pendingDamage+=damage;
+                    fishHealth=fishHealthPoints/(float)fishMaxHealth;
+                }
             }
-            else
+            else if(CurrentDrag!=FishingDragRules.High)
             {
                 fightTension -=
                     Time.deltaTime *
@@ -1131,7 +1139,9 @@ public class FishingSystem : MonoBehaviour
             fightTension +=
                 naturalResistance *
                 0.032f *
-                Time.deltaTime;
+                Time.deltaTime * FishingDragRules.TensionMultiplier(CurrentDrag);
+            if(CurrentDrag==FishingDragRules.High)
+                fightTension+=Time.deltaTime*FishingDragRules.HighTensionPerSecond;
 
             fishHealth =
                 Mathf.Clamp01(
@@ -1248,7 +1258,7 @@ public class FishingSystem : MonoBehaviour
                     ? GetTemperamentName() +
                       " - reducing fish health."
                     : GetTemperamentName() +
-                      " - resting the line."
+                      (CurrentDrag==FishingDragRules.High?" - HIGH DRAG: tension rising.":" - resting the line.")
             );
         }
         else
@@ -1877,6 +1887,7 @@ public class FishingSystem : MonoBehaviour
 
         float outwardSpeed =
             FishingTuning.YellowSpeed(hookedSpeciesId,effectiveDifficulty) *
+            FishingDragRules.EscapeMultiplier(CurrentDrag) *
             moodSwimMultiplier *
             initialBurstMultiplier *
             (
@@ -4028,6 +4039,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 

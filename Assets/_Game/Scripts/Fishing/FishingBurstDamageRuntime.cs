@@ -3,14 +3,14 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Owns fishing damage as discrete visible reel bursts.
+/// Owns reel bursts, drag modifiers, High-drag passive damage and charged skill strikes.
 ///
 /// The original FishingSystem accumulates tiny frame-by-frame integer damage and the
 /// upgraded-rod compatibility layer multiplies those tiny decrements later. That can
 /// make a 4-8 damage Level 2 rod visibly show -1/-2/-3, and can mark a tiny popup as
 /// critical even though the advertised critical is 2x a full burst.
 ///
-/// Damage is now earned strictly from ACTUAL REEL HOLD TIME. Every 0.35 seconds of
+/// Reel-burst damage is earned strictly from ACTUAL REEL HOLD TIME. Every 0.35 seconds of
 /// accumulated held REEL time produces one authoritative randomized burst:
 ///   Woodland: 2-4
 ///   Level 2:  4-8, 5% critical, critical = 8-16
@@ -20,7 +20,8 @@ using UnityEngine;
 ///
 /// Pressing REEL does not deal an instant hit. Releasing and rapidly tapping also
 /// does not reset or accelerate the clock: only the sum of time the input is truly
-/// held advances damage. This removes the tap-spam exploit while keeping continuous
+/// held advances reel-burst damage. High drag and charged skills add separate hits.
+/// This removes the tap-spam exploit while keeping continuous
 /// reeling at the same 0.35-second burst cadence.
 ///
 /// A held pointer is intentionally carried across both fight transitions: permanent
@@ -66,6 +67,33 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private bool inFight;
     private float accumulatedReelSeconds;
     private int authoritativeHp;
+    private float passiveSeconds,damageRemainder;
+    private float skillCharge;
+    private bool skillQueued;
+    public int SelectedDrag {get;private set;}=FishingDragRules.Medium;
+
+    public void SelectDrag(int mode)
+    {
+        if(!inFight || !IsFighting() || authoritativeHp<=0)return;
+        SelectedDrag=Mathf.Clamp(mode,FishingDragRules.Low,FishingDragRules.High);
+    }
+
+    public bool TrySkillSwipe(Vector2 displacement,float seconds)
+    {
+        if(!inFight || !IsFighting() || authoritativeHp<=0 || skillQueued || skillCharge<1f ||
+            hud==null || !hud.CombatInputVisible || ShopWorldHUD.MenuOpen)return false;
+        if(!FishingDragRules.IsQuickSwipe(displacement.magnitude,seconds,Mathf.Min(Screen.width,Screen.height)))return false;
+        skillQueued=true;
+        skillCharge=0f;
+        return true;
+    }
+
+    private void ResetDrag()
+    {
+        SelectedDrag=FishingDragRules.Medium;
+        passiveSeconds=damageRemainder=skillCharge=0f;
+        skillQueued=false;
+    }
 
     public static int NormalMinimumForTier(int tier)
     {
@@ -139,6 +167,14 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             return;
         }
 
+        // Match the core fight's menu guard: no passive damage or charge while
+        // combat UI is covered and its tension simulation is not advancing.
+        if(ShopWorldHUD.MenuOpen || (hud!=null && !hud.FishingUiVisible))
+        {
+            skillQueued=false;
+            return;
+        }
+
         // The older upgraded-rod runtime must not multiply our already-complete
         // bursts. It still runs normally outside fights, so rod model/equipment UI
         // behavior is preserved.
@@ -150,6 +186,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         {
             inFight = true;
             authoritativeHp = maxHp;
+            ResetDrag();
             accumulatedReelSeconds = 0f;
             // Do not wait for a pointer-up here. The action button deliberately stays
             // held when HOOK changes to REEL (and when a lure auto-hooks), so the
@@ -165,7 +202,25 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         if (authoritativeHp <= 0)
         {
             EnterUnconsciousPresentation();
+            skillCharge=0f;skillQueued=false;
+            if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f);
             return;
+        }
+
+        skillCharge=FishingDragRules.Charge(skillCharge,SelectedDrag,Time.deltaTime);
+        if(skillQueued)
+        {
+            skillQueued=false;
+            DealDamage(FishingDragRules.SkillDamage(RollNormalDamage()),maxHp,true);
+        }
+        if(SelectedDrag==FishingDragRules.High && authoritativeHp>0)
+        {
+            passiveSeconds+=Time.deltaTime;
+            while(passiveSeconds>=FishingDragRules.PassiveDamageSeconds && authoritativeHp>0)
+            {
+                passiveSeconds-=FishingDragRules.PassiveDamageSeconds;
+                DealDamage(RollNormalDamage(),maxHp,false);
+            }
         }
 
         bool reeling = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
@@ -190,6 +245,14 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             EnterUnconsciousPresentation();
         else
             UnconsciousField.SetValue(fishing, false);
+        if(authoritativeHp<=0){skillCharge=0f;skillQueued=false;}
+        if(hud!=null)hud.SetDragFightUI(true,authoritativeHp>0,SelectedDrag,skillCharge);
+    }
+
+    private int RollNormalDamage()
+    {
+        int tier=progress!=null && progress.Data!=null?progress.Data.rodEquipped:0;
+        return RollBurstForTier(tier,UnityEngine.Random.value,1f,out _);
     }
 
     private void DealBurst(int maxHp)
@@ -197,6 +260,15 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         int tier = progress != null ? Mathf.Clamp(progress.Data.rodEquipped, 0, ShopCatalog.MaxRodTier) : 0;
         bool critical;
         int rolledDamage = RollBurstForTier(tier, UnityEngine.Random.value, UnityEngine.Random.value, out critical);
+        // Carry half points so odd Low-drag rolls deal exactly half over time.
+        float scaled=rolledDamage*FishingDragRules.DamageMultiplier(SelectedDrag)+damageRemainder;
+        int damage=Mathf.FloorToInt(scaled);
+        damageRemainder=scaled-damage;
+        DealDamage(damage,maxHp,critical);
+    }
+
+    private void DealDamage(int rolledDamage,int maxHp,bool critical)
+    {
         int appliedDamage = Mathf.Min(authoritativeHp, rolledDamage);
         if (appliedDamage <= 0) return;
 
@@ -269,6 +341,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
     private void EndFightOwnership()
     {
+        ResetDrag();
+        if(hud!=null)hud.SetDragFightUI(false,false,SelectedDrag,0f);
         if (!inFight)
         {
             if (legacyUpgradeRuntime != null && !legacyUpgradeRuntime.enabled)
@@ -286,7 +360,9 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
     private void OnDisable()
     {
+        EndFightOwnership();
         if (legacyUpgradeRuntime != null && !legacyUpgradeRuntime.enabled)
             legacyUpgradeRuntime.enabled = true;
     }
 }
+

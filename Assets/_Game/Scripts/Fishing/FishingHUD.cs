@@ -7,6 +7,14 @@ public class FishingHUD : MonoBehaviour
     private FishingSystem system;
 
     private GameObject root;
+    private GameObject hotbarObject,dragPanel,skillPanel;
+    private RectTransform skillFill,dragRect,joystickRect;
+    private Text skillLabel,dragTitle;
+    private readonly Button[] dragNotches=new Button[3];
+    private readonly Vector3[] joystickCorners=new Vector3[4];
+    private FishingBurstDamageRuntime dragOwner;
+    public bool FishingUiVisible=>root!=null && root.activeInHierarchy;
+    public bool CombatInputVisible=>root!=null && root.activeInHierarchy && dragPanel!=null && dragPanel.activeInHierarchy;
     private GameObject actionButtonObject;
     private FishingActionButton actionInput;
     private Text actionLabel;
@@ -145,6 +153,89 @@ public class FishingHUD : MonoBehaviour
         {
             catchPanel.SetActive(false);
         }
+    }
+
+    public void SetDragFightUI(bool fighting,bool live,int mode,float charge)
+    {
+        if(root==null)return;
+        if(fighting && dragPanel==null)BuildDragUI();
+        if(hotbarObject!=null)hotbarObject.SetActive(!fighting);
+        if(dragPanel==null)return;
+        dragPanel.SetActive(fighting);
+        skillPanel.SetActive(fighting);
+        if(!fighting)return;
+        PositionDragAboveJoystick();
+        string[] names={"LOW","MEDIUM","HIGH"};
+        mode=Mathf.Clamp(mode,0,2);
+        dragTitle.text="DRAG • "+names[mode];
+        for(int i=0;i<dragNotches.Length;i++)
+        {
+            dragNotches[i].interactable=live;
+            dragNotches[i].GetComponent<Image>().color=i==mode?new Color(.06f,.60f,.53f,1f):new Color(.11f,.19f,.23f,.98f);
+        }
+        skillFill.anchorMax=new Vector2(Mathf.Clamp01(charge),1f);
+        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE QUICKLY • 10× HIT":
+            "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
+        skillFill.GetComponent<Image>().color=charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
+    }
+
+    private void BuildDragUI()
+    {
+        dragOwner=system!=null?system.GetComponent<FishingBurstDamageRuntime>():null;
+        dragPanel=CreatePanel("FishingDrag",root.transform,new Color(.025f,.075f,.095f,.95f));
+        dragPanel.GetComponent<Image>().raycastTarget=false;
+        dragRect=dragPanel.GetComponent<RectTransform>();
+        dragRect.anchorMin=dragRect.anchorMax=new Vector2(.5f,.5f);
+        dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,104);
+        dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleCenter);
+        var titleRect=dragTitle.rectTransform;titleRect.anchorMin=new Vector2(0,.65f);titleRect.anchorMax=Vector2.one;titleRect.offsetMin=titleRect.offsetMax=Vector2.zero;
+        string[] names={"LOW","MEDIUM","HIGH"};
+        for(int i=0;i<3;i++)
+        {
+            int notch=i;
+            var box=CreatePanel("DragNotch"+i,dragPanel.transform,new Color(.11f,.19f,.23f,1));
+            var rect=box.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=new Vector2(0,0);
+            rect.pivot=Vector2.zero;rect.anchoredPosition=new Vector2(8+i*110,8);rect.sizeDelta=new Vector2(104,56);
+            var button=box.AddComponent<Button>();button.targetGraphic=box.GetComponent<Image>();
+            button.onClick.AddListener(()=>{if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();if(dragOwner!=null)dragOwner.SelectDrag(notch);});
+            dragNotches[i]=button;
+            var label=CreateText("Label",box.transform,names[i],22,TextAnchor.MiddleCenter);StretchFullScreen(label.rectTransform);
+        }
+        skillPanel=CreatePanel("FishingSkill",root.transform,new Color(.025f,.075f,.095f,.96f));
+        skillPanel.GetComponent<Image>().raycastTarget=false;
+        var sr=skillPanel.GetComponent<RectTransform>();sr.anchorMin=sr.anchorMax=new Vector2(.5f,0);sr.pivot=new Vector2(.5f,0);
+        sr.sizeDelta=new Vector2(610,120);sr.anchoredPosition=new Vector2(0,24);
+        var track=CreatePanel("SkillTrack",skillPanel.transform,new Color(.09f,.16f,.19f,1));track.GetComponent<Image>().raycastTarget=false;
+        var tr=track.GetComponent<RectTransform>();tr.anchorMin=new Vector2(0,0);tr.anchorMax=new Vector2(1,.42f);tr.offsetMin=new Vector2(14,14);tr.offsetMax=new Vector2(-14,0);
+        var fill=CreatePanel("SkillFill",track.transform,new Color(.06f,.57f,.53f,1));fill.GetComponent<Image>().raycastTarget=false;
+        skillFill=fill.GetComponent<RectTransform>();skillFill.anchorMin=Vector2.zero;skillFill.anchorMax=new Vector2(0,1);skillFill.offsetMin=skillFill.offsetMax=Vector2.zero;
+        skillLabel=CreateText("SkillLabel",skillPanel.transform,"",23,TextAnchor.MiddleCenter);
+        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(10,0);lr.offsetMax=new Vector2(-10,-5);
+    }
+
+    private void PositionDragAboveJoystick()
+    {
+        if(joystickRect==null)
+        {
+            var joystick=FindFirstObjectByType<MobileJoystick>();
+            if(joystick!=null)joystickRect=joystick.GetComponent<RectTransform>();
+        }
+        var rootRect=root.GetComponent<RectTransform>();
+        Vector2 position=new Vector2(rootRect.rect.xMin+190,rootRect.rect.yMin+320);
+        if(joystickRect!=null)
+        {
+            joystickRect.GetWorldCorners(joystickCorners);
+            var source=joystickRect.GetComponentInParent<Canvas>();
+            var target=root.GetComponentInParent<Canvas>();
+            Camera sourceCamera=source!=null && source.renderMode!=RenderMode.ScreenSpaceOverlay?source.worldCamera:null;
+            Camera targetCamera=target!=null && target.renderMode!=RenderMode.ScreenSpaceOverlay?target.worldCamera:null;
+            Vector2 screen=RectTransformUtility.WorldToScreenPoint(sourceCamera,(joystickCorners[1]+joystickCorners[2])*.5f);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(rootRect,screen,targetCamera,out position);
+            position.y+=18f;
+        }
+        position.x=Mathf.Clamp(position.x,rootRect.rect.xMin+178,rootRect.rect.xMax-178);
+        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-122);
+        dragRect.localPosition=new Vector3(position.x,position.y,0);
     }
 
     public void SetRodSelected(bool selected)
@@ -484,6 +575,7 @@ public class FishingHUD : MonoBehaviour
                 typeof(RectTransform)
             );
 
+        hotbarObject=hotbar;
         hotbar.transform.SetParent(
             root.transform,
             false
@@ -1247,4 +1339,5 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 
