@@ -675,12 +675,12 @@ public class FishingSystem : MonoBehaviour
     }
 
     private AudioSource fishingAudio;
-    private AudioSource reelAudio;
-    private AudioSource linePullAudio;
+    private FishingLoopAudio reelAudio;
+    private FishingLoopAudio linePullAudio;
     private AudioClip waterLandingSound;
     private bool fishPulledLineThisFrame;
     private bool audioFocused = true, audioPaused;
-    private AudioClip dragClickSound, reelClickSound, biteSplashSound;
+    private AudioClip dragClickSound, biteSplashSound;
 
     private void InitializeFishingAudio()
     {
@@ -689,28 +689,19 @@ public class FishingSystem : MonoBehaviour
         fishingAudio.loop = false;
         fishingAudio.spatialBlend = 0f;
         dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
-        reelClickSound = Resources.Load<AudioClip>("Fishing/Audio/ReelClick");
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
-        reelAudio = gameObject.AddComponent<AudioSource>();
-        reelAudio.playOnAwake = false;
-        reelAudio.loop = true;
-        reelAudio.spatialBlend = 0f;
-        reelAudio.clip = reelClickSound;
+        reelAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/ReelLeadIn", "Fishing/Audio/ReelLoop");
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
-        linePullAudio = gameObject.AddComponent<AudioSource>();
-        linePullAudio.playOnAwake = false;
-        linePullAudio.loop = true;
-        linePullAudio.spatialBlend = 0f;
-        linePullAudio.clip = Resources.Load<AudioClip>("Fishing/Audio/LinePull");
+        linePullAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop");
     }
 
     private void StartReelSound()
     {
         StopLinePullSound();
-        if (reelAudio == null || reelAudio.clip == null ||
+        if (reelAudio == null || !audioFocused || audioPaused ||
             hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld) return;
-        reelAudio.Stop();
-        reelAudio.time = 0f;
         reelAudio.Play();
     }
 
@@ -735,10 +726,9 @@ public class FishingSystem : MonoBehaviour
             StopLinePullSound();
             return;
         }
-        if (linePullAudio != null && linePullAudio.clip != null && !linePullAudio.isPlaying)
+        if (linePullAudio != null && !linePullAudio.IsPlaying)
         {
-            // Play once per pulling interval; AudioSource loops without stacking.
-            linePullAudio.time = 0f;
+            // Start one sample-overlapped sequence per pulling interval.
             linePullAudio.Play();
         }
     }
@@ -748,7 +738,7 @@ public class FishingSystem : MonoBehaviour
         // Also cover catches, escapes, menus and state changes during Update.
         bool canReel = state == FishingState.Fighting || state == FishingState.Bite ||
             (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure);
-        if (!rodEquipped || shopMode || ShopWorldHUD.MenuOpen || !canReel ||
+        if (!audioFocused || audioPaused || !rodEquipped || shopMode || ShopWorldHUD.MenuOpen || !canReel ||
             hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld)
             StopReelSound();
     }
