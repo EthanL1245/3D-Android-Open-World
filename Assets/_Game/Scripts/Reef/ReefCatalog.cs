@@ -4,12 +4,13 @@ using UnityEngine;
 public static class ReefCatalog
 {
     // Menu order is independent of the stable biome IDs used by saves and fishing.
-    public static readonly int[] IslandIndexOrder = { 0, 1, 3, 2 };
+    public static readonly int[] IslandIndexOrder = { 0, 1, 4, 3, 2 };
     public static bool BluewaterDiscovered {get;set;}
     public const string RuggedId="brinebreak-isle";
     public static bool BrinebreakDiscovered {get;set;}
     public const string StarterId="suncrest-reef";
     public const string StarterName="Suncrest Reef";
+    public const int SnapperBiomeId=4;
 
     public sealed class Zone
     {
@@ -30,7 +31,9 @@ public static class ReefCatalog
         new Zone("deep-ocean","Deep Ocean","Beyond the shared outer shelf. Pelagic fish, giant catches and demanding fights.",true,
             new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6}),
         new Zone(PelagicIslandGeometry.Id,PelagicIslandGeometry.Name,"A southern cay with pelagic fishing waters extending 75 m beyond the shore. Land here to unlock travel.",false,
-            new float[]{35,0,0,0,0,20,0,0,15,15,0,0,0,15,0})
+            new float[]{35,0,0,0,0,20,0,0,15,15,0,0,0,15,0}),
+        new Zone(SnapperIslandGeometry.Id,SnapperIslandGeometry.Name,"A dedicated snapper island directly south of Suncrest. Only snapper species bite within 50 m of its coast.",true,
+            new float[0])
     };
 
     public static Zone Starter=>Zones[0];
@@ -69,8 +72,31 @@ public static class ReefCatalog
         return weights;
     }
 
+    private static bool IsSnapper(int species)=>species==FishCatalog.RedSnapperId || species==FishCatalog.YellowtailSnapperId || species==FishCatalog.MuttonSnapperId;
+
+    private static float SnapperChance(int species,int bait)
+    {
+        if(!IsSnapper(species))return 0f;
+        int[] ids={FishCatalog.RedSnapperId,FishCatalog.YellowtailSnapperId,FishCatalog.MuttonSnapperId};
+        float total=0f,target=0f;
+        for(int i=0;i<ids.Length;i++)
+        {
+            float chance=EquippedChance(ids[i],bait,0);
+            total+=chance;
+            if(ids[i]==species)target=chance;
+        }
+        return total>0f?target/total*100f:100f/ids.Length;
+    }
+
     public static float MinimumWeight(int species,int biome)
     {
+        if(biome==SnapperBiomeId)
+        {
+            if(!IsSnapper(species))return 0f;
+            float snapperMin,snapperMax;
+            if(FishingTuning.TryGetWeightRange(species,0,out snapperMin,out snapperMax))return snapperMin;
+            return FishCatalog.Get(species).MinWeightKg;
+        }
         float minimum,maximum;
         if(FishingTuning.TryGetWeightRange(species,biome,out minimum,out maximum))return minimum;
         var fish=FishCatalog.Get(species);return biome==1?Mathf.Max(fish.MinWeightKg,fish.MaxWeightKg*.18f):fish.MinWeightKg;
@@ -78,6 +104,13 @@ public static class ReefCatalog
 
     public static float MaximumWeight(int species,int biome)
     {
+        if(biome==SnapperBiomeId)
+        {
+            if(!IsSnapper(species))return 0f;
+            float snapperMin,snapperMax;
+            if(FishingTuning.TryGetWeightRange(species,0,out snapperMin,out snapperMax))return snapperMax;
+            return FishCatalog.Get(species).MaxWeightKg;
+        }
         float minimum,maximum;
         if(FishingTuning.TryGetWeightRange(species,biome,out minimum,out maximum))return maximum;
         return FishCatalog.Get(species).MaxWeightKg*(biome==1?1.6f:biome==2?2.25f:1f);
@@ -92,6 +125,7 @@ public static class ReefCatalog
     public static float EquippedChance(int species,int bait,int biome=0)
     {
         if(species==4)return 0f;
+        if(biome==SnapperBiomeId)return SnapperChance(species,bait);
         float configured;
         if(FishingTuning.TryGetChance(species,bait,biome,out configured))return configured;
         float[] weights=EquippedWeights(bait,biome);if(species<0||species>=weights.Length)return 0f;
@@ -100,6 +134,19 @@ public static class ReefCatalog
 
     public static int Roll(float random01,int bait=0,int biome=0)
     {
+        if(biome==SnapperBiomeId)
+        {
+            FishingTuning.RememberBiome(0);
+            float pick=Mathf.Clamp01(random01)*100f;
+            int[] ids={FishCatalog.RedSnapperId,FishCatalog.YellowtailSnapperId,FishCatalog.MuttonSnapperId};
+            for(int i=0;i<ids.Length;i++)
+            {
+                pick-=SnapperChance(ids[i],bait);
+                if(pick<0f)return ids[i];
+            }
+            return FishCatalog.MuttonSnapperId;
+        }
+
         FishingTuning.RememberBiome(biome);
 
         // Config rows are already validated to exactly 100%; roll those percentages
