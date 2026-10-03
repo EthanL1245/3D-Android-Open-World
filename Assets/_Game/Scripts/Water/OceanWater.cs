@@ -37,6 +37,7 @@ public class OceanWater : MonoBehaviour
     {
         EnsureRenderer();
         propertyBlock = new MaterialPropertyBlock();
+        OceanAmbienceRuntime.EnsureInstalled();
     }
 
     private void OnEnable()

@@ -260,6 +260,7 @@ public class FishingSystem : MonoBehaviour
         }
 
         hud.Initialize(this);
+        if (hud.ActionInput != null) hud.ActionInput.Released += StopReelSound;
 
         inventory.Changed +=
             hud.RefreshInventory;
@@ -274,6 +275,7 @@ public class FishingSystem : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (hud != null && hud.ActionInput != null) hud.ActionInput.Released -= StopReelSound;
         if(shopProgress!=null) shopProgress.Changed-=ApplyShopGear;
         if (inventory != null &&
             hud != null)
@@ -670,6 +672,7 @@ public class FishingSystem : MonoBehaviour
     }
 
     private AudioSource fishingAudio;
+    private AudioSource reelAudio;
     private AudioClip dragClickSound, reelClickSound, biteSplashSound;
 
     private void InitializeFishingAudio()
@@ -681,6 +684,45 @@ public class FishingSystem : MonoBehaviour
         dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
         reelClickSound = Resources.Load<AudioClip>("Fishing/Audio/ReelClick");
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
+        reelAudio = gameObject.AddComponent<AudioSource>();
+        reelAudio.playOnAwake = false;
+        reelAudio.loop = true;
+        reelAudio.spatialBlend = 0f;
+        reelAudio.clip = reelClickSound;
+    }
+
+    private void StartReelSound()
+    {
+        if (reelAudio == null || reelAudio.clip == null ||
+            hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld) return;
+        reelAudio.Stop();
+        reelAudio.time = 0f;
+        reelAudio.Play();
+    }
+
+    private void StopReelSound()
+    {
+        if (reelAudio != null) reelAudio.Stop();
+    }
+
+    private void CheckReelSound()
+    {
+        // Also cover catches, escapes, menus and state changes during Update.
+        bool canReel = state == FishingState.Fighting || state == FishingState.Bite ||
+            (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure);
+        if (!rodEquipped || shopMode || ShopWorldHUD.MenuOpen || !canReel ||
+            hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld)
+            StopReelSound();
+    }
+
+    private void OnApplicationFocus(bool focused)
+    {
+        if (!focused) StopReelSound();
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused) StopReelSound();
     }
 
     private void PlayFishingSound(AudioClip clip)
@@ -709,7 +751,7 @@ public class FishingSystem : MonoBehaviour
 
         if (state == FishingState.Fighting || state == FishingState.Bite ||
             (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure))
-            PlayFishingSound(reelClickSound);
+            StartReelSound();
 
         switch (state)
         {
@@ -1397,6 +1439,7 @@ public class FishingSystem : MonoBehaviour
 
     private void CancelFishing()
     {
+        StopReelSound();
         StopAllCoroutines();
         if (rodView != null) rodView.ResetMotion();
         if (hud != null && hud.ActionInput != null) hud.ActionInput.ResetInput();
@@ -3062,6 +3105,7 @@ public class FishingSystem : MonoBehaviour
 
     private void LateUpdate()
     {
+        CheckReelSound();
         if(rodFitPending){rodFitPending=false;FitRodToControls();}
         UpdateHeldCatchLine();
     }
@@ -4021,7 +4065,6 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
 
 
 

@@ -7,6 +7,7 @@ public class FishingActionButton :
     IPointerUpHandler
 {
     public bool IsHeld { get; private set; }
+    public event System.Action Released;
 
     public bool Interactable {get;private set;}=true;
     public void SetInteractable(bool value){Interactable=value;if(!value)ResetInput();}
@@ -26,6 +27,7 @@ public class FishingActionButton :
         if (eventData.pointerId != pointerId) return;
         pointerId = int.MinValue;
         IsHeld = false;
+        Released?.Invoke();
     }
 
     public bool ConsumePressed()
@@ -37,9 +39,11 @@ public class FishingActionButton :
 
     public void ResetInput()
     {
+        bool wasHeld = IsHeld;
         pointerId = int.MinValue;
         IsHeld = false;
         pressedQueued = false;
+        if (wasHeld) Released?.Invoke();
     }
 
     private void OnDisable() => ResetInput();
