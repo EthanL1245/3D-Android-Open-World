@@ -53,15 +53,23 @@ public class AmbientFishManager : MonoBehaviour
         if(replacing || player==null || !InReef)return;
         int biome=SnapperIslandGeometry.ResolveBiome(player.position);
         if(biome!=pendingBiome){pendingBiome=biome;biomeChangedAt=Time.time;}
-        if(biome!=poolBiome && Time.time-biomeChangedAt>2f)StartCoroutine(ReplacePool(biome));
+        // Snapper Island is deliberately exclusive. Replace the old area's ambient
+        // pool immediately on entry so a lingering visible mackerel/tuna cannot make
+        // the island look like it contains non-snapper species.
+        bool immediateSnapperEntry=biome==ReefCatalog.SnapperBiomeId && biome!=poolBiome;
+        if(biome!=poolBiome && (immediateSnapperEntry || Time.time-biomeChangedAt>2f))StartCoroutine(ReplacePool(biome));
     }
     private IEnumerator ReplacePool(int biome)
     {
         replacing=true;
+        bool strictSnapper=biome==ReefCatalog.SnapperBiomeId;
         for(int i=0;i<fish.Count;i++)
         {
-            // Avoid replacing a visible fish in front of the player.
-            while(fish[i]!=null && Visible(fish[i].transform.position))yield return null;
+            // Normal biome changes avoid replacing a visible fish in front of the
+            // player. Snapper Island is stricter: old non-snapper visuals disappear
+            // immediately because the 50 m ring must contain snappers only.
+            if(!strictSnapper)
+                while(fish[i]!=null && Visible(fish[i].transform.position))yield return null;
             if(fish[i]!=null){fish[i].gameObject.SetActive(false);Destroy(fish[i].gameObject);}
             fish[i]=CreateFish(i,biome);yield return null;
         }
@@ -178,6 +186,3 @@ public class AmbientFishAgent : MonoBehaviour
         trail.Record();
     }
 }
-
-
-
