@@ -17,14 +17,13 @@ class Program {
   h.ActionInput.IsHeld=false;before=h.Damage;Tick(.65f);Check(h.Damage-before==3,"High passive rod tick");
   for(int i=0;i<120;i++)Tick(.1f);
   Check(h.Charge>=.999f,"High fills meter");Tick(.1f);
-  Check(!r.TrySkillSwipe(new Vector2(400,0),1),"Reject slow swipe");
-  Check(!r.TrySkillSwipe(new Vector2(5,0),.1f),"Reject tiny swipe");
-  ShopWorldHUD.MenuOpen=true;Check(!r.TrySkillSwipe(new Vector2(400,0),.2f),"Reject menu swipe");before=h.Damage;Tick(1);Check(h.Damage==before,"No passive damage in covered menu");ShopWorldHUD.MenuOpen=false;
-  r.SelectDrag(0);Check(r.TrySkillSwipe(new Vector2(400,0),.2f),"Allow full meter after changing drag");Check(!r.TrySkillSwipe(new Vector2(400,0),.2f),"One spend only");
+  Check(!r.TrySkillLook(new Vector2(0,0)),"No stationary activation");
+  ShopWorldHUD.MenuOpen=true;Check(!r.TrySkillLook(new Vector2(400,0)),"Reject menu swipe");before=h.Damage;Tick(1);Check(h.Damage==before,"No passive damage in covered menu");ShopWorldHUD.MenuOpen=false;
+  r.SelectDrag(0);Check(r.TrySkillLook(new Vector2(0,.1f)),"Tiny upward look activates full meter");Check(!r.TrySkillLook(new Vector2(400,0)),"One spend only");
   before=h.Damage;Tick(0);Check(h.Damage-before==30 && h.Charge==0,"10x base rod strike, no Low multiplier");
-  Set(r,"skillCharge",1f);Set(r,"authoritativeHp",5);Check(r.TrySkillSwipe(new Vector2(400,0),.2f),"Finisher queued");Tick(0);
+  Set(r,"skillCharge",1f);Set(r,"authoritativeHp",5);Check(r.TrySkillLook(new Vector2(400,0)),"Finisher queued");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==0 && Get<bool>(f,"fishUnconscious") && f.Presentations>0,"Skill KO uses existing presentation");
-  Check(!r.TrySkillSwipe(new Vector2(400,0),.2f),"No strikes on unconscious fish");
+  Check(!r.TrySkillLook(new Vector2(400,0)),"No strikes on unconscious fish");
   Set(f,"state","Idle");Tick(0);Check(!h.Fighting && r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fight cleanup");
   Set(f,"state","Fighting");Tick(0);Check(r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fresh fight");
   Check(FishingDragRules.EscapeMultiplier(0)==2f && FishingDragRules.TensionMultiplier(0)==.5f,"Low escape/tension");
@@ -37,6 +36,10 @@ class Program {
   Check(danger<FishingDragRules.FragileBreakSeconds,"No early purple snap");
   Check(FishingDragRules.FragileTimer(danger,true,2,.01f)>=FishingDragRules.FragileBreakSeconds,"Purple snaps at two seconds");
   Check(FishingDragRules.FragileTimer(danger,true,0,.1f)==0 && FishingDragRules.FragileTimer(danger,false,2,.1f)==0,"Low or mood exit clears countdown");
+  foreach(var d in new[]{new Vector2(.1f,0),new Vector2(-.1f,0),new Vector2(0,.1f),new Vector2(0,-.1f)})
+  {
+   Set(r,"skillCharge",1f);Check(r.TrySkillLook(d),"Any direction activates");Tick(0);
+  }
   Console.WriteLine("PASS: live burst owner: Low/Medium/High damage, passive ticks, charge, swipe gates, one-shot consumption, skill KO, menu pause, fight reset.");
  }
 }

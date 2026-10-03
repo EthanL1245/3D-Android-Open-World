@@ -14,13 +14,13 @@ Low's 2x escape multiplier applies to base swim speed before temperament, initia
 
 The drag selector is a draggable slider with whole-number values 0/1/2, a handle, and labeled Low/Medium/High notches. It follows the top of the movement joystick in canvas coordinates. During a fight the skill meter replaces all hotbar slots; the normal hotbar returns on catch, escape, cancellation or component disable. Retrieval of an unconscious fish shows a subdued label and disables drag controls.
 
-High charges the meter in 5 seconds of active fight time. Other modes preserve earned charge. A full meter can be spent in any mode with a quick swipe beginning on TouchLookArea, completed in 0.04–0.35 seconds, at least 12% of the screen's shorter dimension (minimum 70 px), at a speed of at least 80% of that dimension per second. Joystick/reel/drag/menu pointer gestures cannot qualify. Existing camera look still works. The skill consumes its meter once and deals 10x a random **normal** damage roll of the equipped rod, independent of drag and crit multipliers.
+High charges the meter in 5 seconds of active fight time. Other modes preserve earned charge. A full meter activates immediately on any nonzero drag movement on TouchLookArea, in any direction. There is no speed, distance, duration, or finger-release requirement; even a tiny upward look qualifies. Joystick/reel/drag/menu pointer gestures cannot qualify. Existing camera look still works. The skill consumes its meter once and deals 10x a random **normal** damage roll of the equipped rod, independent of drag and crit multipliers.
 
 All damage goes through the existing authoritative burst owner and its unconscious-fish presentation. Legacy frame damage is skipped while that owner is enabled to prevent premature KOs. No charge/passive damage while a menu covers the fight; no charge or skill use after unconsciousness. Every new fight starts Medium with an empty meter.
 
 ## Validation
 
-Run `dotnet run --project Tools/FishingDrag/Checks` for tests executing the real damage owner with small Unity/scene stubs. Covers reel multipliers, fractional Low damage, passive High ticks, meter charge, swipe validation, one-time consumption, finishing skill hits, menu coverage and fight reset.
+Run `dotnet run --project Tools/FishingDrag/Checks` for tests executing the real damage owner with small Unity/scene stubs. Covers reel multipliers, fractional Low damage, passive High ticks, meter charge, small look gestures in all four directions, one-time consumption, finishing skill hits, menu coverage and fight reset.
 
 C# syntax checked separately for all changed scripts. Unity/Android Play validation is still needed for layout, multitouch swipes while holding REEL, drag changes, line breaks, KO/retrieval and hotbar restoration.
 
