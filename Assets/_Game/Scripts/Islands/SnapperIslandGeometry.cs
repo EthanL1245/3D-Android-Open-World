@@ -45,6 +45,18 @@ public static class SnapperIslandGeometry
         return q>=1f && DistanceFromShore(p,center)<=FishingMargin;
     }
 
+    public static bool ContainsArea(Vector3 p,Vector3 center)
+    {
+        return Ellipse(p,center)<=1f || DistanceFromShore(p,center)<=FishingMargin;
+    }
+
+    public static int ResolveBiome(Vector3 p)
+    {
+        if(SnapperIslandRuntime.Ready && ContainsArea(p,SnapperIslandRuntime.Center))
+            return ReefCatalog.SnapperBiomeId;
+        return IslandExpansionWorld.FishingBiome(p);
+    }
+
     public static float Height(Vector3 p,Vector3 center,float sea,float existingFloor)
     {
         float q=Ellipse(p,center);
