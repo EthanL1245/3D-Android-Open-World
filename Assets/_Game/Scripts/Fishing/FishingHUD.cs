@@ -223,7 +223,13 @@ public class FishingHUD : MonoBehaviour
         dragSlider.onValueChanged.AddListener(value=>
         {
             if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();
-            if(dragOwner!=null)dragOwner.SelectDrag(Mathf.RoundToInt(value));
+            if(dragOwner!=null)
+            {
+                int previous = dragOwner.SelectedDrag;
+                dragOwner.SelectDrag(Mathf.RoundToInt(value));
+                int notches = Mathf.Abs(dragOwner.SelectedDrag - previous);
+                if(notches > 0 && system != null) system.PlayDragNotchSound(notches);
+            }
         });
         skillPanel=CreatePanel("FishingSkill",root.transform,new Color(.025f,.075f,.095f,.96f));
         skillPanel.GetComponent<Image>().raycastTarget=false;
@@ -1363,6 +1369,7 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 
 
 

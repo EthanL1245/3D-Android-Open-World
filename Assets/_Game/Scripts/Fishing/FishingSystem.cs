@@ -215,6 +215,7 @@ public class FishingSystem : MonoBehaviour
     }
     private void Start()
     {
+        InitializeFishingAudio();
         shopProgress=GetComponent<ShopProgress>();
         baseCastRange=30f; basePreferredRange=20f; baseLineRange=40f; maximumCastDistance=baseCastRange; maximumLineDistance=baseLineRange;
         if(shopProgress!=null) { shopProgress.Changed+=ApplyShopGear; ApplyShopGear(); }
@@ -668,10 +669,47 @@ public class FishingSystem : MonoBehaviour
         }
     }
 
+    private AudioSource fishingAudio;
+    private AudioClip dragClickSound, reelClickSound, biteSplashSound;
+
+    private void InitializeFishingAudio()
+    {
+        fishingAudio = gameObject.AddComponent<AudioSource>();
+        fishingAudio.playOnAwake = false;
+        fishingAudio.loop = false;
+        fishingAudio.spatialBlend = 0f;
+        dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
+        reelClickSound = Resources.Load<AudioClip>("Fishing/Audio/ReelClick");
+        biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
+    }
+
+    private void PlayFishingSound(AudioClip clip)
+    {
+        if (fishingAudio != null && clip != null) fishingAudio.PlayOneShot(clip);
+    }
+
+    public void PlayDragNotchSound(int notches)
+    {
+        StartCoroutine(PlayDragNotches(Mathf.Clamp(notches, 1, 2)));
+    }
+
+    private System.Collections.IEnumerator PlayDragNotches(int notches)
+    {
+        for (int i = 0; i < notches; i++)
+        {
+            PlayFishingSound(dragClickSound);
+            if (i + 1 < notches) yield return new WaitForSecondsRealtime(0.11f);
+        }
+    }
+
     private void HandleActionPressed()
     {
         if (!rodEquipped)return;
         if(MustStowForSwimming()){UnequipHands();return;}
+
+        if (state == FishingState.Fighting || state == FishingState.Bite ||
+            (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure))
+            PlayFishingSound(reelClickSound);
 
         switch (state)
         {
@@ -849,6 +887,7 @@ public class FishingSystem : MonoBehaviour
     }
     private void BeginBite()
     {
+            PlayFishingSound(biteSplashSound);
             fightBiome=pondCast?0:IslandExpansionWorld.FishingBiome(castPoint);
             float offshore=IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready
                 ? (fightBiome==2?IslandExpansionWorld.Active.OffshoreAt(castPoint):0f) : FishingRules.OffshoreFactor;
