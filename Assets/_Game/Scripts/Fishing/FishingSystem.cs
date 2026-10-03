@@ -678,6 +678,7 @@ public class FishingSystem : MonoBehaviour
     private FishingLoopAudio reelAudio;
     private FishingLoopAudio linePullAudio;
     private AudioClip waterLandingSound;
+    private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
     private bool audioFocused = true, audioPaused;
     private AudioClip dragClickSound, biteSplashSound;
@@ -690,6 +691,17 @@ public class FishingSystem : MonoBehaviour
         fishingAudio.spatialBlend = 0f;
         dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
+        decentCatchSounds = new[]
+        {
+            Resources.Load<AudioClip>("Fishing/Audio/DecentCatch1"),
+            Resources.Load<AudioClip>("Fishing/Audio/DecentCatch2"),
+            Resources.Load<AudioClip>("Fishing/Audio/DecentCatch3")
+        };
+        largeCatchSounds = new[]
+        {
+            Resources.Load<AudioClip>("Fishing/Audio/LargeCatch1"),
+            Resources.Load<AudioClip>("Fishing/Audio/LargeCatch2")
+        };
         reelAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/ReelLeadIn", "Fishing/Audio/ReelLoop");
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
@@ -758,6 +770,14 @@ public class FishingSystem : MonoBehaviour
     private void PlayFishingSound(AudioClip clip)
     {
         if (fishingAudio != null && clip != null) fishingAudio.PlayOneShot(clip);
+    }
+
+    private void PlayCatchSound(float weightKg)
+    {
+        // Exactly 10 kg joins the large-fish group; every landing gets one clip.
+        AudioClip[] clips = weightKg < 10f ? decentCatchSounds : largeCatchSounds;
+        if (clips != null && clips.Length > 0)
+            PlayFishingSound(clips[Random.Range(0, clips.Length)]);
     }
 
     public void PlayDragNotchSound(int notches)
@@ -1455,6 +1475,7 @@ public class FishingSystem : MonoBehaviour
         );
 
         HoldFish(newIndex);
+        PlayCatchSound(record.weightKg);
     }
 
     private void FailFishing(string message)
@@ -4108,7 +4129,6 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
 
 
 
