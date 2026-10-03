@@ -7,6 +7,7 @@ public class FishingActionButton :
     IPointerUpHandler
 {
     public bool IsHeld { get; private set; }
+    public event System.Action Pressed;
     public event System.Action Released;
 
     public bool Interactable {get;private set;}=true;
@@ -20,6 +21,7 @@ public class FishingActionButton :
         pointerId = eventData.pointerId;
         IsHeld = true;
         pressedQueued = true;
+        Pressed?.Invoke();
     }
 
     public void OnPointerUp(PointerEventData eventData)

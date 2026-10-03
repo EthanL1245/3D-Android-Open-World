@@ -261,6 +261,7 @@ public class FishingSystem : MonoBehaviour
 
         hud.Initialize(this);
         if (hud.ActionInput != null) hud.ActionInput.Released += StopReelSound;
+        if (hud.ActionInput != null) hud.ActionInput.Pressed += StopLinePullSound;
 
         inventory.Changed +=
             hud.RefreshInventory;
@@ -276,6 +277,7 @@ public class FishingSystem : MonoBehaviour
     private void OnDestroy()
     {
         if (hud != null && hud.ActionInput != null) hud.ActionInput.Released -= StopReelSound;
+        if (hud != null && hud.ActionInput != null) hud.ActionInput.Pressed -= StopLinePullSound;
         if(shopProgress!=null) shopProgress.Changed-=ApplyShopGear;
         if (inventory != null &&
             hud != null)
@@ -287,6 +289,7 @@ public class FishingSystem : MonoBehaviour
 
     private void Update()
     {
+        fishPulledLineThisFrame = false;
         if(heldRecord!=null && inventory!=null && !System.Linq.Enumerable.Contains(inventory.Fish,heldRecord))
         {ClearHeldFish();RefreshHandHud();}
         UpdateHeldFishAnimation();
@@ -673,6 +676,10 @@ public class FishingSystem : MonoBehaviour
 
     private AudioSource fishingAudio;
     private AudioSource reelAudio;
+    private AudioSource linePullAudio;
+    private AudioClip waterLandingSound;
+    private bool fishPulledLineThisFrame;
+    private bool audioFocused = true, audioPaused;
     private AudioClip dragClickSound, reelClickSound, biteSplashSound;
 
     private void InitializeFishingAudio()
@@ -689,10 +696,17 @@ public class FishingSystem : MonoBehaviour
         reelAudio.loop = true;
         reelAudio.spatialBlend = 0f;
         reelAudio.clip = reelClickSound;
+        waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
+        linePullAudio = gameObject.AddComponent<AudioSource>();
+        linePullAudio.playOnAwake = false;
+        linePullAudio.loop = true;
+        linePullAudio.spatialBlend = 0f;
+        linePullAudio.clip = Resources.Load<AudioClip>("Fishing/Audio/LinePull");
     }
 
     private void StartReelSound()
     {
+        StopLinePullSound();
         if (reelAudio == null || reelAudio.clip == null ||
             hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld) return;
         reelAudio.Stop();
@@ -703,6 +717,30 @@ public class FishingSystem : MonoBehaviour
     private void StopReelSound()
     {
         if (reelAudio != null) reelAudio.Stop();
+    }
+
+    private void StopLinePullSound()
+    {
+        if (linePullAudio != null) linePullAudio.Stop();
+    }
+
+    private void UpdateLinePullSound()
+    {
+        bool pulling = audioFocused && !audioPaused && rodEquipped && !shopMode &&
+            !ShopWorldHUD.MenuOpen && state == FishingState.Fighting &&
+            !fishUnconscious && fishPulledLineThisFrame &&
+            hud != null && hud.ActionInput != null && !hud.ActionInput.IsHeld;
+        if (!pulling)
+        {
+            StopLinePullSound();
+            return;
+        }
+        if (linePullAudio != null && linePullAudio.clip != null && !linePullAudio.isPlaying)
+        {
+            // Play once per pulling interval; AudioSource loops without stacking.
+            linePullAudio.time = 0f;
+            linePullAudio.Play();
+        }
     }
 
     private void CheckReelSound()
@@ -717,12 +755,14 @@ public class FishingSystem : MonoBehaviour
 
     private void OnApplicationFocus(bool focused)
     {
-        if (!focused) StopReelSound();
+        audioFocused = focused;
+        if (!focused) { StopReelSound(); StopLinePullSound(); }
     }
 
     private void OnApplicationPause(bool paused)
     {
-        if (paused) StopReelSound();
+        audioPaused = paused;
+        if (paused) { StopReelSound(); StopLinePullSound(); }
     }
 
     private void PlayFishingSound(AudioClip clip)
@@ -873,6 +913,7 @@ public class FishingSystem : MonoBehaviour
         if (rodView != null) rodView.SetCastPose(1f);
         castPoint = target;
         SnapBobberToSurface();
+        PlayFishingSound(waterLandingSound);
 
         state = FishingState.Waiting;
         stateTimer =
@@ -1440,6 +1481,7 @@ public class FishingSystem : MonoBehaviour
     private void CancelFishing()
     {
         StopReelSound();
+        StopLinePullSound();
         StopAllCoroutines();
         if (rodView != null) rodView.ResetMotion();
         if (hud != null && hud.ActionInput != null) hud.ActionInput.ResetInput();
@@ -2087,6 +2129,13 @@ public class FishingSystem : MonoBehaviour
             bobber.transform.position =
                 next;
 
+            // Compare before/after fish movement against the same player position:
+            // walking away or wave bobbing must not count as a fish taking line.
+            Vector3 before = current - transform.position;
+            Vector3 after = next - transform.position;
+            before.y = after.y = 0f;
+            fishPulledLineThisFrame = !reeling && after.sqrMagnitude > before.sqrMagnitude + 0.000001f;
+
             fightTravelDirection =
                 outwardDirection;
         }
@@ -2685,6 +2734,9 @@ public class FishingSystem : MonoBehaviour
 
     private void ResetLine()
     {
+        StopReelSound();
+        StopLinePullSound();
+        fishPulledLineThisFrame = false;
         if(hud!=null){hud.SetCastPower(false,0,0);hud.SetCastCancel(false,null);hud.SetActionInteractable(true);hud.SetCastAvailable(false);}
         castHintTimer=0;
         if(rodView!=null)rodView.ResetMotion();
@@ -3106,6 +3158,7 @@ public class FishingSystem : MonoBehaviour
     private void LateUpdate()
     {
         CheckReelSound();
+        UpdateLinePullSound();
         if(rodFitPending){rodFitPending=false;FitRodToControls();}
         UpdateHeldCatchLine();
     }
@@ -4065,7 +4118,6 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
 
 
 
