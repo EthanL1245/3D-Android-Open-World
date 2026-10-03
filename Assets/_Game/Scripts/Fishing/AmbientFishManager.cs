@@ -23,7 +23,7 @@ public class AmbientFishManager : MonoBehaviour
         if(player==null){var p=FindFirstObjectByType<FirstPersonController>();if(p!=null)player=p.transform;}
         if(player!=null)view=player.GetComponentInChildren<Camera>();
         fishCount=Mathf.Clamp(fishCount,4,12); // Includes old scenes serialized with 18.
-        poolBiome=IslandExpansionWorld.FishingBiome(player!=null?player.position:Vector3.zero);
+        poolBiome=SnapperIslandGeometry.ResolveBiome(player!=null?player.position:Vector3.zero);
         for(int i=0;i<fishCount;i++)
         {
             fish.Add(CreateFish(i,poolBiome));
@@ -51,7 +51,7 @@ public class AmbientFishManager : MonoBehaviour
     private void Update()
     {
         if(replacing || player==null || !InReef)return;
-        int biome=IslandExpansionWorld.FishingBiome(player.position);
+        int biome=SnapperIslandGeometry.ResolveBiome(player.position);
         if(biome!=pendingBiome){pendingBiome=biome;biomeChangedAt=Time.time;}
         if(biome!=poolBiome && Time.time-biomeChangedAt>2f)StartCoroutine(ReplacePool(biome));
     }
@@ -78,9 +78,11 @@ public class AmbientFishManager : MonoBehaviour
     public bool Safe(Vector3 position,float clearance=0.6f,int biome=-1)
     {
         if(!InReef||oceanWater==null||terrain==null)return false;
-        if(biome>=0 && IslandExpansionWorld.FishingBiome(position)!=biome)return false;
+        if(biome>=0 && SnapperIslandGeometry.ResolveBiome(position)!=biome)return false;
         var world=IslandExpansionWorld.Active;
         if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin)return false;
+        if(biome==ReefCatalog.SnapperBiomeId && SnapperIslandRuntime.Ready &&
+            SnapperIslandGeometry.DistanceFromShore(position,SnapperIslandRuntime.Center)+clearance>SnapperIslandGeometry.FishingMargin)return false;
         if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
