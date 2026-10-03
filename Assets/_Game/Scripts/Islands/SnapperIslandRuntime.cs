@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -18,8 +19,17 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         new GameObject("Snapper Island Runtime").AddComponent<SnapperIslandRuntime>();
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
+        // Normally IslandExpansionWorld (-600) completes before this component (-550).
+        // Still allow a few frames for domain/scene timing differences so we never
+        // sculpt the old pre-expansion Terrain only to have it replaced a frame later.
+        for(int frame=0;frame<120;frame++)
+        {
+            IslandExpansionWorld expansion=IslandExpansionWorld.Active;
+            if(expansion==null || expansion.Ready)break;
+            yield return null;
+        }
         Build();
     }
 
@@ -29,6 +39,13 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         IslandExpansionWorld expansion=IslandExpansionWorld.Active;
         ReefZone reef=ReefZone.Active;
         OceanWater water=FindFirstObjectByType<OceanWater>();
+
+        if(expansion!=null && !expansion.Ready)
+        {
+            Debug.LogWarning("[SNAPPER ISLAND] Island expansion was still rebuilding; Snapper Island was not sculpted this frame.");
+            return;
+        }
+
         Terrain terrain=expansion!=null && expansion.Ready?expansion.Terrain:Terrain.activeTerrain;
         if(reef==null || water==null || terrain==null)
         {
@@ -126,5 +143,13 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         GameObject marker=new GameObject("Snapper Island");
         marker.transform.SetParent(transform,false);
         marker.transform.position=Center;
+    }
+
+    private void OnDestroy()
+    {
+        // Static state must not survive into a newly loaded gameplay scene where a
+        // fresh Terrain still needs to be sculpted.
+        Ready=false;
+        Center=Vector3.zero;
     }
 }
