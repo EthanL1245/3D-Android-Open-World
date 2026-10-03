@@ -57,7 +57,8 @@ public class FishingSystem : MonoBehaviour
 
     private GameObject bobberIndicatorRoot;
     private RectTransform bobberIndicatorRect;
-    private Image bobberIndicatorBackground;
+    private RawImage bobberStatusIcon;
+    private Texture2D[] fishStatusTextures;
     private Text bobberIndicatorText;
 
     private Transform heldFishAnchor;
@@ -2437,132 +2438,64 @@ public class FishingSystem : MonoBehaviour
 
     private void CreateBobberIndicator()
     {
-        if (bobberIndicatorRoot != null)
+        if (bobberIndicatorRoot != null) Destroy(bobberIndicatorRoot);
+        if (fishStatusTextures == null)
         {
-            Destroy(
-                bobberIndicatorRoot
-            );
+            fishStatusTextures = new[]
+            {
+                Resources.Load<Texture2D>("Fishing/StatusIcons/Calm"),
+                Resources.Load<Texture2D>("Fishing/StatusIcons/Irritated"),
+                Resources.Load<Texture2D>("Fishing/StatusIcons/Angry"),
+                Resources.Load<Texture2D>("Fishing/StatusIcons/LookingForCover")
+            };
         }
 
-        bobberIndicatorRoot =
-            new GameObject(
-                "BobberStatusIndicator",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Image)
-            );
+        bobberIndicatorRoot = new GameObject("BobberStatusIndicator", typeof(RectTransform));
+        bobberIndicatorRoot.transform.SetParent(gameplayCanvas.transform, false);
+        bobberIndicatorRect = bobberIndicatorRoot.GetComponent<RectTransform>();
+        bobberIndicatorRect.anchorMin = bobberIndicatorRect.anchorMax = new Vector2(.5f, .5f);
+        bobberIndicatorRect.pivot = new Vector2(.5f, .5f);
+        // Fixed canvas size keeps the icon readable at any fishing distance.
+        bobberIndicatorRect.sizeDelta = new Vector2(128f, 128f);
 
-        bobberIndicatorRoot.transform.SetParent(
-            gameplayCanvas.transform,
-            false
-        );
+        var icon = new GameObject("FishStatusIcon", typeof(RectTransform), typeof(RawImage));
+        icon.transform.SetParent(bobberIndicatorRoot.transform, false);
+        bobberStatusIcon = icon.GetComponent<RawImage>();
+        bobberStatusIcon.raycastTarget = false;
+        var iconRect = bobberStatusIcon.rectTransform;
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = iconRect.offsetMax = Vector2.zero;
 
-        bobberIndicatorRect =
-            bobberIndicatorRoot
-                .GetComponent<RectTransform>();
+        var label = new GameObject("Distance", typeof(RectTransform), typeof(Text), typeof(Outline));
+        label.transform.SetParent(bobberIndicatorRoot.transform, false);
+        bobberIndicatorText = label.GetComponent<Text>();
+        bobberIndicatorText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        bobberIndicatorText.fontSize = 26;
+        bobberIndicatorText.fontStyle = FontStyle.Bold;
+        bobberIndicatorText.alignment = TextAnchor.MiddleLeft;
+        bobberIndicatorText.color = Color.white;
+        bobberIndicatorText.raycastTarget = false;
+        var textRect = bobberIndicatorText.rectTransform;
+        textRect.anchorMin = textRect.anchorMax = new Vector2(.5f, .5f);
+        textRect.pivot = new Vector2(0f, .5f);
+        textRect.anchoredPosition = new Vector2(72f, 0f);
+        textRect.sizeDelta = new Vector2(220f, 80f);
+        var textOutline = label.GetComponent<Outline>();
+        textOutline.effectColor = Color.black;
+        textOutline.effectDistance = new Vector2(2f, -2f);
+        textOutline.useGraphicAlpha = true;
 
-        bobberIndicatorRect.anchorMin =
-            new Vector2(
-                0.5f,
-                0.5f
-            );
-
-        bobberIndicatorRect.anchorMax =
-            new Vector2(
-                0.5f,
-                0.5f
-            );
-
-        bobberIndicatorRect.pivot =
-            new Vector2(
-                0.5f,
-                0.5f
-            );
-
-        // Fixed pixel size: distance from the bobber never changes readability.
-        bobberIndicatorRect.sizeDelta =
-            new Vector2(
-                270f,
-                72f
-            );
-
-        bobberIndicatorBackground =
-            bobberIndicatorRoot
-                .GetComponent<Image>();
-
-        bobberIndicatorBackground.color =
-            new Color(
-                0.08f,
-                0.13f,
-                0.16f,
-                0.94f
-            );
-
-        bobberIndicatorBackground.raycastTarget =
-            false;
-
-        GameObject textObject =
-            new GameObject(
-                "Label",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Text)
-            );
-
-        textObject.transform.SetParent(
-            bobberIndicatorRoot.transform,
-            false
-        );
-
-        bobberIndicatorText =
-            textObject.GetComponent<Text>();
-
-        bobberIndicatorText.font =
-            Resources.GetBuiltinResource<Font>(
-                "LegacyRuntime.ttf"
-            );
-
-        bobberIndicatorText.fontSize = 24;
-        bobberIndicatorText.alignment =
-            TextAnchor.MiddleCenter;
-
-        bobberIndicatorText.color =
-            Color.white;
-
-        bobberIndicatorText.raycastTarget =
-            false;
-
-        RectTransform textRect =
-            bobberIndicatorText
-                .rectTransform;
-
-        textRect.anchorMin =
-            Vector2.zero;
-
-        textRect.anchorMax =
-            Vector2.one;
-
-        textRect.offsetMin =
-            new Vector2(
-                10f,
-                6f
-            );
-
-        textRect.offsetMax =
-            new Vector2(
-                -10f,
-                -6f
-            );
-
-        var warning=new GameObject("FragileBreakOutline",typeof(RectTransform),typeof(FishingStatusOutline));
-        warning.transform.SetParent(bobberIndicatorRoot.transform,false);
-        var warningRect=warning.GetComponent<RectTransform>();warningRect.anchorMin=Vector2.zero;warningRect.anchorMax=Vector2.one;
-        warningRect.offsetMin=warningRect.offsetMax=Vector2.zero;
-        fragileOutline=warning.GetComponent<FishingStatusOutline>();fragileOutline.raycastTarget=false;
-        fragileOutline.color=new Color(1f,.04f,.025f,1f);
-        bobberIndicatorRoot.SetActive(
-            false
-        );
+        var warning = new GameObject("FragileBreakOutline", typeof(RectTransform), typeof(FishingStatusOutline));
+        warning.transform.SetParent(icon.transform, false);
+        var warningRect = warning.GetComponent<RectTransform>();
+        warningRect.anchorMin = Vector2.zero;
+        warningRect.anchorMax = Vector2.one;
+        warningRect.offsetMin = warningRect.offsetMax = Vector2.zero;
+        fragileOutline = warning.GetComponent<FishingStatusOutline>();
+        fragileOutline.raycastTarget = false;
+        fragileOutline.color = new Color(1f, .04f, .025f, 1f);
+        bobberIndicatorRoot.SetActive(false);
     }
 
     private void UpdateBobberIndicator()
@@ -2570,7 +2503,7 @@ public class FishingSystem : MonoBehaviour
         if (bobberIndicatorRoot == null ||
             bobberIndicatorRect == null ||
             bobberIndicatorText == null ||
-            bobberIndicatorBackground == null ||
+            bobberStatusIcon == null ||
             bobber == null ||
             !bobber.activeSelf ||
             state ==
@@ -2631,52 +2564,24 @@ public class FishingSystem : MonoBehaviour
             true
         );
 
-        bobberIndicatorRect.anchoredPosition =
-            localPoint +
-            new Vector2(
-                0f,
-                42f
-            );
+        bobberIndicatorRect.anchoredPosition = localPoint + new Vector2(0f, 72f);
 
-        if(fragileOutline!=null)fragileOutline.Progress=
-            state==FishingState.Fighting && !fishUnconscious && hookedTemperament==FishTemperament.Fragile
-            ? Mathf.Clamp01(fragileBreakTimer/FishingDragRules.FragileBreakSeconds):0f;
-        float lineDistance =
-            GetCurrentLineDistance();
+        bool hasFish = state == FishingState.Bite || state == FishingState.Fighting;
+        bool showStatus = hasFish && !fishUnconscious;
+        bobberStatusIcon.gameObject.SetActive(showStatus);
+        if (showStatus)
+            bobberStatusIcon.texture = fishStatusTextures[(int)hookedTemperament];
 
-        string distanceText =
-            "LINE " +
-            lineDistance.ToString("0.0") +
-            "/" +
-            maximumLineDistance.ToString("0") +
-            " m";
+        if (fragileOutline != null)
+            fragileOutline.Progress = state == FishingState.Fighting && showStatus &&
+                hookedTemperament == FishTemperament.Fragile
+                ? Mathf.Clamp01(fragileBreakTimer / FishingDragRules.FragileBreakSeconds) : 0f;
 
-        if (state ==
-                FishingState.Bite ||
-            state ==
-                FishingState.Fighting)
-        {
-            bobberIndicatorBackground.color =
-                GetTemperamentColor();
-
-            bobberIndicatorText.text =
-                GetTemperamentName() +
-                "\n" +
-                distanceText;
-        }
-        else
-        {
-            bobberIndicatorBackground.color =
-                new Color(
-                    0.08f,
-                    0.16f,
-                    0.20f,
-                    0.94f
-                );
-
-            bobberIndicatorText.text =
-                distanceText;
-        }
+        string distanceText = GetCurrentLineDistance().ToString("0.0") + " m";
+        bobberIndicatorText.text = hasFish && fishUnconscious
+            ? "UNCONSCIOUS\n" + distanceText : distanceText;
+        bobberIndicatorText.rectTransform.anchoredPosition =
+            new Vector2(showStatus ? 72f : 0f, 0f);
     }
 
     private void SetLinePositions()
@@ -4073,6 +3978,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 
