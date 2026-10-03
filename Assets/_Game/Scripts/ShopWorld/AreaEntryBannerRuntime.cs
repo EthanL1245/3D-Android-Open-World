@@ -69,7 +69,7 @@ public sealed class AreaEntryBannerRuntime : MonoBehaviour
         }
 
         if (player == null) return currentArea;
-        int biome = IslandExpansionWorld.FishingBiome(player.transform.position);
+        int biome = SnapperIslandGeometry.ResolveBiome(player.transform.position);
         if (biome >= 0 && biome < ReefCatalog.Zones.Length)
             return ReefCatalog.Zones[biome].name;
         return currentArea;
