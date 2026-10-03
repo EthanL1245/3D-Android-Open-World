@@ -184,6 +184,7 @@ public class FishingHUD : MonoBehaviour
         dragRect=dragPanel.GetComponent<RectTransform>();
         dragRect.anchorMin=dragRect.anchorMax=new Vector2(.5f,.5f);
         dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,104);
+        dragRect.localScale=Vector3.one*1.3f;
         dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleCenter);
         var titleRect=dragTitle.rectTransform;titleRect.anchorMin=new Vector2(0,.65f);titleRect.anchorMax=Vector2.one;titleRect.offsetMin=titleRect.offsetMax=Vector2.zero;
         // A single drag target with a handle and exactly three discrete values.
@@ -256,8 +257,8 @@ public class FishingHUD : MonoBehaviour
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rootRect,screen,targetCamera,out position);
             position.y+=18f;
         }
-        position.x=Mathf.Clamp(position.x,rootRect.rect.xMin+178,rootRect.rect.xMax-178);
-        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-122);
+        position.x=Mathf.Clamp(position.x,rootRect.rect.xMin+229,rootRect.rect.xMax-229);
+        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-154);
         dragRect.localPosition=new Vector3(position.x,position.y,0);
     }
 
@@ -1362,5 +1363,6 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 
 

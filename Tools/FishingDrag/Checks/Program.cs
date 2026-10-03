@@ -31,6 +31,13 @@ class Program {
   Check(FishingDragRules.EscapeMultiplier(1)==1 && FishingDragRules.DamageMultiplier(1)==1 && FishingDragRules.TensionMultiplier(1)==1,"Medium unchanged");
   Check(FishingDragRules.ReelingTensionMultiplier(2)==2f && FishingDragRules.ReelingTensionMultiplier(1)==1f && FishingDragRules.ReelingTensionMultiplier(0)==.5f,"Reeling tension multipliers");
   Check(FishingDragRules.TensionMultiplier(2)==1f && FishingDragRules.HighTensionPerSecond==.025f,"High passive tension unchanged");
+  Check(FishingDragRules.Charge(0,2,5)==1f && FishingDragRules.Charge(0,2,4)<1f,"Five-second charge");
+  Check(FishingDragRules.RecoveryMultiplier(0)==1.3f && FishingDragRules.RecoveryMultiplier(1)==1f,"Low recovery");
+  float danger=FishingDragRules.FragileTimer(0,true,1,1.99f);
+  Check(danger<FishingDragRules.FragileBreakSeconds,"No early purple snap");
+  Check(FishingDragRules.FragileTimer(danger,true,2,.01f)>=FishingDragRules.FragileBreakSeconds,"Purple snaps at two seconds");
+  Check(FishingDragRules.FragileTimer(danger,true,0,.1f)==0 && FishingDragRules.FragileTimer(danger,false,2,.1f)==0,"Low or mood exit clears countdown");
   Console.WriteLine("PASS: live burst owner: Low/Medium/High damage, passive ticks, charge, swipe gates, one-shot consumption, skill KO, menu pause, fight reset.");
  }
 }
+

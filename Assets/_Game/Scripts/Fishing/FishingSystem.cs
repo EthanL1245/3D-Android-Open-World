@@ -18,7 +18,8 @@ public class FishingSystem : MonoBehaviour
     {
         Calm,
         Irritated,
-        Angry
+        Angry,
+        Fragile
     }
 
     [Header("References")]
@@ -95,6 +96,8 @@ public class FishingSystem : MonoBehaviour
     private float surgeAmount;
     private float surgeTimer;
     private float temperamentTimer;
+    private float fragileBreakTimer;
+    private FishingStatusOutline fragileOutline;
     private float initialEscapeBurstTimer;
     private bool fishUnconscious;
     private bool fishOnShore;
@@ -934,6 +937,7 @@ public class FishingSystem : MonoBehaviour
         state = FishingState.Fighting;
 
         fightTension = 0.24f;
+        fragileBreakTimer=0f;
         fishMaxHealth=Mathf.RoundToInt(FishingRules.MaxHealth(hookedSpeciesId,hookedWeightKg)*ReefCatalog.HealthMultiplier(fightBiome));
         fishHealthPoints=fishMaxHealth;fishHealth=1f;
         damageFraction=0;pendingDamage=0;damageDisplayTimer=0;
@@ -949,6 +953,7 @@ public class FishingSystem : MonoBehaviour
                 3.4f
             );
 
+        if(hookedTemperament==FishTemperament.Fragile)temperamentTimer=Random.Range(3.5f,5f);
         initialEscapeBurstTimer =
             1.15f;
 
@@ -1040,6 +1045,17 @@ public class FishingSystem : MonoBehaviour
                         1.45f,
                         3.65f
                     );
+                fragileBreakTimer=0f;
+                if(hookedTemperament==FishTemperament.Fragile)temperamentTimer=Random.Range(3.5f,5f);
+            }
+
+            // Consecutive unsafe time only. Selecting Low immediately clears it.
+            fragileBreakTimer=FishingDragRules.FragileTimer(fragileBreakTimer,
+                hookedTemperament==FishTemperament.Fragile,CurrentDrag,Time.deltaTime);
+            if(fragileBreakTimer>=FishingDragRules.FragileBreakSeconds)
+            {
+                FailFishing("SNAP! FRAGILE fish: switch to LOW drag within 2 seconds.");
+                return;
             }
 
             surgeTimer -=
@@ -1133,7 +1149,7 @@ public class FishingSystem : MonoBehaviour
                         0.52f,
                         0.32f,
                         effectiveDifficulty
-                    );
+                    ) * FishingDragRules.RecoveryMultiplier(CurrentDrag);
             }
 
             fightTension +=
@@ -1509,6 +1525,7 @@ public class FishingSystem : MonoBehaviour
         int speciesId,
         float weightKg)
     {
+        if(Random.value<.15f)return FishTemperament.Fragile;
         GetTemperamentWeights(
             speciesId,
             weightKg,
@@ -1726,6 +1743,8 @@ public class FishingSystem : MonoBehaviour
 
         switch (hookedTemperament)
         {
+            case FishTemperament.Fragile:
+                return "FRAGILE • LOW DRAG";
             case FishTemperament.Calm:
                 return "CALM";
 
@@ -1752,6 +1771,8 @@ public class FishingSystem : MonoBehaviour
 
         switch (hookedTemperament)
         {
+            case FishTemperament.Fragile:
+                return new Color(.55f,.16f,.78f,.96f);
             case FishTemperament.Calm:
                 return
                     new Color(
@@ -1895,6 +1916,10 @@ public class FishingSystem : MonoBehaviour
                 surgeAmount * 0.28f
             );
 
+        // Purple status has a fixed fraction of base speed, independent of drag,
+        // surges or the initial escape burst.
+        if(hookedTemperament==FishTemperament.Fragile)
+            outwardSpeed=FishingTuning.YellowSpeed(hookedSpeciesId,effectiveDifficulty)*.2f;
         Vector3 velocity =
             outwardDirection *
             outwardSpeed;
@@ -2529,6 +2554,12 @@ public class FishingSystem : MonoBehaviour
                 -6f
             );
 
+        var warning=new GameObject("FragileBreakOutline",typeof(RectTransform),typeof(FishingStatusOutline));
+        warning.transform.SetParent(bobberIndicatorRoot.transform,false);
+        var warningRect=warning.GetComponent<RectTransform>();warningRect.anchorMin=Vector2.zero;warningRect.anchorMax=Vector2.one;
+        warningRect.offsetMin=warningRect.offsetMax=Vector2.zero;
+        fragileOutline=warning.GetComponent<FishingStatusOutline>();fragileOutline.raycastTarget=false;
+        fragileOutline.color=new Color(1f,.04f,.025f,1f);
         bobberIndicatorRoot.SetActive(
             false
         );
@@ -2607,6 +2638,9 @@ public class FishingSystem : MonoBehaviour
                 42f
             );
 
+        if(fragileOutline!=null)fragileOutline.Progress=
+            state==FishingState.Fighting && !fishUnconscious && hookedTemperament==FishTemperament.Fragile
+            ? Mathf.Clamp01(fragileBreakTimer/FishingDragRules.FragileBreakSeconds):0f;
         float lineDistance =
             GetCurrentLineDistance();
 
@@ -4039,6 +4073,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 
