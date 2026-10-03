@@ -10,6 +10,7 @@ using UnityEngine;
 public sealed class SnapperIslandRuntime : MonoBehaviour
 {
     public static Vector3 Center {get;private set;}
+    public static Transform Arrival {get;private set;}
     public static bool Ready {get;private set;}
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -143,13 +144,29 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         GameObject marker=new GameObject("Snapper Island");
         marker.transform.SetParent(transform,false);
         marker.transform.position=Center;
+        Terrain terrain=IslandExpansionWorld.Active!=null?IslandExpansionWorld.Active.Terrain:Terrain.activeTerrain;
+        GameObject arrival=new GameObject("SnapperArrival");
+        arrival.transform.SetParent(transform,false);
+        Vector3 p=Center+Vector3.forward*(SnapperIslandGeometry.RadiusZ*.65f);
+        p.y=terrain.SampleHeight(p)+terrain.transform.position.y+.2f;
+        arrival.transform.SetPositionAndRotation(p,Quaternion.identity);
+        Arrival=arrival.transform;
+        GameObject trigger=new GameObject("Snapper Land Discovery");
+        trigger.transform.SetParent(transform,false);
+        trigger.transform.position=Center+Vector3.up*(FindFirstObjectByType<OceanWater>().BaseWaterLevel+12f-Center.y);
+        var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;
+        box.size=new Vector3(SnapperIslandGeometry.RadiusX*2,30,SnapperIslandGeometry.RadiusZ*2);
+        var body=trigger.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
+        trigger.AddComponent<IslandDiscovery>().Biome=ReefCatalog.SnapperBiomeId;
     }
 
     private void OnDestroy()
     {
         // Static state must not survive into a newly loaded gameplay scene where a
         // fresh Terrain still needs to be sculpted.
+        Arrival=null;
         Ready=false;
         Center=Vector3.zero;
     }
 }
+

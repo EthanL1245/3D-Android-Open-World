@@ -1492,7 +1492,7 @@ public class FishingSystem : MonoBehaviour
                 (pondCast ? 0.20f : 0.74f) +
                 sizeDifficulty *
                 0.26f
-            ) * fightQuality;
+            ) * fightQuality * (hookedSpeciesId==FishCatalog.BattleScarredMakoSharkId?1.5f:1f);
     }
 
     private FishTemperament RollTemperament(
@@ -4028,6 +4028,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 

@@ -46,7 +46,7 @@ public static class FishingTuning
     // Use the catalog's stable active IDs directly so adding a species in one place
     // cannot silently leave the editable tuning system one fish behind.
     private static readonly int[] ActiveSpecies=FishCatalog.ActiveIds;
-    private static readonly string[] Biomes={"suncrest-reef","brinebreak-isle","deep-ocean","bluewater-cay"};
+    private static readonly string[] Biomes={"suncrest-reef","brinebreak-isle","deep-ocean","bluewater-cay","snapper-island"};
     private static readonly string[] RequiredBaits={
         "worms","worms-legacy","shrimp","squid",
         "lure:0","lure:1","lure:2","lure:3","lure:4"
@@ -477,3 +477,4 @@ public static class FishingTuning
         return false;
     }
 }
+

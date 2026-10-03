@@ -111,9 +111,9 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
     {
         ReefCatalog.Zone entry = ReefCatalog.Zones[biome];
         bool unlocked = entry.Unlocked;
-        bool island = biome == 0 || biome == 1 || biome == 3;
+        bool island = biome == 0 || biome == 1 || biome == 3 || biome == 4;
         bool here = travel != null && travel.Destination == 0 && currentBiome == biome;
-        bool worldReady = biome == 0 || biome == 2 || (IslandExpansionWorld.Active != null && IslandExpansionWorld.Active.Ready);
+        bool worldReady = biome == 4 ? SnapperIslandRuntime.Ready : biome == 0 || biome == 2 || (IslandExpansionWorld.Active != null && IslandExpansionWorld.Active.Ready);
         bool fishingBusy = IsFishingBusy();
 
         Color cardColor = biome == 0
@@ -187,7 +187,7 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
     {
         if (IsFishingBusy() || travel == null || travel.Traveling) return;
         if (biome < 0 || biome >= ReefCatalog.Zones.Length || !ReefCatalog.Zones[biome].Unlocked) return;
-        if (biome != 0 && biome != 1 && biome != 3) return; // Deep Ocean intentionally has no teleport.
+        if (biome != 0 && biome != 1 && biome != 3 && biome != 4) return; // Deep Ocean intentionally has no teleport.
         if ((biome == 1 || biome == 3) && (IslandExpansionWorld.Active == null || !IslandExpansionWorld.Active.Ready)) return;
 
         if (menuSafety != null && SafeCloseIndexMethod != null)
@@ -285,3 +285,4 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
         rect.offsetMax = new Vector2(right, top);
     }
 }
+

@@ -34,6 +34,9 @@ public static class FishCatalog
     public const int BlacktipSharkId=15;
     public const int YellowtailSnapperId=16;
     public const int MuttonSnapperId=17;
+    public const int BlacktipReefSharkId=18;
+    public const int MakoSharkId=19;
+    public const int BattleScarredMakoSharkId=20;
 
     // These embedded definitions are deliberately retained as a safe legacy fallback.
     // Editable min/max weight, health, value and catch odds live in Resources/FishingTuning.
@@ -56,11 +59,14 @@ public static class FishCatalog
         new FishSpeciesDefinition("Greater Amberjack",new Color(.3f,.4f,.42f),new Color(.84f,.72f,.3f),1.5f,70f,.88f,4f,195),
         new FishSpeciesDefinition("Blacktip Shark",new Color(.38f,.42f,.43f),new Color(.12f,.14f,.15f),5f,30f,1f,0f,1200),
         new FishSpeciesDefinition("Yellowtail Snapper",new Color(.64f,.70f,.72f),new Color(.98f,.82f,.16f),.25f,4.1f,.46f,13f,48),
-        new FishSpeciesDefinition("Mutton Snapper",new Color(.58f,.32f,.24f),new Color(.88f,.62f,.38f),.5f,13f,.55f,5f,90)
+        new FishSpeciesDefinition("Mutton Snapper",new Color(.58f,.32f,.24f),new Color(.88f,.62f,.38f),.5f,13f,.55f,5f,90),
+        new FishSpeciesDefinition("Blacktip Reef Shark",new Color(.4f,.45f,.46f),new Color(.1f,.12f,.13f),3f,18f,.95f,0f,900),
+        new FishSpeciesDefinition("Mako Shark",new Color(.12f,.27f,.36f),new Color(.7f,.75f,.78f),20f,150f,1f,0f,1800),
+        new FishSpeciesDefinition("Battle Scarred Mako Shark",new Color(.12f,.27f,.36f),new Color(.6f,.65f,.68f),30f,225f,1f,0f,2700)
     };
 
     public static int Count=>Species.Length;
-    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17};
+    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
     public static int CanonicalId(int id)=>id==4?YellowfinTunaId:id;
 
     public static FishSpeciesDefinition Get(int id)
@@ -113,3 +119,4 @@ public static class FishCatalog
 
     public static float GetVisualScale(int speciesId,float weightKg)=>FishSizeTable.LengthMetres(speciesId,weightKg);
 }
+

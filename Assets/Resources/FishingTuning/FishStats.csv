@@ -19,3 +19,6 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 15,Blacktip Shark,5,30,9000,20000,1200,12000,5.2
 16,Yellowtail Snapper,0.25,4.1,90,300,40,250,2.85
 17,Mutton Snapper,0.5,13,150,650,80,900,3.152
+18,Blacktip Reef Shark,3,18,6000,14000,900,8000,4.8
+19,Mako Shark,20,150,10000,24000,1800,18000,5.6
+20,Battle Scarred Mako Shark,30,225,15000,36000,2700,27000,8.4

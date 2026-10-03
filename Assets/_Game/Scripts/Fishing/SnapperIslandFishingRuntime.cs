@@ -3,24 +3,12 @@ using System.Reflection;
 using UnityEngine;
 
 /// <summary>
-/// Restricts catches within 50 m of Snapper Island's coast to the three snapper
-/// species currently in the game: Red Snapper, Yellowtail Snapper and Mutton Snapper.
-/// Relative bait/lure preference is inherited from the existing Suncrest tuning and
-/// renormalized across only those three species, so no non-snapper can be selected.
-///
-/// Weight rolls use each snapper's existing Suncrest min/max tuning. The dedicated
-/// island also gets its own 30 m shoreline depth reference so the global shallow-cast
-/// size/difficulty penalty remains consistent around this new island.
+/// Uses the shared Snapper Island tuning, including Blacktip Reef Shark, and
+/// preserves this island's shoreline depth correction.
 /// </summary>
 [DefaultExecutionOrder(1500)]
 public sealed class SnapperIslandFishingRuntime : MonoBehaviour
 {
-    private static readonly int[] SnapperSpecies={
-        FishCatalog.RedSnapperId,
-        FishCatalog.YellowtailSnapperId,
-        FishCatalog.MuttonSnapperId
-    };
-
     private static readonly BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic;
     private static readonly FieldInfo StateField=typeof(FishingSystem).GetField("state",Flags);
     private static readonly FieldInfo CastPointField=typeof(FishingSystem).GetField("castPoint",Flags);
@@ -102,12 +90,10 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
         int bait=(int)ActiveBaitField.GetValue(fishing);
         int species=RollSnapperSpecies(bait,UnityEngine.Random.value);
 
-        // This island is adjacent to Suncrest, so its size distribution intentionally
-        // uses the existing Suncrest min/max row for each snapper instead of inventing
-        // a second hidden balance table.
+        // Use the same biome rows shown in the island fish index.
         float weight;
-        FishingTuning.RememberBiome(0);
-        if(!FishingTuning.TryRollWeight(species,0,UnityEngine.Random.value,out weight))
+        FishingTuning.RememberBiome(ReefCatalog.SnapperBiomeId);
+        if(!FishingTuning.TryRollWeight(species,ReefCatalog.SnapperBiomeId,UnityEngine.Random.value,out weight))
         {
             FishSpeciesDefinition definition=FishCatalog.Get(species);
             weight=Mathf.Lerp(definition.MinWeightKg,definition.MaxWeightKg,UnityEngine.Random.value);
@@ -122,9 +108,8 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
         object temperament=RollTemperamentMethod.Invoke(fishing,new object[]{species,weight});
         HookedTemperamentField.SetValue(fishing,temperament);
 
-        // Keep core fight logic on a safe existing biome ID; species selection is now
-        // authoritative in this companion and the 50 m island boundary is cast-based.
-        FightBiomeField.SetValue(fishing,0);
+        // Preserve the actual biome for weight ranges and downstream fight rules.
+        FightBiomeField.SetValue(fishing,ReefCatalog.SnapperBiomeId);
 
         if(state=="Fighting")
             ResetFightHealth(species,weight);
@@ -135,24 +120,7 @@ public sealed class SnapperIslandFishingRuntime : MonoBehaviour
 
     private static int RollSnapperSpecies(int bait,float random01)
     {
-        float total=0f;
-        float[] weights=new float[SnapperSpecies.Length];
-        for(int i=0;i<SnapperSpecies.Length;i++)
-        {
-            weights[i]=Mathf.Max(0f,ReefCatalog.EquippedChance(SnapperSpecies[i],bait,0));
-            total+=weights[i];
-        }
-
-        if(total<=0.0001f)
-            return SnapperSpecies[Mathf.Clamp(Mathf.FloorToInt(Mathf.Clamp01(random01)*SnapperSpecies.Length),0,SnapperSpecies.Length-1)];
-
-        float pick=Mathf.Clamp01(random01)*total;
-        for(int i=0;i<SnapperSpecies.Length;i++)
-        {
-            pick-=weights[i];
-            if(pick<0f)return SnapperSpecies[i];
-        }
-        return SnapperSpecies[SnapperSpecies.Length-1];
+        return ReefCatalog.Roll(random01,bait,ReefCatalog.SnapperBiomeId);
     }
 
     private void ResetFightHealth(int species,float weight)
@@ -274,3 +242,4 @@ public sealed class SnapperIslandCastQualityRuntime : MonoBehaviour
         if(rules!=null)rules.TryCorrectCastQuality();
     }
 }
+

@@ -22,7 +22,10 @@ public static class FishSizeTable
         GameplayCurve(14f,40), // Greater Amberjack: gameplay approximation kg = 14 * metres^3
         GameplayCurve(5f,40), // Blacktip shark gameplay approximation: kg = 5 * metres^3
         GameplayCurve(10f,16), // Yellowtail snapper gameplay approximation: kg = 10 * metres^3
-        GameplayCurve(16f,22) // Mutton snapper gameplay approximation: kg = 16 * metres^3 (~13.3 kg at 0.94 m)
+        GameplayCurve(16f,22), // Mutton snapper gameplay approximation: kg = 16 * metres^3 (~13.3 kg at 0.94 m)
+        GameplayCurve(5f,40), // Blacktip reef shark gameplay size curve
+        GameplayCurve(8f,70), // Mako gameplay size curve
+        GameplayCurve(8f,70) // Scarred variant delegates to the normal curve below
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
@@ -31,6 +34,7 @@ public static class FishSizeTable
     // Inverse of LengthMetres, so tiny pond catches retain their size in every view/save.
     public static float WeightForLength(int species,float metres)
     {
+        if(species==FishCatalog.BattleScarredMakoSharkId)return 1.5f*WeightForLength(FishCatalog.MakoSharkId,metres/1.5f);
         var row=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
         float index=Math.Max(0,Math.Min(row.Length-1,metres/.05f-1));
         int low=(int)Math.Floor(index),high=Math.Min(low+1,row.Length-1);
@@ -39,6 +43,7 @@ public static class FishSizeTable
 
     public static float LengthMetres(int species,float kg)
     {
+        if(species==FishCatalog.BattleScarredMakoSharkId)return 1.5f*LengthMetres(FishCatalog.MakoSharkId,kg/1.5f);
         var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
         if(float.IsNaN(kg)||kg<=0)return .05f;
         if(kg>=weights[weights.Length-1])
@@ -58,3 +63,4 @@ public static class FishSizeTable
         return Math.Max(.05f,(hi+t)*.05f);
     }
 }
+

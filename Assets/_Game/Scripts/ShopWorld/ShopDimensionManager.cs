@@ -42,11 +42,12 @@ public sealed class ShopDimensionManager : MonoBehaviour
     public void TravelIsland(bool brinebreak)=>TravelIsland(brinebreak?1:0);
     public void TravelIsland(int biome)
     {
-        if(Traveling || (biome!=0 && biome!=1 && biome!=3))return;
+        if(Traveling || (biome!=0 && biome!=1 && biome!=3 && biome!=4))return;
         if(!ReefCatalog.Zones[biome].Unlocked)return;
         var expansion=IslandExpansionWorld.Active;
         if(biome!=0 && (expansion==null || !expansion.Ready))return;
-        Transform point=biome==3?expansion.PelagicArrival:biome==1?expansion.Arrival:GetComponent<BoatSystem>()?.IslandDock;
+        if(biome==4 && !SnapperIslandRuntime.Ready)return;
+        Transform point=biome==4?SnapperIslandRuntime.Arrival:biome==3?expansion.PelagicArrival:biome==1?expansion.Arrival:GetComponent<BoatSystem>()?.IslandDock;
         if(point==null && biome==0)point=islandArrival;
         if(point==null)return;
         travelIslandBiome=biome;
@@ -97,6 +98,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
             if(expansion!=null && expansion.Ready)
             {
                 if(travelIslandBiome==1 && ReefCatalog.BrinebreakDiscovered)dock=expansion.Arrival;
+                if(travelIslandBiome==4 && ReefCatalog.SnapperDiscovered && SnapperIslandRuntime.Ready)dock=SnapperIslandRuntime.Arrival;
                 if(travelIslandBiome==3 && ReefCatalog.BluewaterDiscovered)dock=expansion.PelagicArrival;
             }
             travelIslandBiome=0;
@@ -143,6 +145,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
             Teleport(World.spawn.position,World.spawn.rotation);
     }
 }
+
 
 
 

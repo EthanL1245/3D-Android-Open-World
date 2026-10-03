@@ -40,6 +40,7 @@ public sealed class ShopProgress : MonoBehaviour
         }
         ReefCatalog.BrinebreakDiscovered=Data!=null && Data.brinebreakDiscovered;
         ReefCatalog.BluewaterDiscovered=Data!=null && Data.bluewaterDiscovered;
+        ReefCatalog.SnapperDiscovered=Data!=null && Data.snapperDiscovered;
     }
     private static ShopLedger Read(string json)
     {
@@ -120,3 +121,4 @@ public sealed class ShopProgress : MonoBehaviour
         return id;
     }
 }
+

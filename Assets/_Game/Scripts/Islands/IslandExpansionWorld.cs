@@ -277,7 +277,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         query.transform.position=new Vector3(Terrain.transform.position.x+Terrain.terrainData.size.x*.5f,sea-.025f,Terrain.transform.position.z+Terrain.terrainData.size.z*.5f);
         box.size=new Vector3(Terrain.terrainData.size.x,.05f,Terrain.terrainData.size.z);
     }
-    public int BiomeAt(Vector3 p)=>PelagicIslandGeometry.Contains(p,PelagicCenter)?PelagicIslandGeometry.BiomeId:IslandGeometry.Biome(p,reef.center,NewCenter);
+    public int BiomeAt(Vector3 p)=>SnapperIslandRuntime.Ready && SnapperIslandGeometry.ContainsArea(p,SnapperIslandRuntime.Center)?ReefCatalog.SnapperBiomeId:PelagicIslandGeometry.Contains(p,PelagicCenter)?PelagicIslandGeometry.BiomeId:IslandGeometry.Biome(p,reef.center,NewCenter);
     public float OffshoreAt(Vector3 p)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,180,IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii)));
     public static int FishingBiome(Vector3 p)=>Active!=null && Active.Ready?Active.BiomeAt(p):0;
     private void OnDestroy()
@@ -291,6 +291,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(rock!=null)Destroy(rock);if(wood!=null)Destroy(wood);if(grass!=null)Destroy(grass);
     }
 }
+
 
 
 
