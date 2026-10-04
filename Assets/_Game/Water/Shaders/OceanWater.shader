@@ -31,6 +31,8 @@ Shader "OpenWorld/OceanWater"
         [HideInInspector] _IslandWaveAmplitude ("Island amplitude", Float) = 2.8
         [HideInInspector] _IslandWaveSpeed ("Island speed", Float) = 1.65
         [HideInInspector] _OceanTime ("Ocean Time", Float) = 0
+        [HideInInspector] _WavePhases ("Wave phases", Vector) = (0,0,0,0)
+        [HideInInspector] _IslandWavePhases ("Island wave phases", Vector) = (0,0,0,0)
     }
 
     SubShader
@@ -87,6 +89,8 @@ Shader "OpenWorld/OceanWater"
                 float4 _WaveDirection3;
 
                 float _OceanTime;
+                float4 _WavePhases;
+                float4 _IslandWavePhases;
                 float _IslandWaveEnabled;
                 float4 _IslandWaveCenter;
                 float _IslandWaveAmplitude;
@@ -118,10 +122,10 @@ Shader "OpenWorld/OceanWater"
 
             void EvaluateWave(
                 float2 position,
-                float time,
+                float temporalPhase,
                 float amplitude,
                 float wavelength,
-                float speed,
+                float islandTemporalPhase,
                 float2 direction,
                 out float height,
                 out float2 derivative)
@@ -130,7 +134,7 @@ Shader "OpenWorld/OceanWater"
                 float frequency = 6.28318530718 / max(0.1, wavelength);
                 float phase =
                     dot(position, dir) * frequency +
-                    time * speed;
+                    temporalPhase;
 
                 height = sin(phase) * amplitude;
 
@@ -146,7 +150,7 @@ Shader "OpenWorld/OceanWater"
                     float width = max(0.01, _IslandWaveCenter.w - _IslandWaveCenter.z);
                     float t = saturate((distance - _IslandWaveCenter.z) / width);
                     float blend = 1.0 - t*t*(3.0 - 2.0*t);
-                    float roughPhase = dot(position,dir)*frequency + time*speed*_IslandWaveSpeed;
+                    float roughPhase = dot(position,dir)*frequency + islandTemporalPhase;
                     float roughHeight = sin(roughPhase)*amplitude*_IslandWaveAmplitude;
                     float2 roughDerivative = cos(roughPhase)*amplitude*_IslandWaveAmplitude*frequency*dir;
                     float2 gradient = (-6.0*t*(1.0-t)/width)*delta/max(distance,0.001);
@@ -172,10 +176,10 @@ Shader "OpenWorld/OceanWater"
 
                 EvaluateWave(
                     worldPosition.xz,
-                    _OceanTime,
+                    _WavePhases.x,
                     _WaveAmplitude1,
                     _WaveLength1,
-                    _WaveSpeed1,
+                    _IslandWavePhases.x,
                     _WaveDirection1.xy,
                     height1,
                     derivative1
@@ -183,10 +187,10 @@ Shader "OpenWorld/OceanWater"
 
                 EvaluateWave(
                     worldPosition.xz,
-                    _OceanTime,
+                    _WavePhases.y,
                     _WaveAmplitude2,
                     _WaveLength2,
-                    _WaveSpeed2,
+                    _IslandWavePhases.y,
                     _WaveDirection2.xy,
                     height2,
                     derivative2
@@ -194,10 +198,10 @@ Shader "OpenWorld/OceanWater"
 
                 EvaluateWave(
                     worldPosition.xz,
-                    _OceanTime,
+                    _WavePhases.z,
                     _WaveAmplitude3,
                     _WaveLength3,
-                    _WaveSpeed3,
+                    _IslandWavePhases.z,
                     _WaveDirection3.xy,
                     height3,
                     derivative3
@@ -354,4 +358,5 @@ Shader "OpenWorld/OceanWater"
         }
     }
 }
+
 

@@ -9,6 +9,21 @@ public sealed class ShopWorldHUD : MonoBehaviour
 {
     public static bool MenuOpen { get; private set; }
     private const string HabitatAddPrefix="habitat-add:";
+    private AudioSource saleAudio;
+    private AudioClip saleSound;
+
+    private void PlaySaleSound()
+    {
+        if (saleAudio == null)
+        {
+            saleAudio = gameObject.AddComponent<AudioSource>();
+            saleAudio.playOnAwake = false;
+            saleAudio.spatialBlend = 0f;
+            saleSound = Resources.Load<AudioClip>("Fishing/Audio/SoldFishCoins");
+        }
+        if (saleSound != null) saleAudio.PlayOneShot(saleSound);
+    }
+
     private ShopProgress progress;
     private ShopDimensionManager travel;
     private FishingSystem fishing;
@@ -369,7 +384,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         foreach(var fish in new List<CaughtFishRecord>(progress.Data.bag))
         {
             var f=fish; int value=FishCatalog.GetSellValue(f.speciesId,f.weightKg);
-            Row(FishCatalog.Get(f.speciesId).Name,$"{FishCatalog.FormatWeight(f.weightKg)} / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m",$"SELL {value}",()=>Result(progress.Sell(f),$"Sold for {value} coins."),!progress.ReadOnly,fish:f);
+            Row(FishCatalog.Get(f.speciesId).Name,$"{FishCatalog.FormatWeight(f.weightKg)} / {ShopCatalog.FishLength(f.speciesId,f.weightKg):0.00} m",$"SELL {value}",()=>{bool sold=progress.Sell(f);if(sold)PlaySaleSound();Result(sold,$"Sold for {value} coins.");},!progress.ReadOnly,fish:f);
         }
     }
     private void SellConfirmation()
@@ -378,8 +393,10 @@ public sealed class ShopWorldHUD : MonoBehaviour
         Row($"Sell {progress.Data.bag.Count} fish for {total:N0} coins?","This empties your fish bag. Habitat residents stay where they are.","CONFIRM SALE",()=>
         {
             if(!travel.Near("market") || progress.ReadOnly) return;
-            foreach(var f in new List<CaughtFishRecord>(progress.Data.bag)) progress.Data.Sell(f,FishCatalog.GetSellValue(f.speciesId,f.weightKg));
-            progress.Save(); message="Fish sold."; Open("market");
+            bool soldAny=false;
+            foreach(var f in new List<CaughtFishRecord>(progress.Data.bag))
+                soldAny |= progress.Data.Sell(f,FishCatalog.GetSellValue(f.speciesId,f.weightKg));
+            progress.Save(); if(soldAny)PlaySaleSound(); message="Fish sold."; Open("market");
         },!progress.ReadOnly && total<=int.MaxValue-progress.Data.coins);
         Row("Keep your catches","Return to individual fish sales.","BACK",()=>Open("market"));
     }
@@ -503,6 +520,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 
 
 

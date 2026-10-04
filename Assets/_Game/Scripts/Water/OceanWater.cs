@@ -30,11 +30,29 @@ public class OceanWater : MonoBehaviour
     [SerializeField] private Vector2 waveDirection3 = new Vector2(0.8f, -0.65f);
 
     private MaterialPropertyBlock propertyBlock;
+    private Vector4 wavePhases, islandWavePhases;
+    private double phaseTime;
+
+    private void AdvanceWavePhases()
+    {
+        double now = Time.timeAsDouble;
+        float elapsed = (float)System.Math.Max(0d, now - phaseTime);
+        phaseTime = now;
+        var expansion = IslandExpansionWorld.Active;
+        float islandSpeed = expansion != null && expansion.Ready ? expansion.Config.WaveSpeedMultiplier : 1f;
+        Vector4 speeds = new Vector4(waveSpeed1, waveSpeed2, waveSpeed3, 0f);
+        for (int i = 0; i < 3; i++)
+        {
+            wavePhases[i] = Mathf.Repeat(wavePhases[i] + elapsed * speeds[i], Mathf.PI * 2f);
+            islandWavePhases[i] = Mathf.Repeat(islandWavePhases[i] + elapsed * speeds[i] * islandSpeed, Mathf.PI * 2f);
+        }
+    }
 
     public float BaseWaterLevel => transform.position.y;
 
     private void Awake()
     {
+        phaseTime = Time.timeAsDouble;
         EnsureRenderer();
         propertyBlock = new MaterialPropertyBlock();
         OceanAmbienceRuntime.EnsureInstalled();
@@ -42,6 +60,7 @@ public class OceanWater : MonoBehaviour
 
     private void OnEnable()
     {
+        phaseTime = Time.timeAsDouble;
         EnsureRenderer();
 
         if (propertyBlock == null)
@@ -65,7 +84,8 @@ public class OceanWater : MonoBehaviour
     public float GetSurfaceHeight(Vector3 worldPosition)
     {
         if(PondWater.TrySurface(worldPosition,out float pondHeight))return pondHeight;
-        return BaseWaterLevel + EvaluateWaves(worldPosition.x, worldPosition.z, Time.time);
+        AdvanceWavePhases();
+        return BaseWaterLevel + EvaluateWaves(worldPosition.x, worldPosition.z);
     }
 
     public bool IsPointUnderwater(Vector3 worldPosition)
@@ -106,7 +126,9 @@ public class OceanWater : MonoBehaviour
 
         waterRenderer.GetPropertyBlock(propertyBlock);
 
-        propertyBlock.SetFloat("_OceanTime", Time.time);
+        AdvanceWavePhases();
+        propertyBlock.SetVector("_WavePhases", wavePhases);
+        propertyBlock.SetVector("_IslandWavePhases", islandWavePhases);
         var expansion=IslandExpansionWorld.Active;
         bool expanded=expansion!=null && expansion.Ready;
         propertyBlock.SetFloat("_IslandWaveEnabled",expanded?1:0);
@@ -175,43 +197,43 @@ public class OceanWater : MonoBehaviour
         );
     }
 
-    private float EvaluateWaves(float x, float z, float time)
+    private float EvaluateWaves(float x, float z)
     {
         Vector2 position = new Vector2(x, z);
 
         return
             EvaluateWave(
                 position,
-                time,
+                wavePhases[0],
                 waveAmplitude1,
                 waveLength1,
-                waveSpeed1,
+                islandWavePhases[0],
                 waveDirection1
             ) +
             EvaluateWave(
                 position,
-                time,
+                wavePhases[1],
                 waveAmplitude2,
                 waveLength2,
-                waveSpeed2,
+                islandWavePhases[1],
                 waveDirection2
             ) +
             EvaluateWave(
                 position,
-                time,
+                wavePhases[2],
                 waveAmplitude3,
                 waveLength3,
-                waveSpeed3,
+                islandWavePhases[2],
                 waveDirection3
             );
     }
 
     private float EvaluateWave(
         Vector2 position,
-        float time,
+        float temporalPhase,
         float amplitude,
         float wavelength,
-        float speed,
+        float islandTemporalPhase,
         Vector2 direction)
     {
         if (amplitude == 0f)
@@ -227,15 +249,16 @@ public class OceanWater : MonoBehaviour
 
         float phase =
             Vector2.Dot(position, dir) * frequency +
-            time * speed;
+            temporalPhase;
 
         float calm=Mathf.Sin(phase)*amplitude;
         var expansion=IslandExpansionWorld.Active;
         if(expansion==null || !expansion.Ready)return calm;
         float inner=Mathf.Max(expansion.Config.IslandRadii.x,expansion.Config.IslandRadii.y)+40;
         float blend=IslandGeometry.StormBlend(new Vector3(position.x,0,position.y),expansion.NewCenter,inner,inner+expansion.Config.WaveBlendDistance);
-        float roughPhase=Vector2.Dot(position,dir)*frequency+time*speed*expansion.Config.WaveSpeedMultiplier;
+        float roughPhase=Vector2.Dot(position,dir)*frequency+islandTemporalPhase;
         return Mathf.Lerp(calm,Mathf.Sin(roughPhase)*amplitude*expansion.Config.WaveAmplitudeMultiplier,blend);
     }
 }
+
 
