@@ -78,10 +78,13 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         SelectedDrag=Mathf.Clamp(mode,FishingDragRules.Low,FishingDragRules.High);
     }
 
+    public bool IsSkillReady => inFight && IsFighting() && authoritativeHp > 0 &&
+        !skillQueued && skillCharge >= 1f && hud != null &&
+        hud.CombatInputVisible && !ShopWorldHUD.MenuOpen;
+
     public bool TrySkillLook(Vector2 displacement)
     {
-        if(!inFight || !IsFighting() || authoritativeHp<=0 || skillQueued || skillCharge<1f ||
-            hud==null || !hud.CombatInputVisible || ShopWorldHUD.MenuOpen)return false;
+        if (!IsSkillReady) return false;
         if(!FishingDragRules.IsLookGesture(displacement.magnitude))return false;
         skillQueued=true;
         skillCharge=0f;
