@@ -731,7 +731,7 @@ public class FishingSystem : MonoBehaviour
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
         fastLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", 2f);
+            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", 1.6f);
     }
 
     private void StartReelSound()
@@ -771,7 +771,8 @@ public class FishingSystem : MonoBehaviour
         if (inactive != null && inactive.IsPlaying) inactive.Stop();
         if (active != null)
         {
-            active.SetPitch(linePullPlaybackPitch);
+            // Payout selects the recording only; the fast recording stays at native speed.
+            active.SetPitch(fast ? 1f : linePullPlaybackPitch);
             if (!active.IsPlaying) active.Play();
         }
     }
