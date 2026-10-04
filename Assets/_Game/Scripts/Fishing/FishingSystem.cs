@@ -755,12 +755,16 @@ public class FishingSystem : MonoBehaviour
 
     private void CheckReelSound()
     {
-        // Also cover catches, escapes, menus and state changes during Update.
+        // A press during Casting is consumed before the lure reaches Waiting.
+        // Reconcile the held input after the cast coroutine/state transitions so
+        // that hold starts audio as soon as reeling becomes valid, without a new tap.
         bool canReel = state == FishingState.Fighting || state == FishingState.Bite ||
             (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure);
         if (!audioFocused || audioPaused || !rodEquipped || shopMode || ShopWorldHUD.MenuOpen || !canReel ||
             hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld)
             StopReelSound();
+        else if (reelAudio != null && !reelAudio.IsPlaying)
+            StartReelSound();
     }
 
     private void OnApplicationFocus(bool focused)
@@ -775,9 +779,9 @@ public class FishingSystem : MonoBehaviour
         if (paused) { StopReelSound(); StopLinePullSound(); }
     }
 
-    private void PlayFishingSound(AudioClip clip)
+    private void PlayFishingSound(AudioClip clip, float volumeScale = 1f)
     {
-        if (fishingAudio != null && clip != null) fishingAudio.PlayOneShot(clip);
+        if (fishingAudio != null && clip != null) fishingAudio.PlayOneShot(clip, volumeScale);
     }
 
     private void PlayCatchSound(float weightKg)
@@ -932,7 +936,7 @@ public class FishingSystem : MonoBehaviour
         if (rodView != null) rodView.SetCastPose(1f);
         castPoint = target;
         SnapBobberToSurface();
-        PlayFishingSound(waterLandingSound);
+        PlayFishingSound(waterLandingSound, 1.3f);
 
         state = FishingState.Waiting;
         stateTimer =
@@ -4147,4 +4151,3 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
