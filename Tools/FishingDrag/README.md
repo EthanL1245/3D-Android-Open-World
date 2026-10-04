@@ -29,6 +29,9 @@ C# syntax checked separately for all changed scripts. Unity/Android Play validat
 
 A 15% initial temperament roll can select FRAGILE; the existing different-mood reroll also includes it. Purple phases last 3.5–5 seconds. Outward swimming is exactly 0.2x species base speed, overriding mood/surge/initial-burst and drag escape multipliers. Reeling still pulls inward normally.
 
-While the live fish is purple, two consecutive seconds in Medium or High snaps the line. Low resets this countdown immediately, as does leaving the purple status. A non-interactive 6px red border traces the rectangular status box clockwise from its top centre in proportion to elapsed unsafe time. Standard distance/tension break rules still apply. Unconscious fish have no purple countdown.
+While the live fish is purple, Medium or High starts a two-second warning period. After that, tension rises by 45 percentage points per second, plus normal tension gains; passive recovery cannot cancel the surge. There is no direct timer-triggered snap: standard maximum-distance and sustained-full-tension rules still apply. Low stops the extra rise and clears the warning timer immediately, as do leaving purple or subduing the fish. The red circular status outline fills over the first two seconds, then flashes white at 8 Hz. Red, 30px LOOSEN DRAG text appears below the top tension bar with a white outline; that outline flashes red in the same phase after two seconds. The warning hides on Low.
 
 The complete drag panel (including slider touch target, labels and handle) is scaled 1.3x; screen-edge clamping accounts for the enlarged size. Unity phone layout and rendering still require Play testing.
+
+The drag thumb and its touch target are 90 × 108 canvas units (3× the original 30 × 36). The rail and slider track retain their original dimensions; the panel provides extra vertical space so the thumb does not cover the title or notch labels.
+

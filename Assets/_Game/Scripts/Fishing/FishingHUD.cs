@@ -24,6 +24,8 @@ public class FishingHUD : MonoBehaviour
     private Image tensionFill;
     private Image progressFill;
     private Text tensionLabel;
+    private Text loosenDragLabel;
+    private Outline loosenDragOutline;
     private Text progressLabel;
 
     private GameObject inventoryPanel;
@@ -183,15 +185,16 @@ public class FishingHUD : MonoBehaviour
         dragPanel.GetComponent<Image>().raycastTarget=false;
         dragRect=dragPanel.GetComponent<RectTransform>();
         dragRect.anchorMin=dragRect.anchorMax=new Vector2(.5f,.5f);
-        dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,104);
+        dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,176);
         dragRect.localScale=Vector3.one*1.3f;
         dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleCenter);
-        var titleRect=dragTitle.rectTransform;titleRect.anchorMin=new Vector2(0,.65f);titleRect.anchorMax=Vector2.one;titleRect.offsetMin=titleRect.offsetMax=Vector2.zero;
+        var titleRect=dragTitle.rectTransform;titleRect.anchorMin=titleRect.anchorMax=Vector2.zero;
+        titleRect.anchoredPosition=new Vector2(170,153);titleRect.sizeDelta=new Vector2(308,30);
         // A single drag target with a handle and exactly three discrete values.
         var sliderObject=CreatePanel("DragSlider",dragPanel.transform,Color.clear);
         var sliderRect=sliderObject.GetComponent<RectTransform>();
         sliderRect.anchorMin=sliderRect.anchorMax=Vector2.zero;sliderRect.pivot=Vector2.zero;
-        sliderRect.anchoredPosition=new Vector2(16,26);sliderRect.sizeDelta=new Vector2(308,40);
+        sliderRect.anchoredPosition=new Vector2(16,58);sliderRect.sizeDelta=new Vector2(308,40);
         var rail=CreatePanel("Rail",sliderObject.transform,new Color(.18f,.30f,.34f,1));
         rail.GetComponent<Image>().raycastTarget=false;
         var railRect=rail.GetComponent<RectTransform>();railRect.anchorMin=new Vector2(0,.5f);railRect.anchorMax=new Vector2(1,.5f);
@@ -212,7 +215,9 @@ public class FishingHUD : MonoBehaviour
         var areaRect=handleArea.GetComponent<RectTransform>();StretchFullScreen(areaRect);
         areaRect.offsetMin=new Vector2(16,0);areaRect.offsetMax=new Vector2(-16,0);
         var handle=CreatePanel("Handle",handleArea.transform,new Color(.08f,.78f,.66f,1));
-        var handleRect=handle.GetComponent<RectTransform>();handleRect.sizeDelta=new Vector2(30,-4);
+        // The old thumb was 30 x 36. Enlarge the visible thumb and its raycast
+        // target to 90 x 108; the 308 x 40 slider and 8-pixel rail stay unchanged.
+        var handleRect=handle.GetComponent<RectTransform>();handleRect.sizeDelta=new Vector2(90,68);
         dragSlider=sliderObject.AddComponent<Slider>();
         dragSlider.direction=Slider.Direction.LeftToRight;
         dragSlider.minValue=FishingDragRules.Low;dragSlider.maxValue=FishingDragRules.High;
@@ -264,7 +269,7 @@ public class FishingHUD : MonoBehaviour
             position.y+=18f;
         }
         position.x=Mathf.Clamp(position.x,rootRect.rect.xMin+229,rootRect.rect.xMax-229);
-        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-154);
+        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-246);
         dragRect.localPosition=new Vector3(position.x,position.y,0);
     }
 
@@ -332,8 +337,20 @@ public class FishingHUD : MonoBehaviour
 
     public void ShowFightMeters(bool visible)
     {
+        if (!visible) SetFragileWarning(false, false);
         if (fightPanel != null)
             fightPanel.SetActive(visible);
+    }
+
+    public void SetFragileWarning(bool visible, bool flashRed)
+    {
+        if (loosenDragLabel == null) return;
+        loosenDragLabel.gameObject.SetActive(visible);
+        loosenDragOutline.effectColor = flashRed ? Color.red : Color.white;
+        // Make room below TENSION without covering the health bar.
+        fightPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(650f, visible ? 170f : 130f);
+        progressLabel.rectTransform.anchoredPosition = new Vector2(18f, visible ? -114f : -74f);
+        ((RectTransform)progressFill.transform.parent).anchoredPosition = new Vector2(190f, visible ? -117f : -77f);
     }
 
     public void SetFightMeters(
@@ -905,6 +922,20 @@ public class FishingHUD : MonoBehaviour
             out progressLabel
         );
 
+        loosenDragLabel = CreateText("LoosenDragWarning", fightPanel.transform,
+            "LOOSEN DRAG", 30, TextAnchor.MiddleCenter);
+        loosenDragLabel.color = Color.red;
+        loosenDragLabel.fontStyle = FontStyle.Bold;
+        loosenDragLabel.raycastTarget = false;
+        var warningRect = loosenDragLabel.rectTransform;
+        warningRect.anchorMin = warningRect.anchorMax = new Vector2(0f, 1f);
+        warningRect.pivot = new Vector2(0f, 1f);
+        warningRect.anchoredPosition = new Vector2(190f, -55f);
+        warningRect.sizeDelta = new Vector2(435f, 42f);
+        loosenDragOutline = loosenDragLabel.gameObject.AddComponent<Outline>();
+        loosenDragOutline.effectColor = Color.white;
+        loosenDragOutline.effectDistance = new Vector2(2f, -2f);
+        loosenDragLabel.gameObject.SetActive(false);
         fightPanel.SetActive(false);
     }
 
@@ -1369,7 +1400,6 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
-
 
 
 

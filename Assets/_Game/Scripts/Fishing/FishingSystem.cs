@@ -99,6 +99,11 @@ public class FishingSystem : MonoBehaviour
     private float temperamentTimer;
     private float fragileBreakTimer;
     private FishingStatusOutline fragileOutline;
+    private bool FragileWarningActive => isActiveAndEnabled && rodEquipped && !shopMode &&
+        !ShopWorldHUD.MenuOpen && state == FishingState.Fighting && !fishUnconscious &&
+        hookedTemperament == FishTemperament.Fragile && CurrentDrag != FishingDragRules.Low;
+    private bool FragileWarningFlashing => FragileWarningActive && fragileBreakTimer >= FishingDragRules.FragileWarningSeconds;
+    private bool FragileFlashOn => ((int)(Time.unscaledTime * 16f) & 1) != 0;
     private float initialEscapeBurstTimer;
     private bool fishUnconscious;
     private bool fishOnShore;
@@ -1182,14 +1187,12 @@ public class FishingSystem : MonoBehaviour
                 if(hookedTemperament==FishTemperament.Fragile)temperamentTimer=Random.Range(3.5f,5f);
             }
 
-            // Consecutive unsafe time only. Selecting Low immediately clears it.
+            // Two seconds to loosen drag, then actual tension rises instead of
+            // an unconditional timer snap. Low clears this hazard immediately.
+            float previousFragileTime = fragileBreakTimer;
             fragileBreakTimer=FishingDragRules.FragileTimer(fragileBreakTimer,
                 hookedTemperament==FishTemperament.Fragile,CurrentDrag,Time.deltaTime);
-            if(fragileBreakTimer>=FishingDragRules.FragileBreakSeconds)
-            {
-                FailFishing("SNAP! FRAGILE fish: switch to LOW drag within 2 seconds.");
-                return;
-            }
+            float fragileTensionGain = FishingDragRules.FragileTensionGain(previousFragileTime, fragileBreakTimer);
 
             surgeTimer -=
                 Time.deltaTime;
@@ -1274,7 +1277,7 @@ public class FishingSystem : MonoBehaviour
                     fishHealth=fishHealthPoints/(float)fishMaxHealth;
                 }
             }
-            else if(CurrentDrag!=FishingDragRules.High)
+            else if(CurrentDrag!=FishingDragRules.High && fragileBreakTimer<=FishingDragRules.FragileWarningSeconds)
             {
                 fightTension -=
                     Time.deltaTime *
@@ -1291,6 +1294,7 @@ public class FishingSystem : MonoBehaviour
                 Time.deltaTime * FishingDragRules.TensionMultiplier(CurrentDrag);
             if(CurrentDrag==FishingDragRules.High)
                 fightTension+=Time.deltaTime*FishingDragRules.HighTensionPerSecond;
+            fightTension += fragileTensionGain;
 
             fishHealth =
                 Mathf.Clamp01(
@@ -2716,9 +2720,12 @@ public class FishingSystem : MonoBehaviour
             bobberStatusIcon.texture = fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
 
         if (fragileOutline != null)
-            fragileOutline.Progress = state == FishingState.Fighting && showStatus && !fishUnconscious &&
-                hookedTemperament == FishTemperament.Fragile
-                ? Mathf.Clamp01(fragileBreakTimer / FishingDragRules.FragileBreakSeconds) : 0f;
+        {
+            fragileOutline.Progress = FragileWarningActive
+                ? Mathf.Clamp01(fragileBreakTimer / FishingDragRules.FragileWarningSeconds) : 0f;
+            fragileOutline.color = FragileWarningFlashing && FragileFlashOn
+                ? Color.white : new Color(1f, .04f, .025f, 1f);
+        }
 
         float lineDistance = GetCurrentLineDistance();
         bobberIndicatorText.text = lineDistance.ToString("0.0") + " m";
@@ -3168,6 +3175,7 @@ public class FishingSystem : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (hud != null) hud.SetFragileWarning(FragileWarningActive, FragileWarningFlashing && FragileFlashOn);
         CheckReelSound();
         UpdateLinePullSound();
         if(rodFitPending){rodFitPending=false;FitRodToControls();}
@@ -4129,7 +4137,5 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
-
 
 

@@ -7,7 +7,10 @@ public static class FishingDragRules
     public const float SkillChargeSeconds=5f;
     public const float PassiveDamageSeconds=1f;
     public const float HighTensionPerSecond=.025f;
-    public const float FragileBreakSeconds=2f;
+    public const float FragileWarningSeconds=2f;
+    public const float FragileTensionPerSecond=.45f;
+    public static float FragileTensionGain(float previous,float elapsed)=>
+        Mathf.Max(0f,Mathf.Max(0f,elapsed-FragileWarningSeconds)-Mathf.Max(0f,previous-FragileWarningSeconds))*FragileTensionPerSecond;
     public static float RecoveryMultiplier(int mode)=>mode==Low?1.3f:1f;
     public static float FragileTimer(float elapsed,bool fragile,int mode,float dt)=>fragile && mode!=Low?elapsed+Mathf.Max(0f,dt):0f;
     public static float EscapeMultiplier(int mode)=>mode==Low?2f:1f;

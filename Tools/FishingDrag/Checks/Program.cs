@@ -33,8 +33,13 @@ class Program {
   Check(FishingDragRules.Charge(0,2,5)==1f && FishingDragRules.Charge(0,2,4)<1f,"Five-second charge");
   Check(FishingDragRules.RecoveryMultiplier(0)==1.3f && FishingDragRules.RecoveryMultiplier(1)==1f,"Low recovery");
   float danger=FishingDragRules.FragileTimer(0,true,1,1.99f);
-  Check(danger<FishingDragRules.FragileBreakSeconds,"No early purple snap");
-  Check(FishingDragRules.FragileTimer(danger,true,2,.01f)>=FishingDragRules.FragileBreakSeconds,"Purple snaps at two seconds");
+  Check(danger<FishingDragRules.FragileWarningSeconds,"Purple grace period");
+  Check(FishingDragRules.FragileTensionGain(0,2f)==0f,"No timer snap or extra tension at two seconds");
+  Check(Math.Abs(FishingDragRules.FragileTensionGain(1.9f,2.1f)-.045f)<.0001f,"Only post-grace frame time adds tension");
+  Check(Math.Abs(FishingDragRules.FragileTensionGain(2f,3f)-.45f)<.0001f,"Purple adds 45 tension points per second");
+  Check(FishingDragRules.FragileTensionGain(3f,0f)==0f,"Low drag immediately stops extra tension");
+  float integrated=0f;for(int i=0;i<300;i++)integrated+=FishingDragRules.FragileTensionGain(i*.01f,(i+1)*.01f);
+  Check(Math.Abs(integrated-FishingDragRules.FragileTensionGain(0,3f))<.001f,"Frame-independent tension ramp");
   Check(FishingDragRules.FragileTimer(danger,true,0,.1f)==0 && FishingDragRules.FragileTimer(danger,false,2,.1f)==0,"Low or mood exit clears countdown");
   foreach(var d in new[]{new Vector2(.1f,0),new Vector2(-.1f,0),new Vector2(0,.1f),new Vector2(0,-.1f)})
   {
