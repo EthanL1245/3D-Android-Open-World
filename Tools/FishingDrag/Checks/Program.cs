@@ -20,9 +20,11 @@ class Program {
   Check(!r.TrySkillLook(new Vector2(0,0)),"No stationary activation");
   ShopWorldHUD.MenuOpen=true;Check(!r.TrySkillLook(new Vector2(400,0)),"Reject menu swipe");before=h.Damage;Tick(1);Check(h.Damage==before,"No passive damage in covered menu");ShopWorldHUD.MenuOpen=false;
   r.SelectDrag(0);Check(r.TrySkillLook(new Vector2(0,.1f)),"Tiny upward look activates full meter");Check(!r.TrySkillLook(new Vector2(400,0)),"One spend only");
-  before=h.Damage;Tick(0);Check(h.Damage-before==30 && h.Charge==0,"10x base rod strike, no Low multiplier");
+  before=h.Damage;Tick(0);Check(h.Damage-before==90 && h.Charge==0,"30x base rod strike, no Low multiplier");
+  Check(f.Stuns==1 && FishingDragRules.SkillStunSeconds==3f,"Surviving skill hit applies three-second stun");
   Set(r,"skillCharge",1f);Set(r,"authoritativeHp",5);Check(r.TrySkillLook(new Vector2(400,0)),"Finisher queued");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==0 && Get<bool>(f,"fishUnconscious") && f.Presentations>0,"Skill KO uses existing presentation");
+  Check(f.Stuns==1,"Lethal skill does not replace KO with temporary stun");
   Check(!r.TrySkillLook(new Vector2(400,0)),"No strikes on unconscious fish");
   Set(f,"state","Idle");Tick(0);Check(!h.Fighting && r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fight cleanup");
   Set(f,"state","Fighting");Tick(0);Check(r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fresh fight");
@@ -48,4 +50,3 @@ class Program {
   Console.WriteLine("PASS: live burst owner: Low/Medium/High damage, passive ticks, charge, swipe gates, one-shot consumption, skill KO, menu pause, fight reset.");
  }
 }
-

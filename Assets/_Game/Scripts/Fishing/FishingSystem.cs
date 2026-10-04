@@ -59,6 +59,19 @@ public class FishingSystem : MonoBehaviour
     private RectTransform bobberIndicatorRect;
     private RawImage bobberStatusIcon;
     private Texture2D[] fishStatusTextures;
+    private Texture2D stunnedStatusTexture;
+    private float skillStunUntil;
+    public bool IsSkillStunned => state == FishingState.Fighting && !fishUnconscious && Time.time < skillStunUntil;
+
+    public void ApplySkillStun()
+    {
+        if (state != FishingState.Fighting || fishUnconscious) return;
+        skillStunUntil = Time.time + FishingDragRules.SkillStunSeconds;
+        surgeAmount = 0f;
+        fragileBreakTimer = 0f;
+        lineBreakTimer = 0f;
+        StopLinePullSound();
+    }
     private Text bobberIndicatorText;
 
     private Transform heldFishAnchor;
@@ -100,7 +113,7 @@ public class FishingSystem : MonoBehaviour
     private float fragileBreakTimer;
     private FishingStatusOutline fragileOutline;
     private bool FragileWarningActive => isActiveAndEnabled && rodEquipped && !shopMode &&
-        !ShopWorldHUD.MenuOpen && state == FishingState.Fighting && !fishUnconscious &&
+        !ShopWorldHUD.MenuOpen && state == FishingState.Fighting && !fishUnconscious && !IsSkillStunned &&
         hookedTemperament == FishTemperament.Fragile && CurrentDrag != FishingDragRules.Low;
     private bool FragileWarningFlashing => FragileWarningActive && fragileBreakTimer >= FishingDragRules.FragileWarningSeconds;
     private bool FragileFlashOn => ((int)(Time.unscaledTime * 16f) & 1) != 0;
@@ -739,7 +752,7 @@ public class FishingSystem : MonoBehaviour
     {
         bool pulling = audioFocused && !audioPaused && rodEquipped && !shopMode &&
             !ShopWorldHUD.MenuOpen && state == FishingState.Fighting &&
-            !fishUnconscious && fishPulledLineThisFrame &&
+            !fishUnconscious && !IsSkillStunned && fishPulledLineThisFrame &&
             hud != null && hud.ActionInput != null && !hud.ActionInput.IsHeld;
         if (!pulling)
         {
@@ -1165,7 +1178,16 @@ public class FishingSystem : MonoBehaviour
 
         fightTime += Time.deltaTime;
 
-        if (!fishUnconscious)
+        if (IsSkillStunned)
+        {
+            // Suspend escape, mood timers and tension generation during the stun.
+            surgeAmount = 0f;
+            fragileBreakTimer = 0f;
+            lineBreakTimer = 0f;
+            fightTension = Mathf.MoveTowards(fightTension, 0.05f, Time.deltaTime * 0.8f);
+            UpdateStunnedBobber(reeling);
+        }
+        else if (!fishUnconscious)
         {
             initialEscapeBurstTimer =
                 Mathf.Max(
@@ -1391,7 +1413,7 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
-        if (!fishUnconscious &&
+        if (!fishUnconscious && !IsSkillStunned &&
             fightTension >= 0.985f)
         {
             lineBreakTimer +=
@@ -1412,7 +1434,11 @@ public class FishingSystem : MonoBehaviour
             fishHealth, fishMaxHealth
         );
 
-        if (!fishUnconscious)
+        if (IsSkillStunned)
+        {
+            hud.SetStatus("STUNNED - reel it in!");
+        }
+        else if (!fishUnconscious)
         {
             hud.SetStatus(
                 reeling
@@ -2500,6 +2526,21 @@ public class FishingSystem : MonoBehaviour
             position;
     }
 
+    private void UpdateStunnedBobber(bool reeling)
+    {
+        if (bobber == null || !bobber.activeSelf) return;
+        if (reeling)
+        {
+            Vector3 current = bobber.transform.position;
+            Vector3 toPlayer = transform.position - current;
+            toPlayer.y = 0f;
+            float step = Mathf.Min(0.72f * reelPower * Time.deltaTime, Mathf.Max(0f, toPlayer.magnitude - CatchDistance));
+            if (TryMoveBobberInValidWater(current, toPlayer.normalized, -toPlayer.normalized, step, false, out Vector3 next))
+                bobber.transform.position = next;
+        }
+        SnapCurrentBobberToSurface();
+    }
+
     private bool TryGetTerrainWaterDepth(
         Vector3 worldPosition,
         out float ground,
@@ -2601,6 +2642,7 @@ public class FishingSystem : MonoBehaviour
         if (bobberIndicatorRoot != null) Destroy(bobberIndicatorRoot);
         if (fishStatusTextures == null)
         {
+            stunnedStatusTexture = Resources.Load<Texture2D>("Fishing/StatusIcons/Stunned");
             fishStatusTextures = new[]
             {
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Calm"),
@@ -2731,13 +2773,22 @@ public class FishingSystem : MonoBehaviour
         bool showStatus = hasFish;
         bobberStatusIcon.gameObject.SetActive(showStatus);
         if (showStatus)
-            bobberStatusIcon.texture = fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
+            bobberStatusIcon.texture = IsSkillStunned && stunnedStatusTexture != null
+                ? stunnedStatusTexture : fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
 
         if (fragileOutline != null)
         {
-            fragileOutline.Progress = FragileWarningActive
+            fragileOutline.Progress = IsSkillStunned ? 1f : FragileWarningActive
                 ? Mathf.Clamp01(fragileBreakTimer / FishingDragRules.FragileWarningSeconds) : 0f;
-            fragileOutline.color = FragileWarningFlashing && FragileFlashOn
+            if (IsSkillStunned)
+            {
+                float elapsed = Mathf.Clamp(FishingDragRules.SkillStunSeconds - (skillStunUntil - Time.time), 0f, FishingDragRules.SkillStunSeconds);
+                // Integrated frequency rises smoothly from 2 Hz to 10 Hz.
+                float cycles = 2f * elapsed + 4f * elapsed * elapsed / FishingDragRules.SkillStunSeconds;
+                float alpha = Mathf.Sin(cycles * Mathf.PI * 2f) >= 0f ? 1f : 0.15f;
+                fragileOutline.color = new Color(1f, 1f, 1f, alpha);
+            }
+            else fragileOutline.color = FragileWarningFlashing && FragileFlashOn
                 ? Color.white : new Color(1f, .04f, .025f, 1f);
         }
 
@@ -2766,6 +2817,7 @@ public class FishingSystem : MonoBehaviour
 
     private void ResetLine()
     {
+        skillStunUntil = 0f;
         StopReelSound();
         StopLinePullSound();
         fishPulledLineThisFrame = false;
@@ -3189,6 +3241,8 @@ public class FishingSystem : MonoBehaviour
 
     private void LateUpdate()
     {
+        // The skill damage owner runs after Update; reflect its stun/KO this frame.
+        UpdateBobberIndicator();
         if (hud != null) hud.SetFragileWarning(FragileWarningActive, FragileWarningFlashing && FragileFlashOn);
         CheckReelSound();
         UpdateLinePullSound();

@@ -22,6 +22,7 @@ public class FishingSystem:UnityEngine.MonoBehaviour {
  private string state="Fighting";private int fishHealthPoints=1000,fishMaxHealth=1000,pendingDamage;
  private float fishHealth=1,damageFraction,damageDisplayTimer;private bool fishUnconscious;
  private UnityEngine.GameObject bobber;private UnityEngine.Camera playerCamera;
+ public int Stuns;public void ApplySkillStun(){Stuns++;}
  public int Presentations;private void EnsureUnconsciousFishVisual(){Presentations++;}
 }
 public class FishingHUD {public class Input {public bool IsHeld;}public Input ActionInput=new Input();public bool CombatInputVisible=true,FishingUiVisible=true;public int Damage;public float Charge;public bool Fighting,Live;
@@ -32,3 +33,4 @@ public class Level2FishingRodRuntime:UnityEngine.MonoBehaviour {}
 public static class ShopCatalog {public const int MaxRodTier=4;}
 public static class ShopWorldHUD {public static bool MenuOpen;}
 public static class FishingDamagePresentation {public static void MarkCriticalHit(){}public static void ClearPendingCritical(){}}
+

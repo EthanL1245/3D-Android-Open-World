@@ -11,6 +11,7 @@ public class FishingHUD : MonoBehaviour
     private RectTransform skillFill,dragRect,joystickRect;
     private Text skillLabel,dragTitle;
     private Slider dragSlider;
+    private GameObject skillReadyArrows;
     private readonly Vector3[] joystickCorners=new Vector3[4];
     private FishingBurstDamageRuntime dragOwner;
     public bool FishingUiVisible=>root!=null && root.activeInHierarchy;
@@ -165,6 +166,7 @@ public class FishingHUD : MonoBehaviour
         if(dragPanel==null)return;
         dragPanel.SetActive(fighting);
         skillPanel.SetActive(fighting);
+        if (skillReadyArrows != null) skillReadyArrows.SetActive(fighting && live && charge >= 1f);
         if(!fighting)return;
         PositionDragAboveJoystick();
         string[] names={"LOW","MEDIUM","HIGH"};
@@ -173,7 +175,7 @@ public class FishingHUD : MonoBehaviour
         dragSlider.interactable=live;
         dragSlider.SetValueWithoutNotify(mode);
         skillFill.anchorMax=new Vector2(Mathf.Clamp01(charge),1f);
-        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE ANY DIRECTION • 10× HIT":
+        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE UP • 30× HIT + STUN":
             "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
         skillFill.GetComponent<Image>().color=charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
     }
@@ -244,11 +246,20 @@ public class FishingHUD : MonoBehaviour
         var sr=skillPanel.GetComponent<RectTransform>();sr.anchorMin=sr.anchorMax=new Vector2(.5f,0);sr.pivot=new Vector2(.5f,0);
         sr.sizeDelta=new Vector2(610,120);sr.anchoredPosition=new Vector2(0,24);
         var track=CreatePanel("SkillTrack",skillPanel.transform,new Color(.09f,.16f,.19f,1));track.GetComponent<Image>().raycastTarget=false;
-        var tr=track.GetComponent<RectTransform>();tr.anchorMin=new Vector2(0,0);tr.anchorMax=new Vector2(1,.42f);tr.offsetMin=new Vector2(14,14);tr.offsetMax=new Vector2(-14,0);
+        var tr=track.GetComponent<RectTransform>();tr.anchorMin=new Vector2(0,0);tr.anchorMax=new Vector2(1,.42f);tr.offsetMin=new Vector2(14,14);tr.offsetMax=new Vector2(-82,0);
         var fill=CreatePanel("SkillFill",track.transform,new Color(.06f,.57f,.53f,1));fill.GetComponent<Image>().raycastTarget=false;
         skillFill=fill.GetComponent<RectTransform>();skillFill.anchorMin=Vector2.zero;skillFill.anchorMax=new Vector2(0,1);skillFill.offsetMin=skillFill.offsetMax=Vector2.zero;
         skillLabel=CreateText("SkillLabel",skillPanel.transform,"",23,TextAnchor.MiddleCenter);
-        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(10,0);lr.offsetMax=new Vector2(-10,-5);
+        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(10,0);lr.offsetMax=new Vector2(-82,-5);
+        skillReadyArrows = new GameObject("SkillReadySwipeArrows", typeof(RectTransform), typeof(FishingSkillReadyArrows));
+        skillReadyArrows.transform.SetParent(skillPanel.transform, false);
+        var arrowsRect = skillReadyArrows.GetComponent<RectTransform>();
+        arrowsRect.anchorMin = arrowsRect.anchorMax = new Vector2(1f, .5f);
+        arrowsRect.pivot = new Vector2(1f, .5f);
+        arrowsRect.anchoredPosition = new Vector2(-12f, 0f);
+        arrowsRect.sizeDelta = new Vector2(60f, 108f);
+        skillReadyArrows.GetComponent<FishingSkillReadyArrows>().raycastTarget = false;
+        skillReadyArrows.SetActive(false);
     }
 
     private void PositionDragAboveJoystick()
@@ -1401,5 +1412,4 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
-
 

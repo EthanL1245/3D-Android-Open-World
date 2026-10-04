@@ -19,6 +19,6 @@ public static class FishingDragRules
     public static float DamageMultiplier(int mode)=>mode==Low?.5f:mode==High?2f:1f;
     public static float Charge(float current,int mode,float seconds)=>Mathf.Clamp01(current+(mode==High?Mathf.Max(0,seconds)/SkillChargeSeconds:0));
     public static bool IsLookGesture(float distance)=>distance>0f && !float.IsInfinity(distance);
-    public static int SkillDamage(int normalRodDamage)=>normalRodDamage*10;
+    public const float SkillStunSeconds=3f;
+    public static int SkillDamage(int normalRodDamage)=>normalRodDamage*30;
 }
-
