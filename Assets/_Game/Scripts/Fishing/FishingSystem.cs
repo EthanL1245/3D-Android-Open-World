@@ -694,7 +694,7 @@ public class FishingSystem : MonoBehaviour
 
     private AudioSource fishingAudio;
     private FishingLoopAudio reelAudio;
-    private FishingLoopAudio linePullAudio;
+    private FishingLoopAudio linePullAudio, fastLinePullAudio;
     private AudioClip waterLandingSound;
     private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
@@ -730,6 +730,8 @@ public class FishingSystem : MonoBehaviour
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
+        fastLinePullAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", 2f);
     }
 
     private void StartReelSound()
@@ -748,6 +750,7 @@ public class FishingSystem : MonoBehaviour
     private void StopLinePullSound()
     {
         if (linePullAudio != null) linePullAudio.Stop();
+        if (fastLinePullAudio != null) fastLinePullAudio.Stop();
     }
 
     private void UpdateLinePullSound()
@@ -761,11 +764,15 @@ public class FishingSystem : MonoBehaviour
             StopLinePullSound();
             return;
         }
-        if (linePullAudio != null) linePullAudio.SetPitch(linePullPlaybackPitch);
-        if (linePullAudio != null && !linePullAudio.IsPlaying)
+        bool fast = linePullPlaybackPitch > 1.001f;
+        FishingLoopAudio active = fast ? fastLinePullAudio : linePullAudio;
+        FishingLoopAudio inactive = fast ? linePullAudio : fastLinePullAudio;
+        // Switch recordings without leaving the previous sequence playing.
+        if (inactive != null && inactive.IsPlaying) inactive.Stop();
+        if (active != null)
         {
-            // Start one sample-overlapped sequence per pulling interval.
-            linePullAudio.Play();
+            active.SetPitch(linePullPlaybackPitch);
+            if (!active.IsPlaying) active.Play();
         }
     }
 

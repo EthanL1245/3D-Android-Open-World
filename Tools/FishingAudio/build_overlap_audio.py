@@ -55,6 +55,10 @@ if __name__ == "__main__":
     reel_lead, reel_loop = sequence(initial, repeat)
     _, pull_loop = sequence(pull, pull)
     pull_lead = pull[:-OVERLAP]
+    fast = decode(SOURCES / "LinePullFast.wav")
+    _, fast_loop = sequence(fast, fast)
+    fast_lead = fast[:-OVERLAP]
     for name, data in [("ReelLeadIn", reel_lead), ("ReelLoop", reel_loop),
-                       ("LinePullLeadIn", pull_lead), ("LinePullLoop", pull_loop)]:
+                       ("LinePullLeadIn", pull_lead), ("LinePullLoop", pull_loop),
+                       ("LinePullFastLeadIn", fast_lead), ("LinePullFastLoop", fast_loop)]:
         save(name, data)
