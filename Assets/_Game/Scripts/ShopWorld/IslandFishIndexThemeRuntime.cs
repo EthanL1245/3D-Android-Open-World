@@ -1,15 +1,25 @@
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Presentation-only skin for the Island / Fish Index pages. It deliberately leaves
 /// every existing RectTransform untouched so preview sizes, card heights, button hit
-/// areas and scrolling remain exactly as authored by ShopWorldHUD.
+/// areas and scrolling remain exactly as authored by the underlying index UI.
+///
+/// Important: the Island Index can be opened through FishingMenuSafetyRuntime without
+/// ShopWorldHUD.MenuOpen being true, so this skin keys off the HUD's real page/modal
+/// state instead of MenuOpen.
 /// </summary>
 [DefaultExecutionOrder(7100)]
 public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
 {
+    private static readonly BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
+    private static readonly FieldInfo PageField = typeof(ShopWorldHUD).GetField("page", PrivateInstance);
+    private static readonly FieldInfo ModalField = typeof(ShopWorldHUD).GetField("modal", PrivateInstance);
+    private static readonly FieldInfo HeadingField = typeof(ShopWorldHUD).GetField("heading", PrivateInstance);
+
     private static readonly Color DefaultMenuColor = new Color(.025f, .055f, .07f, .98f);
     private static readonly Color BrightGold = new Color(1f, .86f, .28f, 1f);
     private static readonly Color DetailCyan = new Color(.70f, .90f, .96f, 1f);
@@ -37,21 +47,31 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (hud == null) return;
+        if (hud == null || PageField == null || ModalField == null) return;
 
-        Text pageHeading = FindIndexHeading();
-        bool indexOpen = ShopWorldHUD.MenuOpen && pageHeading != null;
+        string page = PageField.GetValue(hud) as string;
+        GameObject modalObject = ModalField.GetValue(hud) as GameObject;
+        bool indexPage = page == "islands" || page == "reef-fish";
+        bool indexOpen = indexPage && modalObject != null && modalObject.activeInHierarchy;
+
         if (!indexOpen)
         {
             // Do not erase the Tackle Store's own themed backdrop during a direct
-            // page transition. Its presentation companion owns that state.
-            if (wasIndex && !HasHeading("TACKLE STORE")) RestoreBackdrop();
+            // transition to that store. Its presentation companion owns that state.
+            if (wasIndex && page != "gear") RestoreBackdrop();
             wasIndex = false;
             return;
         }
 
-        if (modal == null) modal = FindImage("ShopMenu");
+        modal = modalObject.GetComponent<Image>();
         if (modal == null) return;
+
+        Text pageHeading = HeadingField != null ? HeadingField.GetValue(hud) as Text : null;
+        if (pageHeading == null) pageHeading = FindIndexHeading();
+        if (pageHeading == null) return;
+
+        // Keep the shortcut and opened page terminology identical from now on.
+        if (page == "islands") pageHeading.text = "ISLAND / FISH INDEX";
 
         ApplyBackdrop();
         StyleGlobalChrome(pageHeading);
@@ -69,20 +89,11 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
             if (label == null || !label.gameObject.activeInHierarchy) continue;
             string value = label.text ?? string.Empty;
             if (string.Equals(value, "ISLAND / BIOME INDEX", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(value, "ISLAND / FISH INDEX", StringComparison.OrdinalIgnoreCase) ||
                 value.EndsWith(" • FISH INDEX", StringComparison.OrdinalIgnoreCase))
                 return label;
         }
         return null;
-    }
-
-    private bool HasHeading(string caption)
-    {
-        Text[] labels = hud.GetComponentsInChildren<Text>(true);
-        for (int i = 0; i < labels.Length; i++)
-            if (labels[i] != null && labels[i].gameObject.activeInHierarchy &&
-                string.Equals(labels[i].text, caption, StringComparison.OrdinalIgnoreCase))
-                return true;
-        return false;
     }
 
     private void ApplyBackdrop()
@@ -103,8 +114,7 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
     {
         pageHeading.font = shopFont;
         pageHeading.fontStyle = FontStyle.Bold;
-        // Index headings were yellow before this skin. Preserve that visual cue,
-        // but use a cleaner/brighter shop-compatible gold as requested.
+        // Preserve the old yellow heading cue, but make it brighter/cleaner.
         pageHeading.color = BrightGold;
 
         Image viewport = FindImage("ScrollViewport");
@@ -153,9 +163,9 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
 
             if (panel != null)
             {
-                // Island cards are themselves the tap target; fish-index entries are
-                // passive navy cards with a separate teal action button. Both now use
-                // the same rounded glass surface as tackle-store item rows.
+                // The actual Island/Biome cards are generated by
+                // IslandBiomeIndexPatchRuntime. Re-skin those exact cards here rather
+                // than replacing them, which preserves all image and hitbox sizing.
                 FishingHudTheme.Panel(child.gameObject);
                 panel.color = cardButton != null && !cardButton.interactable ? DisabledTint : Color.white;
             }
@@ -172,8 +182,8 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
             {
                 Button action = actions[b];
                 if (action == null || !action.gameObject.activeInHierarchy) continue;
-                // The whole island card is already themed as a navy shop card. Keep
-                // it navy rather than turning the complete large tap target teal.
+                // A whole-card button stays navy. Dedicated TELEPORT/FISH INDEX/etc.
+                // controls use the same teal action surface as the Tackle Store.
                 if (action.transform == child) continue;
 
                 FishingHudTheme.Panel(action.gameObject, 1);
@@ -201,6 +211,15 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
                 continue;
             }
 
+            string value = label.text ?? string.Empty;
+            if (value.IndexOf("COINS", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                value.IndexOf("FISH IN BAG", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                label.color = DetailCyan;
+                label.fontStyle = FontStyle.Normal;
+                continue;
+            }
+
             if (IsDetail(original))
             {
                 label.color = DetailCyan;
@@ -211,13 +230,23 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
             Button ownerButton = label.GetComponentInParent<Button>();
             if (ownerButton != null)
             {
-                // Match the store's button/tab typography without changing font size.
                 label.fontStyle = FontStyle.Bold;
                 if (ownerButton.interactable && IsNearWhite(label.color)) label.color = Color.white;
                 continue;
             }
 
-            // White row titles use the same bold hierarchy as tackle-store item names.
+            // On the actual Island/Biome cards, the title is the preserved bright
+            // yellow above, while the description adopts the Tackle Store's cyan
+            // detail-text treatment.
+            Transform card = FindAncestorWithPrefix(label.transform, "BiomeCard_");
+            if (card != null && IsNearWhite(label.color))
+            {
+                label.color = DetailCyan;
+                label.fontStyle = FontStyle.Normal;
+                continue;
+            }
+
+            // Fish-index row titles remain white/bold like tackle-store item names.
             if (IsNearWhite(label.color)) label.fontStyle = FontStyle.Bold;
         }
     }
@@ -262,9 +291,20 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
         return null;
     }
 
+    private static Transform FindAncestorWithPrefix(Transform child, string prefix)
+    {
+        Transform current = child != null ? child.parent : null;
+        while (current != null)
+        {
+            if (current.name.StartsWith(prefix, StringComparison.Ordinal)) return current;
+            current = current.parent;
+        }
+        return null;
+    }
+
     private void OnDisable()
     {
-        if (wasIndex && !HasHeading("TACKLE STORE")) RestoreBackdrop();
+        if (wasIndex) RestoreBackdrop();
         wasIndex = false;
     }
 }
