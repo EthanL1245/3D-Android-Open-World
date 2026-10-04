@@ -84,7 +84,7 @@ public sealed class TackleBaitBuyMoreRuntime : MonoBehaviour
             bool canEquip=amount>0 && !equipped && !progress.ReadOnly;
             equipButton.interactable=canEquip;
             Image image=equipButton.GetComponent<Image>();
-            if(image!=null)image.color=canEquip?Teal:Disabled;
+            if(image!=null){FishingHudTheme.Panel(equipButton.gameObject,canEquip?1:0);image.color=canEquip?Color.white:new Color(.60f,.77f,.82f,1f);}
         }
 
         Transform existing=row.Find("BUY MORE BAIT");
@@ -116,7 +116,7 @@ public sealed class TackleBaitBuyMoreRuntime : MonoBehaviour
         bool canBuy=!progress.ReadOnly && progress.CanTrade && nearGear && amount<=9990 && progress.Data.coins>=price;
         buyButton.interactable=canBuy;
         Image buyImage=buyButton.GetComponent<Image>();
-        if(buyImage!=null)buyImage.color=canBuy?Teal:Disabled;
+        if(buyImage!=null){FishingHudTheme.Panel(buyButton.gameObject,canBuy?1:0);buyImage.color=canBuy?Color.white:new Color(.60f,.77f,.82f,1f);}
     }
 
     private void BuyAnotherPack(int id)
@@ -187,8 +187,8 @@ public sealed class TackleBaitBuyMoreRuntime : MonoBehaviour
         rect.anchorMin=new Vector2(1f,.5f);
         rect.anchorMax=new Vector2(1f,.5f);
         rect.pivot=new Vector2(1f,.5f);
-        rect.sizeDelta=new Vector2(205f,64f);
-        rect.anchoredPosition=new Vector2(-14f,y);
+        rect.sizeDelta=new Vector2(238f,70f);
+        rect.anchoredPosition=new Vector2(-24f,y);
     }
 
     private Text CreateText(Transform parent,string value,int size,Color color,TextAnchor alignment)
@@ -232,3 +232,4 @@ public sealed class TackleBaitBuyMoreRuntime : MonoBehaviour
         rect.offsetMax=Vector2.zero;
     }
 }
+

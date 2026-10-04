@@ -21,7 +21,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             saleAudio.spatialBlend = 0f;
             saleSound = Resources.Load<AudioClip>("Fishing/Audio/SoldFishCoins");
         }
-        if (saleSound != null) saleAudio.PlayOneShot(saleSound);
+        if (saleSound != null) saleAudio.PlayOneShot(saleSound, 0.5f);
     }
 
     private ShopProgress progress;
@@ -31,6 +31,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private FishingHUD fishingHUD;
     private Font font;
     private GameObject root, modal, nearbyButton;
+    private GameObject storeHeader, storeBody;
+    private Button menuClose;
     private RectTransform list;
     private ScrollRect scroll;
     private Text heading, wallet, feedback, nearLabel;
@@ -136,9 +138,17 @@ public sealed class ShopWorldHUD : MonoBehaviour
         Rect(nearbyButton.GetComponent<RectTransform>(),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0.5f,0),new Vector2(0,130),new Vector2(300,58));
         modal=Panel("ShopMenu",root.transform,ink);
         var r=modal.GetComponent<RectTransform>(); r.anchorMin=new Vector2(0.045f,0.045f); r.anchorMax=new Vector2(0.955f,0.955f); r.offsetMin=r.offsetMax=Vector2.zero;
+        storeHeader=Panel("StoreGlassHeader",modal.transform,Color.white);
+        FishingHudTheme.Panel(storeHeader);storeHeader.GetComponent<Image>().raycastTarget=false;
+        Anchor(storeHeader.GetComponent<RectTransform>(),0,1,1,1,0,-130,0,0);
+        FishingHudSymbol.Add(storeHeader.transform,FishingHudSymbol.Kind.Cart,new Vector2(0,.5f),new Vector2(68,0),84);
+        storeBody=Panel("StoreGlassBody",modal.transform,Color.white);
+        FishingHudTheme.Panel(storeBody);storeBody.GetComponent<Image>().raycastTarget=false;
+        Anchor(storeBody.GetComponent<RectTransform>(),0,0,1,1,0,60,0,-258);
+        storeHeader.SetActive(false);storeBody.SetActive(false);
         heading=Label(modal.transform,"MENU / TRAVEL",36,gold); Anchor(heading.rectTransform,0,1,1,1,24,-62,-150,-12);
         wallet=Label(modal.transform,"",22,Color.white); Anchor(wallet.rectTransform,0,1,1,1,24,-92,-24,-62);
-        Button close=ButtonAt(modal.transform,"CLOSE",Close); Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(160,64));
+        Button close=ButtonAt(modal.transform,"CLOSE",Close); menuClose=close; Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(160,64));
         string[] tabs={"travel","bag","equipment"}; string[] names={"TRAVEL","FISH BAG","EQUIPMENT"};
         for(int i=0;i<tabs.Length;i++) { string tab=tabs[i]; var b=ButtonAt(modal.transform,names[i],()=>Open(tab)); navigationTabs.Add(b.gameObject); Anchor(b.GetComponent<RectTransform>(),i/3f,1,(i+1)/3f,1,16,-148,-16,-103); }
         GameObject viewport=Panel("ScrollViewport",modal.transform,new Color(0,0,0,0.1f));
@@ -175,6 +185,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             heading.text=habitat!=null?"ADD FISH • "+habitat.name.ToUpperInvariant():"ADD FISH";
         }
         bool independent=index || page=="bait" || habitatAddId!=null;
+        SetStorePresentation(shopSession=="gear");
         foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !independent);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
@@ -184,6 +195,33 @@ public sealed class ShopWorldHUD : MonoBehaviour
         else HabitatPage(page);
         Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=top?1f:position;
     }
+    // Layout only. Keep the plain heading text used by existing shop companions.
+    private void SetStorePresentation(bool tackle)
+    {
+        storeHeader.SetActive(tackle);storeBody.SetActive(tackle);
+        modal.GetComponent<Image>().color=tackle?Color.clear:ink;
+        var r=modal.GetComponent<RectTransform>();
+        r.anchorMin=tackle?new Vector2(.025f,.025f):new Vector2(.045f,.045f);
+        r.anchorMax=tackle?new Vector2(.975f,.97f):new Vector2(.955f,.955f);
+        r.offsetMin=r.offsetMax=Vector2.zero;
+        heading.fontSize=tackle?52:43;heading.resizeTextMaxSize=tackle?52:43;
+        heading.fontStyle=tackle?FontStyle.Bold:FontStyle.Normal;heading.color=tackle?Color.white:gold;
+        Anchor(heading.rectTransform,0,1,1,1,tackle?132:24,tackle?-82:-62,tackle?-270:-150,-12);
+        wallet.color=tackle?new Color(.67f,.93f,1f):Color.white;
+        Anchor(wallet.rectTransform,0,1,1,1,tackle?132:24,tackle?-118:-92,tackle?-270:-24,tackle?-80:-62);
+        Rect(menuClose.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,
+            tackle?new Vector2(-20,-22):new Vector2(-18,-16),tackle?new Vector2(230,84):new Vector2(160,64));
+        var closeImage=menuClose.GetComponent<Image>();
+        if(tackle)FishingHudTheme.Panel(menuClose.gameObject);
+        else {closeImage.sprite=null;closeImage.type=Image.Type.Simple;closeImage.color=teal;}
+        Anchor(scroll.viewport,0,0,1,1,tackle?22:20,tackle?78:70,tackle?-44:-30,tackle?-278:-164);
+        var track=scroll.verticalScrollbar.GetComponent<RectTransform>();
+        Anchor(track,1,0,1,1,tackle?-27:-22,tackle?80:70,tackle?-13:-10,tackle?-276:-164);
+        var handle=scroll.verticalScrollbar.targetGraphic as Image;
+        if(handle!=null)handle.color=tackle?FishingHudTheme.Cyan:gold;
+        feedback.color=tackle?new Color(.67f,.93f,1f):gold;
+    }
+
     private void TravelPage()
     {
         string[] names={"SUNCREST REEF","TIDEGLASS QUAY","HOME","BRINEBREAK ISLE"};
@@ -539,6 +577,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 
 
 

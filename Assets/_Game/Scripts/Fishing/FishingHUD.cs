@@ -12,6 +12,7 @@ public class FishingHUD : MonoBehaviour
     private Text skillLabel,dragTitle;
     private Slider dragSlider;
     private GameObject skillReadyArrows;
+    private Outline skillReadyOutline;
     private FishingSkillEdgeFlash skillEdgeFlash;
 
     public void PlaySkillFlash()
@@ -190,6 +191,12 @@ public class FishingHUD : MonoBehaviour
         dragPanel.SetActive(fighting);
         skillPanel.SetActive(fighting);
         if (skillReadyArrows != null) skillReadyArrows.SetActive(fighting && live && charge >= 1f);
+        if (skillReadyOutline != null)
+        {
+            skillReadyOutline.enabled = fighting && live && charge >= 1f && cooldown <= 0f;
+            skillReadyOutline.effectColor = new Color(1f,1f,1f,
+                Mathf.Repeat(Time.unscaledTime * 5f,1f) < .5f ? 1f : .18f);
+        }
         if(!fighting)return;
         PositionDragAboveJoystick();
         string[] names={"LOW","MEDIUM","HIGH"};
@@ -276,6 +283,10 @@ public class FishingHUD : MonoBehaviour
         skillPanel=CreatePanel("FishingSkill",root.transform,new Color(.025f,.075f,.095f,.96f));
         skillPanel.GetComponent<Image>().raycastTarget=false;
         FishingHudTheme.Panel(skillPanel);
+        skillReadyOutline = skillPanel.AddComponent<Outline>();
+        skillReadyOutline.useGraphicAlpha = false;
+        skillReadyOutline.effectDistance = new Vector2(3f,-3f);
+        skillReadyOutline.enabled = false;
         FishingHudSymbol.Add(skillPanel.transform,FishingHudSymbol.Kind.Bolt,new Vector2(0,1),new Vector2(43,-36),36);
         var sr=skillPanel.GetComponent<RectTransform>();sr.anchorMin=sr.anchorMax=new Vector2(.5f,0);sr.pivot=new Vector2(.5f,0);
         sr.sizeDelta=new Vector2(670,120);sr.anchoredPosition=new Vector2(0,30);
@@ -295,9 +306,10 @@ public class FishingHUD : MonoBehaviour
         arrowsRect.pivot = new Vector2(0f, .5f);
         // The five-arrow mesh occupies 92 units and is centered 2 units above
         // a 108-unit rect's center. Scale the artwork itself, not just its rect.
-        arrowsRect.anchoredPosition = new Vector2(18f, 12f);
+        // Keep the doubled arrow stack above the bottom screen edge.
+        arrowsRect.anchoredPosition = new Vector2(18f, 78f);
         arrowsRect.sizeDelta = new Vector2(45f, 108f);
-        arrowsRect.localScale = Vector3.one * 1.5f;
+        arrowsRect.localScale = Vector3.one * 3f;
         skillReadyArrows.GetComponent<FishingSkillReadyArrows>().raycastTarget = false;
         skillReadyArrows.SetActive(false);
     }
@@ -1508,6 +1520,7 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 
 
 

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 // Resolution-independent HUD artwork, drawn without font-dependent glyphs.
 public sealed class FishingHudSymbol : MaskableGraphic
 {
-    public enum Kind { Reel, Bolt, Pin, Island, Gear }
+    public enum Kind { Reel, Bolt, Pin, Island, Gear, Cart }
     public Kind kind;
     public static void Add(Transform parent, Kind kind, Vector2 anchor, Vector2 position, float size)
     {
@@ -67,9 +67,16 @@ public sealed class FishingHudSymbol : MaskableGraphic
                 Tri(vh,new Vector2(.5f,.72f),new Vector2(.12f,.65f),new Vector2(.27f,.87f));
                 Tri(vh,new Vector2(.5f,.72f),new Vector2(.87f,.62f),new Vector2(.75f,.86f));
                 Tri(vh,new Vector2(.5f,.72f),new Vector2(.38f,.98f),new Vector2(.65f,.91f)); break;
+            case Kind.Cart:
+                Quad(vh,.07f,.78f,.14f,.07f);Quad(vh,.19f,.30f,.07f,.53f);
+                Tri(vh,new Vector2(.25f,.72f),new Vector2(.92f,.79f),new Vector2(.78f,.39f));
+                Tri(vh,new Vector2(.25f,.72f),new Vector2(.78f,.39f),new Vector2(.30f,.39f));
+                Quad(vh,.24f,.27f,.56f,.06f);
+                Ring(vh,.32f,.14f,.065f,.065f);Ring(vh,.74f,.14f,.065f,.065f);break;
             case Kind.Gear:
                 Ring(vh,.5f,.5f,.32f,.13f);
                 for(int i=0;i<8;i++) {float a=i*Mathf.PI/4; Quad(vh,.45f+Mathf.Sin(a)*.32f,.45f+Mathf.Cos(a)*.32f,.1f,.1f);} break;
         }
     }
 }
+

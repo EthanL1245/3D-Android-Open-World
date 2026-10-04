@@ -31,6 +31,7 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
     private TackleLureShopExtension legacyLureExtension;
     private Font font;
     private GameObject section;
+    private GameObject fixedTabs;
     private TackleTab selected=TackleTab.Rods;
     private bool wasTackle;
     private bool rebuild;
@@ -81,7 +82,7 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
         // ShopWorldHUD rebuilds Rows after purchases/equips. Unity-null semantics make
         // the destroyed section compare as null, so this recreates our selected tab
         // automatically without losing the user's category selection.
-        if(section==null || section.transform.parent!=rows)rebuild=true;
+        if(section==null || section.transform.parent!=rows || fixedTabs==null)rebuild=true;
         if(rebuild)BuildStore(rows);
         HideCoreRows(rows);
     }
@@ -89,6 +90,7 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
     private void LeaveTackleStore()
     {
         RectTransform rows=FindRows();
+        if(fixedTabs!=null){fixedTabs.SetActive(false);Destroy(fixedTabs);fixedTabs=null;}
         if(section!=null)
         {
             section.SetActive(false);
@@ -104,6 +106,7 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
 
     private void OnDisable()
     {
+        if(fixedTabs!=null){fixedTabs.SetActive(false);Destroy(fixedTabs);fixedTabs=null;}
         if(legacyLureExtension!=null)legacyLureExtension.enabled=true;
     }
 
@@ -147,16 +150,18 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
         section=new GameObject("TabbedTackleStore",typeof(RectTransform),typeof(LayoutElement),typeof(VerticalLayoutGroup));
         section.transform.SetParent(rows,false);
         VerticalLayoutGroup layout=section.GetComponent<VerticalLayoutGroup>();
-        layout.spacing=10f;
+        layout.spacing=12f;
         layout.childControlWidth=true;
         layout.childForceExpandWidth=true;
         layout.childControlHeight=true;
         layout.childForceExpandHeight=false;
 
-        CreateTabs(section.transform);
+        if(fixedTabs!=null){fixedTabs.SetActive(false);Destroy(fixedTabs);}
+        // Tabs stay above the scroll viewport; only the item rows scroll.
+        CreateTabs(rows.parent.parent);
         CreateCategoryHeading(section.transform);
         int itemCount=BuildSelectedRows(section.transform);
-        section.GetComponent<LayoutElement>().preferredHeight=74f+48f+20f+itemCount*194f;
+        section.GetComponent<LayoutElement>().preferredHeight=Mathf.Max(0,itemCount*212f-12f);
         Canvas.ForceUpdateCanvases();
     }
 
@@ -168,9 +173,10 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
 
     private void CreateTabs(Transform parent)
     {
-        GameObject bar=new GameObject("TackleTabs",typeof(RectTransform),typeof(LayoutElement));
+        GameObject bar=new GameObject("TackleTabs",typeof(RectTransform));
+        fixedTabs=bar;
         bar.transform.SetParent(parent,false);
-        bar.GetComponent<LayoutElement>().preferredHeight=74f;
+        Anchor(bar.GetComponent<RectTransform>(),0,1,1,1,0,-240,0,-150);
 
         string[] captions={"RODS","REELS","LINES","LURES","BAIT"};
         for(int i=0;i<captions.Length;i++)
@@ -182,9 +188,22 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
             Anchor(button.GetComponent<RectTransform>(),x0,0,x1,1,5,3,-5,-3);
             bool active=tab==selected;
             button.interactable=!active;
-            button.GetComponent<Image>().color=active?Gold:Teal;
+            FishingHudTheme.Panel(button.gameObject,active?1:0);
             Text label=button.GetComponentInChildren<Text>();
-            if(label!=null)label.color=active?Ink:Color.white;
+            if(label!=null)
+            {
+                label.color=active?new Color(.01f,.15f,.20f):Color.white;
+                label.fontStyle=FontStyle.Bold;
+                label.rectTransform.offsetMin=new Vector2(86,0);
+                label.rectTransform.offsetMax=new Vector2(-10,0);
+                label.alignment=TextAnchor.MiddleLeft;
+            }
+            string[] previewKeys={"Rod0","Reel0","Line",ShopCatalog.LurePreviewKey(0),"Bait0"};
+            var icon=new GameObject("CategoryItemImage",typeof(RectTransform),typeof(RawImage));
+            icon.transform.SetParent(button.transform,false);
+            Rect(icon.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(18,0),new Vector2(58,58));
+            var image=icon.GetComponent<RawImage>();image.raycastTarget=false;
+            preview.Attach(image,0,1f,previewKeys[i]);
         }
     }
 
@@ -192,7 +211,9 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
     {
         GameObject heading=new GameObject("CategoryHeading",typeof(RectTransform),typeof(LayoutElement));
         heading.transform.SetParent(parent,false);
-        heading.GetComponent<LayoutElement>().preferredHeight=48f;
+        // Retain this marker for the bait-restock companion, without a second heading.
+        heading.GetComponent<LayoutElement>().ignoreLayout=true;
+        heading.SetActive(false);
         Text text=CreateText(heading.transform,selected.ToString().ToUpperInvariant(),30,Gold,TextAnchor.MiddleLeft);
         Full(text.rectTransform);
         text.rectTransform.offsetMin=new Vector2(8,0);
@@ -323,29 +344,31 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
 
     private void CreateItemRow(Transform parent,string title,string detail,string action,bool enabled,string previewKey,Action callback)
     {
-        GameObject row=Panel(title,parent,Ink);
-        row.AddComponent<LayoutElement>().preferredHeight=184f;
+        GameObject row=Panel(title,parent,Color.white);
+        FishingHudTheme.Panel(row);
+        row.AddComponent<LayoutElement>().preferredHeight=200f;
 
-        GameObject accent=Panel("Accent",row.transform,Gold);
-        Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
-        accent.GetComponent<Image>().raycastTarget=false;
-
+        GameObject frame=Panel("ItemImageFrame",row.transform,Color.white);
+        FishingHudTheme.Panel(frame);
+        frame.GetComponent<Image>().raycastTarget=false;
+        Rect(frame.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(24,0),new Vector2(164,164));
         GameObject picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));
-        picture.transform.SetParent(row.transform,false);
-        Rect(picture.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(14,0),new Vector2(140,140));
-        RawImage raw=picture.GetComponent<RawImage>();
-        raw.raycastTarget=false;
+        picture.transform.SetParent(frame.transform,false);
+        Anchor(picture.GetComponent<RectTransform>(),0,0,1,1,10,10,-10,-10);
+        RawImage raw=picture.GetComponent<RawImage>();raw.raycastTarget=false;
         preview.Attach(raw,0,1f,previewKey);
 
-        Text name=CreateText(row.transform,title,31,Color.white,TextAnchor.MiddleLeft);
-        Anchor(name.rectTransform,0,.5f,1,1,170,0,-232,-10);
-        Text description=CreateText(row.transform,detail,25,Detail,TextAnchor.MiddleLeft);
-        Anchor(description.rectTransform,0,0,1,.55f,170,10,-232,0);
+        Text name=CreateText(row.transform,title,34,Color.white,TextAnchor.MiddleLeft);
+        name.fontStyle=FontStyle.Bold;
+        Anchor(name.rectTransform,0,.56f,1,1,216,0,-286,-18);
+        Text description=CreateText(row.transform,detail,25,new Color(.70f,.90f,.96f),TextAnchor.UpperLeft);
+        Anchor(description.rectTransform,0,0,1,.53f,216,20,-286,0);
 
         Button button=CreateButton(row.transform,action,callback);
-        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-14,0),new Vector2(205,76));
+        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-24,0),new Vector2(238,90));
         button.interactable=enabled;
-        button.GetComponent<Image>().color=enabled?Teal:Disabled;
+        FishingHudTheme.Panel(button.gameObject,enabled?1:0);
+        button.GetComponent<Image>().color=enabled?Color.white:new Color(.60f,.77f,.82f,1f);
     }
 
     private void SelectTab(TackleTab tab)
@@ -419,3 +442,4 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
         rect.offsetMax=new Vector2(right,top);
     }
 }
+
