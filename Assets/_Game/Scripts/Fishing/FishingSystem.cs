@@ -2205,7 +2205,11 @@ public class FishingSystem : MonoBehaviour
                 // Normal-drag angry payout is the 1x reference. Low + angry is
                 // 2x on an unobstructed run; bursts and deflection track actual payout.
                 float referenceSpeed = FishingTuning.YellowSpeed(hookedSpeciesId, effectiveDifficulty) * FishingTuning.RedToYellowSpeed;
-                linePullPlaybackPitch = Mathf.Clamp(payoutSpeed / Mathf.Max(referenceSpeed, .0001f), .25f, 3f);
+                // Green and purple always use the original sound speed at every drag.
+                // Other moods can speed up with payout, but never slow below 1x.
+                linePullPlaybackPitch = hookedTemperament == FishTemperament.Calm ||
+                    hookedTemperament == FishTemperament.Fragile
+                    ? 1f : Mathf.Clamp(payoutSpeed / Mathf.Max(referenceSpeed, .0001f), 1f, 3f);
             }
 
             fightTravelDirection =
