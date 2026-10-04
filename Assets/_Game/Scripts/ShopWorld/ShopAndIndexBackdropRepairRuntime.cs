@@ -4,14 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Robust presentation owner for the Tackle Store and Island / Fish Index.
-///
-/// The supplied wave artwork is intentionally rendered as a normal stretched Image,
-/// never as a nine-slice. This avoids the sliced-sprite padding exception that can
-/// otherwise spam the development console. Smaller cards/buttons still use the
-/// existing rounded FishingHudTheme surfaces.
-///
-/// Presentation only: no travel, fishing, purchase, unlock or index mechanics change.
+/// Single presentation owner for the Tackle Store and Island / Fish Index.
+/// Uses the supplied wave artwork as a normal stretched image and themes only the
+/// visual layer; no gameplay, travel, purchase or fishing logic is changed.
 /// </summary>
 [DefaultExecutionOrder(6900)]
 public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
@@ -20,18 +15,15 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
     private static readonly FieldInfo PageField = typeof(ShopWorldHUD).GetField("page", PrivateInstance);
     private static readonly FieldInfo ModalField = typeof(ShopWorldHUD).GetField("modal", PrivateInstance);
     private static readonly FieldInfo HeadingField = typeof(ShopWorldHUD).GetField("heading", PrivateInstance);
-    private static readonly MethodInfo BackdropSpriteMethod = typeof(LargeShopBackdropTheme).GetMethod("Sprite", BindingFlags.Static | BindingFlags.NonPublic);
 
     private static readonly Color DefaultMenuColor = new Color(.025f, .055f, .07f, .98f);
     private static readonly Color BrightGold = new Color(1f, .86f, .28f, 1f);
     private static readonly Color DetailCyan = new Color(.70f, .90f, .96f, 1f);
     private static readonly Color DisabledTint = new Color(.52f, .64f, .68f, .72f);
-    private const float BackdropAlpha = .84f;
     private const float IslandTextDrop = 12f;
 
     private ShopWorldHUD hud;
     private Font shopFont;
-    private Sprite backdropSprite;
     private bool wasThemed;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -52,9 +44,11 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
     {
         if (hud == null || PageField == null || ModalField == null) return;
 
-        // The previous two presentation companions assign the large artwork as a
-        // sliced Image. Disable them before their later execution orders can run.
-        DisableLegacyBackdropPasses();
+        // These older presentation companions are superseded by this component.
+        TackleStoreBackdropRuntime storePass = GetComponent<TackleStoreBackdropRuntime>();
+        if (storePass != null && storePass.enabled) storePass.enabled = false;
+        IslandFishIndexThemeRuntime indexPass = GetComponent<IslandFishIndexThemeRuntime>();
+        if (indexPass != null && indexPass.enabled) indexPass.enabled = false;
 
         string page = PageField.GetValue(hud) as string;
         GameObject modalObject = ModalField.GetValue(hud) as GameObject;
@@ -64,15 +58,15 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
 
         if (!tackle && !index)
         {
-            if (wasThemed && modalObject != null) RestoreDefault(modalObject.GetComponent<Image>());
+            if (wasThemed && modalObject != null)
+                LargeShopBackdropTheme.RestoreDefault(modalObject.GetComponent<Image>(), DefaultMenuColor);
             wasThemed = false;
             return;
         }
 
         Image modal = modalObject.GetComponent<Image>();
         if (modal == null) return;
-
-        ApplyLargeBackdrop(modal);
+        LargeShopBackdropTheme.Apply(modal);
 
         if (index)
         {
@@ -80,8 +74,12 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
             if (heading != null)
             {
                 if (page == "islands") heading.text = "ISLAND / FISH INDEX";
-                StyleIndexChrome(modalObject.transform, heading);
+                heading.font = shopFont;
+                heading.fontStyle = FontStyle.Bold;
+                heading.color = BrightGold;
             }
+
+            StyleIndexChrome(modalObject.transform);
             StyleIndexRows();
             StyleIndexText(modalObject.transform, heading);
         }
@@ -89,53 +87,8 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         wasThemed = true;
     }
 
-    private void DisableLegacyBackdropPasses()
+    private void StyleIndexChrome(Transform modal)
     {
-        TackleStoreBackdropRuntime storeBackdrop = GetComponent<TackleStoreBackdropRuntime>();
-        if (storeBackdrop != null && storeBackdrop.enabled) storeBackdrop.enabled = false;
-
-        IslandFishIndexThemeRuntime indexTheme = GetComponent<IslandFishIndexThemeRuntime>();
-        if (indexTheme != null && indexTheme.enabled) indexTheme.enabled = false;
-    }
-
-    private void ApplyLargeBackdrop(Image target)
-    {
-        if (target == null) return;
-
-        if (backdropSprite == null && BackdropSpriteMethod != null)
-        {
-            try { backdropSprite = BackdropSpriteMethod.Invoke(null, null) as Sprite; }
-            catch (Exception exception)
-            {
-                Debug.LogError("Unable to create shop/index background artwork: " + exception.GetBaseException().Message);
-                return;
-            }
-        }
-
-        if (backdropSprite == null) return;
-
-        target.sprite = backdropSprite;
-        target.type = Image.Type.Simple;
-        target.preserveAspect = false;
-        target.fillCenter = true;
-        target.color = new Color(1f, 1f, 1f, BackdropAlpha);
-    }
-
-    private static void RestoreDefault(Image target)
-    {
-        if (target == null) return;
-        target.sprite = null;
-        target.type = Image.Type.Simple;
-        target.preserveAspect = false;
-        target.color = DefaultMenuColor;
-    }
-
-    private void StyleIndexChrome(Transform modal, Text heading)
-    {
-        heading.font = shopFont;
-        heading.fontStyle = FontStyle.Bold;
-        heading.color = BrightGold;
-
         Image viewport = FindImage("ScrollViewport");
         if (viewport != null) viewport.color = new Color(0f, 0f, 0f, .04f);
 
@@ -188,24 +141,14 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
                 panel.color = cardButton != null && !cardButton.interactable ? DisabledTint : Color.white;
             }
 
-            Transform accent = FindDirectChild(child, "Accent");
-            if (accent != null)
-            {
-                Image accentImage = accent.GetComponent<Image>();
-                if (accentImage != null) accentImage.color = FishingHudTheme.Cyan;
-            }
-
             Button[] actions = child.GetComponentsInChildren<Button>(true);
             for (int b = 0; b < actions.Length; b++)
             {
                 Button action = actions[b];
-                if (action == null || !action.gameObject.activeInHierarchy) continue;
-                if (action.transform == child) continue;
-
+                if (action == null || !action.gameObject.activeInHierarchy || action.transform == child) continue;
                 FishingHudTheme.Panel(action.gameObject, 1);
-                Image actionImage = action.GetComponent<Image>();
-                if (actionImage != null)
-                    actionImage.color = action.interactable ? Color.white : DisabledTint;
+                Image image = action.GetComponent<Image>();
+                if (image != null) image.color = action.interactable ? Color.white : DisabledTint;
             }
         }
     }
@@ -217,10 +160,9 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         {
             Text label = labels[i];
             if (label == null || !label.gameObject.activeInHierarchy) continue;
-
             label.font = shopFont;
-            Color original = label.color;
 
+            Color original = label.color;
             if (label == pageHeading || IsGold(original))
             {
                 label.color = BrightGold;
@@ -259,19 +201,15 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
 
     private static void DropIslandCardText(Transform card)
     {
-        const string markerName = "__IslandIndexTextSpacing_v2";
+        const string markerName = "__IslandIndexTextSpacing_v3";
         if (card == null || card.Find(markerName) != null) return;
 
-        // Both direct text children are moved by exactly the same amount: the bright
-        // yellow island/unlock title and the descriptive text immediately below it.
-        // Preview artwork and right-side controls are intentionally untouched.
         for (int i = 0; i < card.childCount; i++)
         {
             Transform child = card.GetChild(i);
             if (child == null || child.GetComponent<Button>() != null) continue;
             Text text = child.GetComponent<Text>();
             if (text == null) continue;
-
             RectTransform rect = text.rectTransform;
             rect.offsetMin += new Vector2(0f, -IslandTextDrop);
             rect.offsetMax += new Vector2(0f, -IslandTextDrop);
@@ -308,18 +246,7 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
     {
         RectTransform[] transforms = hud.GetComponentsInChildren<RectTransform>(true);
         for (int i = 0; i < transforms.Length; i++)
-            if (transforms[i] != null && transforms[i].name == name)
-                return transforms[i];
-        return null;
-    }
-
-    private static Transform FindDirectChild(Transform parent, string name)
-    {
-        for (int i = 0; i < parent.childCount; i++)
-        {
-            Transform child = parent.GetChild(i);
-            if (child != null && child.name == name) return child;
-        }
+            if (transforms[i] != null && transforms[i].name == name) return transforms[i];
         return null;
     }
 
