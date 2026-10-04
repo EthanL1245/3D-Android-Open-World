@@ -148,7 +148,8 @@ public class AmbientFishAgent : MonoBehaviour
     private float speed, retry, clearance, decisionTime;
     private bool shown=true;
     private bool avoiding;
-    private float blockedTime;
+    private float escapeRetry;
+    private readonly List<Vector3> safeTrail=new List<Vector3>();
     private Renderer[] renderers;
     private Animator[] animators;
     private ReefFishTrail trail;
@@ -179,13 +180,12 @@ public class AmbientFishAgent : MonoBehaviour
             if(retry>0)return;retry=0.6f;
             if(!manager.TryGetSwimPoint(out var point,clearance,spawnBiome))return;
             transform.position=point;transform.rotation=Quaternion.Euler(0,Random.Range(0,360f),0);
-            target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;avoiding=false;blockedTime=0;
+            target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;avoiding=false;escapeRetry=0;
+            safeTrail.Clear();safeTrail.Add(point);
         }
-        // Recover old spawns embedded by terrain changes or falling wave troughs.
-        if(!manager.Safe(transform.position,clearance,spawnBiome))
-        {hasTarget=false;SetVisible(false);return;}
         SetVisible(true);
         decisionTime-=Time.deltaTime;
+        escapeRetry-=Time.deltaTime;
         if(!avoiding && (decisionTime<=0 || (target-transform.position).sqrMagnitude<1f))
         {
             decisionTime=2f+Random.value*2f;
@@ -205,23 +205,31 @@ public class AmbientFishAgent : MonoBehaviour
         if(manager.ClearRoute(transform.position,ahead,clearance,spawnBiome))
         {
             transform.position=next;
-            blockedTime=0f;
+            if(manager.Safe(next,clearance,spawnBiome) &&
+                (safeTrail.Count==0 || Vector3.Distance(safeTrail[safeTrail.Count-1],next)>.4f))
+            {
+                safeTrail.Add(next);
+                if(safeTrail.Count>24)safeTrail.RemoveAt(0);
+            }
             if(avoiding && (target-transform.position).sqrMagnitude<.5f)
             {avoiding=false;decisionTime=0f;}
         }
         else
         {
-            blockedTime+=Time.deltaTime;
-            // Keep the chosen escape point fixed while turning. Replacing it with
-            // "behind me" every frame makes the desired heading spin with the fish.
-            if(!avoiding || !manager.ClearRoute(transform.position,target,clearance,spawnBiome))
+            // Stay visible and turn in place until the nose faces open water.
+            // Give a fixed escape heading enough time for a complete U-turn.
+            if(!avoiding || escapeRetry<=0f)
             {
-                avoiding=TryEscape();
+                if(!TryEscape())
+                {
+                    Vector3 back=safeTrail.Count>0?safeTrail[0]:transform.position-transform.forward*2f;
+                    if((back-transform.position).sqrMagnitude<.1f)back=transform.position-transform.forward*2f;
+                    target=back;
+                }
+                avoiding=true;
+                escapeRetry=4f;
                 decisionTime=.5f;
             }
-            // A full 180-degree turn at 55 degrees/sec needs over three seconds.
-            // Recover an isolated pocket only after giving the turn time to finish.
-            if(blockedTime>6f){hasTarget=false;SetVisible(false);return;}
         }
         // Rendering already culls naturally; avoid train/bone work offscreen.
         trail.SetActive(manager.Visible(transform.position));
@@ -232,10 +240,21 @@ public class AmbientFishAgent : MonoBehaviour
         Vector3 origin=transform.position;
         float bestScore=float.NegativeInfinity;
         bool found=false;
+        // Retrace water we actually swam through before choosing a new route.
+        for(int i=safeTrail.Count-1;i>=0;i--)
+        {
+            Vector3 point=safeTrail[i];
+            if(Vector3.Distance(origin,point)<.8f)continue;
+            if(!manager.ClearRoute(origin,point,clearance,spawnBiome))continue;
+            target=point;
+            safeTrail.RemoveRange(i+1,safeTrail.Count-i-1);
+            return true;
+        }
+        for(int range=0;range<3;range++)
         for(int i=0;i<16;i++)
         {
             Vector3 direction=Quaternion.Euler(0f,i*22.5f,0f)*Vector3.forward;
-            Vector3 point=origin+direction*Mathf.Max(2.5f,clearance*2f);
+            Vector3 point=origin+direction*(range==0?Mathf.Max(2.5f,clearance*2f):range==1?1.5f:.8f);
             if(!manager.ClearRoute(origin,point,clearance,spawnBiome))continue;
             float score=Vector3.Dot(transform.forward,direction);
             if(score<=bestScore)continue;
@@ -245,4 +264,5 @@ public class AmbientFishAgent : MonoBehaviour
     }
 
 }
+
 
