@@ -699,7 +699,7 @@ public class FishingSystem : MonoBehaviour
     private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
-    private float linePullPlaybackPitch = 1f;
+    private int linePullSoundStatus = -1;
     private bool audioFocused = true, audioPaused;
     private AudioClip dragClickSound, biteSplashSound;
 
@@ -731,7 +731,7 @@ public class FishingSystem : MonoBehaviour
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
         fastLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", 1.6f);
+            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", .8f);
     }
 
     private void StartReelSound()
@@ -749,6 +749,7 @@ public class FishingSystem : MonoBehaviour
 
     private void StopLinePullSound()
     {
+        linePullSoundStatus = -1;
         if (linePullAudio != null) linePullAudio.Stop();
         if (fastLinePullAudio != null) fastLinePullAudio.Stop();
     }
@@ -757,23 +758,28 @@ public class FishingSystem : MonoBehaviour
     {
         bool pulling = audioFocused && !audioPaused && rodEquipped && !shopMode &&
             !ShopWorldHUD.MenuOpen && state == FishingState.Fighting &&
-            !fishUnconscious && !IsSkillStunned && fishPulledLineThisFrame &&
+            !fishUnconscious && !IsSkillStunned &&
             hud != null && hud.ActionInput != null && !hud.ActionInput.IsHeld;
         if (!pulling)
         {
             StopLinePullSound();
             return;
         }
-        bool fast = linePullPlaybackPitch > 1.001f;
+        int status = (int)hookedTemperament;
+        bool statusChanged = linePullSoundStatus != status;
+        if (statusChanged) StopLinePullSound();
+        bool fast = hookedTemperament != FishTemperament.Calm &&
+            hookedTemperament != FishTemperament.Fragile;
         FishingLoopAudio active = fast ? fastLinePullAudio : linePullAudio;
         FishingLoopAudio inactive = fast ? linePullAudio : fastLinePullAudio;
-        // Switch recordings without leaving the previous sequence playing.
         if (inactive != null && inactive.IsPlaying) inactive.Stop();
         if (active != null)
         {
-            // Payout selects the recording only; the fast recording stays at native speed.
-            active.SetPitch(fast ? 1f : linePullPlaybackPitch);
-            if (!active.IsPlaying) active.Play();
+            active.SetPitch(1f);
+            // Restart immediately on every status transition, even when both
+            // statuses share the fast recording. Loop until status/input changes.
+            if (!active.IsPlaying) active.Play(0d);
+            linePullSoundStatus = status;
         }
     }
 
@@ -2207,18 +2213,6 @@ public class FishingSystem : MonoBehaviour
             Vector3 after = next - transform.position;
             before.y = after.y = 0f;
             fishPulledLineThisFrame = !reeling && after.sqrMagnitude > before.sqrMagnitude + 0.000001f;
-            if (fishPulledLineThisFrame)
-            {
-                float payoutSpeed = (after.magnitude - before.magnitude) / Mathf.Max(Time.deltaTime, .0001f);
-                // Normal-drag angry payout is the 1x reference. Low + angry is
-                // 2x on an unobstructed run; bursts and deflection track actual payout.
-                float referenceSpeed = FishingTuning.YellowSpeed(hookedSpeciesId, effectiveDifficulty) * FishingTuning.RedToYellowSpeed;
-                // Green and purple always use the original sound speed at every drag.
-                // Other moods can speed up with payout, but never slow below 1x.
-                linePullPlaybackPitch = hookedTemperament == FishTemperament.Calm ||
-                    hookedTemperament == FishTemperament.Fragile
-                    ? 1f : Mathf.Clamp(payoutSpeed / Mathf.Max(referenceSpeed, .0001f), 1f, 3f);
-            }
 
             fightTravelDirection =
                 outwardDirection;

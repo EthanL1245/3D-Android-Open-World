@@ -33,13 +33,13 @@ public sealed class FishingLoopAudio
         return source;
     }
 
-    public void Play()
+    public void Play(double schedulingLead = 0.02)
     {
         Stop();
         if (leadIn.clip == null || cycle.clip == null) return;
-        // Both sources use uncompressed, preloaded PCM; allow one small scheduling
-        // lead, then join exactly at the sample boundary without frame polling.
-        startTime = AudioSettings.dspTime + 0.02;
+        // Preloaded PCM: callers can start immediately; the cycle still joins
+        // on the audio clock without frame polling.
+        startTime = AudioSettings.dspTime + System.Math.Max(0d, schedulingLead);
         pitchUpdatedAt = startTime;
         leadSecondsRemaining = (double)leadIn.clip.samples / leadIn.clip.frequency;
         joinTime = startTime + leadSecondsRemaining / playbackPitch;
