@@ -214,15 +214,18 @@ public class FishingHUD : MonoBehaviour
         handleArea.transform.SetParent(sliderObject.transform,false);
         var areaRect=handleArea.GetComponent<RectTransform>();StretchFullScreen(areaRect);
         areaRect.offsetMin=new Vector2(16,0);areaRect.offsetMax=new Vector2(-16,0);
-        var handle=CreatePanel("Handle",handleArea.transform,new Color(.08f,.78f,.66f,1));
-        // The old thumb was 30 x 36. Enlarge the visible thumb and its raycast
-        // target to 90 x 108; the 308 x 40 slider and 8-pixel rail stay unchanged.
-        var handleRect=handle.GetComponent<RectTransform>();handleRect.sizeDelta=new Vector2(90,68);
+        var handle=new GameObject("Handle",typeof(RectTransform),typeof(FishingDragHandle));
+        handle.transform.SetParent(handleArea.transform,false);
+        var handleGraphic=handle.GetComponent<FishingDragHandle>();
+        handleGraphic.color=new Color(.08f,.78f,.66f,1);
+        // Keep the enlarged 108-unit height, now a circle with a circular hit area.
+        // Slider stretches the handle over the 40-unit area: 40 + 68 = 108.
+        var handleRect=handle.GetComponent<RectTransform>();handleRect.sizeDelta=new Vector2(108,68);
         dragSlider=sliderObject.AddComponent<Slider>();
         dragSlider.direction=Slider.Direction.LeftToRight;
         dragSlider.minValue=FishingDragRules.Low;dragSlider.maxValue=FishingDragRules.High;
         dragSlider.wholeNumbers=true;dragSlider.handleRect=handleRect;
-        dragSlider.targetGraphic=handle.GetComponent<Image>();
+        dragSlider.targetGraphic=handleGraphic;
         dragSlider.navigation=new Navigation{mode=Navigation.Mode.None};
         dragSlider.SetValueWithoutNotify(FishingDragRules.Medium);
         dragSlider.onValueChanged.AddListener(value=>
@@ -347,10 +350,8 @@ public class FishingHUD : MonoBehaviour
         if (loosenDragLabel == null) return;
         loosenDragLabel.gameObject.SetActive(visible);
         loosenDragOutline.effectColor = flashRed ? Color.red : Color.white;
-        // Make room below TENSION without covering the health bar.
+        // Keep HP in its usual place; show the warning below the health bar.
         fightPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(650f, visible ? 170f : 130f);
-        progressLabel.rectTransform.anchoredPosition = new Vector2(18f, visible ? -114f : -74f);
-        ((RectTransform)progressFill.transform.parent).anchoredPosition = new Vector2(190f, visible ? -117f : -77f);
     }
 
     public void SetFightMeters(
@@ -930,7 +931,7 @@ public class FishingHUD : MonoBehaviour
         var warningRect = loosenDragLabel.rectTransform;
         warningRect.anchorMin = warningRect.anchorMax = new Vector2(0f, 1f);
         warningRect.pivot = new Vector2(0f, 1f);
-        warningRect.anchoredPosition = new Vector2(190f, -55f);
+        warningRect.anchoredPosition = new Vector2(190f, -115f);
         warningRect.sizeDelta = new Vector2(435f, 42f);
         loosenDragOutline = loosenDragLabel.gameObject.AddComponent<Outline>();
         loosenDragOutline.effectColor = Color.white;
@@ -1400,6 +1401,5 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
-
 
 

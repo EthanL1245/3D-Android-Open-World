@@ -683,6 +683,7 @@ public class FishingSystem : MonoBehaviour
     private FishingLoopAudio reelAudio;
     private FishingLoopAudio linePullAudio;
     private AudioClip waterLandingSound;
+    private AudioClip castingSound, lineSnapSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
     private bool audioFocused = true, audioPaused;
@@ -696,6 +697,8 @@ public class FishingSystem : MonoBehaviour
         fishingAudio.spatialBlend = 0f;
         dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
+        castingSound = Resources.Load<AudioClip>("Fishing/Audio/RodCast");
+        lineSnapSound = Resources.Load<AudioClip>("Fishing/Audio/LineSnap");
         decentCatchSounds = new[]
         {
             Resources.Load<AudioClip>("Fishing/Audio/DecentCatch1"),
@@ -859,7 +862,7 @@ public class FishingSystem : MonoBehaviour
         fishingLine.enabled = true;
 
         Vector3 start = rodTip.position;
-        bool released = rodView == null;
+        bool released = false;
         const float releaseProgress = 0.38f;
         float duration = Mathf.Max(0.1f, castDuration);
         float elapsed = 0f;
@@ -874,7 +877,7 @@ public class FishingSystem : MonoBehaviour
                 );
 
             if (rodView != null) rodView.SetCastPose(t);
-            if (!released && t < releaseProgress)
+            if (rodView != null && !released && t < releaseProgress)
             {
                 bobber.transform.position = rodTip.position;
                 SetLinePositions();
@@ -885,6 +888,7 @@ public class FishingSystem : MonoBehaviour
             {
                 start = rodTip.position;
                 released = true;
+                PlayFishingSound(castingSound);
             }
             float flightProgress = rodView != null
                 ? Mathf.InverseLerp(releaseProgress, 1f, t)
@@ -1376,7 +1380,7 @@ public class FishingSystem : MonoBehaviour
 
             UpdateBobberIndicator();
 
-            FailFishing(
+            SnapLine(
                 "SNAP! Maximum line distance reached."
             );
 
@@ -1425,7 +1429,7 @@ public class FishingSystem : MonoBehaviour
 
         if (lineBreakTimer >= 0.55f)
         {
-            FailFishing(
+            SnapLine(
                 "SNAP! Too much tension."
             );
 
@@ -1480,6 +1484,12 @@ public class FishingSystem : MonoBehaviour
 
         HoldFish(newIndex);
         PlayCatchSound(record.weightKg);
+    }
+
+    private void SnapLine(string message)
+    {
+        PlayFishingSound(lineSnapSound);
+        FailFishing(message);
     }
 
     private void FailFishing(string message)
@@ -4137,5 +4147,4 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
-
 
