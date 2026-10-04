@@ -211,6 +211,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         if(skillQueued)
         {
             skillQueued=false;
+            fishing.PlaySkillFeedback();
             DealDamage(FishingDragRules.SkillDamage(RollNormalDamage()),maxHp,true);
             if (authoritativeHp > 0) fishing.ApplySkillStun();
         }

@@ -696,7 +696,7 @@ public class FishingSystem : MonoBehaviour
     private FishingLoopAudio reelAudio;
     private FishingLoopAudio linePullAudio;
     private AudioClip waterLandingSound;
-    private AudioClip castingSound, lineSnapSound;
+    private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
     private bool audioFocused = true, audioPaused;
@@ -711,6 +711,7 @@ public class FishingSystem : MonoBehaviour
         dragClickSound = Resources.Load<AudioClip>("Fishing/Audio/DragClick");
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
         castingSound = Resources.Load<AudioClip>("Fishing/Audio/RodCast");
+        skillSound = Resources.Load<AudioClip>("Fishing/Audio/SkillYank");
         lineSnapSound = Resources.Load<AudioClip>("Fishing/Audio/LineSnap");
         decentCatchSounds = new[]
         {
@@ -795,6 +796,12 @@ public class FishingSystem : MonoBehaviour
     private void PlayFishingSound(AudioClip clip, float volumeScale = 1f)
     {
         if (fishingAudio != null && clip != null) fishingAudio.PlayOneShot(clip, volumeScale);
+    }
+
+    public void PlaySkillFeedback()
+    {
+        PlayFishingSound(skillSound);
+        if (hud != null) hud.PlaySkillFlash();
     }
 
     private void PlayCatchSound(float weightKg)

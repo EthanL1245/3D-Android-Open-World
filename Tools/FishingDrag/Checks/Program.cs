@@ -24,14 +24,15 @@ class Program {
   Check(f.Stuns==1 && FishingDragRules.SkillStunSeconds==3f,"Surviving skill hit applies three-second stun");
   Set(r,"skillCharge",1f);Set(r,"authoritativeHp",5);Check(r.TrySkillLook(new Vector2(400,0)),"Finisher queued");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==0 && Get<bool>(f,"fishUnconscious") && f.Presentations>0,"Skill KO uses existing presentation");
+  Check(f.SkillFeedbacks==2,"Skill feedback once for both surviving and lethal hits");
   Check(f.Stuns==1,"Lethal skill does not replace KO with temporary stun");
   Check(!r.TrySkillLook(new Vector2(400,0)),"No strikes on unconscious fish");
   Set(f,"state","Idle");Tick(0);Check(!h.Fighting && r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fight cleanup");
   Set(f,"state","Fighting");Tick(0);Check(r.SelectedDrag==1 && Get<float>(r,"skillCharge")==0,"Fresh fight");
   Check(FishingDragRules.EscapeMultiplier(0)==2f && FishingDragRules.TensionMultiplier(0)==.5f,"Low escape/tension");
   Check(FishingDragRules.EscapeMultiplier(1)==1 && FishingDragRules.DamageMultiplier(1)==1 && FishingDragRules.TensionMultiplier(1)==1,"Medium unchanged");
-  Check(FishingDragRules.ReelingTensionMultiplier(2)==2f && FishingDragRules.ReelingTensionMultiplier(1)==1f && FishingDragRules.ReelingTensionMultiplier(0)==.5f,"Reeling tension multipliers");
-  Check(FishingDragRules.TensionMultiplier(2)==1f && FishingDragRules.HighTensionPerSecond==.025f,"High passive tension unchanged");
+  Check(FishingDragRules.ReelingTensionMultiplier(2)==1f && FishingDragRules.ReelingTensionMultiplier(1)==1f && FishingDragRules.ReelingTensionMultiplier(0)==.5f,"Reeling tension multipliers");
+  Check(FishingDragRules.TensionMultiplier(2)==1f && FishingDragRules.HighTensionPerSecond==FishingDragRules.FragileTensionPerSecond*.5f,"High passive tension is half the purple ramp");
   Check(FishingDragRules.Charge(0,2,5)==1f && FishingDragRules.Charge(0,2,4)<1f,"Five-second charge");
   Check(FishingDragRules.RecoveryMultiplier(0)==1.3f && FishingDragRules.RecoveryMultiplier(1)==1f,"Low recovery");
   float danger=FishingDragRules.FragileTimer(0,true,1,1.99f);

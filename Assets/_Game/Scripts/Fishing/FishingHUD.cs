@@ -12,6 +12,22 @@ public class FishingHUD : MonoBehaviour
     private Text skillLabel,dragTitle;
     private Slider dragSlider;
     private GameObject skillReadyArrows;
+    private FishingSkillEdgeFlash skillEdgeFlash;
+
+    public void PlaySkillFlash()
+    {
+        if (root == null) return;
+        if (skillEdgeFlash == null)
+        {
+            var overlay = new GameObject("SkillEdgeFlash", typeof(RectTransform), typeof(FishingSkillEdgeFlash));
+            overlay.transform.SetParent(root.transform, false);
+            StretchFullScreen(overlay.GetComponent<RectTransform>());
+            skillEdgeFlash = overlay.GetComponent<FishingSkillEdgeFlash>();
+            skillEdgeFlash.raycastTarget = false;
+        }
+        skillEdgeFlash.transform.SetAsLastSibling();
+        skillEdgeFlash.Play();
+    }
     private readonly Vector3[] joystickCorners=new Vector3[4];
     private FishingBurstDamageRuntime dragOwner;
     public bool FishingUiVisible=>root!=null && root.activeInHierarchy;

@@ -22,6 +22,7 @@ public class FishingSystem:UnityEngine.MonoBehaviour {
  private string state="Fighting";private int fishHealthPoints=1000,fishMaxHealth=1000,pendingDamage;
  private float fishHealth=1,damageFraction,damageDisplayTimer;private bool fishUnconscious;
  private UnityEngine.GameObject bobber;private UnityEngine.Camera playerCamera;
+ public int SkillFeedbacks;public void PlaySkillFeedback(){SkillFeedbacks++;}
  public int Stuns;public void ApplySkillStun(){Stuns++;}
  public int Presentations;private void EnsureUnconsciousFishVisual(){Presentations++;}
 }
