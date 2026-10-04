@@ -149,6 +149,11 @@ public class AmbientFishAgent : MonoBehaviour
     private bool shown=true;
     private bool avoiding;
     private float escapeRetry;
+    private Vector3 motionSample, recoveryDirection;
+    private float motionSampleTime, recoveryRemaining;
+    private bool recovering, recoveryTurning;
+    private Collider[] recoveryColliders;
+    private bool[] colliderWasEnabled;
     private readonly List<Vector3> safeTrail=new List<Vector3>();
     private Renderer[] renderers;
     private Animator[] animators;
@@ -173,17 +178,26 @@ public class AmbientFishAgent : MonoBehaviour
     private void Update()
     {
         if(manager==null)return;
-        if(!manager.InReef){SetVisible(false);hasTarget=false;return;}
+        if(!manager.InReef){EndRecovery();SetVisible(false);hasTarget=false;return;}
         if(!hasTarget||manager.IsTooFar(transform.position))
         {
+            EndRecovery();
             SetVisible(false);retry-=Time.deltaTime;
             if(retry>0)return;retry=0.6f;
             if(!manager.TryGetSwimPoint(out var point,clearance,spawnBiome))return;
             transform.position=point;transform.rotation=Quaternion.Euler(0,Random.Range(0,360f),0);
             target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;avoiding=false;escapeRetry=0;
             safeTrail.Clear();safeTrail.Add(point);
+            motionSample=point;motionSampleTime=0f;
         }
         SetVisible(true);
+        if(recovering)
+        {
+            UpdateRecovery();
+            trail.SetActive(manager.Visible(transform.position));
+            trail.Record();
+            return;
+        }
         decisionTime-=Time.deltaTime;
         escapeRetry-=Time.deltaTime;
         if(!avoiding && (decisionTime<=0 || (target-transform.position).sqrMagnitude<1f))
@@ -231,10 +245,72 @@ public class AmbientFishAgent : MonoBehaviour
                 decisionTime=.5f;
             }
         }
+        motionSampleTime+=Time.deltaTime;
+        if(motionSampleTime>=2f)
+        {
+            if(Vector3.Distance(transform.position,motionSample)<.15f)BeginRecovery();
+            motionSample=transform.position;motionSampleTime=0f;
+        }
         // Rendering already culls naturally; avoid train/bone work offscreen.
         trail.SetActive(manager.Visible(transform.position));
         trail.Record();
     }
+    private void BeginRecovery()
+    {
+        recovering=true;
+        recoveryTurning=true;
+        recoveryRemaining=2f;
+        recoveryDirection=Vector3.ProjectOnPlane(-transform.forward,Vector3.up).normalized;
+        if(recoveryDirection.sqrMagnitude<.01f)recoveryDirection=-Vector3.forward;
+        recoveryColliders=GetComponentsInChildren<Collider>(true);
+        colliderWasEnabled=new bool[recoveryColliders.Length];
+        for(int i=0;i<recoveryColliders.Length;i++)
+        {
+            colliderWasEnabled[i]=recoveryColliders[i].enabled;
+            recoveryColliders[i].enabled=false;
+        }
+    }
+
+    private void UpdateRecovery()
+    {
+        Quaternion facing=Quaternion.LookRotation(recoveryDirection);
+        if(recoveryTurning)
+        {
+            transform.rotation=Quaternion.RotateTowards(transform.rotation,facing,120f*Time.deltaTime);
+            if(Quaternion.Angle(transform.rotation,facing)>.5f)return;
+            transform.rotation=facing;
+            recoveryTurning=false;
+        }
+        // The fish are transform-driven: terrain route checks, not just colliders,
+        // caused the stall. Bypass those checks for this bounded 2-metre escape.
+        float step=Mathf.Min(recoveryRemaining,speed*Time.deltaTime);
+        transform.position+=recoveryDirection*step;
+        recoveryRemaining-=step;
+        if(recoveryRemaining>0f)return;
+        EndRecovery();
+        avoiding=false;
+        target=transform.position;
+        decisionTime=0f;
+        escapeRetry=0f;
+        safeTrail.Clear();
+        if(manager.Safe(transform.position,clearance,spawnBiome))safeTrail.Add(transform.position);
+        motionSample=transform.position;
+        motionSampleTime=0f;
+    }
+
+    private void EndRecovery()
+    {
+        if(recoveryColliders!=null)
+            for(int i=0;i<recoveryColliders.Length;i++)
+                if(recoveryColliders[i]!=null)recoveryColliders[i].enabled=colliderWasEnabled[i];
+        recoveryColliders=null;
+        colliderWasEnabled=null;
+        recovering=false;
+        recoveryTurning=false;
+    }
+
+    private void OnDisable() { EndRecovery(); }
+
     private bool TryEscape()
     {
         Vector3 origin=transform.position;
@@ -264,5 +340,6 @@ public class AmbientFishAgent : MonoBehaviour
     }
 
 }
+
 
 
