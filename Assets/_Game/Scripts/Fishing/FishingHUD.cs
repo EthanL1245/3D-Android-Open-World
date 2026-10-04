@@ -191,7 +191,7 @@ public class FishingHUD : MonoBehaviour
         dragSlider.interactable=live;
         dragSlider.SetValueWithoutNotify(mode);
         skillFill.anchorMax=new Vector2(Mathf.Clamp01(charge),1f);
-        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE UP • 30× HIT + STUN":
+        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE UP • 20× HIT + STUN":
             "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
         skillFill.GetComponent<Image>().color=charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
     }

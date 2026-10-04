@@ -20,7 +20,7 @@ class Program {
   Check(!r.TrySkillLook(new Vector2(0,0)),"No stationary activation");
   ShopWorldHUD.MenuOpen=true;Check(!r.TrySkillLook(new Vector2(400,0)),"Reject menu swipe");before=h.Damage;Tick(1);Check(h.Damage==before,"No passive damage in covered menu");ShopWorldHUD.MenuOpen=false;
   r.SelectDrag(0);Check(r.TrySkillLook(new Vector2(0,.1f)),"Tiny upward look activates full meter");Check(!r.TrySkillLook(new Vector2(400,0)),"One spend only");
-  before=h.Damage;Tick(0);Check(h.Damage-before==90 && h.Charge==0,"30x base rod strike, no Low multiplier");
+  before=h.Damage;Tick(0);Check(h.Damage-before==60 && h.Charge==0,"20x base rod strike, no Low multiplier");
   Check(f.Stuns==1 && FishingDragRules.SkillStunSeconds==3f,"Surviving skill hit applies three-second stun");
   Set(r,"skillCharge",1f);Set(r,"authoritativeHp",5);Check(r.TrySkillLook(new Vector2(400,0)),"Finisher queued");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==0 && Get<bool>(f,"fishUnconscious") && f.Presentations>0,"Skill KO uses existing presentation");

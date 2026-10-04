@@ -699,6 +699,7 @@ public class FishingSystem : MonoBehaviour
     private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
+    private float linePullPlaybackPitch = 1f;
     private bool audioFocused = true, audioPaused;
     private AudioClip dragClickSound, biteSplashSound;
 
@@ -728,7 +729,7 @@ public class FishingSystem : MonoBehaviour
             "Fishing/Audio/ReelLeadIn", "Fishing/Audio/ReelLoop");
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
         linePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop");
+            "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
     }
 
     private void StartReelSound()
@@ -760,6 +761,7 @@ public class FishingSystem : MonoBehaviour
             StopLinePullSound();
             return;
         }
+        if (linePullAudio != null) linePullAudio.SetPitch(linePullPlaybackPitch);
         if (linePullAudio != null && !linePullAudio.IsPlaying)
         {
             // Start one sample-overlapped sequence per pulling interval.
@@ -2197,6 +2199,14 @@ public class FishingSystem : MonoBehaviour
             Vector3 after = next - transform.position;
             before.y = after.y = 0f;
             fishPulledLineThisFrame = !reeling && after.sqrMagnitude > before.sqrMagnitude + 0.000001f;
+            if (fishPulledLineThisFrame)
+            {
+                float payoutSpeed = (after.magnitude - before.magnitude) / Mathf.Max(Time.deltaTime, .0001f);
+                // Normal-drag angry payout is the 1x reference. Low + angry is
+                // 2x on an unobstructed run; bursts and deflection track actual payout.
+                float referenceSpeed = FishingTuning.YellowSpeed(hookedSpeciesId, effectiveDifficulty) * FishingTuning.RedToYellowSpeed;
+                linePullPlaybackPitch = Mathf.Clamp(payoutSpeed / Mathf.Max(referenceSpeed, .0001f), .25f, 3f);
+            }
 
             fightTravelDirection =
                 outwardDirection;

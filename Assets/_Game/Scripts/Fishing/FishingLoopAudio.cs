@@ -6,16 +6,25 @@ public sealed class FishingLoopAudio
 {
     private readonly AudioSource leadIn;
     private readonly AudioSource cycle;
+    private float playbackPitch = 1f;
+    private double startTime, joinTime, pitchUpdatedAt, leadSecondsRemaining;
     public bool IsPlaying { get; private set; }
 
-    public FishingLoopAudio(GameObject owner, string leadInPath, string cyclePath)
+    public FishingLoopAudio(GameObject owner, string leadInPath, string cyclePath, float gain = 1f)
     {
-        leadIn = CreateSource(owner, leadInPath, false);
-        cycle = CreateSource(owner, cyclePath, true);
+        leadIn = CreateSource(owner, leadInPath, false, gain);
+        cycle = CreateSource(owner, cyclePath, true, gain);
     }
 
-    private static AudioSource CreateSource(GameObject owner, string path, bool loop)
+    private static AudioSource CreateSource(GameObject owner, string path, bool loop, float gain)
     {
+        if (gain != 1f)
+        {
+            var audioObject = new GameObject("FishingLoopGain");
+            audioObject.transform.SetParent(owner.transform, false);
+            owner = audioObject;
+            owner.AddComponent<FishingAudioGain>().Gain = gain;
+        }
         AudioSource source = owner.AddComponent<AudioSource>();
         source.playOnAwake = false;
         source.spatialBlend = 0f;
@@ -30,11 +39,33 @@ public sealed class FishingLoopAudio
         if (leadIn.clip == null || cycle.clip == null) return;
         // Both sources use uncompressed, preloaded PCM; allow one small scheduling
         // lead, then join exactly at the sample boundary without frame polling.
-        double start = AudioSettings.dspTime + 0.02;
-        double join = start + (double)leadIn.clip.samples / leadIn.clip.frequency;
-        leadIn.PlayScheduled(start);
-        cycle.PlayScheduled(join);
+        startTime = AudioSettings.dspTime + 0.02;
+        pitchUpdatedAt = startTime;
+        leadSecondsRemaining = (double)leadIn.clip.samples / leadIn.clip.frequency;
+        joinTime = startTime + leadSecondsRemaining / playbackPitch;
+        leadIn.pitch = cycle.pitch = playbackPitch;
+        leadIn.PlayScheduled(startTime);
+        cycle.PlayScheduled(joinTime);
         IsPlaying = true;
+    }
+
+    public void SetPitch(float pitch)
+    {
+        pitch = Mathf.Clamp(pitch, .25f, 3f);
+        if (Mathf.Abs(pitch - playbackPitch) < .001f) return;
+        double now = AudioSettings.dspTime;
+        // Move the pending join with the intro's remaining audio time. Once the
+        // cycle starts, native PCM looping retains its baked overlap at any pitch.
+        if (IsPlaying && now < joinTime)
+        {
+            leadSecondsRemaining = System.Math.Max(0d, leadSecondsRemaining -
+                System.Math.Max(0d, now - pitchUpdatedAt) * playbackPitch);
+            pitchUpdatedAt = System.Math.Max(now, startTime);
+            joinTime = pitchUpdatedAt + leadSecondsRemaining / pitch;
+            cycle.SetScheduledStartTime(joinTime);
+        }
+        playbackPitch = pitch;
+        leadIn.pitch = cycle.pitch = pitch;
     }
 
     public void Stop()
