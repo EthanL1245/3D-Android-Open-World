@@ -694,7 +694,7 @@ public class FishingSystem : MonoBehaviour
 
     private AudioSource fishingAudio;
     private FishingLoopAudio reelAudio;
-    private FishingLoopAudio linePullAudio, irritatedLinePullAudio, angryLinePullAudio;
+    private FishingLoopAudio linePullAudio, calmLinePullAudio, irritatedLinePullAudio, angryLinePullAudio;
     private AudioClip waterLandingSound;
     private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
@@ -730,6 +730,8 @@ public class FishingSystem : MonoBehaviour
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
+        calmLinePullAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/LinePullCalmLeadIn", "Fishing/Audio/LinePullCalmLoop");
         irritatedLinePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullIrritatedLeadIn", "Fishing/Audio/LinePullIrritatedLoop");
         angryLinePullAudio = new FishingLoopAudio(gameObject,
@@ -753,6 +755,7 @@ public class FishingSystem : MonoBehaviour
     {
         linePullSoundStatus = -1;
         if (linePullAudio != null) linePullAudio.Stop();
+        if (calmLinePullAudio != null) calmLinePullAudio.Stop();
         if (irritatedLinePullAudio != null) irritatedLinePullAudio.Stop();
         if (angryLinePullAudio != null) angryLinePullAudio.Stop();
     }
@@ -773,7 +776,8 @@ public class FishingSystem : MonoBehaviour
         if (statusChanged) StopLinePullSound();
         FishingLoopAudio active = hookedTemperament == FishTemperament.Irritated
             ? irritatedLinePullAudio : hookedTemperament == FishTemperament.Angry
-            ? angryLinePullAudio : linePullAudio;
+            ? angryLinePullAudio : hookedTemperament == FishTemperament.Calm
+            ? calmLinePullAudio : linePullAudio;
         if (active != null)
         {
             active.SetPitch(1f);
@@ -4229,4 +4233,5 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 

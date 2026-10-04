@@ -64,8 +64,9 @@ if __name__ == "__main__":
         save(name, data)
 
 
-    for mood in ("Irritated", "Angry"):
+    for mood in ("Calm", "Irritated", "Angry"):
         recording = decode(SOURCES / ("LinePull" + mood + ".wav"))
         _, cycle = sequence(recording, recording)
         save("LinePull" + mood + "LeadIn", recording[:-OVERLAP])
         save("LinePull" + mood + "Loop", cycle)
+
