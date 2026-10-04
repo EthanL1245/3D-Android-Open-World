@@ -3,9 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Shared large backdrop artwork for the Tackle Store and Island / Fish Index.
-/// The supplied artwork is embedded so the visual is available at runtime without
-/// requiring a prefab or Resources re-install step.
+/// Shared large background artwork for the Tackle Store and Island / Fish Index.
+/// Uses the supplied 754x59 wave image as a normal stretched UI image.
 /// </summary>
 public static class LargeShopBackdropTheme
 {
@@ -15,9 +14,12 @@ public static class LargeShopBackdropTheme
     public static void Apply(Image target)
     {
         if (target == null) return;
-        target.sprite = Sprite();
-        target.type = Image.Type.Sliced;
+        Sprite sprite = GetSprite();
+        if (sprite == null) return;
+        target.sprite = sprite;
+        target.type = Image.Type.Simple;
         target.preserveAspect = false;
+        target.fillCenter = true;
         target.color = new Color(1f, 1f, 1f, Alpha);
     }
 
@@ -26,27 +28,41 @@ public static class LargeShopBackdropTheme
         if (target == null) return;
         target.sprite = null;
         target.type = Image.Type.Simple;
+        target.preserveAspect = false;
         target.color = color;
     }
 
-    private static Sprite Sprite()
+    public static Sprite GetSprite()
     {
         if (cachedSprite != null) return cachedSprite;
+        byte[] bytes;
+        try
+        {
+            bytes = Convert.FromBase64String(EncodedImage);
+        }
+        catch (FormatException exception)
+        {
+            Debug.LogError("Backdrop image data is invalid: " + exception.Message);
+            return null;
+        }
 
         Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
         texture.name = "LargeShopBackdrop";
         texture.wrapMode = TextureWrapMode.Clamp;
         texture.filterMode = FilterMode.Bilinear;
-        texture.LoadImage(Convert.FromBase64String(EncodedImage), true);
+        if (!texture.LoadImage(bytes, true))
+        {
+            UnityEngine.Object.Destroy(texture);
+            Debug.LogError("Backdrop image could not be decoded by Unity.");
+            return null;
+        }
 
-        // Keep a modest inset border region while allowing the artwork to scale to
-        // every phone aspect ratio without changing the existing menu RectTransform.
-        cachedSprite = UnityEngine.Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height),
-            new Vector2(.5f, .5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(18f, 18f, 18f, 18f));
+        cachedSprite = UnityEngine.Sprite.Create(
+            texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(.5f, .5f), 100f);
         return cachedSprite;
     }
 
-    private static readonly string EncodedImage =
+    private const string EncodedImage =
         "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/" +
         "2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wgARCAA7AvIDASIAAhEBAxEB/8QA" +
         "GwAAAgMBAQEAAAAAAAAAAAAAAAEDBAUCBgf/xAAbAQEBAAMBAQEAAAAAAAAAAAABAAIDBAUGB//aAAwDAQACEAMQAAAB+dx1+fvfzu1zWWOVkqobaqKbRURl" +
@@ -57,18 +73,19 @@ public static class LargeShopBackdropTheme
         "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
-        "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
+        "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
-        "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
+        "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
-        "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
+        "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
-        "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
+        "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" +
@@ -97,7 +114,7 @@ public static class LargeShopBackdropTheme
         "lMpBIrt1b3/3JCCUEiJlzNvlILQlrL5ZfFI6lU+F+h9EPav2LEozAhTLUERBet4/oIb9Pn6iHoJCa2F5LPh5K/C+v4HAOgTT7pR4ITgCDzYsSWRLCIKph4EP" +
         "FxCMfLXDd6N3zwSWhMr7HTl4GrTPdvbL/CVsE8P2LoraOCGgnW8Diju0aCgnSmk601nShQnSRtFNHpQoUIktCLESxVakCu6D79x1TUvlk/cVzlwOpaNr/wBe" +
         "BdDfShOR8PYcK171b808GI8bdrL2RMALPhfsV9zuL4YREoM2pY0rkFVp/8QAJREAAwACAgIBAwUAAAAAAAAAAAERIWEQMUFRoSAwcUCBsdHh/9oACAECAQE/" +
-        "EH7hv7L9m4r2bDcbjcbDcbjcbDYbC/Zfsv2X7NxuF7jcbuLcbjYbDYJ/ZfsSPJsNwvYImLI1bjQhDQh6KEIh65V8In0x7zwn+hD1yuJcpfSClLwQXIxGNEIe" +
+        "EH7hv7L9m4r2bDcbjcbDcbjcbjYbC/Zfsv2X7NxuF7jcbuLcbjYbDYJ/ZfsSPJsNwvYImLI1bjQhDQh6KEIh65V8In0x7zwn+hD1yuJcpfSClLwQXIxGNEIe" +
         "FlJ2ecWq7Oj6EbBnmnYOJtMx7E7wf3eAC+wCILgXIQgYxjWd6r4EmP5nxhOhU/OCcKmUCbZkk9kYkX8ENRYV4Xl/0KSIJxKh3aPuBLitFnW/bgvNKX6aXii5" +
         "r4pRMTKVlKYZPMxediGscNE5TSMJ0iDLFBPI8lzfkc1q/ORCV/D/AEbSzR2NvLGpRPkoSM73ZTkoiRQmYZT/xAAmEAEAAgEEAgMAAwEBAQAAAAABABEhMUFR" +
         "YRBxgZGhILHRwfDh/9oACAEBAAE/EKuqb1lJhiLCcV7zvnLi7rHljzM75TujN3sOVg+87oHvFN4H4bthyzvQ5Wd8OVlO7O9l9ZgO6HOxeO+d8V3gG8DIeWA7" +
