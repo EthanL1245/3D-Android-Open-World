@@ -97,9 +97,27 @@ public class AmbientFishManager : MonoBehaviour
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
         var p=position-terrain.transform.position;var size=terrain.terrainData.size;
         if(p.x<0||p.z<0||p.x>size.x||p.z>size.z)return false;
+        // Check a footprint, not only the fish's centre: steep banks can intersect
+        // the nose/body while the centre still sits over deep water.
         float floor=terrain.SampleHeight(position)+terrain.transform.position.y;
+        for(int i=0;i<8;i++)
+        {
+            float angle=i*Mathf.PI*.25f;
+            Vector3 sample=position+new Vector3(Mathf.Cos(angle),0f,Mathf.Sin(angle))*clearance;
+            Vector3 local=sample-terrain.transform.position;
+            if(local.x<0f || local.z<0f || local.x>size.x || local.z>size.z)return false;
+            floor=Mathf.Max(floor,terrain.SampleHeight(sample)+terrain.transform.position.y);
+        }
         return position.y>floor+clearance && position.y<oceanWater.GetSurfaceHeight(position)-clearance;
     }
+    public bool ClearRoute(Vector3 from,Vector3 to,float clearance,int biome)
+    {
+        int steps=Mathf.Max(1,Mathf.CeilToInt(Vector3.Distance(from,to)/.4f));
+        for(int i=1;i<=steps;i++)
+            if(!Safe(Vector3.Lerp(from,to,(float)i/steps),clearance,biome))return false;
+        return true;
+    }
+
     public bool TryGetSwimPoint(out Vector3 point) => TryGetSwimPoint(out point,0.6f);
     public bool TryGetSwimPoint(out Vector3 point,float clearance,int biome=-1)
     {
@@ -129,6 +147,8 @@ public class AmbientFishAgent : MonoBehaviour
     private int spawnBiome;
     private float speed, retry, clearance, decisionTime;
     private bool shown=true;
+    private bool avoiding;
+    private float blockedTime;
     private Renderer[] renderers;
     private Animator[] animators;
     private ReefFishTrail trail;
@@ -159,11 +179,14 @@ public class AmbientFishAgent : MonoBehaviour
             if(retry>0)return;retry=0.6f;
             if(!manager.TryGetSwimPoint(out var point,clearance,spawnBiome))return;
             transform.position=point;transform.rotation=Quaternion.Euler(0,Random.Range(0,360f),0);
-            target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;
+            target=point;hasTarget=true;trail.ResetTrail();decisionTime=0;avoiding=false;blockedTime=0;
         }
+        // Recover old spawns embedded by terrain changes or falling wave troughs.
+        if(!manager.Safe(transform.position,clearance,spawnBiome))
+        {hasTarget=false;SetVisible(false);return;}
         SetVisible(true);
         decisionTime-=Time.deltaTime;
-        if(decisionTime<=0 || (target-transform.position).sqrMagnitude<1f)
+        if(!avoiding && (decisionTime<=0 || (target-transform.position).sqrMagnitude<1f))
         {
             decisionTime=2f+Random.value*2f;
             // Short local waypoints, so fish never aim straight through an island.
@@ -171,7 +194,7 @@ public class AmbientFishAgent : MonoBehaviour
             {
                 var p=transform.position+Random.insideUnitSphere*5f;
                 p.y=Mathf.Lerp(transform.position.y,p.y,0.15f);
-                if(manager.Safe(p,clearance,spawnBiome)){target=p;break;}
+                if(manager.ClearRoute(transform.position,p,clearance,spawnBiome)){target=p;break;}
             }
         }
         Vector3 direction=target-transform.position;
@@ -179,10 +202,47 @@ public class AmbientFishAgent : MonoBehaviour
             transform.rotation=Quaternion.RotateTowards(transform.rotation,Quaternion.LookRotation(direction),55f*Time.deltaTime);
         var next=transform.position+transform.forward*speed*Time.deltaTime;
         var ahead=next+transform.forward*Mathf.Max(0.8f,clearance);
-        if(manager.Safe(next,clearance,spawnBiome)&&manager.Safe(ahead,clearance,spawnBiome))transform.position=next;
-        else { target=transform.position-transform.forward*3f;decisionTime=0.8f; }
+        if(manager.ClearRoute(transform.position,ahead,clearance,spawnBiome))
+        {
+            transform.position=next;
+            blockedTime=0f;
+            if(avoiding && (target-transform.position).sqrMagnitude<.5f)
+            {avoiding=false;decisionTime=0f;}
+        }
+        else
+        {
+            blockedTime+=Time.deltaTime;
+            // Keep the chosen escape point fixed while turning. Replacing it with
+            // "behind me" every frame makes the desired heading spin with the fish.
+            if(!avoiding || !manager.ClearRoute(transform.position,target,clearance,spawnBiome))
+            {
+                avoiding=TryEscape();
+                decisionTime=.5f;
+            }
+            // A full 180-degree turn at 55 degrees/sec needs over three seconds.
+            // Recover an isolated pocket only after giving the turn time to finish.
+            if(blockedTime>6f){hasTarget=false;SetVisible(false);return;}
+        }
         // Rendering already culls naturally; avoid train/bone work offscreen.
         trail.SetActive(manager.Visible(transform.position));
         trail.Record();
     }
+    private bool TryEscape()
+    {
+        Vector3 origin=transform.position;
+        float bestScore=float.NegativeInfinity;
+        bool found=false;
+        for(int i=0;i<16;i++)
+        {
+            Vector3 direction=Quaternion.Euler(0f,i*22.5f,0f)*Vector3.forward;
+            Vector3 point=origin+direction*Mathf.Max(2.5f,clearance*2f);
+            if(!manager.ClearRoute(origin,point,clearance,spawnBiome))continue;
+            float score=Vector3.Dot(transform.forward,direction);
+            if(score<=bestScore)continue;
+            bestScore=score;target=point;found=true;
+        }
+        return found;
+    }
+
 }
+
