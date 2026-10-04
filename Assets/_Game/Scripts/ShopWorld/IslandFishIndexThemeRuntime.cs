@@ -98,16 +98,12 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
 
     private void ApplyBackdrop()
     {
-        FishingHudTheme.Panel(modal.gameObject);
-        modal.color = Color.white;
+        LargeShopBackdropTheme.Apply(modal);
     }
 
     private void RestoreBackdrop()
     {
-        if (modal == null) return;
-        modal.sprite = null;
-        modal.type = Image.Type.Simple;
-        modal.color = DefaultMenuColor;
+        LargeShopBackdropTheme.RestoreDefault(modal, DefaultMenuColor);
     }
 
     private void StyleGlobalChrome(Text pageHeading)
@@ -291,9 +287,9 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
         return null;
     }
 
-    private static Transform FindAncestorWithPrefix(Transform child, string prefix)
+    private static Transform FindAncestorWithPrefix(Transform start, string prefix)
     {
-        Transform current = child != null ? child.parent : null;
+        Transform current = start;
         while (current != null)
         {
             if (current.name.StartsWith(prefix, StringComparison.Ordinal)) return current;
@@ -304,7 +300,12 @@ public sealed class IslandFishIndexThemeRuntime : MonoBehaviour
 
     private void OnDisable()
     {
-        if (wasIndex) RestoreBackdrop();
+        if (wasIndex && !HasGearPage()) RestoreBackdrop();
         wasIndex = false;
+    }
+
+    private bool HasGearPage()
+    {
+        return PageField != null && string.Equals(PageField.GetValue(hud) as string, "gear", StringComparison.Ordinal);
     }
 }
