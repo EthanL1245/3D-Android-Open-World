@@ -694,7 +694,7 @@ public class FishingSystem : MonoBehaviour
 
     private AudioSource fishingAudio;
     private FishingLoopAudio reelAudio;
-    private FishingLoopAudio linePullAudio, fastLinePullAudio;
+    private FishingLoopAudio linePullAudio, irritatedLinePullAudio, angryLinePullAudio;
     private AudioClip waterLandingSound;
     private AudioClip castingSound, lineSnapSound, skillSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
@@ -730,8 +730,10 @@ public class FishingSystem : MonoBehaviour
         waterLandingSound = Resources.Load<AudioClip>("Fishing/Audio/WaterLanding");
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
-        fastLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullFastLeadIn", "Fishing/Audio/LinePullFastLoop", .8f);
+        irritatedLinePullAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/LinePullIrritatedLeadIn", "Fishing/Audio/LinePullIrritatedLoop");
+        angryLinePullAudio = new FishingLoopAudio(gameObject,
+            "Fishing/Audio/LinePullAngryLeadIn", "Fishing/Audio/LinePullAngryLoop");
     }
 
     private void StartReelSound()
@@ -751,7 +753,8 @@ public class FishingSystem : MonoBehaviour
     {
         linePullSoundStatus = -1;
         if (linePullAudio != null) linePullAudio.Stop();
-        if (fastLinePullAudio != null) fastLinePullAudio.Stop();
+        if (irritatedLinePullAudio != null) irritatedLinePullAudio.Stop();
+        if (angryLinePullAudio != null) angryLinePullAudio.Stop();
     }
 
     private void UpdateLinePullSound()
@@ -768,16 +771,14 @@ public class FishingSystem : MonoBehaviour
         int status = (int)hookedTemperament;
         bool statusChanged = linePullSoundStatus != status;
         if (statusChanged) StopLinePullSound();
-        bool fast = hookedTemperament != FishTemperament.Calm &&
-            hookedTemperament != FishTemperament.Fragile;
-        FishingLoopAudio active = fast ? fastLinePullAudio : linePullAudio;
-        FishingLoopAudio inactive = fast ? linePullAudio : fastLinePullAudio;
-        if (inactive != null && inactive.IsPlaying) inactive.Stop();
+        FishingLoopAudio active = hookedTemperament == FishTemperament.Irritated
+            ? irritatedLinePullAudio : hookedTemperament == FishTemperament.Angry
+            ? angryLinePullAudio : linePullAudio;
         if (active != null)
         {
             active.SetPitch(1f);
-            // Restart immediately on every status transition, even when both
-            // statuses share the fast recording. Loop until status/input changes.
+            // Each mood uses its own recording at original volume and speed.
+            // Restart immediately on status changes and stop when reeling resumes.
             if (!active.IsPlaying) active.Play(0d);
             linePullSoundStatus = status;
         }
@@ -4228,3 +4229,4 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
