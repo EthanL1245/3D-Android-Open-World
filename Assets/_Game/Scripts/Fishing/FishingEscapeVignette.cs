@@ -5,8 +5,8 @@ using UnityEngine.UI;
 /// <summary>
 /// Fishing danger presentation. High tension keeps the existing red screen-edge
 /// vignette. Separately, a fish approaching the equipped line's maximum distance
-/// flashes a red OUTLINE around the fight-status panel without changing any of the
-/// panel, HP, or tension colors themselves.
+/// flashes a dedicated border around the fight-status panel without changing any
+/// fishing mechanics, panel content, HP, or tension colors.
 /// </summary>
 [DefaultExecutionOrder(1600)]
 public sealed class FishingEscapeVignette : MonoBehaviour
@@ -25,7 +25,9 @@ public sealed class FishingEscapeVignette : MonoBehaviour
 
     private RawImage overlay;
     private Texture2D vignetteTexture;
-    private Outline lineWarningOutline;
+    private Image lineWarningBorder;
+    private Texture2D lineWarningBorderTexture;
+    private Sprite lineWarningBorderSprite;
     private float visibleRisk;
     private float visibleLineRisk;
 
@@ -56,13 +58,13 @@ public sealed class FishingEscapeVignette : MonoBehaviour
     private void Start()
     {
         BuildOverlay();
-        BuildStatusOutline();
+        BuildStatusBorder();
     }
 
     private void LateUpdate()
     {
         if (overlay == null) BuildOverlay();
-        if (lineWarningOutline == null) BuildStatusOutline();
+        if (lineWarningBorder == null) BuildStatusBorder();
 
         if (fishing == null || stateField == null || tensionField == null ||
             lineBreakTimerField == null || unconsciousField == null)
@@ -152,23 +154,25 @@ public sealed class FishingEscapeVignette : MonoBehaviour
                 Time.deltaTime * speed
             );
 
-        if (lineWarningOutline == null)
+        if (lineWarningBorder == null)
             return;
 
         if (visibleLineRisk <= 0.001f)
         {
-            lineWarningOutline.effectColor = new Color(1f, 0f, 0f, 0f);
+            lineWarningBorder.gameObject.SetActive(false);
             return;
         }
+
+        lineWarningBorder.gameObject.SetActive(true);
 
         float flashSpeed = Mathf.Lerp(5.5f, 13.5f, visibleLineRisk);
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * flashSpeed);
 
-        // Double only the visible line-limit warning border; preserve its pulse.
-        float thickness = Mathf.Lerp(2f, 7f, visibleLineRisk) * 2f;
-        lineWarningOutline.effectDistance = new Vector2(thickness, -thickness);
-        // Keep the active border opaque throughout both halves of the flash.
-        lineWarningOutline.effectColor = pulse >= 0.5f
+        // This is a separate border-only image positioned just OUTSIDE the panel's
+        // authored cyan rim. Unlike Unity's Outline effect it never duplicates or
+        // offsets the FightPanel graphic, so there is no second ghost panel border.
+        // The warning itself stays continuously visible and simply swaps red/white.
+        lineWarningBorder.color = pulse >= 0.5f
             ? new Color(1f, 0.025f, 0.015f, 1f)
             : Color.white;
     }
@@ -196,9 +200,9 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         go.SetActive(false);
     }
 
-    private void BuildStatusOutline()
+    private void BuildStatusBorder()
     {
-        if (lineWarningOutline != null || fishing == null)
+        if (lineWarningBorder != null || fishing == null)
             return;
 
         Canvas canvas =
@@ -218,10 +222,44 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         if (panel == null || panel.GetComponent<Graphic>() == null)
             return;
 
-        lineWarningOutline = panel.gameObject.AddComponent<Outline>();
-        lineWarningOutline.useGraphicAlpha = false;
-        lineWarningOutline.effectDistance = new Vector2(2f, -2f);
-        lineWarningOutline.effectColor = new Color(1f, 0f, 0f, 0f);
+        GameObject go =
+            new GameObject(
+                "LineLimitWarningBorder",
+                typeof(RectTransform),
+                typeof(Image)
+            );
+        go.transform.SetParent(panel, false);
+        // Keep the warning behind every label/bar but above the panel's own Image.
+        go.transform.SetAsFirstSibling();
+
+        RectTransform rect = go.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        // The border texture is ~7 UI px thick. Expanding by 10 px keeps its
+        // entire visible stroke outside the existing cyan panel border.
+        rect.offsetMin = new Vector2(-10f, -10f);
+        rect.offsetMax = new Vector2(10f, 10f);
+
+        lineWarningBorderTexture = BuildBorderTexture();
+        lineWarningBorderSprite =
+            Sprite.Create(
+                lineWarningBorderTexture,
+                new Rect(0f, 0f, 96f, 96f),
+                new Vector2(0.5f, 0.5f),
+                100f,
+                0,
+                SpriteMeshType.FullRect,
+                new Vector4(24f, 24f, 24f, 24f)
+            );
+        lineWarningBorderSprite.name = "FishingLineLimitWarningBorder_Runtime";
+
+        lineWarningBorder = go.GetComponent<Image>();
+        lineWarningBorder.sprite = lineWarningBorderSprite;
+        lineWarningBorder.type = Image.Type.Sliced;
+        lineWarningBorder.raycastTarget = false;
+        lineWarningBorder.color = Color.white;
+        go.SetActive(false);
     }
 
     private static Transform FindDeepChild(Transform root, string name)
@@ -290,9 +328,46 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         return texture;
     }
 
+    private static Texture2D BuildBorderTexture()
+    {
+        const int size = 96;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            name = "FishingLineLimitWarningBorder_Runtime",
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear,
+            hideFlags = HideFlags.DontSave
+        };
+
+        Color[] pixels = new Color[size * size];
+        for (int y = 0; y < size; y++)
+        for (int x = 0; x < size; x++)
+        {
+            // Match the rounded silhouette used by FishingHudTheme.Panel, but keep
+            // ONLY a thick ring. The transparent center prevents any duplicated
+            // panel surface from appearing during the warning flash.
+            float qx = Mathf.Abs(x - 47.5f) - 28f;
+            float qy = Mathf.Abs(y - 47.5f) - 28f;
+            float d =
+                new Vector2(Mathf.Max(qx, 0f), Mathf.Max(qy, 0f)).magnitude
+                + Mathf.Min(Mathf.Max(qx, qy), 0f)
+                - 17f;
+
+            float outer = Mathf.Clamp01(0.5f - d);
+            float inner = Mathf.Clamp01(-6.5f - d);
+            float alpha = Mathf.Clamp01(outer - inner);
+            pixels[y * size + x] = new Color(1f, 1f, 1f, alpha);
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply(false, true);
+        return texture;
+    }
+
     private void OnDestroy()
     {
         if (vignetteTexture != null) Destroy(vignetteTexture);
+        if (lineWarningBorderSprite != null) Destroy(lineWarningBorderSprite);
+        if (lineWarningBorderTexture != null) Destroy(lineWarningBorderTexture);
     }
 }
-
