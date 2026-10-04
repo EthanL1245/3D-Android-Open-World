@@ -287,14 +287,17 @@ public class FishingHUD : MonoBehaviour
         skillFill=fill.GetComponent<RectTransform>();skillFill.anchorMin=Vector2.zero;skillFill.anchorMax=new Vector2(0,1);skillFill.offsetMin=skillFill.offsetMax=Vector2.zero;
         skillLabel=CreateText("SkillLabel",skillPanel.transform,"",23,TextAnchor.MiddleLeft);
         skillLabel.resizeTextForBestFit=true;skillLabel.resizeTextMinSize=18;skillLabel.resizeTextMaxSize=23;
-        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(76,0);lr.offsetMax=new Vector2(-76,-5);
+        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(76,0);lr.offsetMax=new Vector2(-100,-5);
         skillReadyArrows = new GameObject("SkillReadySwipeArrows", typeof(RectTransform), typeof(FishingSkillReadyArrows));
         skillReadyArrows.transform.SetParent(skillPanel.transform, false);
         var arrowsRect = skillReadyArrows.GetComponent<RectTransform>();
         arrowsRect.anchorMin = arrowsRect.anchorMax = new Vector2(1f, .5f);
         arrowsRect.pivot = new Vector2(1f, .5f);
-        arrowsRect.anchoredPosition = new Vector2(-20f, 20f);
-        arrowsRect.sizeDelta = new Vector2(45f, 58f);
+        // The five-arrow mesh occupies 92 units and is centered 2 units above
+        // a 108-unit rect's center. Scale the artwork itself, not just its rect.
+        arrowsRect.anchoredPosition = new Vector2(-20f, -3f);
+        arrowsRect.sizeDelta = new Vector2(45f, 108f);
+        arrowsRect.localScale = Vector3.one * 1.5f;
         skillReadyArrows.GetComponent<FishingSkillReadyArrows>().raycastTarget = false;
         skillReadyArrows.SetActive(false);
     }

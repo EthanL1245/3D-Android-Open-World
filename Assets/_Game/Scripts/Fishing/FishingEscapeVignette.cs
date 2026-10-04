@@ -167,7 +167,8 @@ public sealed class FishingEscapeVignette : MonoBehaviour
             Mathf.Lerp(0.18f, 1f, visibleLineRisk) *
             Mathf.Lerp(0.35f, 1f, pulse);
 
-        float thickness = Mathf.Lerp(2f, 7f, visibleLineRisk);
+        // Double only the visible line-limit warning border; preserve its pulse.
+        float thickness = Mathf.Lerp(2f, 7f, visibleLineRisk) * 2f;
         lineWarningOutline.effectDistance = new Vector2(thickness, -thickness);
         lineWarningOutline.effectColor = new Color(1f, 0.025f, 0.015f, alpha);
     }
