@@ -4,9 +4,9 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Presentation-only companion for the Tackle Store. The regular ShopMenu is
-/// deliberately transparent while the store is open; this reapplies the same
-/// rounded navy-glass treatment used by the existing tackle cards so one large
-/// backdrop encompasses the complete store UI without touching shop mechanics.
+/// deliberately transparent while the store is open; this reapplies the shared
+/// large translucent backdrop image so one large themed surface encompasses the
+/// complete store UI without touching shop mechanics.
 /// </summary>
 [DefaultExecutionOrder(7000)]
 public sealed class TackleStoreBackdropRuntime : MonoBehaviour
@@ -40,10 +40,9 @@ public sealed class TackleStoreBackdropRuntime : MonoBehaviour
         if (tackle)
         {
             // ShopWorldHUD may rebuild after a purchase/equip and make ShopMenu
-            // transparent again. Reasserting the cached theme here is cheap and
-            // keeps the backdrop visible through every store refresh.
-            FishingHudTheme.Panel(backdrop.gameObject);
-            backdrop.color = Color.white;
+            // transparent again. Reasserting the shared backdrop here is cheap and
+            // keeps the themed surface visible through every store refresh.
+            LargeShopBackdropTheme.Apply(backdrop);
         }
         else if (wasTackle)
         {
@@ -76,10 +75,7 @@ public sealed class TackleStoreBackdropRuntime : MonoBehaviour
 
     private void RestoreDefaultMenuAppearance()
     {
-        if (backdrop == null) return;
-        backdrop.sprite = null;
-        backdrop.type = Image.Type.Simple;
-        backdrop.color = DefaultMenuColor;
+        LargeShopBackdropTheme.RestoreDefault(backdrop, DefaultMenuColor);
     }
 
     private void OnDisable()
