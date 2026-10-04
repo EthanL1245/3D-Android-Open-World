@@ -18,15 +18,23 @@ public sealed class FishingDragHandle : MaskableGraphic, ICanvasRaycastFilter
         vh.Clear();
         Rect rect = rectTransform.rect;
         float radius = Mathf.Min(rect.width, rect.height) * 0.5f;
+        Disc(vh, rect.center, radius, new Color(.015f,.18f,.23f,color.a));
+        Disc(vh, rect.center, radius-3f, new Color(.02f,.95f,1f,color.a));
+        Disc(vh, rect.center, radius-7f, new Color(.01f,.35f,.44f,color.a));
+        Disc(vh, rect.center, radius*.63f, new Color(.80f,.96f,1f,color.a));
+    }
+
+    private static void Disc(VertexHelper vh, Vector2 center, float radius, Color tint)
+    {
         const int segments = 64;
-        vh.AddVert(rect.center, color, new Vector2(.5f, .5f));
-        for (int i = 0; i < segments; i++)
+        int first = vh.currentVertCount;
+        vh.AddVert(center, tint, new Vector2(.5f,.5f));
+        for(int i=0;i<segments;i++)
         {
-            float angle = i * Mathf.PI * 2f / segments;
-            Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-            vh.AddVert(rect.center + direction * radius, color, direction * .5f + Vector2.one * .5f);
+            float angle=i*Mathf.PI*2f/segments;
+            var direction=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
+            vh.AddVert(center+direction*radius,tint,direction*.5f+Vector2.one*.5f);
         }
-        for (int i = 0; i < segments; i++)
-            vh.AddTriangle(0, i + 1, (i + 1) % segments + 1);
+        for(int i=0;i<segments;i++) vh.AddTriangle(first,first+i+1,first+(i+1)%segments+1);
     }
 }

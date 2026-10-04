@@ -37,6 +37,13 @@ public class FishingHUD : MonoBehaviour
     private Text actionLabel;
 
     private Text statusText;
+    private Text fightStatusText, fightHintText;
+    private RawImage fightStatusIcon;
+    private readonly Dictionary<string, Texture2D> hudStatusTextures = new Dictionary<string, Texture2D>();
+    private string currentStatus = "";
+    private int displayDrag = 1;
+    private string renderedStatus;
+    private int renderedDrag = -1;
     private GameObject fightPanel;
     private Image tensionFill;
     private Image progressFill;
@@ -69,7 +76,7 @@ public class FishingHUD : MonoBehaviour
     public void SetCastAvailable(bool available)
     {
         if(actionButtonObject==null)return;
-        actionButtonObject.GetComponent<Image>().color=available?new Color(.04f,.55f,.58f,.95f):new Color(.10f,.17f,.19f,.85f);
+        actionButtonObject.GetComponent<Image>().color=available?Color.white:new Color(.40f,.55f,.60f,.85f);
         actionButtonObject.GetComponent<Outline>().effectColor=available?new Color(.4f,1f,.86f):new Color(.25f,.32f,.34f,.65f);
     }
     public void SetActionInteractable(bool value)
@@ -187,16 +194,18 @@ public class FishingHUD : MonoBehaviour
         PositionDragAboveJoystick();
         string[] names={"LOW","MEDIUM","HIGH"};
         mode=Mathf.Clamp(mode,0,2);
-        dragTitle.text="DRAG • "+names[mode];
+        displayDrag = mode;
+        dragTitle.text="DRAG • <color=#17F5FF>"+names[mode]+"</color>";
+        RefreshFightHeader();
         dragSlider.interactable=live;
         dragSlider.SetValueWithoutNotify(mode);
         bool coolingDown = cooldown > 0f;
         skillFill.anchorMax=new Vector2(coolingDown ? 1f : Mathf.Clamp01(charge),1f);
         skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":coolingDown?"SKILL RECOVERING • "+cooldown.ToString("0.0")+"s":charge>=1f?"SKILL READY • SWIPE UP • 20× HIT + STUN":
-            "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
+            "Skill  <color=#17F5FF>"+Mathf.FloorToInt(charge*100f)+"%</color> • "+(mode==FishingDragRules.High?"Charging":"Use high drag to charge");
         skillFill.GetComponent<Image>().color=coolingDown
             ? (Mathf.Repeat(Time.time * 4f, 1f) < .5f ? Color.red : Color.white)
-            : charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
+            : charge>=1f?new Color(1f,.76f,.23f,1):new Color(0f,.94f,.84f,1);
     }
 
     private void BuildDragUI()
@@ -207,34 +216,38 @@ public class FishingHUD : MonoBehaviour
         dragRect=dragPanel.GetComponent<RectTransform>();
         dragRect.anchorMin=dragRect.anchorMax=new Vector2(.5f,.5f);
         dragRect.pivot=new Vector2(.5f,0);dragRect.sizeDelta=new Vector2(340,176);
+        FishingHudTheme.Panel(dragPanel);
+        FishingHudTheme.Divider(dragPanel.transform,58);
         dragRect.localScale=Vector3.one*1.3f;
-        dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleCenter);
+        dragTitle=CreateText("DragTitle",dragPanel.transform,"DRAG • MEDIUM",23,TextAnchor.MiddleLeft);
+        FishingHudSymbol.Add(dragPanel.transform,FishingHudSymbol.Kind.Gear,new Vector2(0,1),new Vector2(35,-30),32);
         var titleRect=dragTitle.rectTransform;titleRect.anchorMin=titleRect.anchorMax=Vector2.zero;
-        titleRect.anchoredPosition=new Vector2(170,153);titleRect.sizeDelta=new Vector2(308,30);
+        titleRect.anchoredPosition=new Vector2(204,146);titleRect.sizeDelta=new Vector2(270,34);
         // A single drag target with a handle and exactly three discrete values.
         var sliderObject=CreatePanel("DragSlider",dragPanel.transform,Color.clear);
         var sliderRect=sliderObject.GetComponent<RectTransform>();
         sliderRect.anchorMin=sliderRect.anchorMax=Vector2.zero;sliderRect.pivot=Vector2.zero;
-        sliderRect.anchoredPosition=new Vector2(16,58);sliderRect.sizeDelta=new Vector2(308,40);
+        sliderRect.anchoredPosition=new Vector2(26,56);sliderRect.sizeDelta=new Vector2(288,40);
         var rail=CreatePanel("Rail",sliderObject.transform,new Color(.18f,.30f,.34f,1));
         rail.GetComponent<Image>().raycastTarget=false;
         var railRect=rail.GetComponent<RectTransform>();railRect.anchorMin=new Vector2(0,.5f);railRect.anchorMax=new Vector2(1,.5f);
-        railRect.offsetMin=new Vector2(16,-4);railRect.offsetMax=new Vector2(-16,4);
+        railRect.offsetMin=new Vector2(28,-12);railRect.offsetMax=new Vector2(-28,12);
+        FishingHudTheme.Panel(rail,3);
         string[] names={"LOW","MEDIUM","HIGH"};
         for(int i=0;i<3;i++)
         {
             var tick=CreatePanel("Notch"+i,sliderObject.transform,new Color(.55f,.78f,.77f,1));
             tick.GetComponent<Image>().raycastTarget=false;
             var tickRect=tick.GetComponent<RectTransform>();tickRect.anchorMin=tickRect.anchorMax=new Vector2(0,.5f);
-            tickRect.sizeDelta=new Vector2(4,18);tickRect.anchoredPosition=new Vector2(16+i*138,0);
+            tickRect.sizeDelta=new Vector2(4,18);tickRect.anchoredPosition=new Vector2(28+i*116,0);
             var label=CreateText("NotchLabel"+i,dragPanel.transform,names[i],18,TextAnchor.MiddleCenter);
             var labelRect=label.rectTransform;labelRect.anchorMin=labelRect.anchorMax=Vector2.zero;
-            labelRect.sizeDelta=new Vector2(90,22);labelRect.anchoredPosition=new Vector2(Mathf.Clamp(32+i*138,45,295),13);
+            labelRect.sizeDelta=new Vector2(90,22);labelRect.anchoredPosition=new Vector2(Mathf.Clamp(54+i*116,45,295),13);
         }
         var handleArea=new GameObject("HandleArea",typeof(RectTransform));
         handleArea.transform.SetParent(sliderObject.transform,false);
         var areaRect=handleArea.GetComponent<RectTransform>();StretchFullScreen(areaRect);
-        areaRect.offsetMin=new Vector2(16,0);areaRect.offsetMax=new Vector2(-16,0);
+        areaRect.offsetMin=new Vector2(28,0);areaRect.offsetMax=new Vector2(-28,0);
         var handle=new GameObject("Handle",typeof(RectTransform),typeof(FishingDragHandle));
         handle.transform.SetParent(handleArea.transform,false);
         var handleGraphic=handle.GetComponent<FishingDragHandle>();
@@ -262,21 +275,26 @@ public class FishingHUD : MonoBehaviour
         });
         skillPanel=CreatePanel("FishingSkill",root.transform,new Color(.025f,.075f,.095f,.96f));
         skillPanel.GetComponent<Image>().raycastTarget=false;
+        FishingHudTheme.Panel(skillPanel);
+        FishingHudSymbol.Add(skillPanel.transform,FishingHudSymbol.Kind.Bolt,new Vector2(0,1),new Vector2(43,-36),36);
         var sr=skillPanel.GetComponent<RectTransform>();sr.anchorMin=sr.anchorMax=new Vector2(.5f,0);sr.pivot=new Vector2(.5f,0);
-        sr.sizeDelta=new Vector2(610,120);sr.anchoredPosition=new Vector2(0,24);
+        sr.sizeDelta=new Vector2(670,120);sr.anchoredPosition=new Vector2(0,30);
         var track=CreatePanel("SkillTrack",skillPanel.transform,new Color(.09f,.16f,.19f,1));track.GetComponent<Image>().raycastTarget=false;
-        var tr=track.GetComponent<RectTransform>();tr.anchorMin=new Vector2(0,0);tr.anchorMax=new Vector2(1,.42f);tr.offsetMin=new Vector2(14,14);tr.offsetMax=new Vector2(-82,0);
+        var tr=track.GetComponent<RectTransform>();tr.anchorMin=new Vector2(0,0);tr.anchorMax=new Vector2(1,.42f);tr.offsetMin=new Vector2(34,22);tr.offsetMax=new Vector2(-34,-4);
+        FishingHudTheme.Panel(track,3);
         var fill=CreatePanel("SkillFill",track.transform,new Color(.06f,.57f,.53f,1));fill.GetComponent<Image>().raycastTarget=false;
+        FishingHudTheme.Fill(fill.GetComponent<Image>());
         skillFill=fill.GetComponent<RectTransform>();skillFill.anchorMin=Vector2.zero;skillFill.anchorMax=new Vector2(0,1);skillFill.offsetMin=skillFill.offsetMax=Vector2.zero;
-        skillLabel=CreateText("SkillLabel",skillPanel.transform,"",23,TextAnchor.MiddleCenter);
-        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(10,0);lr.offsetMax=new Vector2(-82,-5);
+        skillLabel=CreateText("SkillLabel",skillPanel.transform,"",23,TextAnchor.MiddleLeft);
+        skillLabel.resizeTextForBestFit=true;skillLabel.resizeTextMinSize=18;skillLabel.resizeTextMaxSize=23;
+        var lr=skillLabel.rectTransform;lr.anchorMin=new Vector2(0,.45f);lr.anchorMax=Vector2.one;lr.offsetMin=new Vector2(76,0);lr.offsetMax=new Vector2(-76,-5);
         skillReadyArrows = new GameObject("SkillReadySwipeArrows", typeof(RectTransform), typeof(FishingSkillReadyArrows));
         skillReadyArrows.transform.SetParent(skillPanel.transform, false);
         var arrowsRect = skillReadyArrows.GetComponent<RectTransform>();
         arrowsRect.anchorMin = arrowsRect.anchorMax = new Vector2(1f, .5f);
         arrowsRect.pivot = new Vector2(1f, .5f);
-        arrowsRect.anchoredPosition = new Vector2(-12f, 0f);
-        arrowsRect.sizeDelta = new Vector2(60f, 108f);
+        arrowsRect.anchoredPosition = new Vector2(-20f, 20f);
+        arrowsRect.sizeDelta = new Vector2(45f, 58f);
         skillReadyArrows.GetComponent<FishingSkillReadyArrows>().raycastTarget = false;
         skillReadyArrows.SetActive(false);
     }
@@ -299,10 +317,10 @@ public class FishingHUD : MonoBehaviour
             Camera targetCamera=target!=null && target.renderMode!=RenderMode.ScreenSpaceOverlay?target.worldCamera:null;
             Vector2 screen=RectTransformUtility.WorldToScreenPoint(sourceCamera,(joystickCorners[1]+joystickCorners[2])*.5f);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(rootRect,screen,targetCamera,out position);
-            position.y+=18f;
+            position.y+=28f;
         }
         position.x=Mathf.Clamp(position.x,rootRect.rect.xMin+229,rootRect.rect.xMax-229);
-        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-246);
+        position.y=Mathf.Clamp(position.y,rootRect.rect.yMin+18,rootRect.rect.yMax-250);
         dragRect.localPosition=new Vector3(position.x,position.y,0);
     }
 
@@ -364,15 +382,17 @@ public class FishingHUD : MonoBehaviour
 
     public void SetStatus(string text)
     {
-        if (statusText != null)
-            statusText.text = text;
+        currentStatus = text ?? "";
+        if (statusText != null) statusText.text = currentStatus;
+        RefreshFightHeader();
     }
 
     public void ShowFightMeters(bool visible)
     {
         if (!visible) SetFragileWarning(false, false);
-        if (fightPanel != null)
-            fightPanel.SetActive(visible);
+        if (fightPanel != null) fightPanel.SetActive(visible);
+        if (statusText != null) statusText.gameObject.SetActive(!visible);
+        RefreshFightHeader();
     }
 
     public void SetFragileWarning(bool visible, bool flashRed)
@@ -381,7 +401,7 @@ public class FishingHUD : MonoBehaviour
         loosenDragLabel.gameObject.SetActive(visible);
         loosenDragOutline.effectColor = flashRed ? Color.red : Color.white;
         // Keep HP in its usual place; show the warning below the health bar.
-        fightPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(650f, visible ? 170f : 130f);
+        fightPanel.GetComponent<RectTransform>().sizeDelta = new Vector2(720f, visible ? 214f : 174f);
     }
 
     public void SetFightMeters(
@@ -432,16 +452,16 @@ public class FishingHUD : MonoBehaviour
         if (tensionLabel != null)
         {
             tensionLabel.text =
-                "TENSION " +
+                "Tension <color=#17F5FF>" +
                 Mathf.RoundToInt(
                     tension * 100f
                 ) +
-                "%";
+                "%</color>";
         }
 
         if (progressLabel != null)
         {
-            progressLabel.text = $"HP {Mathf.RoundToInt(health*maxHealth)}/{maxHealth}";
+            progressLabel.text = $"HP <color=#17F5FF>{Mathf.RoundToInt(health*maxHealth)}/{maxHealth}</color>";
         }
     }
 
@@ -816,12 +836,12 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0.5f, 0.5f);
 
         rect.sizeDelta =
-            new Vector2(170f, 170f);
+            new Vector2(280f, 216f);
 
         rect.anchoredPosition =
             new Vector2(
-                -225f,
-                400f
+                -190f,
+                440f
             );
 
         Outline outline =
@@ -839,6 +859,9 @@ public class FishingHUD : MonoBehaviour
         outline.effectDistance =
             new Vector2(4f, -4f);
 
+        FishingHudTheme.Panel(actionButtonObject,1);
+        outline.effectDistance = new Vector2(2f,-2f);
+        FishingHudSymbol.Add(actionButtonObject.transform,FishingHudSymbol.Kind.Reel,new Vector2(.5f,1f),new Vector2(0,-72),92);
         actionInput =
             actionButtonObject
                 .AddComponent<FishingActionButton>();
@@ -848,13 +871,13 @@ public class FishingHUD : MonoBehaviour
                 "Label",
                 actionButtonObject.transform,
                 "CAST",
-                34,
+                42,
                 TextAnchor.MiddleCenter
             );
-
-        StretchFullScreen(
-            actionLabel.rectTransform
-        );
+        actionLabel.fontStyle = FontStyle.Bold;
+        var labelRect = actionLabel.rectTransform;
+        labelRect.anchorMin = Vector2.zero; labelRect.anchorMax = new Vector2(1,.42f);
+        labelRect.offsetMin = new Vector2(8,12); labelRect.offsetMax = new Vector2(-8,0);
     }
 
     private void BuildStatus()
@@ -922,15 +945,28 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0.5f, 1f);
 
         panelRect.sizeDelta =
-            new Vector2(650f, 130f);
+            new Vector2(720f, 174f);
 
         panelRect.anchoredPosition =
-            new Vector2(0f, -92f);
+            new Vector2(0f, -32f);
 
+        FishingHudTheme.Panel(fightPanel);
+        FishingHudTheme.Divider(fightPanel.transform,72);
+        fightPanel.GetComponent<Image>().raycastTarget = false;
+        fightStatusText = CreateText("FightState",fightPanel.transform,"",28,TextAnchor.MiddleLeft);
+        fightStatusText.fontStyle = FontStyle.Bold;
+        PlaceHeader(fightStatusText.rectTransform,new Vector2(90,-17),new Vector2(330,46));
+        fightHintText = CreateText("FightHint",fightPanel.transform,"",23,TextAnchor.MiddleLeft);
+        fightHintText.resizeTextForBestFit = true; fightHintText.resizeTextMinSize = 18; fightHintText.resizeTextMaxSize = 23;
+        PlaceHeader(fightHintText.rectTransform,new Vector2(425,-17),new Vector2(275,46));
+        var icon = new GameObject("FightStateIcon",typeof(RectTransform),typeof(RawImage));
+        icon.transform.SetParent(fightPanel.transform,false);
+        fightStatusIcon = icon.GetComponent<RawImage>(); fightStatusIcon.raycastTarget = false;
+        PlaceHeader(fightStatusIcon.rectTransform,new Vector2(25,-13),new Vector2(54,54));
         CreateBar(
             fightPanel.transform,
             "TENSION",
-            new Vector2(0f, -18f),
+            new Vector2(0f, -82f),
             new Color(
                 0.22f,
                 0.78f,
@@ -943,7 +979,7 @@ public class FishingHUD : MonoBehaviour
         CreateBar(
             fightPanel.transform,
             "HEALTH",
-            new Vector2(0f, -74f),
+            new Vector2(0f, -124f),
             new Color(
                 0.22f,
                 0.65f,
@@ -961,13 +997,44 @@ public class FishingHUD : MonoBehaviour
         var warningRect = loosenDragLabel.rectTransform;
         warningRect.anchorMin = warningRect.anchorMax = new Vector2(0f, 1f);
         warningRect.pivot = new Vector2(0f, 1f);
-        warningRect.anchoredPosition = new Vector2(190f, -115f);
+        warningRect.anchoredPosition = new Vector2(250f, -167f);
         warningRect.sizeDelta = new Vector2(435f, 42f);
         loosenDragOutline = loosenDragLabel.gameObject.AddComponent<Outline>();
         loosenDragOutline.effectColor = Color.white;
         loosenDragOutline.effectDistance = new Vector2(2f, -2f);
         loosenDragLabel.gameObject.SetActive(false);
         fightPanel.SetActive(false);
+    }
+
+    private static void PlaceHeader(RectTransform r, Vector2 position, Vector2 size)
+    {
+        r.anchorMin = r.anchorMax = r.pivot = new Vector2(0,1);
+        r.anchoredPosition = position; r.sizeDelta = size;
+    }
+
+    private void RefreshFightHeader()
+    {
+        if (fightStatusText == null || (renderedStatus == currentStatus && renderedDrag == displayDrag)) return;
+        renderedStatus = currentStatus; renderedDrag = displayDrag;
+        string state = currentStatus.Split(new[] { " - " }, System.StringSplitOptions.None)[0];
+        string key = state.Contains("STUNNED") ? "Stunned" : state.Contains("UNCONSCIOUS") ? "Fainted" :
+            state.Contains("FRAGILE") ? "LookingForCover" : state.Contains("ANGRY") ? "Angry" :
+            state.Contains("IRRITATED") ? "Irritated" : "Calm";
+        string title = key == "LookingForCover" ? "Fragile" : key == "Fainted" ? "Subdued" : key;
+        string[] dragNames = { "Low", "Medium", "High" };
+        fightStatusText.text = title + " • " + dragNames[displayDrag] + " Drag";
+        int split = currentStatus.IndexOf(" - ", System.StringComparison.Ordinal);
+        string hint = split >= 0 ? currentStatus.Substring(split + 3) : currentStatus;
+        hint = hint.Replace("HIGH DRAG: ", "");
+        if (hint.Length > 0) hint = char.ToUpperInvariant(hint[0]) + hint.Substring(1);
+        fightHintText.text = hint;
+        if (!hudStatusTextures.TryGetValue(key, out var texture))
+        {
+            texture = Resources.Load<Texture2D>("Fishing/StatusIcons/" + key);
+            hudStatusTextures[key] = texture;
+        }
+        fightStatusIcon.texture = texture;
+        fightStatusIcon.enabled = texture != null;
     }
 
     private void CreateBar(
@@ -983,10 +1050,12 @@ public class FishingHUD : MonoBehaviour
                 label + "Label",
                 parent,
                 label + " 0%",
-                18,
+                24,
                 TextAnchor.MiddleLeft
             );
 
+        labelText.resizeTextForBestFit = true;
+        labelText.resizeTextMinSize = 19; labelText.resizeTextMaxSize = 24;
         Text text = labelText;
 
         RectTransform textRect =
@@ -1002,7 +1071,7 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0f, 1f);
 
         textRect.sizeDelta =
-            new Vector2(160f, 34f);
+            new Vector2(222f, 34f);
 
         textRect.anchoredPosition =
             new Vector2(
@@ -1022,6 +1091,8 @@ public class FishingHUD : MonoBehaviour
                 )
             );
 
+        FishingHudTheme.Panel(background,3);
+        background.GetComponent<Image>().raycastTarget = false;
         RectTransform bgRect =
             background.GetComponent<RectTransform>();
 
@@ -1035,11 +1106,11 @@ public class FishingHUD : MonoBehaviour
             new Vector2(0f, 1f);
 
         bgRect.sizeDelta =
-            new Vector2(435f, 28f);
+            new Vector2(420f, 26f);
 
         bgRect.anchoredPosition =
             new Vector2(
-                190f,
+                270f,
                 position.y - 3f
             );
 
@@ -1053,7 +1124,8 @@ public class FishingHUD : MonoBehaviour
         fill =
             fillObject.GetComponent<Image>();
 
-        fill.type = Image.Type.Simple;
+        FishingHudTheme.Fill(fill);
+        fill.type = Image.Type.Sliced;
         fill.raycastTarget = false;
 
         RectTransform fillRect =
@@ -1431,5 +1503,6 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 
 

@@ -2717,6 +2717,8 @@ public class FishingSystem : MonoBehaviour
         textOutline.effectDistance = new Vector2(2f, -2f);
         textOutline.useGraphicAlpha = true;
 
+        FishingHudTheme.Distance(bobberIndicatorText);
+
         var warning = new GameObject("FragileBreakOutline", typeof(RectTransform), typeof(FishingStatusOutline));
         warning.transform.SetParent(icon.transform, false);
         var warningRect = warning.GetComponent<RectTransform>();
@@ -4233,6 +4235,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 

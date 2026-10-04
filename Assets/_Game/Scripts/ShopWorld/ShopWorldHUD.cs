@@ -111,16 +111,25 @@ public sealed class ShopWorldHUD : MonoBehaviour
         root.GetComponent<Image>().raycastTarget=false;
         Button menu=ButtonAt(root.transform,"MENU / TRAVEL",()=>Open("travel"));
         menuShortcut=menu.gameObject;
-        Rect(menu.GetComponent<RectTransform>(),new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-24,-20),new Vector2(260,64));
+        Rect(menu.GetComponent<RectTransform>(),new Vector2(1,1),new Vector2(1,1),new Vector2(1,1),new Vector2(-36,-32),new Vector2(380,92));
         indexShortcut=ButtonAt(root.transform,"ISLAND / FISH INDEX",()=>Open("islands")).gameObject;
-        Rect(indexShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(24,-20),new Vector2(290,76));
+        Rect(indexShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(36,-32),new Vector2(460,92));
         baitShortcut=ButtonAt(root.transform,"",()=>Open("bait")).gameObject;
-        Rect(baitShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(24,-108),new Vector2(176,180));
-        baitQuantity=baitShortcut.GetComponentInChildren<Text>();Anchor(baitQuantity.rectTransform,0,0,1,.25f,6,4,-6,0);
-        baitQuantity.resizeTextMaxSize=36;baitQuantity.fontSize=36;
-        baitName=Label(baitShortcut.transform,"WORMS",20,Color.white);baitName.alignment=TextAnchor.MiddleCenter;Anchor(baitName.rectTransform,0,.81f,1,1,6,0,-6,-4);
+        Rect(baitShortcut.GetComponent<RectTransform>(),new Vector2(0,1),new Vector2(0,1),new Vector2(0,1),new Vector2(36,-152),new Vector2(200,150));
+        baitQuantity=baitShortcut.GetComponentInChildren<Text>();Anchor(baitQuantity.rectTransform,.48f,0,1,.40f,0,8,-12,0);
+        baitQuantity.resizeTextMaxSize=30;baitQuantity.fontSize=30;
+        baitName=Label(baitShortcut.transform,"WORMS",20,Color.white);baitName.alignment=TextAnchor.MiddleCenter;Anchor(baitName.rectTransform,.34f,.58f,1,1,0,0,-8,-6);
         var picture=new GameObject("EquippedBaitPicture",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(baitShortcut.transform,false);
-        baitPicture=picture.GetComponent<RawImage>();baitPicture.raycastTarget=false;Anchor(baitPicture.rectTransform,0,.25f,1,.81f,30,0,-30,0);
+        baitPicture=picture.GetComponent<RawImage>();baitPicture.raycastTarget=false;Anchor(baitPicture.rectTransform,0,.05f,.43f,.91f,8,0,0,0);
+        FishingHudTheme.Panel(menuShortcut);
+        FishingHudTheme.Panel(indexShortcut);
+        FishingHudTheme.Panel(baitShortcut,2);
+        StyleHudShortcut(menuShortcut,FishingHudSymbol.Kind.Pin);
+        StyleHudShortcut(indexShortcut,FishingHudSymbol.Kind.Island);
+        var baitColors=baitShortcut.GetComponent<Button>().colors;
+        baitColors.normalColor=Color.white; baitColors.highlightedColor=Color.white;
+        baitColors.pressedColor=new Color(.8f,.95f,1f,1f);
+        baitShortcut.GetComponent<Button>().colors=baitColors;
         baitPreview=gameObject.AddComponent<ShopPreview>();RefreshBaitShortcut();
         nearbyButton=ButtonAt(root.transform,"OPEN",()=>Open(travel.Nearest()??"travel")).gameObject;
         nearLabel=nearbyButton.GetComponentInChildren<Text>();
@@ -510,6 +519,16 @@ public sealed class ShopWorldHUD : MonoBehaviour
         var t=go.GetComponent<Text>();t.font=font;t.text=text;size=Mathf.RoundToInt(size*1.2f);t.fontSize=size;t.color=color;t.alignment=TextAnchor.MiddleLeft;t.raycastTarget=false;t.supportRichText=false;
         t.resizeTextForBestFit=true;t.resizeTextMinSize=22;t.resizeTextMaxSize=size; return t;
     }
+    private static void StyleHudShortcut(GameObject shortcut,FishingHudSymbol.Kind symbol)
+    {
+        FishingHudSymbol.Add(shortcut.transform,symbol,new Vector2(0,.5f),new Vector2(49,0),56);
+        var label=shortcut.GetComponentInChildren<Text>();
+        label.fontSize=27;label.resizeTextMaxSize=27;label.fontStyle=FontStyle.Bold;
+        label.alignment=TextAnchor.MiddleLeft;
+        label.rectTransform.offsetMin=new Vector2(105,4);
+        label.rectTransform.offsetMax=new Vector2(-18,-4);
+    }
+
     private Button ButtonAt(Transform parent,string text,Action action)
     {
         var go=Panel(text,parent,teal);var b=go.AddComponent<Button>();b.targetGraphic=go.GetComponent<Image>();b.transition=Selectable.Transition.ColorTint;b.onClick.AddListener(()=>action());
@@ -520,6 +539,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
 
 
 
