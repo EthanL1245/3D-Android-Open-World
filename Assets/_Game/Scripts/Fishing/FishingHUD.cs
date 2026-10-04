@@ -174,7 +174,7 @@ public class FishingHUD : MonoBehaviour
         }
     }
 
-    public void SetDragFightUI(bool fighting,bool live,int mode,float charge)
+    public void SetDragFightUI(bool fighting,bool live,int mode,float charge,float cooldown=0f)
     {
         if(root==null)return;
         if(fighting && dragPanel==null)BuildDragUI();
@@ -190,10 +190,13 @@ public class FishingHUD : MonoBehaviour
         dragTitle.text="DRAG • "+names[mode];
         dragSlider.interactable=live;
         dragSlider.SetValueWithoutNotify(mode);
-        skillFill.anchorMax=new Vector2(Mathf.Clamp01(charge),1f);
-        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":charge>=1f?"SKILL READY • SWIPE UP • 20× HIT + STUN":
+        bool coolingDown = cooldown > 0f;
+        skillFill.anchorMax=new Vector2(coolingDown ? 1f : Mathf.Clamp01(charge),1f);
+        skillLabel.text=!live?"FISH SUBDUED • REEL IT IN":coolingDown?"SKILL RECOVERING • "+cooldown.ToString("0.0")+"s":charge>=1f?"SKILL READY • SWIPE UP • 20× HIT + STUN":
             "SKILL "+Mathf.FloorToInt(charge*100f)+"% • "+(mode==FishingDragRules.High?"CHARGING":"USE HIGH DRAG TO CHARGE");
-        skillFill.GetComponent<Image>().color=charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
+        skillFill.GetComponent<Image>().color=coolingDown
+            ? (Mathf.Repeat(Time.time * 4f, 1f) < .5f ? Color.red : Color.white)
+            : charge>=1f?new Color(1f,.76f,.23f,1):new Color(.06f,.57f,.53f,1);
     }
 
     private void BuildDragUI()
@@ -1428,4 +1431,5 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
+
 

@@ -731,11 +731,11 @@ public class FishingSystem : MonoBehaviour
         linePullAudio = new FishingLoopAudio(gameObject,
             "Fishing/Audio/LinePullLeadIn", "Fishing/Audio/LinePullLoop", 2f);
         calmLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullCalmLeadIn", "Fishing/Audio/LinePullCalmLoop");
+            "Fishing/Audio/LinePullCalmLeadIn", "Fishing/Audio/LinePullCalmLoop", 1.5f);
         irritatedLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullIrritatedLeadIn", "Fishing/Audio/LinePullIrritatedLoop");
+            "Fishing/Audio/LinePullIrritatedLeadIn", "Fishing/Audio/LinePullIrritatedLoop", 1.5f);
         angryLinePullAudio = new FishingLoopAudio(gameObject,
-            "Fishing/Audio/LinePullAngryLeadIn", "Fishing/Audio/LinePullAngryLoop");
+            "Fishing/Audio/LinePullAngryLeadIn", "Fishing/Audio/LinePullAngryLoop", 1.5f);
     }
 
     private void StartReelSound()
@@ -776,12 +776,12 @@ public class FishingSystem : MonoBehaviour
         if (statusChanged) StopLinePullSound();
         FishingLoopAudio active = hookedTemperament == FishTemperament.Irritated
             ? irritatedLinePullAudio : hookedTemperament == FishTemperament.Angry
-            ? angryLinePullAudio : hookedTemperament == FishTemperament.Calm
+            ? angryLinePullAudio : (hookedTemperament == FishTemperament.Calm || hookedTemperament == FishTemperament.Fragile)
             ? calmLinePullAudio : linePullAudio;
         if (active != null)
         {
             active.SetPitch(1f);
-            // Each mood uses its own recording at original volume and speed.
+            // Mood recordings use 1.5x gain and their original playback speed.
             // Restart immediately on status changes and stop when reeling resumes.
             if (!active.IsPlaying) active.Play(0d);
             linePullSoundStatus = status;
@@ -4233,5 +4233,6 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 

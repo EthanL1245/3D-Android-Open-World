@@ -69,6 +69,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private int authoritativeHp;
     private float passiveSeconds,damageRemainder;
     private float skillCharge;
+    private float skillCooldown;
+    private const float SkillCooldownSeconds = 2f;
     private bool skillQueued;
     public int SelectedDrag {get;private set;}=FishingDragRules.Medium;
 
@@ -79,7 +81,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     }
 
     public bool IsSkillReady => inFight && IsFighting() && authoritativeHp > 0 &&
-        !skillQueued && skillCharge >= 1f && hud != null &&
+        !skillQueued && skillCooldown <= 0f && skillCharge >= 1f && hud != null &&
         hud.CombatInputVisible && !ShopWorldHUD.MenuOpen;
 
     public bool TrySkillLook(Vector2 displacement)
@@ -94,7 +96,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private void ResetDrag()
     {
         SelectedDrag=FishingDragRules.Medium;
-        passiveSeconds=damageRemainder=skillCharge=0f;
+        passiveSeconds=damageRemainder=skillCharge=skillCooldown=0f;
         skillQueued=false;
     }
 
@@ -202,22 +204,28 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         WriteAuthoritativeHealth(maxHp);
         SuppressLegacyDamageFields();
 
+        // Only the part of a frame after cooldown expiry may charge the skill.
+        float chargeSeconds = Mathf.Max(0f, Time.deltaTime - skillCooldown);
+        skillCooldown = Mathf.Max(0f, skillCooldown - Time.deltaTime);
         if (authoritativeHp <= 0)
         {
             EnterUnconsciousPresentation();
             skillCharge=0f;skillQueued=false;
-            if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f);
+            if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f,skillCooldown);
             return;
         }
 
-        skillCharge=FishingDragRules.Charge(skillCharge,SelectedDrag,Time.deltaTime);
         if(skillQueued)
         {
             skillQueued=false;
+            skillCharge=0f;
+            skillCooldown=SkillCooldownSeconds;
             fishing.PlaySkillFeedback();
             DealDamage(FishingDragRules.SkillDamage(RollNormalDamage()),maxHp,true);
             if (authoritativeHp > 0) fishing.ApplySkillStun();
         }
+        else if (skillCooldown <= 0f)
+            skillCharge=FishingDragRules.Charge(skillCharge,SelectedDrag,chargeSeconds);
         if(SelectedDrag==FishingDragRules.High && authoritativeHp>0)
         {
             passiveSeconds+=Time.deltaTime;
@@ -251,7 +259,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         else
             UnconsciousField.SetValue(fishing, false);
         if(authoritativeHp<=0){skillCharge=0f;skillQueued=false;}
-        if(hud!=null)hud.SetDragFightUI(true,authoritativeHp>0,SelectedDrag,skillCharge);
+        if(hud!=null)hud.SetDragFightUI(true,authoritativeHp>0,SelectedDrag,skillCharge,skillCooldown);
     }
 
     private int RollNormalDamage()
@@ -370,4 +378,5 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             legacyUpgradeRuntime.enabled = true;
     }
 }
+
 
