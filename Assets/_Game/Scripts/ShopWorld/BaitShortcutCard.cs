@@ -12,15 +12,17 @@ public sealed class BaitShortcutCard : MonoBehaviour
     public void Initialize(Text name,Text quantity,RawImage preview)
     {
         nameLabel=name;quantityLabel=quantity;card=(RectTransform)transform;
-        // Keep the existing 24-unit name and 30-unit quantity; grow the card instead
-        // of shrinking or wrapping either of the two text rows.
+        // Scale the whole card uniformly, including its preview, text and hit area.
+        card.localScale=new Vector3(.85f,.85f,1f);
+        card.anchoredPosition+=new Vector2(0,16f);
+        // Keep authored font sizes; reserve two lines for multi-word names.
         nameLabel.resizeTextForBestFit=false;
         quantityLabel.resizeTextForBestFit=false;
         nameLabel.fontStyle=FontStyle.Bold;
-        nameLabel.horizontalOverflow=HorizontalWrapMode.Overflow;
+        nameLabel.horizontalOverflow=HorizontalWrapMode.Wrap;
         quantityLabel.horizontalOverflow=HorizontalWrapMode.Overflow;
         nameLabel.alignment=quantityLabel.alignment=TextAnchor.MiddleCenter;
-        PlaceText(nameLabel.rectTransform,80,132);
+        PlaceText(nameLabel.rectTransform,78,138);
         PlaceText(quantityLabel.rectTransform,18,68);
 
         var frame=CreateImage("BaitPreviewFrame",transform);
@@ -55,8 +57,25 @@ public sealed class BaitShortcutCard : MonoBehaviour
     private void RefreshWidth()
     {
         lastName=nameLabel.text;lastQuantity=quantityLabel.text;
-        float textWidth=Mathf.Ceil(Mathf.Max(nameLabel.preferredWidth,quantityLabel.preferredWidth));
+        float nameWidth=MeasureName(lastName);
+        // Find the narrowest two-line layout at a word boundary. Leave the actual
+        // label text intact so the equipped-lure name companion still recognizes it.
+        for(int i=1;i<lastName.Length-1;i++)
+        {
+            if(lastName[i]!=' ')continue;
+            float width=Mathf.Max(MeasureName(lastName.Substring(0,i)),
+                MeasureName(lastName.Substring(i+1)));
+            nameWidth=Mathf.Min(nameWidth,width);
+        }
+        float textWidth=Mathf.Ceil(Mathf.Max(nameWidth,quantityLabel.preferredWidth));
         card.sizeDelta=new Vector2(Mathf.Max(270,156+textWidth+12+18),150);
+    }
+
+    private float MeasureName(string value)
+    {
+        var settings=nameLabel.GetGenerationSettings(Vector2.zero);
+        settings.horizontalOverflow=HorizontalWrapMode.Overflow;
+        return nameLabel.cachedTextGeneratorForLayout.GetPreferredWidth(value,settings)/nameLabel.pixelsPerUnit;
     }
 
     private static void PlaceText(RectTransform rect,float bottom,float top)
