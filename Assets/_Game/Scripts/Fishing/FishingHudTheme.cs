@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public static class FishingHudTheme
 {
     public static readonly Color Cyan = new Color(.05f, .95f, 1f, 1f);
-    private static readonly Sprite[] sprites = new Sprite[5];
+    private static readonly Sprite[] sprites = new Sprite[6];
 
     public static void Panel(GameObject target, int style = 0)
     {
@@ -16,7 +16,7 @@ public static class FishingHudTheme
         image.color = Color.white;
     }
 
-    // 0: navy glass; 1: teal action; 2: translucent bait; 3: meter track.
+    // 0: navy glass; 1: teal action; 2: translucent bait; 3: meter track; 5: cancel.
     private static Sprite Surface(int style)
     {
         if (sprites[style] != null) return sprites[style];
@@ -44,6 +44,9 @@ public static class FishingHudTheme
             Color edge = Color.Lerp(new Color(0,.78f,.87f,1), new Color(.68f,.96f,1,1), vertical);
             c = Color.Lerp(c, edge, Mathf.Max(rim, glow) * (style == 3 ? .35f : style == 2 ? .6f : 1f));
             if (style == 4) c = Color.white;
+            if (style == 5)
+                c = Color.Lerp(new Color(.72f,.09f,.07f,.96f),Color.black,
+                    Mathf.Clamp01(d+4f));
             c.a *= Mathf.Clamp01(.5f - d);
             pixels[y * size + x] = c;
         }
@@ -89,4 +92,3 @@ public static class FishingHudTheme
         follow.label = text.rectTransform;
     }
 }
-
