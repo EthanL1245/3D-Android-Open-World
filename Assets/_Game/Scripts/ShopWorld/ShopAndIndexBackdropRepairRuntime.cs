@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Single presentation owner for the Tackle Store and Island / Fish Index.
-/// Uses the supplied wave artwork as a normal stretched image and themes only the
+/// Uses the supplied wave artwork with fixed rounded corners and themes only the
 /// visual layer; no gameplay, travel, purchase or fishing logic is changed.
 /// </summary>
 [DefaultExecutionOrder(6900)]
@@ -49,6 +49,8 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         if (storePass != null && storePass.enabled) storePass.enabled = false;
         IslandFishIndexThemeRuntime indexPass = GetComponent<IslandFishIndexThemeRuntime>();
         if (indexPass != null && indexPass.enabled) indexPass.enabled = false;
+        LargeShopBackdropSimpleImageFixRuntime oldImagePass = GetComponent<LargeShopBackdropSimpleImageFixRuntime>();
+        if (oldImagePass != null && oldImagePass.enabled) oldImagePass.enabled = false;
 
         string page = PageField.GetValue(hud) as string;
         GameObject modalObject = ModalField.GetValue(hud) as GameObject;

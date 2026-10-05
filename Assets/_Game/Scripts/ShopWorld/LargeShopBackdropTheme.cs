@@ -1,34 +1,52 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Shared large background artwork for the Tackle Store and Island / Fish Index.
-/// Uses a pre-cleaned transparent PNG. The data is split into small constants so it
-/// cannot be truncated/corrupted by source transport.
-/// </summary>
+/// <summary>Shared presentation for the store and both index pages.</summary>
 public static class LargeShopBackdropTheme
 {
-    private const float Alpha = 0.84f;
+    private const string BackdropName = "SharedShopIndexArtwork";
+    private const float Alpha = .90f;
     private static Sprite cachedSprite;
+    private static bool attemptedLoad;
 
     public static void Apply(Image target)
     {
         if (target == null) return;
-
         Sprite sprite = GetSprite();
         if (sprite == null) return;
-
-        target.sprite = sprite;
-        target.type = Image.Type.Simple;
-        target.preserveAspect = false;
-        target.fillCenter = true;
-        target.color = new Color(1f, 1f, 1f, Alpha);
+        Transform child = target.transform.Find(BackdropName);
+        Image artwork;
+        if (child == null)
+        {
+            var go = new GameObject(BackdropName, typeof(RectTransform), typeof(Image));
+            go.transform.SetParent(target.transform, false);
+            go.transform.SetAsFirstSibling();
+            artwork = go.GetComponent<Image>();
+            artwork.raycastTarget = false;
+            var rect = artwork.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            // Header/tabs fill the modal width: expose the luminous edge just outside.
+            rect.offsetMin = new Vector2(-8f, -8f);
+            rect.offsetMax = new Vector2(8f, 8f);
+        }
+        else artwork = child.GetComponent<Image>();
+        artwork.gameObject.SetActive(true);
+        artwork.sprite = sprite;
+        artwork.type = Image.Type.Sliced;
+        artwork.preserveAspect = false;
+        artwork.fillCenter = true;
+        artwork.color = new Color(1f, 1f, 1f, Alpha);
+        // Only the artwork is translucent; labels and controls retain their opacity.
+        target.sprite = null;
+        target.color = Color.clear;
     }
 
     public static void RestoreDefault(Image target, Color color)
     {
         if (target == null) return;
+        Transform artwork = target.transform.Find(BackdropName);
+        if (artwork != null) artwork.gameObject.SetActive(false);
         target.sprite = null;
         target.type = Image.Type.Simple;
         target.preserveAspect = false;
@@ -37,52 +55,47 @@ public static class LargeShopBackdropTheme
 
     public static Sprite GetSprite()
     {
-        if (cachedSprite != null) return cachedSprite;
-
-        string encoded =
-            LargeBackdropData.Part00 + LargeBackdropData.Part01 +
-            LargeBackdropData.Part02 + LargeBackdropData.Part03 +
-            LargeBackdropData.Part04 + LargeBackdropData.Part05 +
-            LargeBackdropData.Part06 + LargeBackdropData.Part07 +
-            LargeBackdropData.Part08 + LargeBackdropData.Part09;
-
-        byte[] bytes;
-        try
+        if (cachedSprite != null || attemptedLoad) return cachedSprite;
+        attemptedLoad = true;
+        // Original uploaded PNG, byte-for-byte. No base64 or importer rescaling.
+        TextAsset source = Resources.Load<TextAsset>("ShopIndexBackdrop.png");
+        var original = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        if (source == null || !original.LoadImage(source.bytes, false))
         {
-            bytes = Convert.FromBase64String(encoded);
-        }
-        catch (FormatException exception)
-        {
-            Debug.LogError("Backdrop PNG data is invalid: " + exception.Message);
+            Object.Destroy(original);
+            Debug.LogError("Could not load the supplied shop/index backdrop PNG.");
             return null;
         }
-
-        // PNG signature check prevents repeatedly handing corrupt bytes to Unity.
-        if (bytes.Length < 8 || bytes[0] != 0x89 || bytes[1] != 0x50 || bytes[2] != 0x4E ||
-            bytes[3] != 0x47 || bytes[4] != 0x0D || bytes[5] != 0x0A ||
-            bytes[6] != 0x1A || bytes[7] != 0x0A)
+        // Remove the ragged exterior glow. Image top-left bounds: (28,59)-(1645,879).
+        const int left = 28, bottom = 62, width = 1617, height = 820;
+        if (original.width != 1672 || original.height != 941)
         {
-            Debug.LogError("Backdrop PNG data failed its signature check.");
+            Object.Destroy(original);
+            Debug.LogError("Shop/index backdrop PNG dimensions have changed.");
             return null;
         }
-
-        Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-        texture.name = "RoundedShopIndexBackdrop";
+        Color[] pixels = original.GetPixels(left, bottom, width, height);
+        Object.Destroy(original);
+        Resources.UnloadAsset(source);
+        // Concentric with FishingHudTheme's 17-unit corners plus our 8-unit inset.
+        // Nine-slicing preserves this curvature instead of stretching it oval.
+        const float radius = 25f;
+        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width; x++)
+        {
+            float dx = Mathf.Max(radius - Mathf.Min(x + .5f, width - x - .5f), 0f);
+            float dy = Mathf.Max(radius - Mathf.Min(y + .5f, height - y - .5f), 0f);
+            pixels[y * width + x].a *= Mathf.Clamp01(radius + .5f - Mathf.Sqrt(dx * dx + dy * dy));
+        }
+        var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        texture.name = "SuppliedRoundedShopIndexBackdrop";
         texture.wrapMode = TextureWrapMode.Clamp;
         texture.filterMode = FilterMode.Bilinear;
-
-        if (!texture.LoadImage(bytes, false))
-        {
-            UnityEngine.Object.Destroy(texture);
-            Debug.LogError("Backdrop PNG could not be decoded by Unity.");
-            return null;
-        }
-
-        cachedSprite = Sprite.Create(
-            texture,
-            new Rect(0f, 0f, texture.width, texture.height),
-            new Vector2(.5f, .5f),
-            100f);
+        texture.SetPixels(pixels);
+        texture.Apply(false, true);
+        cachedSprite = Sprite.Create(texture, new Rect(0, 0, width, height),
+            new Vector2(.5f, .5f), 100f, 0, SpriteMeshType.FullRect,
+            new Vector4(32, 32, 32, 32));
         return cachedSprite;
     }
 }

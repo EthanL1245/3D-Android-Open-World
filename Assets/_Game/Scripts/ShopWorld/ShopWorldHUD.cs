@@ -201,8 +201,11 @@ public sealed class ShopWorldHUD : MonoBehaviour
         storeHeader.SetActive(tackle);storeBody.SetActive(tackle);
         modal.GetComponent<Image>().color=tackle?Color.clear:ink;
         var r=modal.GetComponent<RectTransform>();
-        r.anchorMin=tackle?new Vector2(.025f,.025f):new Vector2(.045f,.045f);
-        r.anchorMax=tackle?new Vector2(.975f,.97f):new Vector2(.955f,.955f);
+        bool index=page=="islands" || page=="reef-fish";
+        bool sharedFrame=tackle || index;
+        // Identical size and true screen center for both themed menus.
+        r.anchorMin=sharedFrame?new Vector2(.025f,.0275f):new Vector2(.045f,.045f);
+        r.anchorMax=sharedFrame?new Vector2(.975f,.9725f):new Vector2(.955f,.955f);
         r.offsetMin=r.offsetMax=Vector2.zero;
         heading.fontSize=tackle?52:43;heading.resizeTextMaxSize=tackle?52:43;
         heading.fontStyle=tackle?FontStyle.Bold:FontStyle.Normal;heading.color=tackle?Color.white:gold;
@@ -220,6 +223,18 @@ public sealed class ShopWorldHUD : MonoBehaviour
         var handle=scroll.verticalScrollbar.targetGraphic as Image;
         if(handle!=null)handle.color=tackle?FishingHudTheme.Cyan:gold;
         feedback.color=tackle?new Color(.67f,.93f,1f):gold;
+        if(index)
+        {
+            // Reserve a header band and a separate right-hand close-button column.
+            heading.fontSize=43;heading.resizeTextMaxSize=43;
+            Anchor(heading.rectTransform,0,1,1,1,24,-82,-270,-16);
+            Anchor(wallet.rectTransform,0,1,1,1,24,-118,-24,-84);
+            Rect(menuClose.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,
+                new Vector2(-20,-22),new Vector2(230,64));
+            // Cards, previews and actions resize together inside the shared frame.
+            Anchor(scroll.viewport,0,0,1,1,22,78,-44,-140);
+            Anchor(track,1,0,1,1,-27,80,-13,-140);
+        }
     }
 
     private void TravelPage()
