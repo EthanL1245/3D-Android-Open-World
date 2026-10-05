@@ -268,7 +268,12 @@ public sealed class TackleLureShopExtension : MonoBehaviour
         RawImage[] raws=hud.GetComponentsInChildren<RawImage>(true);
         Transform shortcut=null;
         for(int i=0;i<raws.Length;i++)
-            if(raws[i]!=null && raws[i].name=="EquippedBaitPicture"){shortcut=raws[i].transform.parent;break;}
+            if(raws[i]!=null && raws[i].name=="EquippedBaitPicture")
+            {
+                Button owner=raws[i].GetComponentInParent<Button>();
+                shortcut=owner!=null?owner.transform:null;
+                break;
+            }
         if(shortcut==null)return;
         Text[] labels=shortcut.GetComponentsInChildren<Text>(true);
         for(int i=0;i<labels.Length;i++)

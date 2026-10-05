@@ -125,7 +125,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         baitPicture=picture.GetComponent<RawImage>();baitPicture.raycastTarget=false;Anchor(baitPicture.rectTransform,0,.05f,.43f,.91f,8,0,0,0);
         FishingHudTheme.Panel(menuShortcut);
         FishingHudTheme.Panel(indexShortcut);
-        FishingHudTheme.Panel(baitShortcut,2);
+        FishingHudTheme.Panel(baitShortcut);
+        baitShortcut.AddComponent<BaitShortcutCard>().Initialize(baitName,baitQuantity,baitPicture);
         StyleHudShortcut(menuShortcut,FishingHudSymbol.Kind.Pin);
         StyleHudShortcut(indexShortcut,FishingHudSymbol.Kind.Island);
         var baitColors=baitShortcut.GetComponent<Button>().colors;
@@ -617,7 +618,6 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
-
 
 
 
