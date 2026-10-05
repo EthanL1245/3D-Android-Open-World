@@ -57,7 +57,7 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         bool visible = modalObject != null && modalObject.activeInHierarchy;
         bool tackle = visible && page == "gear";
         bool index = visible && (page == "islands" || page == "reef-fish");
-        bool market = visible && (page == "market" || page == "sell-confirm");
+        bool market = visible && (page == "market" || page == "sell-confirm" || page == "bait");
 
         if (!tackle && !index && !market)
         {

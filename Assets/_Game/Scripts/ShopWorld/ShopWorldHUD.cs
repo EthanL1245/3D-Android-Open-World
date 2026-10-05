@@ -199,7 +199,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     // Layout only. Keep the plain heading text used by existing shop companions.
     private void SetStorePresentation(bool tackle)
     {
-        bool market=page=="market" || page=="sell-confirm";
+        bool market=page=="market" || page=="sell-confirm" || page=="bait";
         bool themed=tackle || market;
         storeHeader.SetActive(themed);storeBody.SetActive(themed);
         // The item surface reaches the frame bottom, with equal 20-unit list insets.
@@ -555,7 +555,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Result(bool ok,string success) { message=ok?success:"Action unavailable. Check coins, ownership, capacity and distance to the shop."; Refresh(false); }
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
     {
-        bool market=page=="market" || page=="sell-confirm";
+        bool market=page=="market" || page=="sell-confirm" || page=="bait";
         GameObject row=Panel("Item",list,new Color(0.07f,0.12f,0.14f,1));
         row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?340:market?200:184;
         var accent=Panel("Accent",row.transform,gold); Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
@@ -568,8 +568,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
             accent.SetActive(false);
             titleText.fontSize=34;titleText.resizeTextMaxSize=34;titleText.fontStyle=FontStyle.Bold;
             detailText.fontSize=25;detailText.resizeTextMaxSize=25;
-            Anchor(titleText.rectTransform,0,.56f,1,1,fish!=null?216:24,0,-286,-18);
-            Anchor(detailText.rectTransform,0,0,1,.53f,fish!=null?216:24,20,-286,0);
+            Anchor(titleText.rectTransform,0,.56f,1,1,(fish!=null || gear!=null)?216:24,0,-286,-18);
+            Anchor(detailText.rectTransform,0,0,1,.53f,(fish!=null || gear!=null)?216:24,20,-286,0);
             Rect(b.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-24,0),new Vector2(238,90));
         }
         if(fish!=null || gear!=null)
