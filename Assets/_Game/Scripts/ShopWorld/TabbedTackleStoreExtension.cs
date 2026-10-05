@@ -85,6 +85,38 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
         if(section==null || section.transform.parent!=rows || fixedTabs==null)rebuild=true;
         if(rebuild)BuildStore(rows);
         HideCoreRows(rows);
+        FitThreeItems(rows);
+    }
+
+    private void FitThreeItems(RectTransform rows)
+    {
+        if(section==null)return;
+        RectTransform viewport=rows.parent as RectTransform;
+        if(viewport==null || viewport.rect.height<=0f)return;
+        // Three complete cards, two 12-unit gaps; the viewport itself is inset
+        // 20 units from both the top and bottom of the large item surface.
+        float height=Mathf.Max(1f,(viewport.rect.height-24f)/3f);
+        int count=0;
+        bool changed=false;
+        for(int i=0;i<section.transform.childCount;i++)
+        {
+            Transform row=section.transform.GetChild(i);
+            LayoutElement layout=row.GetComponent<LayoutElement>();
+            if(!row.gameObject.activeSelf || layout==null || layout.ignoreLayout)continue;
+            count++;
+            if(Mathf.Abs(layout.preferredHeight-height)<.1f)continue;
+            layout.preferredHeight=height;
+            Transform frame=row.Find("ItemImageFrame");
+            if(frame!=null)
+            {
+                float side=Mathf.Min(164f,Mathf.Max(1f,height-36f));
+                ((RectTransform)frame).sizeDelta=new Vector2(side,side);
+            }
+            changed=true;
+        }
+        if(!changed)return;
+        section.GetComponent<LayoutElement>().preferredHeight=Mathf.Max(0f,count*(height+12f)-12f);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rows);
     }
 
     private void LeaveTackleStore()
@@ -442,4 +474,3 @@ public sealed class TabbedTackleStoreExtension : MonoBehaviour
         rect.offsetMax=new Vector2(right,top);
     }
 }
-
