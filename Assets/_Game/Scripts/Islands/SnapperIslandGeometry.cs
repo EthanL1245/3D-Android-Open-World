@@ -62,15 +62,26 @@ public static class SnapperIslandGeometry
         float q=Ellipse(p,center);
         if(q<=1f)
         {
-            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.42f,q));
-            float broad=4.2f+3.8f*Mathf.PerlinNoise(p.x*.026f+91f,p.z*.026f+37f);
-            float detail=1.1f*Mathf.PerlinNoise(p.x*.073f+12f,p.z*.069f+54f);
-            return Mathf.Max(existingFloor,sea+.08f+inland*(broad+detail));
+            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.38f,q));
+            float broad=1.7f+1.55f*Mathf.PerlinNoise(p.x*.028f+91f,p.z*.027f+37f);
+            float detail=.55f*Mathf.PerlinNoise(p.x*.081f+12f,p.z*.074f+54f);
+            float west=Shoulder(p,center+new Vector3(-17f,0f,-5f),21f,16f)*1.65f;
+            float east=Shoulder(p,center+new Vector3(18f,0f,-9f),19f,17f)*1.45f;
+            float back=Shoulder(p,center+new Vector3(3f,0f,-18f),24f,15f)*1.25f;
+            return Mathf.Max(existingFloor,sea+.08f+inland*(broad+detail)+west+east+back);
         }
 
         float coast=DistanceFromShore(p,center);
         if(coast>CoastalShelfWidth)return existingFloor;
         float blend=Mathf.SmoothStep(0f,1f,coast/CoastalShelfWidth);
         return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f,existingFloor,blend));
+    }
+
+    private static float Shoulder(Vector3 p,Vector3 c,float radiusX,float radiusZ)
+    {
+        float x=(p.x-c.x)/radiusX;
+        float z=(p.z-c.z)/radiusZ;
+        float d=x*x+z*z;
+        return Mathf.SmoothStep(1f,0f,Mathf.Clamp01(d));
     }
 }
