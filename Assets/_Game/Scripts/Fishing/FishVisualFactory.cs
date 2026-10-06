@@ -82,6 +82,7 @@ public static class FishVisualFactory
             case FishCatalog.GreaterAmberjackId:return "Fishing/GreaterAmberjack";
             case FishCatalog.SpottedSandBassId:return "Fishing/SpottedSandBass";
             case FishCatalog.MuttonSnapperId:return "Fishing/MuttonSnapper";
+            case FishCatalog.MangroveSnapperId:return "Fishing/MangroveSnapper";
             default:return null;
         }
     }
