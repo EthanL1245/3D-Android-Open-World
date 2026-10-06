@@ -19,7 +19,8 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
     [Header("Portable paddle fallback")]
     [Min(0.05f)] public float ProceduralCyclesPerSecond = 0.72f;
     [Range(1f, 50f)] public float ProceduralStrokeDegrees = 24f;
-    [Range(0f, 25f)] public float ProceduralFeatherDegrees = 7f;
+    [Range(0f, 25f)] public float ProceduralFeatherDegrees = 12f;
+    [Range(0f, 40f)] public float ProceduralDipDegrees = 20f;
 
     private BoatController boat;
     private Rigidbody body;
@@ -34,6 +35,11 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
     private Quaternion rightBaseRotation;
     private float proceduralPhase;
     private bool proceduralReady;
+    private float proceduralBlend;
+    private float leftStrokeCenter;
+    private float rightStrokeCenter;
+    private float leftSide;
+    private float rightSide;
 
     private void Awake()
     {
@@ -78,7 +84,34 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
 
         leftBaseRotation = leftPivot.localRotation;
         rightBaseRotation = rightPivot.localRotation;
+        CalibratePaddle(leftPivot, out leftSide, out leftStrokeCenter);
+        CalibratePaddle(rightPivot, out rightSide, out rightStrokeCenter);
         proceduralReady = true;
+    }
+
+    private void CalibratePaddle(Transform pivot, out float side, out float strokeCenter)
+    {
+        side = transform.InverseTransformPoint(pivot.position).x < 0f ? -1f : 1f;
+        strokeCenter = 0f;
+        MeshFilter filter = pivot.GetComponentInChildren<MeshFilter>();
+        if (filter == null || filter.sharedMesh == null || !filter.sharedMesh.isReadable) return;
+
+        // Locate the outboard blade in boat space, including the right oar's
+        // negative scale. Its imported resting pose points toward the bow;
+        // centre the working stroke outboard without changing the mesh/pivot.
+        Vector3 pivotInBoat = transform.InverseTransformPoint(pivot.position);
+        Vector3 blade = Vector3.zero;
+        float furthestOutboard = 0f;
+        foreach (Vector3 vertex in filter.sharedMesh.vertices)
+        {
+            Vector3 offset = transform.InverseTransformPoint(filter.transform.TransformPoint(vertex)) - pivotInBoat;
+            if (offset.x * side <= furthestOutboard) continue;
+            furthestOutboard = offset.x * side;
+            blade = offset;
+        }
+        blade.y = 0f;
+        if (blade.sqrMagnitude > 0.0001f)
+            strokeCenter = Vector3.SignedAngle(blade, Vector3.right * side, Vector3.up);
     }
 
     private void Update()
@@ -126,15 +159,28 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
         }
 
         rowing = true;
+        proceduralBlend = Mathf.MoveTowards(proceduralBlend, 1f, Time.deltaTime * 4f);
         proceduralPhase = Mathf.Repeat(
             proceduralPhase + Time.deltaTime * ProceduralCyclesPerSecond * Mathf.PI * 2f,
             Mathf.PI * 2f);
 
         float stroke = Mathf.Sin(proceduralPhase) * ProceduralStrokeDegrees;
-        float feather = Mathf.Cos(proceduralPhase) * ProceduralFeatherDegrees;
+        float dip = ProceduralDipDegrees + Mathf.Cos(proceduralPhase) * ProceduralFeatherDegrees;
 
-        leftPivot.localRotation = leftBaseRotation * Quaternion.Euler(stroke, 0f, feather);
-        rightPivot.localRotation = rightBaseRotation * Quaternion.Euler(stroke, 0f, -feather);
+        ApplyPortablePose(leftPivot, leftBaseRotation, leftSide, leftStrokeCenter, stroke, dip);
+        ApplyPortablePose(rightPivot, rightBaseRotation, rightSide, rightStrokeCenter, stroke, dip);
+    }
+
+    private void ApplyPortablePose(Transform pivot, Quaternion rest, float side, float center, float stroke, float dip)
+    {
+        // Pre-multiply in the pivot PARENT frame, not the mirrored/tilted
+        // imported paddle frame. Both blades pull backward together, dip on
+        // the power stroke and lift on the forward recovery stroke.
+        Vector3 up = pivot.parent.InverseTransformDirection(transform.up);
+        Vector3 forward = pivot.parent.InverseTransformDirection(transform.forward);
+        Quaternion sweep = Quaternion.AngleAxis((center + side * stroke) * proceduralBlend, up);
+        Quaternion lift = Quaternion.AngleAxis(-side * dip * proceduralBlend, forward);
+        pivot.localRotation = lift * sweep * rest;
     }
 
     private void OnDisable()

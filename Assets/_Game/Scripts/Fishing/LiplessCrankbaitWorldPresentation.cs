@@ -33,10 +33,11 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
     private int loadedVariant=-1;
 
     private bool showingLure;
-    private bool wasReeling;
     private float sinkDepth;
     private Quaternion authoredRootRotation = Quaternion.identity;
-    private Vector3 localHeadDirection = Vector3.forward;
+    private Quaternion localRetrieveFrame = Quaternion.identity;
+    private Vector3 previousLogicalPosition;
+    private bool hasPreviousWaitingPosition;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -65,7 +66,10 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         string state = GetStateName();
         GameObject bobber = bobberField.GetValue(fishing) as GameObject;
         if (bobber == null)
+        {
+            StopShowingLure();
             return;
+        }
 
         if (!ShouldShowLure(state, bobber))
         {
@@ -80,7 +84,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         {
             showingLure = true;
             lureRoot.transform.rotation = authoredRootRotation;
-            wasReeling = false;
+            hasPreviousWaitingPosition = false;
         }
 
         SetBobberRenderers(false);
@@ -108,32 +112,30 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
         if (reeling)
         {
-            Vector3 towardPlayer = fishing.transform.position - position;
-            towardPlayer.y = 0f;
-
-            if (towardPlayer.sqrMagnitude > 0.0001f)
+            // Follow the movement FishingSystem actually produced. The water
+            // path can turn up to 72 degrees away from the player near shore.
+            Vector3 retrieveDirection = hasPreviousWaitingPosition
+                ? logicalPosition - previousLogicalPosition
+                : Vector3.zero;
+            retrieveDirection.y = 0f;
+            if (retrieveDirection.sqrMagnitude < 0.00000001f)
             {
-                Vector3 authoredHeadWorld = authoredRootRotation * localHeadDirection;
-                Quaternion targetRotation =
-                    Quaternion.FromToRotation(authoredHeadWorld, towardPlayer.normalized) *
-                    authoredRootRotation;
+                retrieveDirection = fishing.transform.position - position;
+                retrieveDirection.y = 0f;
+            }
 
-                if (!wasReeling)
-                {
-                    lureRoot.transform.rotation = targetRotation;
-                }
-                else
-                {
-                    float rotateT = 1f - Mathf.Exp(-18f * Time.deltaTime);
-                    lureRoot.transform.rotation = Quaternion.Slerp(
-                        lureRoot.transform.rotation,
-                        targetRotation,
-                        rotateT);
-                }
+            if (retrieveDirection.sqrMagnitude > 0.00000001f)
+            {
+                // A complete forward/up frame stays upright even on a 180
+                // degree turn. The child Animator still supplies the wobble.
+                lureRoot.transform.rotation =
+                    Quaternion.LookRotation(retrieveDirection, Vector3.up) *
+                    Quaternion.Inverse(localRetrieveFrame);
             }
         }
 
-        wasReeling = reeling;
+        previousLogicalPosition = logicalPosition;
+        hasPreviousWaitingPosition = waiting;
 
         // Put the line-tie/head itself at FishingSystem's logical lure point.
         // Every crankbait variant uses the same LineAttach contract.
@@ -216,6 +218,8 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
         // 1x to the approved 2x animation speed for every lure variant.
         lureRoot.name = "ActiveLiplessCrankbait";
         authoredRootRotation = lureRoot.transform.rotation;
+        showingLure = false;
+        hasPreviousWaitingPosition = false;
 
         lineAttach = FindDeepChild(lureRoot.transform, "LineAttach");
         if (lineAttach == null)
@@ -225,8 +229,6 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             lineAttach.SetParent(lureRoot.transform, false);
         }
 
-        localHeadDirection = MeasureLocalHeadDirection();
-
         lureAnimator = lureRoot.GetComponentInChildren<Animator>(true);
         if (lureAnimator != null)
         {
@@ -235,42 +237,26 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             lureAnimator.Update(0f);
         }
 
+        // Measure AFTER the initial animated pose is evaluated, not from the
+        // FBX's different stored transform pose.
+        localRetrieveFrame = MeasureLocalRetrieveFrame();
+
         lureRoot.SetActive(false);
         return true;
     }
 
-    private Vector3 MeasureLocalHeadDirection()
+    private Quaternion MeasureLocalRetrieveFrame()
     {
-        if (lureRoot == null || lineAttach == null)
-            return Vector3.forward;
+        if (lureRoot == null || lineAttach == null || lineAttach.parent == lureRoot.transform)
+            return Quaternion.identity;
 
-        Renderer[] renderers = lureRoot.GetComponentsInChildren<Renderer>(true);
-        Renderer body = null;
-        float largestVolume = -1f;
-
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            Renderer renderer = renderers[i];
-            if (renderer == null) continue;
-
-            Vector3 size = renderer.bounds.size;
-            float volume = Mathf.Abs(size.x * size.y * size.z);
-            if (volume > largestVolume)
-            {
-                largestVolume = volume;
-                body = renderer;
-            }
-        }
-
-        if (body == null)
-            return Vector3.forward;
-
-        Vector3 bodyToHeadWorld = lineAttach.position - body.bounds.center;
-        if (bodyToHeadWorld.sqrMagnitude < 0.000001f)
-            return Vector3.forward;
-
-        Vector3 local = lureRoot.transform.InverseTransformDirection(bodyToHeadWorld.normalized);
-        return local.sqrMagnitude > 0.0001f ? local.normalized : Vector3.forward;
+        // All five authored crankbaits share the import contract: LineAttach
+        // is a child of the BODY, the nose is mesh -Y and the back is mesh +Z.
+        // A hook's world AABB must never determine the body's heading.
+        Transform body = lineAttach.parent;
+        Vector3 head = lureRoot.transform.InverseTransformDirection(body.TransformVector(Vector3.down));
+        Vector3 up = lureRoot.transform.InverseTransformDirection(body.TransformVector(Vector3.forward));
+        return Quaternion.LookRotation(head, up);
     }
 
     private void StopShowingLure()
@@ -279,7 +265,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
             return;
 
         showingLure = false;
-        wasReeling = false;
+        hasPreviousWaitingPosition = false;
         sinkDepth = 0f;
         if (lureRoot != null)
         {
@@ -337,8 +323,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
     private void OnDisable()
     {
-        if (lureRoot != null) lureRoot.SetActive(false);
-        if (fishing != null && bobberField != null) SetBobberRenderers(true);
+        StopShowingLure();
     }
 
     private void OnDestroy()
