@@ -152,19 +152,38 @@ public static class FishingTuning
 
     private static float WeightAtPercentile(WeightDistribution row,float percentile)
     {
-        float range=row.MaxKg-row.MinKg;
-        if(range<=0f)return row.MinKg;
+        return WeightAtPercentile(row.MinKg,row.MaxKg,percentile);
+    }
 
-        float mean=(row.MinKg+row.MaxKg)*.5f;
-        float p01=row.MinKg+range*.01f;
-        float p99=row.MaxKg-range*.01f;
+    // Worldwide species bounds from FishStats (the species table), never the
+    // current biome's narrower catch range. Reuse the actual bounded normal curve.
+    public static string SpecimenClass(int speciesId,float weightKg)
+    {
+        var species=FishCatalog.Get(speciesId);
+        float min=species.MinWeightKg,max=species.MaxWeightKg;
+        if(max<=min || float.IsNaN(weightKg))return "Typical Specimen";
+        if(weightKg<WeightAtPercentile(min,max,.20f))return "Small Specimen";
+        if(weightKg<WeightAtPercentile(min,max,.70f))return "Typical Specimen";
+        if(weightKg<WeightAtPercentile(min,max,.94f))return "Large Specimen";
+        if(weightKg<WeightAtPercentile(min,max,.99f))return "Trophy Specimen";
+        return "Record Class Specimen";
+    }
+
+    private static float WeightAtPercentile(float minimum,float maximum,float percentile)
+    {
+        float range=maximum-minimum;
+        if(range<=0f)return minimum;
+
+        float mean=(minimum+maximum)*.5f;
+        float p01=minimum+range*.01f;
+        float p99=maximum-range*.01f;
         float sigma=(p99-p01)/(2f*NormalP01Z);
         float boundedProbability=Mathf.Lerp(
             BoundedNormalLowerCdf,
             BoundedNormalUpperCdf,
             Mathf.Clamp01(percentile));
         float z=InverseNormalCdf(boundedProbability);
-        return Mathf.Clamp(mean+sigma*z,row.MinKg,row.MaxKg);
+        return Mathf.Clamp(mean+sigma*z,minimum,maximum);
     }
 
     // Peter J. Acklam inverse-normal approximation.

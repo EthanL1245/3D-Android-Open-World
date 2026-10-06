@@ -1517,6 +1517,18 @@ public class FishingSystem : MonoBehaviour
     private void CatchFish(
         bool shoreCatch)
     {
+        // AddFish records the new best, so capture the comparison beforehand.
+        // The saved ledger retains records even after a fish is sold or housed.
+        bool personalBest=false;
+        if(shopProgress!=null && shopProgress.Data!=null)
+        {
+            var data=shopProgress.Data;
+            data.EnsureCatchStats();
+            int species=FishCatalog.CanonicalId(hookedSpeciesId);
+            personalBest=species>=0 && species<data.personalBestKg.Length &&
+                hookedWeightKg>data.personalBestKg[species];
+        }
+
         int newIndex =
             inventory.AddFish(
                 hookedSpeciesId,
@@ -1537,7 +1549,8 @@ public class FishingSystem : MonoBehaviour
             record,
             shoreCatch
                 ? "LANDED ON SHORE!"
-                : "CAUGHT!"
+                : "CAUGHT!",
+            personalBest
         );
 
         HoldFish(newIndex);

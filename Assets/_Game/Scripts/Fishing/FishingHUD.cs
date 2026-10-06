@@ -62,7 +62,7 @@ public class FishingHUD : MonoBehaviour
     private Outline rodSlotOutline;
 
     private GameObject catchPanel;
-    private Text catchText;
+    private Text catchText, catchSpecimenText, catchSizeText, catchBestText;
     private float catchPanelTimer;
 
     private GameObject castPanel;
@@ -487,9 +487,10 @@ public class FishingHUD : MonoBehaviour
 
     public void ShowCatch(
         CaughtFishRecord record,
-        string heading = "CAUGHT!")
+        string heading = "CAUGHT!",
+        bool personalBest = false)
     {
-        if (catchPanel == null ||
+        if (record == null || catchPanel == null ||
             catchText == null)
         {
             return;
@@ -498,13 +499,13 @@ public class FishingHUD : MonoBehaviour
         FishSpeciesDefinition species =
             FishCatalog.Get(record.speciesId);
 
-        catchText.text =
-            heading +
-            "\n" +
-            species.Name +
-            "\n" +
-            FishCatalog.FormatWeight(record.weightKg) +
-            " / " + ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m";
+        catchText.text = species.Name;
+        catchSpecimenText.text = FishingTuning.SpecimenClass(record.speciesId,record.weightKg);
+        catchSizeText.text = record.weightKg.ToString("0.00") + " kg \u2022 " +
+            ShopCatalog.FishLength(record.speciesId,record.weightKg).ToString("0.00") + " m";
+        catchBestText.gameObject.SetActive(personalBest);
+        catchPanel.GetComponent<RectTransform>().sizeDelta =
+            new Vector2(520f,personalBest ? 284f : 240f);
 
         catchPanel.SetActive(true);
         catchPanelTimer = 3.5f;
@@ -1420,50 +1421,46 @@ public class FishingHUD : MonoBehaviour
 
     private void BuildCatchPanel()
     {
-        catchPanel =
-            CreatePanel(
-                "CatchPanel",
-                root.transform,
-                new Color(
-                    0.02f,
-                    0.16f,
-                    0.20f,
-                    0.94f
-                )
-            );
+        catchPanel = CreatePanel("CatchPanel",root.transform,Color.white);
+        FishingHudTheme.Panel(catchPanel);
+        catchPanel.GetComponent<Image>().raycastTarget=false;
+        var rect=catchPanel.GetComponent<RectTransform>();
+        // Keep the top edge fixed when omitting the personal-best row.
+        rect.anchorMin=rect.anchorMax=new Vector2(.5f,.5f);
+        rect.pivot=new Vector2(.5f,1f);
+        rect.sizeDelta=new Vector2(520f,240f);
+        rect.anchoredPosition=new Vector2(0f,220f);
 
-        RectTransform rect =
-            catchPanel.GetComponent<RectTransform>();
-
-        rect.anchorMin =
-            new Vector2(0.5f, 0.5f);
-
-        rect.anchorMax =
-            new Vector2(0.5f, 0.5f);
-
-        rect.pivot =
-            new Vector2(0.5f, 0.5f);
-
-        rect.sizeDelta =
-            new Vector2(460f, 210f);
-
-        rect.anchoredPosition =
-            new Vector2(0f, 90f);
-
-        catchText =
-            CreateText(
-                "CatchText",
-                catchPanel.transform,
-                string.Empty,
-                34,
-                TextAnchor.MiddleCenter
-            );
-
-        StretchFullScreen(
-            catchText.rectTransform
-        );
-
+        catchText=CreateCatchRow("CatchText",string.Empty,36,24f,54f,Color.white);
+        catchSpecimenText=CreateCatchRow("SpecimenClass",string.Empty,28,82f,42f,
+            new Color(1f,.87f,.45f));
+        FishingHudTheme.Divider(catchPanel.transform,151f);
+        var divider=catchPanel.transform.Find("GlassDivider").GetComponent<Image>();
+        divider.color=new Color(.1f,.88f,1f,.65f);
+        divider.rectTransform.sizeDelta=new Vector2(-76f,2f);
+        catchSizeText=CreateCatchRow("CatchMeasurements",string.Empty,30,170f,44f,Color.white);
+        catchBestText=CreateCatchRow("PersonalBest","Personal Best",26,222f,38f,FishingHudTheme.Cyan);
+        catchBestText.gameObject.SetActive(false);
         catchPanel.SetActive(false);
+    }
+
+    private Text CreateCatchRow(string name,string value,int size,float top,float height,Color color)
+    {
+        var text=CreateText(name,catchPanel.transform,value,size,TextAnchor.MiddleCenter);
+        text.fontStyle=FontStyle.Bold;
+        text.color=color;
+        text.horizontalOverflow=HorizontalWrapMode.Wrap;
+        text.verticalOverflow=VerticalWrapMode.Truncate;
+        text.resizeTextForBestFit=true;
+        text.resizeTextMinSize=18;
+        text.resizeTextMaxSize=size;
+        var rect=text.rectTransform;
+        rect.anchorMin=new Vector2(0f,1f);
+        rect.anchorMax=Vector2.one;
+        rect.pivot=new Vector2(.5f,1f);
+        rect.sizeDelta=new Vector2(-48f,height);
+        rect.anchoredPosition=new Vector2(0f,-top);
+        return text;
     }
 
     private GameObject CreatePanel(
