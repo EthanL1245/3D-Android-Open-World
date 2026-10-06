@@ -65,7 +65,11 @@ public sealed class FishIndexView : MonoBehaviour
         {selectedFamily=families.Count>0?families[0]:-1;selectedVariant=-1;}
 
         var banner=Panel("RegionBanner",transform);
-        Anchor(banner,0,1,.62f,1,0,-124,-12,0);
+        Anchor(banner,0,1,.62f,1,0,-184,-12,0);
+        var bannerButton=banner.gameObject.AddComponent<Button>();
+        bannerButton.targetGraphic=banner.GetComponent<Image>();
+        bannerButton.targetGraphic.raycastTarget=true;
+        if(back!=null)bannerButton.onClick.AddListener(back);
         var art=Picture(banner,"IslandArtwork");art.texture=island;
         Anchor(art.rectTransform,0,0,.27f,1,12,12,-8,-12);
         // Same texture as the island-index card, with no generated substitute.
@@ -79,7 +83,8 @@ public sealed class FishIndexView : MonoBehaviour
         Anchor(discovered.rectTransform,.79f,0,1,1,0,16,-12,-16);
 
         speciesScroll=MakeScroll(transform,"Species",out grid,true);
-        Anchor(speciesScroll.GetComponent<RectTransform>(),0,0,.62f,1,0,60,-12,-138);
+        // Move the grid down by the extra banner height and into the old footer.
+        Anchor(speciesScroll.GetComponent<RectTransform>(),0,0,.62f,1,0,0,-12,-198);
         gridLayout=grid.gameObject.AddComponent<GridLayoutGroup>();
         gridLayout.constraint=GridLayoutGroup.Constraint.FixedColumnCount;gridLayout.constraintCount=2;
         gridLayout.spacing=new Vector2(12,12);gridLayout.padding=new RectOffset(4,4,4,4);
@@ -90,17 +95,10 @@ public sealed class FishIndexView : MonoBehaviour
             empty.gameObject.AddComponent<LayoutElement>().preferredHeight=132;
         }
 
-        var backButton=Button(transform,"ISLAND INDEX",back);
-        Anchor(backButton.GetComponent<RectTransform>(),0,0,.30f,0,0,0,0,48);
-
         var right=Panel("FishDetails",transform);
-        Anchor(right,.62f,0,1,1,0,82,0,-76);
+        Anchor(right,.62f,0,1,1,0,0,0,-76);
         detailScroll=MakeScroll(right,"Details",out details);
         Anchor(detailScroll.GetComponent<RectTransform>(),0,0,1,1,12,12,-12,-12);
-        var records=Button(transform,"VIEW REGION RECORDS  •  COMING SOON",null);
-        records.interactable=false;
-        Anchor(records.GetComponent<RectTransform>(),.62f,0,1,0,0,0,0,66);
-        records.GetComponentInChildren<Text>().color=muted;
 
         ShowDetails(selectedFamily,selectedVariant);
         ResizeGrid();
