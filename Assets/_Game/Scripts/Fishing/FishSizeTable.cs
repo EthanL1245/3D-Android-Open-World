@@ -25,7 +25,8 @@ public static class FishSizeTable
         GameplayCurve(16f,22), // Mutton snapper gameplay approximation: kg = 16 * metres^3 (~13.3 kg at 0.94 m)
         GameplayCurve(5f,40), // Blacktip reef shark gameplay size curve
         GameplayCurve(8f,70), // Mako gameplay size curve
-        GameplayCurve(8f,70) // Scarred variant delegates to the normal curve below
+        GameplayCurve(8f,70), // Scarred variant delegates to the normal curve below
+        GameplayCurve(15f,22) // Mangrove snapper gameplay approximation kg = 15 * metres^3
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
