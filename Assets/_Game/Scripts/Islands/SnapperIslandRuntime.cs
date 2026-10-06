@@ -65,10 +65,13 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         SculptTerrain(terrain,water.BaseWaterLevel);
         PaintTerrain(terrain);
         CreateMarker();
+        SnapperIslandRockscape rockscape=gameObject.AddComponent<SnapperIslandRockscape>();
+        if(!rockscape.Build(terrain,water.BaseWaterLevel,Center,Arrival.position))
+            Debug.LogWarning("[SNAPPER ISLAND] Terrain built, but the modular rockscape could not be loaded.");
         Physics.SyncTransforms();
         Ready=true;
 
-        Debug.Log("[SNAPPER ISLAND] Built directly south of Suncrest with a 200 m coast-to-coast gap and snapper fishing water extending 50 m from shore.");
+        Debug.Log("[SNAPPER ISLAND] Built rugged modular-rock Snapper Island directly south of Suncrest; gameplay bounds and 50 m snapper fishing water are unchanged.");
     }
 
     private static bool InsideTerrain(Terrain terrain,Vector3 center,float radiusX,float radiusZ)
@@ -117,7 +120,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         float[,,] alpha=data.GetAlphamaps(0,0,width,height);
         Vector3 origin=terrain.transform.position;
         Vector3 size=data.size;
-        int grassLayer=layers>1?1:0;
+        int rockLayer=layers>=2?layers-2:0;
 
         for(int z=0;z<height;z++)
         for(int x=0;x<width;x++)
@@ -126,13 +129,17 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
             float q=SnapperIslandGeometry.Ellipse(p,Center);
             if(q>1f)continue;
 
-            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(.90f,.53f,q));
+            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(.94f,.48f,q));
+            float breakup=Mathf.PerlinNoise(p.x*.065f+19f,p.z*.061f+43f);
+            float stone=Mathf.Clamp01(inland*Mathf.Lerp(.28f,.72f,breakup));
+            if(Mathf.PerlinNoise(p.x*.035f+81f,p.z*.039f+12f)>.68f)stone*=.42f;
+
             for(int layer=0;layer<layers;layer++)alpha[z,x,layer]=0f;
-            if(grassLayer==0)alpha[z,x,0]=1f;
+            if(rockLayer==0)alpha[z,x,0]=1f;
             else
             {
-                alpha[z,x,0]=1f-inland;
-                alpha[z,x,grassLayer]=inland;
+                alpha[z,x,0]=1f-stone;
+                alpha[z,x,rockLayer]=stone;
             }
         }
 
