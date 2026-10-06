@@ -118,6 +118,9 @@ public static class RaftMaterialRecoveryV9
     private static bool Apply(bool force)
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return false;
+        GameObject portablePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        Transform portableWrapper = portablePrefab != null ? portablePrefab.transform.Find(WrapperPath) : null;
+        if (portableWrapper != null && portableWrapper.Find("RaftPortable_v23") != null) return false;
         EnsureReadable(BlendPath);
 
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);

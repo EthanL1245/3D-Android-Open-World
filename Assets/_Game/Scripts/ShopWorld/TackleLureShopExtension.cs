@@ -107,7 +107,7 @@ public sealed class TackleLureShopExtension : MonoBehaviour
             if(shop || progress.Data.OwnsLure(variant))visibleRows++;
 
         LayoutElement sectionSize=section.GetComponent<LayoutElement>();
-        sectionSize.preferredHeight=58f+visibleRows*194f;
+        sectionSize.preferredHeight=58f+visibleRows*210f;
 
         GameObject titleRow=new GameObject(shop?"PermanentLuresHeading":"OwnedLuresHeading",typeof(RectTransform),typeof(LayoutElement));
         titleRow.transform.SetParent(section.transform,false);
@@ -131,28 +131,37 @@ public sealed class TackleLureShopExtension : MonoBehaviour
     private void CreateLureRow(Transform parent,int variant)
     {
         GameObject row=Panel("Lure_"+variant,parent,Ink);
-        row.AddComponent<LayoutElement>().preferredHeight=184f;
+        row.AddComponent<LayoutElement>().preferredHeight=200f;
+        FishingHudTheme.Panel(row);
 
         GameObject accent=Panel("Accent",row.transform,Gold);
         Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
         accent.GetComponent<Image>().raycastTarget=false;
+        accent.SetActive(false);
 
         GameObject picture=new GameObject("Lure item preview",typeof(RectTransform),typeof(RawImage));
         picture.transform.SetParent(row.transform,false);
         Rect(picture.GetComponent<RectTransform>(),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(14,0),new Vector2(140,140));
         RawImage raw=picture.GetComponent<RawImage>();
         raw.raycastTarget=false;
+        GameObject frame=Panel("ItemImageFrame",row.transform,Color.white);
+        FishingHudTheme.Panel(frame);frame.GetComponent<Image>().raycastTarget=false;
+        Rect(frame.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(24,0),new Vector2(164,164));
+        picture.transform.SetParent(frame.transform,false);
+        Anchor(picture.GetComponent<RectTransform>(),0,0,1,1,10,10,-10,-10);
         preview.Attach(raw,0,1f,ShopCatalog.LurePreviewKey(variant));
 
-        Text name=CreateText(row.transform,ShopCatalog.LureNames[variant],31,Color.white,TextAnchor.MiddleLeft);
-        Anchor(name.rectTransform,0,.5f,1,1,170,0,-232,-10);
+        Text name=CreateText(row.transform,ShopCatalog.LureNames[variant],34,Color.white,TextAnchor.MiddleLeft);
+        name.fontStyle=FontStyle.Bold;
+        Anchor(name.rectTransform,0,.56f,1,1,216,0,-286,-18);
 
         Text description=CreateText(row.transform,ShopCatalog.LureDescriptions[variant],25,Detail,TextAnchor.MiddleLeft);
-        Anchor(description.rectTransform,0,0,1,.55f,170,10,-232,0);
+        description.color=new Color(.70f,.90f,.96f);
+        Anchor(description.rectTransform,0,0,1,.53f,216,20,-286,0);
 
         int selected=variant;
         Button button=CreateButton(row.transform,"EQUIP",()=>SelectLure(selected));
-        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-14,0),new Vector2(205,76));
+        Rect(button.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-24,0),new Vector2(238,90));
 
         LureRowView view=new LureRowView();
         view.variant=variant;
@@ -268,7 +277,12 @@ public sealed class TackleLureShopExtension : MonoBehaviour
         RawImage[] raws=hud.GetComponentsInChildren<RawImage>(true);
         Transform shortcut=null;
         for(int i=0;i<raws.Length;i++)
-            if(raws[i]!=null && raws[i].name=="EquippedBaitPicture"){shortcut=raws[i].transform.parent;break;}
+            if(raws[i]!=null && raws[i].name=="EquippedBaitPicture")
+            {
+                Button owner=raws[i].GetComponentInParent<Button>();
+                shortcut=owner!=null?owner.transform:null;
+                break;
+            }
         if(shortcut==null)return;
         Text[] labels=shortcut.GetComponentsInChildren<Text>(true);
         for(int i=0;i<labels.Length;i++)

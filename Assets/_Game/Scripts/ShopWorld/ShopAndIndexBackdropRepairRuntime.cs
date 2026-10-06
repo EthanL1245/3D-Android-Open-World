@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Single presentation owner for the Tackle Store and Island / Fish Index.
-/// Uses the supplied wave artwork as a normal stretched image and themes only the
+/// Uses the supplied wave artwork with fixed rounded corners and themes only the
 /// visual layer; no gameplay, travel, purchase or fishing logic is changed.
 /// </summary>
 [DefaultExecutionOrder(6900)]
@@ -49,14 +49,17 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         if (storePass != null && storePass.enabled) storePass.enabled = false;
         IslandFishIndexThemeRuntime indexPass = GetComponent<IslandFishIndexThemeRuntime>();
         if (indexPass != null && indexPass.enabled) indexPass.enabled = false;
+        LargeShopBackdropSimpleImageFixRuntime oldImagePass = GetComponent<LargeShopBackdropSimpleImageFixRuntime>();
+        if (oldImagePass != null && oldImagePass.enabled) oldImagePass.enabled = false;
 
         string page = PageField.GetValue(hud) as string;
         GameObject modalObject = ModalField.GetValue(hud) as GameObject;
         bool visible = modalObject != null && modalObject.activeInHierarchy;
         bool tackle = visible && page == "gear";
         bool index = visible && (page == "islands" || page == "reef-fish");
+        bool market = visible && (page == "market" || page == "sell-confirm" || page == "bait");
 
-        if (!tackle && !index)
+        if (!tackle && !index && !market)
         {
             if (wasThemed && modalObject != null)
                 LargeShopBackdropTheme.RestoreDefault(modalObject.GetComponent<Image>(), DefaultMenuColor);
@@ -68,7 +71,7 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
         if (modal == null) return;
         LargeShopBackdropTheme.Apply(modal);
 
-        if (index)
+        if (index || market)
         {
             Text heading = HeadingField != null ? HeadingField.GetValue(hud) as Text : FindIndexHeading();
             if (heading != null)
@@ -76,12 +79,13 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
                 if (page == "islands") heading.text = "ISLAND / FISH INDEX";
                 heading.font = shopFont;
                 heading.fontStyle = FontStyle.Bold;
-                heading.color = BrightGold;
+                heading.color = market ? Color.white : BrightGold;
             }
 
             StyleIndexChrome(modalObject.transform);
             StyleIndexRows();
             StyleIndexText(modalObject.transform, heading);
+            if (market && heading != null) heading.color = Color.white;
         }
 
         wasThemed = true;

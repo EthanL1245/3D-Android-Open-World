@@ -36,6 +36,7 @@ public class FishingHUD : MonoBehaviour
     private GameObject actionButtonObject;
     private FishingActionButton actionInput;
     private Text actionLabel;
+    private Image actionArtwork;
 
     private Text statusText;
     private Text fightStatusText, fightHintText;
@@ -91,6 +92,7 @@ public class FishingHUD : MonoBehaviour
             var r=castPanel.GetComponent<RectTransform>();r.anchorMin=r.anchorMax=r.pivot=new Vector2(.5f,.5f);r.sizeDelta=new Vector2(470,470);
             castGauge=castPanel.GetComponent<CastPowerGauge>();castGauge.raycastTarget=false;
             var captionBox=CreatePanel("GaugeCaption",castPanel.transform,new Color(.02f,.07f,.09f,.96f));
+            FishingHudTheme.Panel(captionBox);
             captionBox.GetComponent<Image>().raycastTarget=false;
             var c=captionBox.GetComponent<RectTransform>();c.anchorMin=c.anchorMax=new Vector2(.5f,.5f);c.sizeDelta=new Vector2(330,56);c.anchoredPosition=new Vector2(-95,268);
             castCaption=CreateText("CastDistance",captionBox.transform,"",29,TextAnchor.MiddleCenter);StretchFullScreen(castCaption.rectTransform);
@@ -109,6 +111,7 @@ public class FishingHUD : MonoBehaviour
         if(cancelCast==null && visible && jump!=null)
         {
             cancelCast=CreatePanel("CancelCast",jump.parent,new Color(.72f,.09f,.07f,.96f));
+            FishingHudTheme.Panel(cancelCast,5);
             var r=cancelCast.GetComponent<RectTransform>();r.anchorMin=jump.anchorMin;r.anchorMax=jump.anchorMax;r.pivot=jump.pivot;r.sizeDelta=jump.sizeDelta;r.anchoredPosition=castPlayer.JumpRestPosition;
             var text=CreateText("Cancel",cancelCast.transform,"CANCEL\nCAST",26,TextAnchor.MiddleCenter);StretchFullScreen(text.rectTransform);
             cancelCast.AddComponent<Button>();
@@ -393,6 +396,8 @@ public class FishingHUD : MonoBehaviour
     {
         if (actionLabel != null)
             actionLabel.text = text;
+        if (actionArtwork != null)
+            actionArtwork.sprite = FishingActionArtwork.Get(text == "REEL");
     }
 
     public void SetStatus(string text)
@@ -876,7 +881,16 @@ public class FishingHUD : MonoBehaviour
 
         FishingHudTheme.Panel(actionButtonObject,1);
         outline.effectDistance = new Vector2(2f,-2f);
-        FishingHudSymbol.Add(actionButtonObject.transform,FishingHudSymbol.Kind.Reel,new Vector2(.5f,1f),new Vector2(0,-72),92);
+        var artworkObject = new GameObject("ActionArtwork",typeof(RectTransform),typeof(Image));
+        artworkObject.transform.SetParent(actionButtonObject.transform,false);
+        actionArtwork = artworkObject.GetComponent<Image>();
+        actionArtwork.raycastTarget = false;
+        actionArtwork.preserveAspect = true;
+        actionArtwork.sprite = FishingActionArtwork.Get(false);
+        var artworkRect = actionArtwork.rectTransform;
+        artworkRect.anchorMin = artworkRect.anchorMax = new Vector2(.5f,1f);
+        artworkRect.sizeDelta = new Vector2(104f,104f);
+        artworkRect.anchoredPosition = new Vector2(0,-70f);
         actionInput =
             actionButtonObject
                 .AddComponent<FishingActionButton>();
@@ -1520,7 +1534,6 @@ public class FishingHUD : MonoBehaviour
         rect.offsetMax = Vector2.zero;
     }
 }
-
 
 
 

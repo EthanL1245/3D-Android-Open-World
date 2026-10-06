@@ -547,7 +547,9 @@ public static class RaftModelImporter
         if (prefab == null) return false;
 
         Transform wrapper = prefab.transform.Find("ModelContainer/" + VisualWrapperName);
-        if (wrapper == null || wrapper.Find(RevisionMarkerName) == null) return false;
+        if (wrapper == null) return false;
+        if (wrapper.Find("RaftPortable_v23") != null) return true;
+        if (wrapper.Find(RevisionMarkerName) == null) return false;
 
         if (AssetDatabase.LoadAssetAtPath<GameObject>(BlendPath) == null ||
             AssetDatabase.LoadAssetAtPath<Texture2D>(RaftTexturePath) == null ||

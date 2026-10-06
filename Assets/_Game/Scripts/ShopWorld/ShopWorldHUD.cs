@@ -125,7 +125,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         baitPicture=picture.GetComponent<RawImage>();baitPicture.raycastTarget=false;Anchor(baitPicture.rectTransform,0,.05f,.43f,.91f,8,0,0,0);
         FishingHudTheme.Panel(menuShortcut);
         FishingHudTheme.Panel(indexShortcut);
-        FishingHudTheme.Panel(baitShortcut,2);
+        FishingHudTheme.Panel(baitShortcut);
+        baitShortcut.AddComponent<BaitShortcutCard>().Initialize(baitName,baitQuantity,baitPicture);
         StyleHudShortcut(menuShortcut,FishingHudSymbol.Kind.Pin);
         StyleHudShortcut(indexShortcut,FishingHudSymbol.Kind.Island);
         var baitColors=baitShortcut.GetComponent<Button>().colors;
@@ -198,28 +199,50 @@ public sealed class ShopWorldHUD : MonoBehaviour
     // Layout only. Keep the plain heading text used by existing shop companions.
     private void SetStorePresentation(bool tackle)
     {
-        storeHeader.SetActive(tackle);storeBody.SetActive(tackle);
-        modal.GetComponent<Image>().color=tackle?Color.clear:ink;
+        bool market=page=="market" || page=="sell-confirm" || page=="bait";
+        bool themed=tackle || market;
+        storeHeader.SetActive(themed);storeBody.SetActive(themed);
+        // The item surface reaches the frame bottom, with equal 20-unit list insets.
+        Anchor(storeBody.GetComponent<RectTransform>(),0,0,1,1,0,0,0,tackle?-258:-158);
+        modal.GetComponent<Image>().color=themed?Color.clear:ink;
         var r=modal.GetComponent<RectTransform>();
-        r.anchorMin=tackle?new Vector2(.025f,.025f):new Vector2(.045f,.045f);
-        r.anchorMax=tackle?new Vector2(.975f,.97f):new Vector2(.955f,.955f);
+        bool index=page=="islands" || page=="reef-fish";
+        bool sharedFrame=themed || index;
+        // Identical size and true screen center for both themed menus.
+        r.anchorMin=sharedFrame?new Vector2(.025f,.0275f):new Vector2(.045f,.045f);
+        r.anchorMax=sharedFrame?new Vector2(.975f,.9725f):new Vector2(.955f,.955f);
         r.offsetMin=r.offsetMax=Vector2.zero;
-        heading.fontSize=tackle?52:43;heading.resizeTextMaxSize=tackle?52:43;
-        heading.fontStyle=tackle?FontStyle.Bold:FontStyle.Normal;heading.color=tackle?Color.white:gold;
-        Anchor(heading.rectTransform,0,1,1,1,tackle?132:24,tackle?-82:-62,tackle?-270:-150,-12);
-        wallet.color=tackle?new Color(.67f,.93f,1f):Color.white;
-        Anchor(wallet.rectTransform,0,1,1,1,tackle?132:24,tackle?-118:-92,tackle?-270:-24,tackle?-80:-62);
+        heading.fontSize=themed?52:43;heading.resizeTextMaxSize=themed?52:43;
+        heading.fontStyle=themed?FontStyle.Bold:FontStyle.Normal;heading.color=themed?Color.white:gold;
+        Anchor(heading.rectTransform,0,1,1,1,themed?132:24,themed?-82:-62,themed?-270:-150,-12);
+        wallet.color=themed?new Color(.67f,.93f,1f):Color.white;
+        Anchor(wallet.rectTransform,0,1,1,1,themed?132:24,themed?-118:-92,themed?-270:-24,themed?-80:-62);
         Rect(menuClose.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,
-            tackle?new Vector2(-20,-22):new Vector2(-18,-16),tackle?new Vector2(230,84):new Vector2(160,64));
+            themed?new Vector2(-20,-22):new Vector2(-18,-16),themed?new Vector2(230,84):new Vector2(160,64));
         var closeImage=menuClose.GetComponent<Image>();
-        if(tackle)FishingHudTheme.Panel(menuClose.gameObject);
+        if(themed)FishingHudTheme.Panel(menuClose.gameObject);
         else {closeImage.sprite=null;closeImage.type=Image.Type.Simple;closeImage.color=teal;}
-        Anchor(scroll.viewport,0,0,1,1,tackle?22:20,tackle?78:70,tackle?-44:-30,tackle?-278:-164);
+        Anchor(scroll.viewport,0,0,1,1,themed?22:20,themed?20:70,themed?-44:-30,tackle?-278:market?-178:-164);
         var track=scroll.verticalScrollbar.GetComponent<RectTransform>();
-        Anchor(track,1,0,1,1,tackle?-27:-22,tackle?80:70,tackle?-13:-10,tackle?-276:-164);
+        Anchor(track,1,0,1,1,themed?-27:-22,themed?20:70,themed?-13:-10,tackle?-278:market?-178:-164);
         var handle=scroll.verticalScrollbar.targetGraphic as Image;
-        if(handle!=null)handle.color=tackle?FishingHudTheme.Cyan:gold;
-        feedback.color=tackle?new Color(.67f,.93f,1f):gold;
+        if(handle!=null)handle.color=themed?FishingHudTheme.Cyan:gold;
+        feedback.color=themed?new Color(.67f,.93f,1f):gold;
+        // Keep purchase/sale messages clear of the newly extended item list.
+        if(themed)Anchor(feedback.rectTransform,0,1,1,1,24,-150,-24,-130);
+        else Anchor(feedback.rectTransform,0,0,1,0,24,10,-24,60);
+        if(index)
+        {
+            // Reserve a header band and a separate right-hand close-button column.
+            heading.fontSize=43;heading.resizeTextMaxSize=43;
+            Anchor(heading.rectTransform,0,1,1,1,24,-82,-270,-16);
+            Anchor(wallet.rectTransform,0,1,1,1,24,-118,-24,-84);
+            Rect(menuClose.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,
+                new Vector2(-20,-22),new Vector2(230,64));
+            // Cards, previews and actions resize together inside the shared frame.
+            Anchor(scroll.viewport,0,0,1,1,22,78,-44,-140);
+            Anchor(track,1,0,1,1,-27,80,-13,-140);
+        }
     }
 
     private void TravelPage()
@@ -532,18 +555,36 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Result(bool ok,string success) { message=ok?success:"Action unavailable. Check coins, ownership, capacity and distance to the shop."; Refresh(false); }
     private void Row(string title,string detail,string action,Action callback,bool enabled=true,CaughtFishRecord fish=null,string gear=null)
     {
+        bool market=page=="market" || page=="sell-confirm" || page=="bait";
         GameObject row=Panel("Item",list,new Color(0.07f,0.12f,0.14f,1));
-        row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?340:184;
+        row.AddComponent<LayoutElement>().preferredHeight=page=="reef-fish"?340:market?200:184;
         var accent=Panel("Accent",row.transform,gold); Anchor(accent.GetComponent<RectTransform>(),0,0,0,1,0,0,4,0);
         var titleText=Label(row.transform,title,26,Color.white); Anchor(titleText.rectTransform,0,page=="reef-fish"?.72f:.5f,1,1,(fish!=null || gear!=null?170:22),0,-232,-10);
         var detailText=Label(row.transform,detail,21,new Color(0.65f,0.79f,0.8f)); Anchor(detailText.rectTransform,0,0,1,page=="reef-fish"?.75f:.55f,(fish!=null || gear!=null?170:22),10,-232,0);
         var b=ButtonAt(row.transform,action,callback); Rect(b.GetComponent<RectTransform>(),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(1,0.5f),new Vector2(-14,0),new Vector2(205,76));
         SetAvailability(b,enabled);
+        if(market)
+        {
+            accent.SetActive(false);
+            titleText.fontSize=34;titleText.resizeTextMaxSize=34;titleText.fontStyle=FontStyle.Bold;
+            detailText.fontSize=25;detailText.resizeTextMaxSize=25;
+            Anchor(titleText.rectTransform,0,.56f,1,1,(fish!=null || gear!=null)?216:24,0,-286,-18);
+            Anchor(detailText.rectTransform,0,0,1,.53f,(fish!=null || gear!=null)?216:24,20,-286,0);
+            Rect(b.GetComponent<RectTransform>(),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(1,.5f),new Vector2(-24,0),new Vector2(238,90));
+        }
         if(fish!=null || gear!=null)
         {
             var picture=new GameObject("3D item preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(row.transform,false);
             Rect(picture.GetComponent<RectTransform>(),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(0,0.5f),new Vector2(14,0),new Vector2(140,140));
             var image=picture.GetComponent<RawImage>();image.raycastTarget=false;
+            if(market)
+            {
+                var frame=Panel("ItemImageFrame",row.transform,Color.white);
+                FishingHudTheme.Panel(frame);frame.GetComponent<Image>().raycastTarget=false;
+                Rect(frame.GetComponent<RectTransform>(),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(24,0),new Vector2(164,164));
+                picture.transform.SetParent(frame.transform,false);
+                Anchor(picture.GetComponent<RectTransform>(),0,0,1,1,10,10,-10,-10);
+            }
             previews.Attach(image,fish!=null?fish.speciesId:0,fish!=null?fish.weightKg:1,gear,page=="reef-fish");
         }
     }
@@ -577,9 +618,6 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
-
-
-
 
 
 
