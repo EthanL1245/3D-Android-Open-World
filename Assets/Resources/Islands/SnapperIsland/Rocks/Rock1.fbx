@@ -36,7 +36,10 @@ Definitions:  {
     Count: 2
     ObjectType: "Geometry" {
         Count: 1
-        PropertyTemplate: "FbxMesh" { Properties70:  { } }
+        PropertyTemplate: "FbxMesh" {
+            Properties70:  {
+            }
+        }
     }
     ObjectType: "Model" {
         Count: 1
@@ -75,4 +78,6 @@ Connections:  {
     C: "OO",100001,200001
     C: "OO",200001,0
 }
-Takes:  { Current: "" }
+Takes:  {
+    Current: ""
+}
