@@ -22,3 +22,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 18,Blacktip Reef Shark,3,18,6000,14000,900,8000,4.8
 19,Mako Shark,20,150,10000,24000,1800,18000,5.6
 20,Battle Scarred Mako Shark,30,225,15000,36000,2700,27000,8.4
+21,Mangrove Snapper,0.5,10.5,165,715,90,1000,3.25
