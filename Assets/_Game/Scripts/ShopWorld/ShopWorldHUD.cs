@@ -38,6 +38,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Text heading, wallet, feedback, nearLabel;
     private string page="travel", message="";
     private int indexBiome;
+    private FishIndexView fishIndexView;
     private Texture2D rockyThumbnail,deepThumbnail;
     private bool dirty;
     private string shopSession, bagPicker, habitatPicker;
@@ -171,6 +172,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private void Refresh(bool top)
     {
         dirty=false;
+        if(fishIndexView!=null)fishIndexView.gameObject.SetActive(false);
         float position=scroll.verticalNormalizedPosition;
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
         wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   LOCATION: {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":ReefCatalog.Zones[IslandExpansionWorld.FishingBiome(player.transform.position)].name.ToUpperInvariant())}";
@@ -187,6 +189,10 @@ public sealed class ShopWorldHUD : MonoBehaviour
         }
         bool independent=index || page=="bait" || habitatAddId!=null;
         SetStorePresentation(shopSession=="gear");
+        bool fishIndex=page=="reef-fish";
+        heading.gameObject.SetActive(!fishIndex);wallet.gameObject.SetActive(!fishIndex);
+        feedback.gameObject.SetActive(!fishIndex);scroll.gameObject.SetActive(!fishIndex);
+        scroll.verticalScrollbar.gameObject.SetActive(!fishIndex);
         foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !independent);
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
@@ -308,14 +314,27 @@ public sealed class ShopWorldHUD : MonoBehaviour
     }
     private void ReefFishIndex()
     {
-        int equipped=progress.Data.baitEquipped;
-        Row(ReefCatalog.Zones[indexBiome].name, ShopCatalog.BaitNames[equipped]+" equipped • whole-percent odds (rounded) apply when a fish bites. "+(equipped==ShopCatalog.StarterLure?"Longer casts favor bigger fish; bites only while reeling.":"Deeper water favors bigger fish.")+(indexBiome==0?" Palm Pond: 5–12 cm.":" Stronger fish: "+ReefCatalog.HealthMultiplier(indexBiome).ToString("0.0")+"× base health, plus size scaling."), "ISLAND INDEX",()=>Open("islands"));
-        foreach(int id in FishCatalog.ActiveIds.Where(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)>0f).OrderByDescending(id=>ReefCatalog.EquippedChance(id,equipped,indexBiome)))
+        previews.Suspend();
+        if(fishIndexView==null)
         {
-            var species=FishCatalog.Get(id);
-            Row(species.Name,ReefCatalog.Rarity(id)+" • "+ReefCatalog.EquippedChance(id,equipped,indexBiome).ToString("0")+"% equipped chance\n"+ReefCatalog.Zones[indexBiome].name+" size: "+FishCatalog.FormatWeight(ReefCatalog.MinimumWeight(id,indexBiome))+" – "+FishCatalog.FormatWeight(ReefCatalog.MaximumWeight(id,indexBiome))+"\nLength: "+ShopCatalog.FishLength(id,ReefCatalog.MinimumWeight(id,indexBiome)).ToString("0.00")+" – "+ShopCatalog.FishLength(id,ReefCatalog.MaximumWeight(id,indexBiome)).ToString("0.00")+" m (max)\nCaught: "+progress.Data.totalCaught[id]+" • Best: "+(progress.Data.personalBestKg[id]>0?FishCatalog.FormatWeight(progress.Data.personalBestKg[id])+" / "+ShopCatalog.FishLength(id,progress.Data.personalBestKg[id]).ToString("0.00")+" m":"—"), "UNLOCKED",()=>{},false,
-                fish:new CaughtFishRecord{speciesId=id,weightKg=species.MinWeightKg});
+            var view=new GameObject("FishIndexView",typeof(RectTransform),typeof(FishIndexView));
+            view.transform.SetParent(modal.transform,false);
+            Anchor(view.GetComponent<RectTransform>(),0,0,1,1,22,22,-22,-18);
+            fishIndexView=view.GetComponent<FishIndexView>();
         }
+        fishIndexView.gameObject.SetActive(true);
+        fishIndexView.Show(progress,indexBiome,BiomeThumbnail(indexBiome),()=>
+        {
+            var safety=GetComponent<FishingMenuSafetyRuntime>();
+            if(safety!=null && !MenuOpen)safety.OpenIndexPage("islands");
+            else Open("islands");
+        });
+        // CLOSE stays a real existing button so the non-pausing fishing-menu
+        // safety path can keep its own close listener.
+        menuClose.transform.SetAsLastSibling();
+        Rect(menuClose.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,
+            new Vector2(-22,-18),new Vector2(170,54));
+        FishingHudTheme.Panel(menuClose.gameObject);
     }
     private Texture2D bluewaterThumbnail,snapperThumbnail;
     private Texture2D BiomeThumbnail(int biome)
@@ -618,8 +637,6 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
-
-
 
 
 

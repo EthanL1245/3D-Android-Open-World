@@ -264,6 +264,9 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         }
     }
 
+    // Typed entry point for index views that rebuild after a catch/save event.
+    public void OpenIndexPage(string destination){SafeOpenIndex(destination);}
+
     private void SafeOpenIndex(string destination)
     {
         if(destination!="islands" && destination!="reef-fish")return;
@@ -407,4 +410,3 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         if(boatSystem!=null && boatSystemDisabledByUs)boatSystem.enabled=true;
     }
 }
-

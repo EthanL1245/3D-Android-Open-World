@@ -236,11 +236,17 @@ public static class FishingTuning
 
     public static bool TryGetChance(int species,int bait,int biome,out float percent)
     {
+        return TryGetChance(species,BaitKey(bait),biome,out percent);
+    }
+
+    // Read any lure's odds for the index without changing the equipped lure.
+    public static bool TryGetChance(int species,string baitKey,int biome,out float percent)
+    {
         percent=0f;
         EnsureLoaded();
         if(!valid)return false;
         float[] row;
-        if(!ChanceRows.TryGetValue(ChanceKey(BiomeId(biome),BaitKey(bait)),out row))return false;
+        if(!ChanceRows.TryGetValue(ChanceKey(BiomeId(biome),baitKey),out row))return false;
         int index=ActiveIndex(Canonical(species));
         if(index<0)return false;
         percent=row[index];
@@ -496,4 +502,3 @@ public static class FishingTuning
         return false;
     }
 }
-

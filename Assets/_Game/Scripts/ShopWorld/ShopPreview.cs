@@ -15,11 +15,12 @@ public sealed class ShopPreview : MonoBehaviour
     private bool busy;
     private Material itemMaterial;
     private RenderTexture rendering;
-    public void Attach(RawImage target,int species,float kg,string gear=null,bool fitWholeFish=false)
+    public void Attach(RawImage target,int species,float kg,string gear=null,bool fitWholeFish=false,
+        bool transparentBackground=false,bool faceRight=false)
     {
         target.enabled=false;
         string resolvedGear=ResolveGearKey(target,gear);
-        string key=(fitWholeFish?"index:":"")+(resolvedGear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
+        string key=(transparentBackground?"clear:":"")+(faceRight?"right:":"")+(fitWholeFish?"index:":"")+(resolvedGear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
         if(cache.TryGetValue(key,out var ready))
         {
             if(ready!=null && ready.IsCreated())
@@ -29,10 +30,11 @@ public sealed class ShopPreview : MonoBehaviour
             cache.Remove(key);
             if(ready!=null)Destroy(ready);
         }
-        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,resolvedGear,fitWholeFish));else busy=false;});
+        requests.Enqueue(()=> {if(target!=null)StartCoroutine(Render(target,key,species,kg,resolvedGear,fitWholeFish,transparentBackground,faceRight));else busy=false;});
     }
     private void Update() { if(!busy && requests.Count>0) {busy=true;requests.Dequeue()();} }
-    private IEnumerator Render(RawImage target,string key,int species,float kg,string gear,bool fitWholeFish)
+    private IEnumerator Render(RawImage target,string key,int species,float kg,string gear,bool fitWholeFish,
+        bool transparentBackground,bool faceRight)
     {
         if(cache.TryGetValue(key,out var existing) && existing!=null && existing.IsCreated())
         {target.texture=existing;target.enabled=true;busy=false;yield break;}
@@ -43,7 +45,9 @@ public sealed class ShopPreview : MonoBehaviour
             studio.clearFlags=CameraClearFlags.SolidColor;studio.backgroundColor=new Color(0.08f,0.18f,0.20f);
             studio.orthographic=true;studio.nearClipPlane=0.01f;studio.farClipPlane=15;studio.cullingMask=1<<30;studio.enabled=false;
         }
-        studio.backgroundColor=gear=="RodAssembly"?new Color(0,0,0,0):new Color(0.08f,0.18f,0.20f);
+        studio.backgroundColor=transparentBackground || gear=="RodAssembly"?Color.clear:new Color(0.08f,0.18f,0.20f);
+        float aspect=transparentBackground?2f:1f;
+        studio.aspect=aspect;
         bool lurePreview=gear!=null && gear.StartsWith("Lure",System.StringComparison.Ordinal);
         bool reelPreview=gear!=null && gear.StartsWith("Reel",System.StringComparison.Ordinal);
         bool rodPreview=gear!=null && gear.StartsWith("Rod",System.StringComparison.Ordinal) && gear!="RodAssembly";
@@ -78,6 +82,9 @@ public sealed class ShopPreview : MonoBehaviour
             model.transform.SetParent(stage.transform,false);
         }
         foreach(var behaviour in model.GetComponentsInChildren<MonoBehaviour>())behaviour.enabled=false;
+        if(transparentBackground)
+            foreach(var animator in model.GetComponentsInChildren<Animator>(true))
+            {animator.applyRootMotion=false;animator.Update(0f);animator.enabled=false;}
         foreach(var collider in model.GetComponentsInChildren<Collider>())collider.enabled=false;
         foreach(var t in model.GetComponentsInChildren<Transform>())t.gameObject.layer=30;
         if(rodPreview || reelPreview)
@@ -103,7 +110,7 @@ public sealed class ShopPreview : MonoBehaviour
         }
         else
         {
-            model.transform.localRotation=rodPreview || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,-90,0);
+            model.transform.localRotation=rodPreview || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,faceRight?90:-90,0);
         }
 
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
@@ -132,11 +139,11 @@ public sealed class ShopPreview : MonoBehaviour
         {
             studio.orthographic=true;
             float margin=lurePreview?0.66f:rodPreview?0.62f:0.58f;
-            studio.orthographicSize=Mathf.Max(bounds.size.x,bounds.size.y)*margin;
+            studio.orthographicSize=Mathf.Max(bounds.size.x/aspect,bounds.size.y)*margin;
             studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5);
             studio.transform.rotation=Quaternion.identity;
         }
-        var texture=new RenderTexture(192,192,16){name="Inventory "+key};texture.Create();rendering=texture;
+        var texture=new RenderTexture(transparentBackground?384:192,192,16,RenderTextureFormat.ARGB32){name="Inventory "+key};texture.Create();rendering=texture;
         studio.targetTexture=texture;studio.enabled=true;
         yield return new WaitForEndOfFrame();
         studio.enabled=false;studio.targetTexture=null;Destroy(model);model=null;

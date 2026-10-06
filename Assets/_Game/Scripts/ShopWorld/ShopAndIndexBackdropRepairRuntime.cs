@@ -83,6 +83,9 @@ public sealed class ShopAndIndexBackdropRepairRuntime : MonoBehaviour
             }
 
             StyleIndexChrome(modalObject.transform);
+            // The new fish view owns its card selection, silhouettes, and text.
+            // Keep the supplied backdrop/CLOSE styling without restyling its tree.
+            if(page=="reef-fish"){wasThemed=true;return;}
             StyleIndexRows();
             StyleIndexText(modalObject.transform, heading);
             if (market && heading != null) heading.color = Color.white;
