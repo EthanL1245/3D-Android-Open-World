@@ -46,6 +46,9 @@ public static class RaftPaddleAnimationSetup
         if (EditorApplication.isPlayingOrWillChangePlaymode) return false;
 
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        Transform portableWrapper = prefab != null ? prefab.transform.Find("ModelContainer/Uploaded Raft Model") : null;
+        if (portableWrapper != null && portableWrapper.Find("RaftPortable_v23") != null) return false;
+
         GameObject blend = AssetDatabase.LoadAssetAtPath<GameObject>(BlendPath);
         if (prefab == null || blend == null) return false;
 
