@@ -179,7 +179,7 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
         // formations instead of creating a uniform ring of individual rocks.
         Detail(-15f,-18f,5,.88f,18f);
         Detail( 17f,-20f,3,.84f,202f);
-        Detail(-31f,  9f,6,.80f,72f);
+        Detail(-31f,  9f,2,.80f,72f);
         Detail( 31f, 10f,4,.82f,286f);
         Detail(-45f,-18f,5,.76f,124f,.25f);
         Detail( 45f,-20f,3,.74f,238f,.32f);
@@ -247,7 +247,9 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
 
         Vector3 jitter=new Vector3(N(.97f,1.03f),N(.98f,1.03f),N(.97f,1.03f));
         Vector3 s=Vector3.Scale(spec.localScale,jitter)*formationScale;
-        go.transform.localScale=s;
+        // Preserve the FBX's imported source scale (the original Blender exports
+        // carry a 100x node scale which Unity resolves with the FBX unit setting).
+        go.transform.localScale=Vector3.Scale(go.transform.localScale,s);
         go.transform.rotation=formation.rotation*Quaternion.Euler(spec.localEuler);
         go.transform.position=new Vector3(p.x,targetShelf,p.z);
 
@@ -303,16 +305,28 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
 
     private static void AddSimpleCollider(GameObject go)
     {
-        MeshFilter filter=go.GetComponentInChildren<MeshFilter>();
-        if(filter==null || filter.sharedMesh==null)return;
+        Renderer[] renderers=go.GetComponentsInChildren<Renderer>(true);
+        if(renderers.Length==0)return;
 
-        BoxCollider collider=filter.gameObject.AddComponent<BoxCollider>();
-        Bounds b=filter.sharedMesh.bounds;
-        collider.center=b.center;
+        Bounds world=renderers[0].bounds;
+        for(int i=1;i<renderers.Length;i++)world.Encapsulate(renderers[i].bounds);
+
+        // Put the cheap collider on the model root. Converting renderer world
+        // bounds back into root-local space keeps it correct even when the FBX
+        // contains its own import/unit scaling.
+        BoxCollider collider=go.AddComponent<BoxCollider>();
+        Vector3 centerLocal=go.transform.InverseTransformPoint(world.center);
+        Vector3 scale=go.transform.lossyScale;
+        float sx=Mathf.Max(.0001f,Mathf.Abs(scale.x));
+        float sy=Mathf.Max(.0001f,Mathf.Abs(scale.y));
+        float sz=Mathf.Max(.0001f,Mathf.Abs(scale.z));
+        Vector3 localSize=new Vector3(world.size.x/sx,world.size.y/sy,world.size.z/sz);
+
+        collider.center=centerLocal;
         collider.size=new Vector3(
-            Mathf.Max(.65f,b.size.x*.78f),
-            Mathf.Max(.65f,b.size.y*.82f),
-            Mathf.Max(.65f,b.size.z*.78f));
+            Mathf.Max(.55f/sx,localSize.x*.78f),
+            Mathf.Max(.55f/sy,localSize.y*.82f),
+            Mathf.Max(.55f/sz,localSize.z*.78f));
     }
 
     private float Ground(Vector3 p)
