@@ -112,15 +112,33 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         if(collider!=null)collider.terrainData=data;
     }
 
-    private static void PaintTerrain(Terrain terrain)
+    private TerrainLayer coastalStone;
+
+    private void PaintTerrain(Terrain terrain)
     {
         TerrainData data=terrain.terrainData;
+        // Add a local layer, rather than changing the generic stone layer also
+        // used by the other islands. Use the same full-resolution rock texture.
+        Texture2D texture=Resources.Load<Texture2D>("Islands/SnapperIsland/Rocks/WeatheredRockAtlas");
+        if(texture==null || data.alphamapLayers<1)return;
+        TerrainLayer[] previous=data.terrainLayers;
+        coastalStone=new TerrainLayer
+        {
+            name="Snapper weathered coastal stone", diffuseTexture=texture,
+            tileSize=new Vector2(1f/.14f,1f/.14f),
+            tileOffset=new Vector2(terrain.transform.position.x,terrain.transform.position.z),
+            metallic=0f, smoothness=.08f
+        };
+        TerrainLayer[] expanded=new TerrainLayer[previous.Length+1];
+        previous.CopyTo(expanded,0);
+        expanded[previous.Length]=coastalStone;
+        data.terrainLayers=expanded;
         int width=data.alphamapWidth,height=data.alphamapHeight,layers=data.alphamapLayers;
         if(layers<1)return;
         float[,,] alpha=data.GetAlphamaps(0,0,width,height);
         Vector3 origin=terrain.transform.position;
         Vector3 size=data.size;
-        int rockLayer=layers>=2?layers-2:0;
+        int rockLayer=layers-1;
 
         for(int z=0;z<height;z++)
         for(int x=0;x<width;x++)
@@ -131,7 +149,9 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
 
             float rocky=SnapperIslandGeometry.RockMask(p,Center);
             float fine=Mathf.PerlinNoise(p.x*.12f+83f,p.z*.11f+27f);
-            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.58f,.90f,fine));
+            float slope=data.GetSteepness((p.x-origin.x)/size.x,(p.z-origin.z)/size.z);
+            float cliff=Mathf.InverseLerp(20f,43f,slope);
+            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.85f,1f,fine)+cliff*.55f);
 
             // Shore remains mostly sand except where the placed headland
             // formations physically extend into it.
@@ -175,6 +195,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
     {
         // Static state must not survive into a newly loaded gameplay scene where a
         // fresh Terrain still needs to be sculpted.
+        if(coastalStone!=null)Destroy(coastalStone);
         Arrival=null;
         Ready=false;
         Center=Vector3.zero;

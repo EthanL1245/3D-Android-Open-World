@@ -5,13 +5,14 @@ Shader "Fishing/SnapperRockBoxProjection"
         [MainTexture] _BaseMap("Rock texture", 2D) = "white" {}
         [MainColor] _BaseColor("Tint", Color) = (0.88,0.86,0.82,1)
         _Tiling("World tiling", Range(0.05,1.0)) = 0.22
-        _Smoothness("Smoothness", Range(0,1)) = 0.16
+        [HideInInspector] _Cull("Cull", Float) = 2
+        _SeaLevel("Water level", Float) = 0
         _AmbientLift("Ambient lift", Range(0,1)) = 0.16
     }
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry" }
-        Cull Off
+        Cull Back
 
         Pass
         {
@@ -24,6 +25,7 @@ Shader "Fishing/SnapperRockBoxProjection"
             #pragma fragment Frag
             #pragma multi_compile_instancing
             #pragma multi_compile_fog
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
@@ -36,7 +38,7 @@ Shader "Fishing/SnapperRockBoxProjection"
                 float4 _BaseMap_ST;
                 half4 _BaseColor;
                 half _Tiling;
-                half _Smoothness;
+                float _SeaLevel;
                 half _AmbientLift;
             CBUFFER_END
 
@@ -66,20 +68,23 @@ Shader "Fishing/SnapperRockBoxProjection"
                 output.positionCS = pos.positionCS;
                 output.positionWS = pos.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
-                output.shadowCoord = TransformWorldToShadowCoord(pos.positionWS);
+                output.shadowCoord = GetShadowCoord(pos);
                 output.fogFactor = ComputeFogFactor(pos.positionCS.z);
                 return output;
             }
 
             half3 SampleRock(float3 worldPos, half3 worldNormal)
             {
-                half3 a = abs(normalize(worldNormal));
-                float2 uv;
-                if(a.x >= a.y && a.x >= a.z) uv = worldPos.zy;
-                else if(a.y >= a.z) uv = worldPos.xz;
-                else uv = worldPos.xy;
-                uv = uv * _Tiling + _BaseMap_ST.zw;
-                return SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, uv).rgb * _BaseColor.rgb;
+                // Blend projections instead of switching UV planes abruptly
+                // across smoothed faces. No missing/source UVs are involved.
+                half3 weights = pow(abs(normalize(worldNormal)), 4.0h);
+                weights /= max(weights.x + weights.y + weights.z, 0.001h);
+                float3 p = worldPos * _Tiling;
+                half3 x = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, p.zy).rgb;
+                half3 y = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, p.xz).rgb;
+                half3 z = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, p.xy).rgb;
+                half wet = lerp(0.62h, 1.0h, smoothstep(_SeaLevel - 0.1, _SeaLevel + 1.1, worldPos.y));
+                return (x * weights.x + y * weights.y + z * weights.z) * _BaseColor.rgb * wet;
             }
 
             half4 Frag(Varyings input) : SV_Target
@@ -89,8 +94,7 @@ Shader "Fishing/SnapperRockBoxProjection"
                 half3 albedo = SampleRock(input.positionWS, n);
                 Light mainLight = GetMainLight(input.shadowCoord);
                 half ndl = saturate(dot(n, mainLight.direction));
-                // Two-sided cards must light naturally from either face.
-                ndl = max(ndl, saturate(dot(-n, mainLight.direction)) * 0.72h);
+
                 half3 ambient = max(SampleSH(n), half3(_AmbientLift,_AmbientLift,_AmbientLift));
                 half3 color = albedo * (ambient + mainLight.color * ndl * mainLight.shadowAttenuation);
                 return half4(MixFog(color, input.fogFactor), 1);

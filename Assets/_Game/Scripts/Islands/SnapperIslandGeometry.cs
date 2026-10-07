@@ -60,71 +60,48 @@ public static class SnapperIslandGeometry
         float q=Ellipse(p,center);
         if(q<=1f)
         {
-            // Low irregular sand/stone foundation.
-            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.63f,q));
-            float floorNoise=Mathf.PerlinNoise(p.x*.043f+41f,p.z*.041f+73f);
-            float baseLand=sea+.10f+inland*(.48f+.62f*floorNoise);
-
-            // Connected rocky shoulders, not a single smooth dome.
-            float main=Mound(p,center+new Vector3(2f,0f,-10f),27f,20f)*5.35f;
-            float crown=Mound(p,center+new Vector3(2f,0f,-14f),12f,10f)*2.25f;
-            float west=Mound(p,center+new Vector3(-26f,0f,-6f),18f,15f)*3.55f;
-            float east=Mound(p,center+new Vector3(28f,0f,-9f),18f,15f)*3.35f;
-            float westStep=Mound(p,center+new Vector3(-19f,0f,7f),17f,12f)*1.65f;
-            float eastStep=Mound(p,center+new Vector3(20f,0f,7f),17f,12f)*1.55f;
-            float southStep=Mound(p,center+new Vector3(-10f,0f,-28f),15f,11f)*1.20f;
-
-            // Keep the teleport/landing approach as a usable sandy corridor.
-            float arrivalCut=Mound(p,center+new Vector3(0f,0f,28f),14f,12f);
-            float rocky=(main+crown+west+east+westStep+eastStep+southStep)*(1f-.88f*arrivalCut);
-
-            // Small-scale breakup prevents the terrain under the rocks reading as
-            // perfectly smooth where it peeks through gaps.
-            float rough=(Mathf.PerlinNoise(p.x*.095f+17f,p.z*.091f+29f)-.5f)*.72f*RockMask(p,center);
-            return Mathf.Max(existingFloor,baseLand+rocky+rough);
+            Vector3 local=p-center;
+            float beach=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.67f,q));
+            float foundation=sea+.10f+beach*1.05f;
+            // Broad asymmetric ridge: high rear-left crown, stepped western
+            // shoulder, lower eastern buttress separated by a sandy saddle.
+            float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),34f,27f)*11.8f;
+            float crown=Mound(p,center+new Vector3(-8f,0f,-16f),17f,15f)*3.8f;
+            float west=Mound(p,center+new Vector3(-30f,0f,-5f),19f,23f)*5.3f;
+            float east=Mound(p,center+new Vector3(33f,0f,-10f),17f,23f)*7.3f;
+            float front=Mound(p,center+new Vector3(-23f,0f,10f),19f,14f)*2.4f;
+            float rear=Mound(p,center+new Vector3(6f,0f,-28f),27f,12f)*3.4f;
+            float land=Mathf.Max(ridge+crown,Mathf.Max(west,Mathf.Max(east,rear)))+front;
+            float arrival=Mound(p,center+new Vector3(0f,0f,28f),13f,14f);
+            // Irregular erosion becomes weaker at the waterline and on the
+            // arrival beach. The rock meshes form the vertical cliff faces.
+            float rough=(Mathf.PerlinNoise(local.x*.14f+117f,local.z*.13f+91f)-.5f)*1.3f;
+            float rock=RockMask(p,center);
+            return Mathf.Max(existingFloor,foundation+land*(1f-.96f*arrival)+rough*rock);
         }
-
         float coast=DistanceFromShore(p,center);
         if(coast>CoastalShelfWidth)return existingFloor;
         float blend=Mathf.SmoothStep(0f,1f,coast/CoastalShelfWidth);
         return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f,existingFloor,blend));
     }
 
-    /// <summary>
-    /// Art mask used by terrain painting. High around the authored cliff masses,
-    /// low in the sandy channels and the north arrival corridor.
-    /// </summary>
+    /// <summary>Exposed stone on the ridges; sand in the beach and saddle.</summary>
     public static float RockMask(Vector3 p,Vector3 center)
     {
         if(Ellipse(p,center)>1f)return 0f;
-
-        float main=Mound(p,center+new Vector3(2f,0f,-10f),30f,22f);
-        float west=Mound(p,center+new Vector3(-26f,0f,-6f),20f,17f);
-        float east=Mound(p,center+new Vector3(28f,0f,-9f),20f,17f);
-        float westStep=Mound(p,center+new Vector3(-19f,0f,7f),18f,13f)*.72f;
-        float eastStep=Mound(p,center+new Vector3(20f,0f,7f),18f,13f)*.72f;
-        float south=Mound(p,center+new Vector3(-10f,0f,-28f),17f,12f)*.66f;
-
-        float mask=Mathf.Max(main,Mathf.Max(west,east));
-        mask=Mathf.Max(mask,Mathf.Max(westStep,Mathf.Max(eastStep,south)));
-
-        // Preserve visible sand pockets between rock groups.
-        float pocketA=Mound(p,center+new Vector3(-9f,0f,10f),9f,7f);
-        float pocketB=Mound(p,center+new Vector3(12f,0f,15f),10f,7f);
-        float pocketC=Mound(p,center+new Vector3(-35f,0f,19f),8f,7f);
-        float arrival=Mound(p,center+new Vector3(0f,0f,28f),15f,12f);
-        mask*=1f-.78f*Mathf.Max(pocketA,Mathf.Max(pocketB,pocketC));
-        mask*=1f-.94f*arrival;
-
-        float breakup=Mathf.Lerp(.72f,1f,Mathf.PerlinNoise(p.x*.071f+19f,p.z*.067f+43f));
-        return Mathf.Clamp01(mask*breakup);
+        float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),36f,28f);
+        float west=Mound(p,center+new Vector3(-30f,0f,-5f),21f,24f);
+        float east=Mound(p,center+new Vector3(33f,0f,-10f),19f,24f);
+        float front=Mound(p,center+new Vector3(-23f,0f,10f),20f,15f)*.80f;
+        float mask=Mathf.Max(Mathf.Max(ridge,west),Mathf.Max(east,front));
+        float arrival=Mound(p,center+new Vector3(0f,0f,28f),15f,15f);
+        return Mathf.Clamp01(mask*1.55f)*(1f-arrival);
     }
 
     private static float Mound(Vector3 p,Vector3 c,float radiusX,float radiusZ)
     {
         float x=(p.x-c.x)/radiusX;
         float z=(p.z-c.z)/radiusZ;
-        float d=x*x+z*z;
-        return Mathf.SmoothStep(1f,0f,Mathf.Clamp01(d));
+        return Mathf.SmoothStep(1f,0f,Mathf.Clamp01(x*x+z*z));
     }
 }
