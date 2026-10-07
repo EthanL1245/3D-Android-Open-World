@@ -2,8 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Geometry contract for the dedicated snapper island south of Suncrest Reef.
-/// The 200 m spacing is measured coast-to-coast along due south, while snapper
-/// fishing water extends exactly 50 m beyond this island's shoreline.
+/// Gameplay bounds stay unchanged; only the landform inside them is art-directed.
 /// </summary>
 public static class SnapperIslandGeometry
 {
@@ -18,7 +17,6 @@ public static class SnapperIslandGeometry
     public static Vector3 Center(ReefZone reef)
     {
         if(reef==null)return Vector3.zero;
-        // +Z is map north, so due south is -Z. Coast-to-coast gap is 200 m.
         return reef.center+new Vector3(0f,0f,-(reef.islandRadiusZ+ShoreGap+RadiusZ));
     }
 
@@ -62,13 +60,28 @@ public static class SnapperIslandGeometry
         float q=Ellipse(p,center);
         if(q<=1f)
         {
-            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.38f,q));
-            float broad=1.7f+1.55f*Mathf.PerlinNoise(p.x*.028f+91f,p.z*.027f+37f);
-            float detail=.55f*Mathf.PerlinNoise(p.x*.081f+12f,p.z*.074f+54f);
-            float west=Shoulder(p,center+new Vector3(-17f,0f,-5f),21f,16f)*1.65f;
-            float east=Shoulder(p,center+new Vector3(18f,0f,-9f),19f,17f)*1.45f;
-            float back=Shoulder(p,center+new Vector3(3f,0f,-18f),24f,15f)*1.25f;
-            return Mathf.Max(existingFloor,sea+.08f+inland*(broad+detail)+west+east+back);
+            // Low irregular sand/stone foundation.
+            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.63f,q));
+            float floorNoise=Mathf.PerlinNoise(p.x*.043f+41f,p.z*.041f+73f);
+            float baseLand=sea+.10f+inland*(.48f+.62f*floorNoise);
+
+            // Connected rocky shoulders, not a single smooth dome.
+            float main=Mound(p,center+new Vector3(2f,0f,-10f),27f,20f)*5.35f;
+            float crown=Mound(p,center+new Vector3(2f,0f,-14f),12f,10f)*2.25f;
+            float west=Mound(p,center+new Vector3(-26f,0f,-6f),18f,15f)*3.55f;
+            float east=Mound(p,center+new Vector3(28f,0f,-9f),18f,15f)*3.35f;
+            float westStep=Mound(p,center+new Vector3(-19f,0f,7f),17f,12f)*1.65f;
+            float eastStep=Mound(p,center+new Vector3(20f,0f,7f),17f,12f)*1.55f;
+            float southStep=Mound(p,center+new Vector3(-10f,0f,-28f),15f,11f)*1.20f;
+
+            // Keep the teleport/landing approach as a usable sandy corridor.
+            float arrivalCut=Mound(p,center+new Vector3(0f,0f,28f),14f,12f);
+            float rocky=(main+crown+west+east+westStep+eastStep+southStep)*(1f-.88f*arrivalCut);
+
+            // Small-scale breakup prevents the terrain under the rocks reading as
+            // perfectly smooth where it peeks through gaps.
+            float rough=(Mathf.PerlinNoise(p.x*.095f+17f,p.z*.091f+29f)-.5f)*.72f*RockMask(p,center);
+            return Mathf.Max(existingFloor,baseLand+rocky+rough);
         }
 
         float coast=DistanceFromShore(p,center);
@@ -77,7 +90,37 @@ public static class SnapperIslandGeometry
         return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f,existingFloor,blend));
     }
 
-    private static float Shoulder(Vector3 p,Vector3 c,float radiusX,float radiusZ)
+    /// <summary>
+    /// Art mask used by terrain painting. High around the authored cliff masses,
+    /// low in the sandy channels and the north arrival corridor.
+    /// </summary>
+    public static float RockMask(Vector3 p,Vector3 center)
+    {
+        if(Ellipse(p,center)>1f)return 0f;
+
+        float main=Mound(p,center+new Vector3(2f,0f,-10f),30f,22f);
+        float west=Mound(p,center+new Vector3(-26f,0f,-6f),20f,17f);
+        float east=Mound(p,center+new Vector3(28f,0f,-9f),20f,17f);
+        float westStep=Mound(p,center+new Vector3(-19f,0f,7f),18f,13f)*.72f;
+        float eastStep=Mound(p,center+new Vector3(20f,0f,7f),18f,13f)*.72f;
+        float south=Mound(p,center+new Vector3(-10f,0f,-28f),17f,12f)*.66f;
+
+        float mask=Mathf.Max(main,Mathf.Max(west,east));
+        mask=Mathf.Max(mask,Mathf.Max(westStep,Mathf.Max(eastStep,south)));
+
+        // Preserve visible sand pockets between rock groups.
+        float pocketA=Mound(p,center+new Vector3(-9f,0f,10f),9f,7f);
+        float pocketB=Mound(p,center+new Vector3(12f,0f,15f),10f,7f);
+        float pocketC=Mound(p,center+new Vector3(-35f,0f,19f),8f,7f);
+        float arrival=Mound(p,center+new Vector3(0f,0f,28f),15f,12f);
+        mask*=1f-.78f*Mathf.Max(pocketA,Mathf.Max(pocketB,pocketC));
+        mask*=1f-.94f*arrival;
+
+        float breakup=Mathf.Lerp(.72f,1f,Mathf.PerlinNoise(p.x*.071f+19f,p.z*.067f+43f));
+        return Mathf.Clamp01(mask*breakup);
+    }
+
+    private static float Mound(Vector3 p,Vector3 c,float radiusX,float radiusZ)
     {
         float x=(p.x-c.x)/radiusX;
         float z=(p.z-c.z)/radiusZ;
