@@ -6,15 +6,42 @@ using UnityEngine;
 public sealed class IslandExpansionWorld : MonoBehaviour
 {
     public IslandExpansionConfig Config;
+    [SerializeField, HideInInspector] private bool savedLayout;
+    public bool HasSavedLayout => savedLayout;
+    private void Awake() { if(savedLayout) UseSavedLayout(); }
+
+    private void UseSavedLayout()
+    {
+        Active=this;
+        reef=GetComponentInParent<ReefZone>();
+        if(reef==null)reef=FindFirstObjectByType<ReefZone>();
+        Water=FindFirstObjectByType<OceanWater>();
+        if(Config==null)Config=Resources.Load<IslandExpansionConfig>("Islands/BrinebreakExpansion");
+        Ready=Terrain!=null && Terrain.terrainData!=null && reef!=null && Water!=null && Config!=null;
+        if(Ready)sea=Water.BaseWaterLevel;
+        else Debug.LogError("Saved fishing map is missing its terrain, reef, water or configuration. Restore the missing reference; the map will not be regenerated over your edits.",this);
+    }
+
+#if UNITY_EDITOR
+    public void SaveLayoutForEditing()
+    {
+        if(!Ready)throw new System.InvalidOperationException("Generate the expansion before saving it.");
+        savedLayout=true;
+        // Saved assets and authored transforms are now owned by the scene.
+        originalData=null;generatedData=null;sceneryPositions.Clear();
+        rockTexture=null;seabedTexture=null;seabedNormal=null;
+        rockLayer=null;seabedLayer=null;rock=null;wood=null;grass=null;
+    }
+#endif
     public static IslandExpansionWorld Active {get;private set;}
-    public Terrain Terrain {get;private set;}
+    [field: SerializeField] public Terrain Terrain {get;private set;}
     public OceanWater Water {get;private set;}
-    public Vector3 NewCenter {get;private set;}
-    public Vector3 PelagicCenter {get;private set;}
-    public Transform PelagicArrival {get;private set;}
-    public Vector3 ShelfCenter {get;private set;}
-    public Vector2 ShelfRadii {get;private set;}
-    public Transform Arrival {get;private set;}
+    [field: SerializeField] public Vector3 NewCenter {get;private set;}
+    [field: SerializeField] public Vector3 PelagicCenter {get;private set;}
+    [field: SerializeField] public Transform PelagicArrival {get;private set;}
+    [field: SerializeField] public Vector3 ShelfCenter {get;private set;}
+    [field: SerializeField] public Vector2 ShelfRadii {get;private set;}
+    [field: SerializeField] public Transform Arrival {get;private set;}
     public bool Ready {get;private set;}
     private TerrainData originalData,generatedData;
     private readonly System.Collections.Generic.Dictionary<Transform,Vector3> sceneryPositions = new System.Collections.Generic.Dictionary<Transform,Vector3>();
@@ -33,8 +60,9 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     private void Start(){Build();}
     public void Build()
     {
+        if(savedLayout){UseSavedLayout();return;}
         if(Ready)return;
-        reef=ReefZone.Active;Water=FindFirstObjectByType<OceanWater>();
+        reef=FindFirstObjectByType<ReefZone>();Water=FindFirstObjectByType<OceanWater>();
         if(reef==null || Water==null){Debug.LogWarning("Island expansion needs the installed Suncrest Reef scene. Run Tools/Setup Island Expansion after installing Suncrest Reef.");return;}
         Terrain=reef.GetComponentInChildren<Terrain>();if(Terrain==null)Terrain=UnityEngine.Terrain.activeTerrain;
         if(Terrain==null)return;
@@ -56,7 +84,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(q.x<0 || q.z<0 || q.x>size.x || q.z>size.z)return sea-Config.OceanDepth;
         return originalPosition.y+originalData.GetInterpolatedHeight(q.x/size.x,q.z/size.z);
     }
-    public float Height(Vector3 p)=>SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
+    public float Height(Vector3 p)=>savedLayout && Terrain!=null?Terrain.SampleHeight(p)+Terrain.transform.position.y:SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
     private float BaseHeight(Vector3 p)
     {
         float beyond=IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii);
@@ -230,7 +258,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
             p.y=Terrain.SampleHeight(p)+Terrain.transform.position.y;prop.transform.position=p;
             var renderer=prop.GetComponent<Renderer>();renderer.sharedMaterial=bush?grass:rock;
             prop.transform.position+=Vector3.up*(renderer.bounds.extents.y*.45f); // bury lower half in slope
-            if(bush)Destroy(prop.GetComponent<Collider>());
+            if(bush)RemoveGeneratedObject(prop.GetComponent<Collider>());
             prop.isStatic=true;
         }
         Vector3 signPoint=approach+new Vector3(4,0,4);signPoint.y=Terrain.SampleHeight(signPoint)+Terrain.transform.position.y;
@@ -260,7 +288,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
             p.y=Terrain.SampleHeight(p)+Terrain.transform.position.y;prop.transform.position=p;
             var renderer=prop.GetComponent<Renderer>();renderer.sharedMaterial=scrub?grass:rock;
             prop.transform.position+=Vector3.up*renderer.bounds.extents.y*.4f;
-            if(scrub)Destroy(prop.GetComponent<Collider>());prop.isStatic=true;
+            if(scrub)RemoveGeneratedObject(prop.GetComponent<Collider>());prop.isStatic=true;
         }
         Vector3 signPoint=approach+new Vector3(4,0,-3);signPoint.y=Terrain.SampleHeight(signPoint)+Terrain.transform.position.y;
         IslandWelcomeSign.Create(transform,"BLUEWATER CAY",signPoint,Quaternion.identity,wood);
@@ -280,9 +308,15 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     public int BiomeAt(Vector3 p)=>SnapperIslandRuntime.Ready && SnapperIslandGeometry.ContainsArea(p,SnapperIslandRuntime.Center)?ReefCatalog.SnapperBiomeId:PelagicIslandGeometry.Contains(p,PelagicCenter)?PelagicIslandGeometry.BiomeId:IslandGeometry.Biome(p,reef.center,NewCenter);
     public float OffshoreAt(Vector3 p)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,180,IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii)));
     public static int FishingBiome(Vector3 p)=>Active!=null && Active.Ready?Active.BiomeAt(p):0;
+    private static void RemoveGeneratedObject(Object value)
+    {
+        if(value==null)return;
+        if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);
+    }
     private void OnDestroy()
     {
         if(Active==this)Active=null;
+        if(savedLayout)return;
         foreach(var entry in sceneryPositions)if(entry.Key!=null)entry.Key.position=entry.Value;
         sceneryPositions.Clear();
         if(Terrain!=null && originalData!=null){Terrain.terrainData=originalData;Terrain.transform.position=originalPosition;var c=Terrain.GetComponent<TerrainCollider>();if(c!=null)c.terrainData=originalData;}

@@ -147,7 +147,7 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
         Vector3 size = original.size;
         if (Mathf.Min(size.x, Mathf.Min(size.y, size.z)) < .0001f)
         {
-            Destroy(pivot);
+            RemoveGeneratedObject(pivot);
             return;
         }
         pivot.transform.localScale = new Vector3(width / size.x, height / size.y, depth / size.z);
@@ -188,7 +188,7 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
             renderer.receiveShadows = true;
             renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
         }
-        foreach (Collider collider in model.GetComponentsInChildren<Collider>(true)) Destroy(collider);
+        foreach (Collider collider in model.GetComponentsInChildren<Collider>(true)) RemoveGeneratedObject(collider);
         // The originals have only 80-110 triangles. Exact static colliders are
         // cheap here and avoid oversized invisible rotated box obstacles.
         foreach (MeshFilter filter in model.GetComponentsInChildren<MeshFilter>(true))
@@ -211,5 +211,13 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
 
     private float Ground(Vector3 p) => terrain.SampleHeight(p) + terrain.transform.position.y;
     private float N(float min, float max) => Mathf.Lerp(min, max, (float)rng.NextDouble());
+#if UNITY_EDITOR
+    public void ReleaseSavedMaterial() { material=null; }
+#endif
+    private static void RemoveGeneratedObject(Object value)
+    {
+        if(value==null)return;
+        if(Application.isPlaying)Destroy(value);else DestroyImmediate(value);
+    }
     private void OnDestroy() { if (material != null) Destroy(material); }
 }

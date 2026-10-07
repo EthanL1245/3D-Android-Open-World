@@ -9,6 +9,26 @@ using UnityEngine;
 [DefaultExecutionOrder(-550)]
 public sealed class SnapperIslandRuntime : MonoBehaviour
 {
+    [SerializeField, HideInInspector] private bool savedLayout;
+    [SerializeField] private Vector3 savedCenter;
+    [SerializeField] private Transform savedArrival;
+    public bool HasSavedLayout => savedLayout;
+
+    private void Awake() { if(savedLayout) UseSavedLayout(); }
+    private void UseSavedLayout()
+    {
+        Center=savedCenter;Arrival=savedArrival;Ready=true;
+    }
+#if UNITY_EDITOR
+    public void SaveLayoutForEditing()
+    {
+        if(!Ready)throw new System.InvalidOperationException("Generate Snapper Island before saving it.");
+        savedCenter=Center;savedArrival=Arrival;savedLayout=true;coastalStone=null;
+        var rocks=GetComponent<SnapperIslandRockscape>();
+        if(rocks!=null)rocks.ReleaseSavedMaterial();
+    }
+#endif
+
     public static Vector3 Center {get;private set;}
     public static Transform Arrival {get;private set;}
     public static bool Ready {get;private set;}
@@ -34,11 +54,12 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         Build();
     }
 
-    private void Build()
+    public void Build()
     {
-        if(Ready)return;
+        if(savedLayout){UseSavedLayout();return;}
+        if(Ready && Application.isPlaying)return;
         IslandExpansionWorld expansion=IslandExpansionWorld.Active;
-        ReefZone reef=ReefZone.Active;
+        ReefZone reef=FindFirstObjectByType<ReefZone>();
         OceanWater water=FindFirstObjectByType<OceanWater>();
 
         if(expansion!=null && !expansion.Ready)
