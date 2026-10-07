@@ -71,7 +71,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         Physics.SyncTransforms();
         Ready=true;
 
-        Debug.Log("[SNAPPER ISLAND] Built rugged modular-rock Snapper Island directly south of Suncrest; gameplay bounds and 50 m snapper fishing water are unchanged.");
+        Debug.Log("[SNAPPER ISLAND] Built clustered cliff-form Snapper Island with weathered rock material; gameplay bounds and fishing water are unchanged.");
     }
 
     private static bool InsideTerrain(Terrain terrain,Vector3 center,float radiusX,float radiusZ)
@@ -129,10 +129,14 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
             float q=SnapperIslandGeometry.Ellipse(p,Center);
             if(q>1f)continue;
 
-            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(.94f,.48f,q));
-            float breakup=Mathf.PerlinNoise(p.x*.065f+19f,p.z*.061f+43f);
-            float stone=Mathf.Clamp01(inland*Mathf.Lerp(.28f,.72f,breakup));
-            if(Mathf.PerlinNoise(p.x*.035f+81f,p.z*.039f+12f)>.68f)stone*=.42f;
+            float rocky=SnapperIslandGeometry.RockMask(p,Center);
+            float fine=Mathf.PerlinNoise(p.x*.12f+83f,p.z*.11f+27f);
+            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.58f,.90f,fine));
+
+            // Shore remains mostly sand except where the placed headland
+            // formations physically extend into it.
+            float shoreFade=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.80f,q));
+            stone*=Mathf.Lerp(.35f,1f,shoreFade);
 
             for(int layer=0;layer<layers;layer++)alpha[z,x,layer]=0f;
             if(rockLayer==0)alpha[z,x,0]=1f;
