@@ -129,11 +129,14 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
     private void Place(string label, int asset, float x, float z, float width, float height, float depth,
         float pitch, float yaw, float roll, float burial, bool shoreline = false)
     {
+        float scale = SnapperIslandGeometry.DesignScale;
+        x *= scale; z *= scale;
+        width *= scale; height *= scale; depth *= scale;
         Vector3 p = center + new Vector3(x, 0f, z);
         // Check the footprint, not just the pivot, so large tilted rocks cannot
         // overhang the teleport spot or block the first steps onto the island.
         float footprint = Mathf.Sqrt(width * width + height * height + depth * depth) * .5f;
-        if (Vector3.ProjectOnPlane(p - arrival, Vector3.up).magnitude < footprint + 5f) return;
+        if (Vector3.ProjectOnPlane(p - arrival, Vector3.up).magnitude < footprint + 5f * scale) return;
         GameObject pivot = new GameObject(label + " " + (++pieceCount));
         pivot.transform.SetParent(holder, false);
         GameObject model = Instantiate(rocks[asset], pivot.transform);

@@ -71,7 +71,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         Physics.SyncTransforms();
         Ready=true;
 
-        Debug.Log("[SNAPPER ISLAND] Built clustered cliff-form Snapper Island with weathered rock material; gameplay bounds and fishing water are unchanged.");
+        Debug.Log("[SNAPPER ISLAND] Built clustered cliff-form Snapper Island with weathered rock material; scaled terrain, rock formations and shore bounds are aligned.");
     }
 
     private static bool InsideTerrain(Terrain terrain,Vector3 center,float radiusX,float radiusZ)
@@ -184,9 +184,9 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         Arrival=arrival.transform;
         GameObject trigger=new GameObject("Snapper Land Discovery");
         trigger.transform.SetParent(transform,false);
-        trigger.transform.position=Center+Vector3.up*(FindFirstObjectByType<OceanWater>().BaseWaterLevel+12f-Center.y);
+        trigger.transform.position=Center+Vector3.up*(FindFirstObjectByType<OceanWater>().BaseWaterLevel+12f*SnapperIslandGeometry.DesignScale-Center.y);
         var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;
-        box.size=new Vector3(SnapperIslandGeometry.RadiusX*2,30,SnapperIslandGeometry.RadiusZ*2);
+        box.size=new Vector3(SnapperIslandGeometry.RadiusX*2,30f*SnapperIslandGeometry.DesignScale,SnapperIslandGeometry.RadiusZ*2);
         var body=trigger.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;
         trigger.AddComponent<IslandDiscovery>().Biome=ReefCatalog.SnapperBiomeId;
     }

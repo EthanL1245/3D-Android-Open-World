@@ -2,17 +2,18 @@ using UnityEngine;
 
 /// <summary>
 /// Geometry contract for the dedicated snapper island south of Suncrest Reef.
-/// Gameplay bounds stay unchanged; only the landform inside them is art-directed.
+/// One shared scale keeps terrain, formations, arrival and shore bounds aligned.
 /// </summary>
 public static class SnapperIslandGeometry
 {
     public const string Id="snapper-island";
     public const string Name="Snapper Island";
-    public const float RadiusX=55f;
-    public const float RadiusZ=42f;
+    public const float DesignScale=1f/3f;
+    public const float RadiusX=55f*DesignScale;
+    public const float RadiusZ=42f*DesignScale;
     public const float ShoreGap=200f;
     public const float FishingMargin=50f;
-    public const float CoastalShelfWidth=72f;
+    public const float CoastalShelfWidth=72f*DesignScale;
 
     public static Vector3 Center(ReefZone reef)
     {
@@ -60,9 +61,12 @@ public static class SnapperIslandGeometry
         float q=Ellipse(p,center);
         if(q<=1f)
         {
+            float rock=RockMask(p,center);
+            // Evaluate the approved layout in its original design coordinates.
+            p=center+(p-center)/DesignScale;
             Vector3 local=p-center;
             float beach=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.67f,q));
-            float foundation=sea+.10f+beach*1.05f;
+            float foundation=.10f+beach*1.05f;
             // Broad asymmetric ridge: high rear-left crown, stepped western
             // shoulder, lower eastern buttress separated by a sandy saddle.
             float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),34f,27f)*11.8f;
@@ -76,19 +80,19 @@ public static class SnapperIslandGeometry
             // Irregular erosion becomes weaker at the waterline and on the
             // arrival beach. The rock meshes form the vertical cliff faces.
             float rough=(Mathf.PerlinNoise(local.x*.14f+117f,local.z*.13f+91f)-.5f)*1.3f;
-            float rock=RockMask(p,center);
-            return Mathf.Max(existingFloor,foundation+land*(1f-.96f*arrival)+rough*rock);
+            return Mathf.Max(existingFloor,sea+DesignScale*(foundation+land*(1f-.96f*arrival)+rough*rock));
         }
         float coast=DistanceFromShore(p,center);
         if(coast>CoastalShelfWidth)return existingFloor;
         float blend=Mathf.SmoothStep(0f,1f,coast/CoastalShelfWidth);
-        return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f,existingFloor,blend));
+        return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f*DesignScale,existingFloor,blend));
     }
 
     /// <summary>Exposed stone on the ridges; sand in the beach and saddle.</summary>
     public static float RockMask(Vector3 p,Vector3 center)
     {
         if(Ellipse(p,center)>1f)return 0f;
+        p=center+(p-center)/DesignScale;
         float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),36f,28f);
         float west=Mound(p,center+new Vector3(-30f,0f,-5f),21f,24f);
         float east=Mound(p,center+new Vector3(33f,0f,-10f),19f,24f);
