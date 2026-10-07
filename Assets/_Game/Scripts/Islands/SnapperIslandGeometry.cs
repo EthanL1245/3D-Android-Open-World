@@ -67,19 +67,20 @@ public static class SnapperIslandGeometry
             Vector3 local=p-center;
             float beach=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.67f,q));
             float foundation=.10f+beach*1.05f;
-            // Broad asymmetric ridge: high rear-left crown, stepped western
-            // shoulder, lower eastern buttress separated by a sandy saddle.
-            float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),34f,27f)*11.8f;
-            float crown=Mound(p,center+new Vector3(-8f,0f,-16f),17f,15f)*3.8f;
-            float west=Mound(p,center+new Vector3(-30f,0f,-5f),19f,23f)*5.3f;
-            float east=Mound(p,center+new Vector3(33f,0f,-10f),17f,23f)*7.3f;
-            float front=Mound(p,center+new Vector3(-23f,0f,10f),19f,14f)*2.4f;
-            float rear=Mound(p,center+new Vector3(6f,0f,-28f),27f,12f)*3.4f;
-            float land=Mathf.Max(ridge+crown,Mathf.Max(west,Mathf.Max(east,rear)))+front;
+            // Broad sand-filled terraces replace the narrow high summit.
+            // Flatten the upper ridge while raising its shoulders and front
+            // shelves, so the exposed rocks retain a continuous body of sand.
+            float ridge=Mathf.Pow(Mound(p,center+new Vector3(-7f,0f,-13f),35f,28f),.65f)*8.6f;
+            float crown=Mound(p,center+new Vector3(-8f,0f,-16f),22f,19f)*.9f;
+            float west=Mound(p,center+new Vector3(-30f,0f,-5f),22f,25f)*6.8f;
+            float east=Mound(p,center+new Vector3(33f,0f,-10f),19f,24f)*6.6f;
+            float front=Mound(p,center+new Vector3(-23f,0f,10f),22f,17f)*4.8f;
+            float rear=Mound(p,center+new Vector3(6f,0f,-28f),28f,14f)*4.8f;
+            float land=Mathf.Max(ridge+crown,Mathf.Max(west,Mathf.Max(east,Mathf.Max(rear,front))));
             float arrival=Mound(p,center+new Vector3(0f,0f,28f),13f,14f);
             // Irregular erosion becomes weaker at the waterline and on the
             // arrival beach. The rock meshes form the vertical cliff faces.
-            float rough=(Mathf.PerlinNoise(local.x*.14f+117f,local.z*.13f+91f)-.5f)*1.3f;
+            float rough=(Mathf.PerlinNoise(local.x*.14f+117f,local.z*.13f+91f)-.5f)*.65f;
             return Mathf.Max(existingFloor,sea+DesignScale*(foundation+land*(1f-.96f*arrival)+rough*rock));
         }
         float coast=DistanceFromShore(p,center);

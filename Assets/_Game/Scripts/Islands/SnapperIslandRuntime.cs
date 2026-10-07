@@ -151,7 +151,8 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
             float fine=Mathf.PerlinNoise(p.x*.12f+83f,p.z*.11f+27f);
             float slope=data.GetSteepness((p.x-origin.x)/size.x,(p.z-origin.z)/size.z);
             float cliff=Mathf.InverseLerp(20f,43f,slope);
-            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.85f,1f,fine)+cliff*.55f);
+            // Flat ledges keep their sand caps; steep faces expose stone.
+            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.10f,.22f,fine)+cliff*.78f);
 
             // Shore remains mostly sand except where the placed headland
             // formations physically extend into it.

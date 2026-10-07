@@ -132,6 +132,7 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
         float scale = SnapperIslandGeometry.DesignScale;
         x *= scale; z *= scale;
         width *= scale; height *= scale; depth *= scale;
+        if (!shoreline) height *= .72f;
         Vector3 p = center + new Vector3(x, 0f, z);
         // Check the footprint, not just the pivot, so large tilted rocks cannot
         // overhang the teleport spot or block the first steps onto the island.
@@ -155,7 +156,22 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
         pivot.transform.rotation = Quaternion.Euler(pitch, yaw, roll);
         pivot.transform.position = new Vector3(p.x, Ground(p), p.z);
         Bounds oriented = WorldBounds(model);
-        float bottom = Ground(p) - oriented.size.y * burial;
+        float ground = Ground(p);
+        float bottom = ground - oriented.size.y * Mathf.Max(burial, .52f);
+        if (!shoreline && width >= 7f * scale)
+        {
+            // Anchor cliff tops to the uphill sand shelf rather than stacking
+            // an entire rock above the terrain. Most of each block is buried;
+            // the downhill side becomes the visible retaining cliff face.
+            float uphill = ground;
+            float reach = Mathf.Min(width, depth) * .32f;
+            uphill = Mathf.Max(uphill, Ground(p + Vector3.right * reach));
+            uphill = Mathf.Max(uphill, Ground(p - Vector3.right * reach));
+            uphill = Mathf.Max(uphill, Ground(p + Vector3.forward * reach));
+            uphill = Mathf.Max(uphill, Ground(p - Vector3.forward * reach));
+            float lip = Mathf.Min(.38f, oriented.size.y * .12f);
+            bottom = uphill + lip - oriented.size.y;
+        }
         if (shoreline)
         {
             // Seat on the coastal floor, with genuinely submerged bases.
