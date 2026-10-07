@@ -59,8 +59,8 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         if(savedLayout){UseSavedLayout();return;}
         if(Ready && Application.isPlaying)return;
         IslandExpansionWorld expansion=IslandExpansionWorld.Active;
-        ReefZone reef=FindFirstObjectByType<ReefZone>();
-        OceanWater water=FindFirstObjectByType<OceanWater>();
+        ReefZone reef=FindFirstObjectByType<ReefZone>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+        OceanWater water=FindFirstObjectByType<OceanWater>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
 
         if(expansion!=null && !expansion.Ready)
         {
@@ -206,7 +206,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         Arrival=arrival.transform;
         GameObject trigger=new GameObject("Snapper Land Discovery");
         trigger.transform.SetParent(transform,false);
-        trigger.transform.position=Center+Vector3.up*(FindFirstObjectByType<OceanWater>().BaseWaterLevel+12f*SnapperIslandGeometry.DesignScale-Center.y);
+        trigger.transform.position=Center+Vector3.up*(FindFirstObjectByType<OceanWater>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include).BaseWaterLevel+12f*SnapperIslandGeometry.DesignScale-Center.y);
         var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;
         box.size=new Vector3(SnapperIslandGeometry.RadiusX*2,30f*SnapperIslandGeometry.DesignScale,SnapperIslandGeometry.RadiusZ*2);
         var body=trigger.AddComponent<Rigidbody>();body.isKinematic=true;body.useGravity=false;

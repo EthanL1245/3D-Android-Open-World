@@ -18,10 +18,7 @@ public static class FishingMapSceneEditor
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
             throw new InvalidOperationException("Exit Play Mode before preparing the editable map.");
-        var scene = SceneManager.GetActiveScene();
-        if (string.IsNullOrEmpty(scene.path) || EditorSceneManager.loadedSceneCount != 1 ||
-            Find<FirstPersonController>(scene) == null || Find<OceanWater>(scene) == null)
-            throw new InvalidOperationException("Open only the saved main fishing scene (PrototypeWorld) first.");
+        if (!TryOpenFishingScene(out var scene)) return;
 
         var world = Find<IslandExpansionWorld>(scene);
         var snapper = Find<SnapperIslandRuntime>(scene);
@@ -93,11 +90,78 @@ public static class FishingMapSceneEditor
         finally { EditorUtility.ClearProgressBar(); }
     }
 
+    private static bool IsFishingScene(Scene scene)
+    {
+        // The player can be disabled or supplied by gameplay bootstrap. Geometry
+        // conversion needs the ocean and terrain, not an active player controller.
+        return scene.IsValid() && scene.isLoaded &&
+            !EditorSceneManager.IsPreviewScene(scene) &&
+            Find<OceanWater>(scene) != null && Find<Terrain>(scene) != null;
+    }
+
+    private static bool TryOpenFishingScene(out Scene scene)
+    {
+        scene = SceneManager.GetActiveScene();
+        if (PrefabStageUtility.GetCurrentPrefabStage() != null)
+        {
+            EditorUtility.DisplayDialog("Exit Prefab Mode", "Save and close Prefab Mode, then run Make Main Fishing Map Editable again.", "OK");
+            return false;
+        }
+        if (!IsFishingScene(scene))
+        {
+            scene = default;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var candidate = SceneManager.GetSceneAt(i);
+                if (!IsFishingScene(candidate)) continue;
+                if (scene.IsValid())
+                {
+                    EditorUtility.DisplayDialog("Choose the fishing scene", "More than one fishing map is loaded. Set the map you want to edit as the active scene in the Hierarchy, then run this command again.", "OK");
+                    return false;
+                }
+                scene = candidate;
+            }
+        }
+
+        if (!scene.IsValid())
+        {
+            const string mainPath = "Assets/Scenes/PrototypeWorld.unity";
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(mainPath) == null)
+            {
+                EditorUtility.DisplayDialog("Main fishing scene not found", "Open your main fishing scene containing the ocean and terrain, then run this command again.", "OK");
+                return false;
+            }
+            // Unity offers Save / Don't Save / Cancel for any modified scenes.
+            // Cancelling leaves all open scenes and edits untouched.
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return false;
+            scene = EditorSceneManager.OpenScene(mainPath, OpenSceneMode.Single);
+        }
+        else
+        {
+            if (string.IsNullOrEmpty(scene.path) && !EditorSceneManager.SaveScene(scene)) return false;
+            if (SceneManager.sceneCount > 1)
+            {
+                // Generators still use global lookups. Isolate the selected map
+                // so an additive shop/home scene cannot supply its terrain/water.
+                string path = scene.path;
+                if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return false;
+                scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+            }
+            else SceneManager.SetActiveScene(scene);
+        }
+        if (!IsFishingScene(scene))
+        {
+            EditorUtility.DisplayDialog("Fishing map components missing", "The scene '" + scene.path + "' needs a Terrain and OceanWater component before conversion. No map objects were generated or changed.", "OK");
+            return false;
+        }
+        return true;
+    }
+
     private static T Find<T>(Scene scene) where T : Component
     {
         foreach (var root in scene.GetRootGameObjects())
         {
-            var result = root.GetComponentInChildren<T>();
+            var result = root.GetComponentInChildren<T>(true);
             if (result != null) return result;
         }
         return null;

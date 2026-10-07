@@ -14,8 +14,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         Active=this;
         reef=GetComponentInParent<ReefZone>();
-        if(reef==null)reef=FindFirstObjectByType<ReefZone>();
-        Water=FindFirstObjectByType<OceanWater>();
+        if(reef==null)reef=FindFirstObjectByType<ReefZone>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+        Water=FindFirstObjectByType<OceanWater>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
         if(Config==null)Config=Resources.Load<IslandExpansionConfig>("Islands/BrinebreakExpansion");
         Ready=Terrain!=null && Terrain.terrainData!=null && reef!=null && Water!=null && Config!=null;
         if(Ready)sea=Water.BaseWaterLevel;
@@ -62,9 +62,9 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         if(savedLayout){UseSavedLayout();return;}
         if(Ready)return;
-        reef=FindFirstObjectByType<ReefZone>();Water=FindFirstObjectByType<OceanWater>();
+        reef=FindFirstObjectByType<ReefZone>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);Water=FindFirstObjectByType<OceanWater>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
         if(reef==null || Water==null){Debug.LogWarning("Island expansion needs the installed Suncrest Reef scene. Run Tools/Setup Island Expansion after installing Suncrest Reef.");return;}
-        Terrain=reef.GetComponentInChildren<Terrain>();if(Terrain==null)Terrain=UnityEngine.Terrain.activeTerrain;
+        Terrain=reef.GetComponentInChildren<Terrain>(!Application.isPlaying);if(Terrain==null)Terrain=UnityEngine.Terrain.activeTerrain;
         if(Terrain==null)return;
         if(Config==null)Config=Resources.Load<IslandExpansionConfig>("Islands/BrinebreakExpansion");
         if(Config==null){Debug.LogError("Brinebreak expansion configuration missing.");return;}

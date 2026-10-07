@@ -1,6 +1,6 @@
 # Editable main fishing map
 
-1. Open `Assets/Scenes/PrototypeWorld.unity` (or your saved main fishing scene), with other scenes closed, outside Play Mode.
+1. Exit Play Mode. The command finds your active/loaded fishing map, or opens `Assets/Scenes/PrototypeWorld.unity` automatically. If multiple scenes are loaded, Unity offers to save modified scenes before isolating the map. Cancel leaves them untouched.
 2. Run **Tools > Open World > Make Main Fishing Map Editable** once. Wait for terrain generation and asset saving to finish.
 3. In the Hierarchy, expand **Island Expansion**, **Snapper Island Runtime > Snapper Coastal Rockscape**, or **SuncrestReef**. Select a rock's named parent to move/rotate/scale the complete piece. Select the terrain to sculpt or paint it.
 4. Save with **Ctrl+S**. Play and Android builds use this saved terrain and object layout. Normal Unity Play Mode object edits are temporary; do placement work outside Play Mode.
