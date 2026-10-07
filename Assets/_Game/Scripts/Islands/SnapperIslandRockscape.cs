@@ -183,7 +183,7 @@ public sealed class SnapperIslandRockscape : MonoBehaviour
         Detail( 31f, 10f,4,.82f,286f);
         Detail(-45f,-18f,5,.76f,124f,.25f);
         Detail( 45f,-20f,3,.74f,238f,.32f);
-        Detail(-26f,-35f,6,.78f,308f,.28f);
+        Detail(-26f,-35f,1,.78f,308f,.28f);
         Detail( 26f,-36f,4,.76f,48f,.35f);
     }
 
