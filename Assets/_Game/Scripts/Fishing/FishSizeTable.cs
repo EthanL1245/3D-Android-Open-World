@@ -26,7 +26,8 @@ public static class FishSizeTable
         GameplayCurve(5f,40), // Blacktip reef shark gameplay size curve
         GameplayCurve(8f,70), // Mako gameplay size curve
         GameplayCurve(8f,70), // Scarred variant delegates to the normal curve below
-        GameplayCurve(15f,22) // Mangrove snapper gameplay approximation kg = 15 * metres^3
+        GameplayCurve(15f,22), // Mangrove snapper gameplay approximation kg = 15 * metres^3
+        GameplayCurve(9f,36) // Blackfin barracuda slender-body approximation kg = 9 * metres^3
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
