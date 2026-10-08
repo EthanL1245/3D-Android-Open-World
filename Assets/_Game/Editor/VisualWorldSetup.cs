@@ -29,6 +29,16 @@ public static class VisualWorldSetup
             return;
         }
 
+        // This legacy pass overwrites terrain layers and destroys WorldDecor.
+        // Never run it on a baked/editable fishing map; it would erase scene edits.
+        var expansion = Object.FindFirstObjectByType<IslandExpansionWorld>();
+        if (expansion != null && expansion.HasSavedLayout)
+        {
+            EditorUtility.DisplayDialog("Editable map protected",
+                "Apply Visual World Pass is a destructive legacy generator. It is disabled for your saved fishing map so terrain paint and placed scenery are preserved.", "OK");
+            return;
+        }
+
         Terrain terrain = Object.FindFirstObjectByType<Terrain>();
 
         if (terrain == null)
@@ -1093,6 +1103,8 @@ public static class VisualWorldSetup
 
         if (existing != null)
         {
+            if (existing.GetComponentInChildren<UserPlacedScenery>(true) != null)
+                throw new System.InvalidOperationException("WorldDecor contains protected manual scenery. Move it to the USER PLACED SCENERY scene root before rebuilding decor.");
             Undo.DestroyObjectImmediate(existing);
         }
 

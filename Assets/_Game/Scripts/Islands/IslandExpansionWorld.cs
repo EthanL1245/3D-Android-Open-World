@@ -169,7 +169,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         foreach(Transform prop in reef.transform)
         {
             if(!prop.gameObject.activeSelf || prop.GetComponent<Terrain>()!=null ||
-                prop.GetComponent<PondWater>()!=null)continue;
+                prop.GetComponent<PondWater>()!=null || UserPlacedScenery.Contains(prop) ||
+                prop.GetComponentInChildren<UserPlacedScenery>(true)!=null)continue;
             if(prop.name=="Shell bank")
             {
                 foreach(Transform shell in prop)GroundExistingProp(shell);

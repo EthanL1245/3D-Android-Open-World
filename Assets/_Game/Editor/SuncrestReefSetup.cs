@@ -21,6 +21,11 @@ public static class SuncrestReefSetup
     public static void Install()
     {
         if(EditorApplication.isPlaying)throw new InvalidOperationException("Exit Play Mode first.");
+        // Reinstalling Suncrest destroys and recreates the reef hierarchy.
+        // Saved maps are hand-editable scenes; a reinstall must not replace them.
+        var savedExpansion=Object.FindFirstObjectByType<IslandExpansionWorld>(FindObjectsInactive.Include);
+        if(savedExpansion!=null && savedExpansion.HasSavedLayout)
+            throw new InvalidOperationException("This fishing map has been converted for Scene editing. Reinstall Suncrest Reef is disabled to protect saved terrain and placements.");
         var scene=SceneManager.GetActiveScene();
         var old=Object.FindFirstObjectByType<Terrain>();
         var player=Object.FindFirstObjectByType<FirstPersonController>();

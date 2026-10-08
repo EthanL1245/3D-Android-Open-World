@@ -24,8 +24,9 @@ public static class FishingMapSceneEditor
         var snapper = Find<SnapperIslandRuntime>(scene);
         if (world != null && world.HasSavedLayout && snapper != null && snapper.HasSavedLayout)
         {
-            Selection.activeGameObject = world.gameObject;
-            Debug.Log("This map is already editable. Move its objects or sculpt its terrain outside Play Mode, then save the scene. No objects were regenerated.");
+            // Do not regenerate a scene that already contains authored edits.
+            Selection.activeGameObject = UserPlacedSceneryEditor.EnsureRoot(scene);
+            Debug.Log("This map is already editable. Put imported rocks under USER PLACED SCENERY, save with Ctrl+S, and build normally. No terrain or scene objects were regenerated.");
             return;
         }
 
@@ -72,13 +73,17 @@ public static class FishingMapSceneEditor
             PersistGeneratedAssets(scene, folder);
             world.SaveLayoutForEditing();
             snapper.SaveLayoutForEditing();
+            // The manual scenery layer lives outside every procedural generator.
+            // Future code updates must never edit or replace objects in this root.
+            var userScenery = UserPlacedSceneryEditor.EnsureRoot(scene);
             EditorUtility.SetDirty(world);
             EditorUtility.SetDirty(snapper);
             AssetDatabase.SaveAssets();
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene)) throw new IOException("Could not save the editable scene.");
             Physics.SyncTransforms();
-            Selection.activeGameObject = snapper.gameObject;
+            UserPlacedSceneryEditor.ExportManifest(scene);
+            Selection.activeGameObject = userScenery;
             SceneView.RepaintAll();
             Debug.Log("Main fishing map saved for Scene editing. Move/rotate/scale rocks, edit terrain, then Ctrl+S outside Play Mode. Play and Android builds use the saved layout. Running this command again preserves existing edits. Backup: " + backup);
         }
