@@ -1,0 +1,55 @@
+{
+  "sources": [
+    {
+      "file": "Rock1.fbx",
+      "sha256": "be85f48f5eb691aa12f7e54f186054c76ca6355e36b118b4ca7c4678d02cfbfb",
+      "uv_pairs": 99,
+      "polygon_vertex_indices": 330,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    },
+    {
+      "file": "Rock2.fbx",
+      "sha256": "09ec3cc48197563e1644f775f15160bb3390069db2e5aa1fcdcdbddbe3a719a0",
+      "uv_pairs": 95,
+      "polygon_vertex_indices": 300,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    },
+    {
+      "file": "Rock3.fbx",
+      "sha256": "0f9f71e33e3d9609ccaafb656658690bb1fe8ed1e861767130f24318d7709de0",
+      "uv_pairs": 81,
+      "polygon_vertex_indices": 240,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    },
+    {
+      "file": "Rock4.fbx",
+      "sha256": "f617f915ea08d79a1ef5ff52fcdb0595cfc0ab0702db4ce3d82ac25f8ae520c7",
+      "uv_pairs": 91,
+      "polygon_vertex_indices": 270,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    },
+    {
+      "file": "Rock5.fbx",
+      "sha256": "df937c9bcc9ce8f39e18ffaced1fdab9e5e249bccb1471161145e327674c641d",
+      "uv_pairs": 87,
+      "polygon_vertex_indices": 300,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    },
+    {
+      "file": "Rock6.fbx",
+      "sha256": "ecf8d6d31a6a3853fcb1733a0e1fe0ad3da9a865def1e7e2e0c78fb175f8ae0a",
+      "uv_pairs": 85,
+      "polygon_vertex_indices": 270,
+      "uv_indices_valid": true,
+      "original_bytes_preserved": true
+    }
+  ],
+  "texture_original_bytes_preserved": true,
+  "placements": 21,
+  "unity_execution": "Not available; pending local Unity import and visual review"
+}
