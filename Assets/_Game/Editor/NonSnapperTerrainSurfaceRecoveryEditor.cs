@@ -295,10 +295,18 @@ public static class NonSnapperTerrainSurfaceRecoveryEditor
         return interior * grass * (1f - Mathf.Max(path, pondBank)) * .97f;
     }
 
-    private static Texture2D SaveTexture(string folder, string name, byte[] png)
+    private static Texture2D SaveTexture(string folder, string name, byte[] imageBytes)
     {
-        string path = folder + "/" + name + ".png";
-        File.WriteAllBytes(path, png);
+        // The original user-supplied textures are JPEG data in Base64 chunks.
+        // Save under the correct extension or Unity may refuse to import them.
+        bool jpeg = imageBytes.Length > 3 && imageBytes[0] == 0xff &&
+            imageBytes[1] == 0xd8 && imageBytes[2] == 0xff;
+        bool png = imageBytes.Length > 8 && imageBytes[0] == 0x89 &&
+            imageBytes[1] == 0x50 && imageBytes[2] == 0x4e && imageBytes[3] == 0x47;
+        if (!jpeg && !png)
+            throw new IOException("The original texture is neither JPEG nor PNG.");
+        string path = folder + "/" + name + (jpeg ? ".jpg" : ".png");
+        File.WriteAllBytes(path, imageBytes);
         AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
         var importer = AssetImporter.GetAtPath(path) as TextureImporter;
         if (importer != null)
