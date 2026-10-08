@@ -146,89 +146,243 @@ public static class SnapperNorthSeabedEditor
 /// </summary>
 public static class SnapperRockCollisionEditor
 {
+    private const string MainScenePath = "Assets/Scenes/PrototypeWorld.unity";
+
+    [MenuItem("Tools/Open World/Snapper Island/Auto-Find and Fix Rock Collisions")]
+    public static void AutoFindAndFix()
+    {
+        if (!TryGetMainScene(out Scene scene)) return;
+        if (!TryFindSnapperCenter(scene, out Vector3 center)) return;
+
+        MeshFilter[] candidates = FindNearbyRockMeshes(scene, center);
+        if (candidates.Length == 0)
+        {
+            int nearbyMeshCount = CountNearbyRenderedMeshes(scene, center);
+            EditorUtility.DisplayDialog("No Snapper rock meshes found",
+                "The scene contains " + nearbyMeshCount + " rendered mesh objects near Snapper Island, but none are identifiable as rock meshes.\n\n" +
+                "If your formation is visible, click a specific rock in the Scene view or expand its parent in the Hierarchy and select a child with a Mesh Filter. Then run Add Collisions to Selected Rock Formation.\n\n" +
+                "If the formation appears only in Play Mode, it is runtime-generated and cannot be saved by this editor command until it is baked into the scene.", "OK");
+            return;
+        }
+
+        int goodBefore = CountHealthyColliders(candidates);
+        int changed = AddColliders(candidates, out int skipped);
+        Report(scene, "Auto-detected Snapper rock meshes", candidates.Length, goodBefore, changed, skipped);
+    }
+
     [MenuItem("Tools/Open World/Snapper Island/Add Collisions to Selected Rock Formation")]
     public static void AddCollidersToSelection()
     {
-        if (EditorApplication.isPlayingOrWillChangePlaymode)
-        {
-            EditorUtility.DisplayDialog("Exit Play Mode", "Colliders must be added outside Play Mode so they save to your build.", "OK");
-            return;
-        }
-        var scene = SceneManager.GetActiveScene();
-        if (scene.path != "Assets/Scenes/PrototypeWorld.unity")
-        {
-            EditorUtility.DisplayDialog("Open main fishing scene", "Open PrototypeWorld.unity, then select the parent object of the main rock formation.", "OK");
-            return;
-        }
+        if (!TryGetMainScene(out Scene scene)) return;
         var selected = Selection.gameObjects
             .Where(obj => obj != null && obj.scene == scene)
             .ToArray();
+
         if (selected.Length == 0)
         {
-            EditorUtility.DisplayDialog("Select the rock formation",
-                "In the Hierarchy select the Snapper rock formation's parent (or select its rock meshes), then run this command again.", "OK");
+            EditorUtility.DisplayDialog("No scene objects selected",
+                "Select the main rock formation in the Hierarchy (or click one of its individual rock meshes). Alternatively, use Auto-Find and Fix Rock Collisions.", "OK");
             return;
         }
 
-        MeshFilter[] filters = selected.SelectMany(obj => obj.GetComponentsInChildren<MeshFilter>(true))
-            .Distinct().ToArray();
-        int changed = AddColliders(filters, out int skipped);
-        if (changed > 0)
+        MeshFilter[] filters = selected
+            .SelectMany(obj => obj.GetComponentsInChildren<MeshFilter>(true))
+            .Where(filter => filter != null)
+            .Distinct()
+            .ToArray();
+
+        if (filters.Length == 0)
         {
-            EditorSceneManager.MarkSceneDirty(scene);
-            Debug.Log("[SNAPPER ISLAND] Added/repaired " + changed +
-                " mesh colliders; " + skipped + " meshes skipped. Press Ctrl+S to save the Scene.");
+            string names = string.Join(", ", selected.Take(3).Select(obj => obj.name));
+            if (TryFindSnapperCenter(scene, out Vector3 center))
+            {
+                MeshFilter[] candidates = FindNearbyRockMeshes(scene, center);
+                if (candidates.Length > 0)
+                {
+                    bool scan = EditorUtility.DisplayDialog("Selected object has no rock mesh",
+                        "Selected: " + names + "\n\n" +
+                        "No Mesh Filter was found on this object or any of its children. " +
+                        "However, I found " + candidates.Length + " nearby Snapper rock meshes.\n\n" +
+                        "Add collision to those detected rocks instead? Nothing will be repositioned.", "Fix detected rocks", "Cancel");
+                    if (scan)
+                    {
+                        int good = CountHealthyColliders(candidates);
+                        int added = AddColliders(candidates, out int skipped);
+                        Report(scene, "Auto-detected Snapper rock meshes", candidates.Length, good, added, skipped);
+                    }
+                    return;
+                }
+            }
+            EditorUtility.DisplayDialog("Selected object contains no Mesh Filter",
+                "Selected: " + names + "\n\n" +
+                "There are no Mesh Filter components on this selection or any children. " +
+                "Select an actual visible rock (an FBX instance with a Mesh Filter), not Terrain, Island Expansion, or an empty parent.\n\n" +
+                "The FBX existing in the Project window is not enough: a copy must be placed in the Scene.", "OK");
+            return;
         }
-        EditorUtility.DisplayDialog("Snapper rock collision",
-            changed + " mesh colliders added/repaired. " + skipped + " meshes skipped.\n\n" +
-            "No rock positions, rotations, scales, materials, or UVs were changed. Save the scene with Ctrl+S.", "OK");
+
+        int already = CountHealthyColliders(filters);
+        int changed = AddColliders(filters, out int skippedCount);
+        Report(scene, "Selected rock formation", filters.Length, already, changed, skippedCount);
     }
 
-    // Called during the seabed repair. Only recognizes imported Snapper rock
-    // assets or explicitly rock-named meshes around Snapper, never scenery on
-    // other islands, fish, water or gameplay volumes.
+    // Used by the seabed editor after its safe TerrainData backup. Does not
+    // alter scene transforms or meshes and only matches named/FBX rock objects.
     public static int AddNearbyRockColliders(Scene scene, Vector3 snapperCenter)
     {
-        float radius = SnapperIslandGeometry.RadiusX + 72f;
-        var rockFilters = scene.GetRootGameObjects()
+        MeshFilter[] rocks = FindNearbyRockMeshes(scene, snapperCenter);
+        int modified = AddColliders(rocks, out int skipped);
+        if (rocks.Length == 0)
+            Debug.LogWarning("[SNAPPER ISLAND] No identifiable rock mesh objects found in saved fishing scene. Any locally placed main formation can be selected and fixed via the Snapper Island collision menu.");
+        else if (skipped != 0)
+            Debug.LogWarning("[SNAPPER ISLAND] " + skipped + " rock meshes could not receive static colliders; inspect dynamic Rigidbody or missing mesh components.");
+        return modified;
+    }
+
+    private static bool TryGetMainScene(out Scene scene)
+    {
+        scene = SceneManager.GetActiveScene();
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            EditorUtility.DisplayDialog("Exit Play Mode",
+                "Rock collisions must be added in Scene edit mode. Play Mode changes do not save.", "OK");
+            return false;
+        }
+        if (scene.path != MainScenePath)
+        {
+            EditorUtility.DisplayDialog("Open the main fishing map",
+                "Double-click Assets/Scenes/PrototypeWorld.unity, then run this tool again. Do not run it on a separate shop scene.", "OK");
+            return false;
+        }
+        return true;
+    }
+
+    private static bool TryFindSnapperCenter(Scene scene, out Vector3 center)
+    {
+        center = Vector3.zero;
+        var reef = scene.GetRootGameObjects()
+            .SelectMany(root => root.GetComponentsInChildren<ReefZone>(true))
+            .FirstOrDefault();
+        if (reef == null)
+        {
+            EditorUtility.DisplayDialog("Snapper map not found",
+                "The loaded PrototypeWorld scene has no ReefZone. Run Make Main Fishing Map Editable first, then save the scene.", "OK");
+            return false;
+        }
+        center = SnapperIslandGeometry.Center(reef);
+        return true;
+    }
+
+    private static MeshFilter[] FindNearbyRockMeshes(Scene scene, Vector3 snapperCenter)
+    {
+        float radius = SnapperIslandGeometry.RadiusX + 90f;
+        float radiusSq = radius * radius;
+        return scene.GetRootGameObjects()
             .SelectMany(root => root.GetComponentsInChildren<MeshFilter>(true))
             .Where(filter => filter != null && filter.sharedMesh != null &&
-                filter.GetComponent<MeshRenderer>() != null)
+                filter.gameObject.activeInHierarchy)
             .Where(filter =>
             {
-                Vector3 p = filter.transform.position - snapperCenter;
-                if (p.x * p.x + p.z * p.z > radius * radius) return false;
-                string assetPath = AssetDatabase.GetAssetPath(filter.sharedMesh) ?? "";
-                if (assetPath.IndexOf("/SnapperIsland/Rocks/", StringComparison.OrdinalIgnoreCase) >= 0) return true;
-                // Objects created from a user's separate Blender rocks may be
-                // named "Main Rock Formation" rather than using the six kit FBXs.
-                for (Transform t = filter.transform; t != null; t = t.parent)
-                {
-                    string name = t.name.ToLowerInvariant();
-                    if (name.Contains("rock") || name.Contains("cliff") || name.Contains("formation"))
-                        return true;
-                }
-                return false;
-            }).Distinct().ToArray();
+                var renderer = filter.GetComponent<MeshRenderer>();
+                if (renderer == null || !renderer.enabled) return false;
+                Bounds bounds = renderer.bounds;
+                float nearestX = Mathf.Clamp(snapperCenter.x, bounds.min.x, bounds.max.x);
+                float nearestZ = Mathf.Clamp(snapperCenter.z, bounds.min.z, bounds.max.z);
+                float dx = nearestX - snapperCenter.x;
+                float dz = nearestZ - snapperCenter.z;
+                if (dx * dx + dz * dz > radiusSq) return false;
 
-        int result = AddColliders(rockFilters, out int skipped);
-        if (skipped > 0)
-            Debug.LogWarning("[SNAPPER ISLAND] Skipped " + skipped +
-                " rock meshes with missing geometry or dynamic rigidbodies. Select that formation and use the collider command to inspect it.");
-        return result;
+                string meshPath = AssetDatabase.GetAssetPath(filter.sharedMesh) ?? "";
+                string prefabPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(filter.gameObject) ?? "";
+                if (IsSnapperRockAsset(meshPath) || IsSnapperRockAsset(prefabPath))
+                    return true;
+
+                // Allow user-authored FBX formations whose assets aren't in the
+                // built-in Snapper/Rocks folder, but only with rock-related names.
+                if (LooksLikeRock(filter.gameObject.name) || LooksLikeRock(filter.sharedMesh.name)) return true;
+                for (Transform parent = filter.transform.parent; parent != null; parent = parent.parent)
+                    if (LooksLikeRock(parent.name)) return true;
+                return false;
+            })
+            .Distinct()
+            .ToArray();
+    }
+
+    private static bool IsSnapperRockAsset(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        return path.IndexOf("/SnapperIsland/Rocks/", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static bool LooksLikeRock(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return false;
+        string lower = name.ToLowerInvariant();
+        return lower.Contains("rock") || lower.Contains("cliff") ||
+            lower.Contains("boulder") || lower.Contains("outcrop") ||
+            lower.Contains("formation");
+    }
+
+    private static int CountNearbyRenderedMeshes(Scene scene, Vector3 center)
+    {
+        float radius = SnapperIslandGeometry.RadiusX + 90f;
+        float r2 = radius * radius;
+        return scene.GetRootGameObjects()
+            .SelectMany(root => root.GetComponentsInChildren<MeshRenderer>(true))
+            .Count(renderer =>
+            {
+                if (renderer == null || !renderer.gameObject.activeInHierarchy || !renderer.enabled)
+                    return false;
+                Bounds b = renderer.bounds;
+                float dx = Mathf.Clamp(center.x, b.min.x, b.max.x) - center.x;
+                float dz = Mathf.Clamp(center.z, b.min.z, b.max.z) - center.z;
+                return dx * dx + dz * dz <= r2;
+            });
+    }
+
+    private static bool Healthy(MeshFilter filter)
+    {
+        if (filter == null || filter.sharedMesh == null) return false;
+        var collider = filter.GetComponent<MeshCollider>();
+        return collider != null && collider.enabled && !collider.isTrigger &&
+            !collider.convex && collider.sharedMesh == filter.sharedMesh;
+    }
+
+    private static int CountHealthyColliders(MeshFilter[] filters)
+        => filters.Count(Healthy);
+
+    private static void Report(Scene scene, string scope, int candidates, int already,
+        int repaired, int skipped)
+    {
+        if (repaired > 0) EditorSceneManager.MarkSceneDirty(scene);
+        string message = scope + "\n\n" +
+            candidates + " mesh filters inspected.\n" +
+            already + " already had correct MeshColliders.\n" +
+            repaired + " colliders added or repaired.\n" +
+            skipped + " skipped.\n\n" +
+            (candidates == 0
+                ? "No rock meshes were found. Check the Scene Hierarchy or run Auto-Find."
+                : repaired + already == 0
+                    ? "No usable static rock meshes found. Inspect the selected object's Mesh Filter and Rigidbody."
+                    : "Mesh colliders match the existing rock meshes. No rock positions, UVs or materials were changed.") +
+            "\n\nPress Ctrl+S to save the scene.";
+        Debug.Log("[SNAPPER ISLAND] " + message);
+        EditorUtility.DisplayDialog("Snapper rock collision", message, "OK");
     }
 
     private static int AddColliders(MeshFilter[] filters, out int skipped)
     {
         skipped = 0;
         int changed = 0;
+        if (filters.Length == 0) return 0;
 
-        // Import FBXs as readable before adding non-convex static MeshColliders.
-        // Changing this importer setting does not remap UVs or transform rocks.
+        // FBX meshes must be readable for collision cooking. This is an importer
+        // setting only; manually placed transforms, materials and UVs stay put.
         var importPaths = filters.Where(f => f != null && f.sharedMesh != null)
             .Select(f => AssetDatabase.GetAssetPath(f.sharedMesh))
-            .Where(p => !string.IsNullOrEmpty(p))
-            .Distinct().ToArray();
+            .Where(path => !string.IsNullOrEmpty(path))
+            .Distinct()
+            .ToArray();
         foreach (string path in importPaths)
         {
             var importer = AssetImporter.GetAtPath(path) as ModelImporter;
@@ -248,8 +402,7 @@ public static class SnapperRockCollisionEditor
             Rigidbody rigidbody = filter.GetComponentInParent<Rigidbody>();
             if (rigidbody != null && !rigidbody.isKinematic)
             {
-                // A dynamic Rigidbody requires convex colliders and must not
-                // acquire a non-convex collider as a side effect of this tool.
+                // Dynamic rigidbodies cannot use exact non-convex mesh collision.
                 skipped++;
                 continue;
             }
@@ -263,8 +416,7 @@ public static class SnapperRockCollisionEditor
                 collider.isTrigger = false;
                 changed++;
             }
-            else if (collider.sharedMesh != filter.sharedMesh ||
-                collider.convex || collider.isTrigger || !collider.enabled)
+            else if (!Healthy(filter))
             {
                 Undo.RecordObject(collider, "Repair Snapper rock mesh collision");
                 collider.sharedMesh = filter.sharedMesh;
