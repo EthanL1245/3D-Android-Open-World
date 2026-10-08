@@ -61,27 +61,10 @@ public static class SnapperIslandGeometry
         float q=Ellipse(p,center);
         if(q<=1f)
         {
-            float rock=RockMask(p,center);
-            // Evaluate the approved layout in its original design coordinates.
-            p=center+(p-center)/DesignScale;
-            Vector3 local=p-center;
-            float beach=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.67f,q));
-            float foundation=.10f+beach*1.05f;
-            // Broad sand-filled terraces replace the narrow high summit.
-            // Flatten the upper ridge while raising its shoulders and front
-            // shelves, so the exposed rocks retain a continuous body of sand.
-            float ridge=Mathf.Pow(Mound(p,center+new Vector3(-7f,0f,-13f),35f,28f),.65f)*8.6f;
-            float crown=Mound(p,center+new Vector3(-8f,0f,-16f),22f,19f)*.9f;
-            float west=Mound(p,center+new Vector3(-30f,0f,-5f),22f,25f)*6.8f;
-            float east=Mound(p,center+new Vector3(33f,0f,-10f),19f,24f)*6.6f;
-            float front=Mound(p,center+new Vector3(-23f,0f,10f),22f,17f)*4.8f;
-            float rear=Mound(p,center+new Vector3(6f,0f,-28f),28f,14f)*4.8f;
-            float land=Mathf.Max(ridge+crown,Mathf.Max(west,Mathf.Max(east,Mathf.Max(rear,front))));
-            float arrival=Mound(p,center+new Vector3(0f,0f,28f),13f,14f);
-            // Irregular erosion becomes weaker at the waterline and on the
-            // arrival beach. The rock meshes form the vertical cliff faces.
-            float rough=(Mathf.PerlinNoise(local.x*.14f+117f,local.z*.13f+91f)-.5f)*.65f;
-            return Mathf.Max(existingFloor,sea+DesignScale*(foundation+land*(1f-.96f*arrival)+rough*rock));
+            // A small, gently rounded beach island with a low grassy interior.
+            // No cliff terraces, rock crowns or outcrop noise.
+            float inland=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.20f,q));
+            return sea+.04f+inland*2.05f;
         }
         float coast=DistanceFromShore(p,center);
         if(coast>CoastalShelfWidth)return existingFloor;
@@ -89,24 +72,4 @@ public static class SnapperIslandGeometry
         return Mathf.Max(existingFloor,Mathf.Lerp(sea-.12f*DesignScale,existingFloor,blend));
     }
 
-    /// <summary>Exposed stone on the ridges; sand in the beach and saddle.</summary>
-    public static float RockMask(Vector3 p,Vector3 center)
-    {
-        if(Ellipse(p,center)>1f)return 0f;
-        p=center+(p-center)/DesignScale;
-        float ridge=Mound(p,center+new Vector3(-7f,0f,-13f),36f,28f);
-        float west=Mound(p,center+new Vector3(-30f,0f,-5f),21f,24f);
-        float east=Mound(p,center+new Vector3(33f,0f,-10f),19f,24f);
-        float front=Mound(p,center+new Vector3(-23f,0f,10f),20f,15f)*.80f;
-        float mask=Mathf.Max(Mathf.Max(ridge,west),Mathf.Max(east,front));
-        float arrival=Mound(p,center+new Vector3(0f,0f,28f),15f,15f);
-        return Mathf.Clamp01(mask*1.55f)*(1f-arrival);
-    }
-
-    private static float Mound(Vector3 p,Vector3 c,float radiusX,float radiusZ)
-    {
-        float x=(p.x-c.x)/radiusX;
-        float z=(p.z-c.z)/radiusZ;
-        return Mathf.SmoothStep(1f,0f,Mathf.Clamp01(x*x+z*z));
-    }
 }

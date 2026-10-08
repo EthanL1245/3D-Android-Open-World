@@ -64,8 +64,8 @@ public static class FishingMapSceneEditor
                     if (collider != null) collider.terrainData = data;
                 }
                 snapper.Build();
-                if (!SnapperIslandRuntime.Ready || snapper.transform.Find("Snapper Coastal Rockscape") == null)
-                    throw new InvalidOperationException("Snapper Island or its six rock assets did not finish loading.");
+                if (!SnapperIslandRuntime.Ready)
+                    throw new InvalidOperationException("Snapper Island did not finish loading.");
             }
 
             EditorUtility.DisplayProgressBar("Editable fishing map", "Saving terrain, materials and generated assets...", .8f);
@@ -99,7 +99,7 @@ public static class FishingMapSceneEditor
             Find<OceanWater>(scene) != null && Find<Terrain>(scene) != null;
     }
 
-    private static bool TryOpenFishingScene(out Scene scene)
+    public static bool TryOpenFishingScene(out Scene scene)
     {
         scene = SceneManager.GetActiveScene();
         if (PrefabStageUtility.GetCurrentPrefabStage() != null)
@@ -167,9 +167,20 @@ public static class FishingMapSceneEditor
         return null;
     }
 
-    private static void PersistGeneratedAssets(Scene scene, string folder)
+    public static void PersistGeneratedAssets(Scene scene, string folder)
     {
         Object[] roots = scene.GetRootGameObjects().Cast<Object>().ToArray();
+        // Splat layers must already be persistent when TerrainData is written.
+        // Otherwise a saved map can lose its generated layer/texture references.
+        foreach (var terrain in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Terrain>(true)))
+        foreach (var layer in terrain.terrainData.terrainLayers)
+        {
+            if (layer == null) continue;
+            SaveAsset(layer.diffuseTexture, folder);
+            SaveAsset(layer.normalMapTexture, folder);
+            SaveAsset(layer.maskMapTexture, folder);
+            SaveAsset(layer, folder);
+        }
         // Terrain owns native height/alpha textures; save it first so Unity can
         // persist those internally instead of detaching them into loose assets.
         foreach (var terrain in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Terrain>(true)))

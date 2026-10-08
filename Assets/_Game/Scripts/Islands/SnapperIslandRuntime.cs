@@ -13,6 +13,8 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
     [SerializeField] private Vector3 savedCenter;
     [SerializeField] private Transform savedArrival;
     public bool HasSavedLayout => savedLayout;
+    [SerializeField, HideInInspector] private int simpleIslandVersion;
+    public bool NeedsSimpleIslandRepair => simpleIslandVersion < 1;
 
     private void Awake() { if(savedLayout) UseSavedLayout(); }
     private void UseSavedLayout()
@@ -23,9 +25,7 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
     public void SaveLayoutForEditing()
     {
         if(!Ready)throw new System.InvalidOperationException("Generate Snapper Island before saving it.");
-        savedCenter=Center;savedArrival=Arrival;savedLayout=true;coastalStone=null;
-        var rocks=GetComponent<SnapperIslandRockscape>();
-        if(rocks!=null)rocks.ReleaseSavedMaterial();
+        savedCenter=Center;savedArrival=Arrival;savedLayout=true;
     }
 #endif
 
@@ -56,7 +56,12 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
 
     public void Build()
     {
-        if(savedLayout){UseSavedLayout();return;}
+        if(savedLayout)
+        {
+            UseSavedLayout();
+            if(NeedsSimpleIslandRepair) RestoreSimpleIsland(true);
+            return;
+        }
         if(Ready && Application.isPlaying)return;
         IslandExpansionWorld expansion=IslandExpansionWorld.Active;
         ReefZone reef=FindFirstObjectByType<ReefZone>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
@@ -86,13 +91,12 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         SculptTerrain(terrain,water.BaseWaterLevel);
         PaintTerrain(terrain);
         CreateMarker();
-        SnapperIslandRockscape rockscape=gameObject.AddComponent<SnapperIslandRockscape>();
-        if(!rockscape.Build(terrain,water.BaseWaterLevel,Center,Arrival.position))
-            Debug.LogWarning("[SNAPPER ISLAND] Terrain built, but the modular rockscape could not be loaded.");
+        RemoveRockscape();
+        simpleIslandVersion=1;
         Physics.SyncTransforms();
         Ready=true;
 
-        Debug.Log("[SNAPPER ISLAND] Built clustered cliff-form Snapper Island with weathered rock material; scaled terrain, rock formations and shore bounds are aligned.");
+        Debug.Log("[SNAPPER ISLAND] Built a low sand-and-grass island without rock objects.");
     }
 
     private static bool InsideTerrain(Terrain terrain,Vector3 center,float radiusX,float radiusZ)
@@ -124,7 +128,9 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
             Vector3 p=origin+new Vector3(x/(float)(n-1)*size.x,0f,z/(float)(n-1)*size.z);
             float current=origin.y+heights[z,x]*size.y;
             float target=SnapperIslandGeometry.Height(p,Center,sea,current);
-            if(target>current)
+            // Replace the old raised cliff terrain inside Snapper; preserve all
+            // other islands and the surrounding edited seabed.
+            if(SnapperIslandGeometry.Ellipse(p,Center)<=1f || target>current)
                 heights[z,x]=Mathf.Clamp01((target-origin.y)/size.y);
         }
 
@@ -133,63 +139,64 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         if(collider!=null)collider.terrainData=data;
     }
 
-    private TerrainLayer coastalStone;
-
     private void PaintTerrain(Terrain terrain)
     {
-        TerrainData data=terrain.terrainData;
-        // Add a local layer, rather than changing the generic stone layer also
-        // used by the other islands. Use the same full-resolution rock texture.
-        Texture2D texture=Resources.Load<Texture2D>("Islands/SnapperIsland/Rocks/WeatheredRockAtlas");
-        if(texture==null || data.alphamapLayers<1)return;
-        TerrainLayer[] previous=data.terrainLayers;
-        coastalStone=new TerrainLayer
+        // Paint only Snapper in existing layers. NEVER append a layer or reset
+        // the shared terrain's splat map while constructing this island.
+        IslandTerrainSurfaceRepair.PaintSnapper(terrain,Center);
+    }
+
+    public void RestoreSimpleIsland(bool restoreWorldSurfaces)
+    {
+        if(!NeedsSimpleIslandRepair)return;
+        var expansion=IslandExpansionWorld.Active;
+        var reef=FindFirstObjectByType<ReefZone>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+        var water=FindFirstObjectByType<OceanWater>(Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+        Terrain terrain=expansion!=null && expansion.Ready?expansion.Terrain:Terrain.activeTerrain;
+        if(terrain==null || reef==null || water==null)
+            throw new System.InvalidOperationException("Open the fishing map with terrain, reef and ocean before restoring Snapper.");
+        Center=savedLayout?savedCenter:SnapperIslandGeometry.Center(reef);
+        if(!InsideTerrain(terrain,Center,SnapperIslandGeometry.RadiusX+SnapperIslandGeometry.CoastalShelfWidth,
+            SnapperIslandGeometry.RadiusZ+SnapperIslandGeometry.CoastalShelfWidth))
+            throw new System.InvalidOperationException("Snapper lies outside this terrain. The map was not changed.");
+        // Keep saved terrain assets intact in Play Mode, and keep the editor's
+        // pre-repair scene backup tied to the old data until the new copy is saved.
+        TerrainData data=Instantiate(terrain.terrainData);
+        data.name="Restored sand grass and stone fishing terrain";
+        terrain.terrainData=data;
+        var collider=terrain.GetComponent<TerrainCollider>();
+        if(collider!=null)collider.terrainData=data;
+        SculptTerrain(terrain,water.BaseWaterLevel);
+        if(restoreWorldSurfaces)IslandTerrainSurfaceRepair.RestoreWorldPaint(terrain,reef,expansion,water.BaseWaterLevel);
+        PaintTerrain(terrain);
+        AuthoredTerrainSurfaceTextures.ApplyToTerrain(terrain);
+        RemoveRockscape();
+        if(savedArrival!=null)
         {
-            name="Snapper weathered coastal stone", diffuseTexture=texture,
-            tileSize=new Vector2(1f/.14f,1f/.14f),
-            tileOffset=new Vector2(terrain.transform.position.x,terrain.transform.position.z),
-            metallic=0f, smoothness=.08f
-        };
-        TerrainLayer[] expanded=new TerrainLayer[previous.Length+1];
-        previous.CopyTo(expanded,0);
-        expanded[previous.Length]=coastalStone;
-        data.terrainLayers=expanded;
-        int width=data.alphamapWidth,height=data.alphamapHeight,layers=data.alphamapLayers;
-        if(layers<1)return;
-        float[,,] alpha=data.GetAlphamaps(0,0,width,height);
-        Vector3 origin=terrain.transform.position;
-        Vector3 size=data.size;
-        int rockLayer=layers-1;
-
-        for(int z=0;z<height;z++)
-        for(int x=0;x<width;x++)
-        {
-            Vector3 p=origin+new Vector3(x/(float)(width-1)*size.x,0f,z/(float)(height-1)*size.z);
-            float q=SnapperIslandGeometry.Ellipse(p,Center);
-            if(q>1f)continue;
-
-            float rocky=SnapperIslandGeometry.RockMask(p,Center);
-            float fine=Mathf.PerlinNoise(p.x*.12f+83f,p.z*.11f+27f);
-            float slope=data.GetSteepness((p.x-origin.x)/size.x,(p.z-origin.z)/size.z);
-            float cliff=Mathf.InverseLerp(20f,43f,slope);
-            // Flat ledges keep their sand caps; steep faces expose stone.
-            float stone=Mathf.Clamp01(rocky*Mathf.Lerp(.10f,.22f,fine)+cliff*.78f);
-
-            // Shore remains mostly sand except where the placed headland
-            // formations physically extend into it.
-            float shoreFade=Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(1f,.80f,q));
-            stone*=Mathf.Lerp(.35f,1f,shoreFade);
-
-            for(int layer=0;layer<layers;layer++)alpha[z,x,layer]=0f;
-            if(rockLayer==0)alpha[z,x,0]=1f;
-            else
-            {
-                alpha[z,x,0]=1f-stone;
-                alpha[z,x,rockLayer]=stone;
-            }
+            Vector3 p=savedArrival.position;
+            p.y=terrain.SampleHeight(p)+terrain.transform.position.y+.2f;
+            savedArrival.position=p;
+            Arrival=savedArrival;
         }
+        simpleIslandVersion=1;
+        Physics.SyncTransforms();
+        terrain.Flush();
+    }
 
-        data.SetAlphamaps(0,0,alpha);
+    private void RemoveRockscape()
+    {
+        var old=transform.Find("Snapper Coastal Rockscape");
+        if(old!=null)
+        {
+            old.gameObject.SetActive(false);
+            if(Application.isPlaying)Destroy(old.gameObject);else DestroyImmediate(old.gameObject);
+        }
+        // Retire the component but keep its script GUID available for older
+        // locally saved scenes until they have received this migration.
+        foreach(var oldBuilder in GetComponents<SnapperIslandRockscape>())
+        {
+            if(Application.isPlaying)Destroy(oldBuilder);else DestroyImmediate(oldBuilder);
+        }
     }
 
     private void CreateMarker()
@@ -217,7 +224,6 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
     {
         // Static state must not survive into a newly loaded gameplay scene where a
         // fresh Terrain still needs to be sculpted.
-        if(coastalStone!=null)Destroy(coastalStone);
         Arrival=null;
         Ready=false;
         Center=Vector3.zero;

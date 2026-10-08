@@ -118,7 +118,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         var sourceLayers=originalData.terrainLayers;
         rockTexture=new Texture2D(32,32,TextureFormat.RGBA32,false);rockTexture.wrapMode=TextureWrapMode.Repeat;
         var pixels=new Color[1024];for(int i=0;i<pixels.Length;i++){float noise=Mathf.PerlinNoise(i%32*.3f,i/32*.3f);pixels[i]=Color.Lerp(new Color(.23f,.25f,.26f),new Color(.49f,.47f,.41f),noise);}rockTexture.SetPixels(pixels);rockTexture.Apply();
-        rockLayer=new TerrainLayer{diffuseTexture=rockTexture,tileSize=new Vector2(7,7)};
+        rockLayer=new TerrainLayer{name="Brinebreak island stone",diffuseTexture=rockTexture,tileSize=new Vector2(7,7)};
         BuildSeabedTexture();
         int islandRock=sourceLayers.Length,underwaterRock=sourceLayers.Length+1;
         var layers=new TerrainLayer[sourceLayers.Length+2];sourceLayers.CopyTo(layers,0);

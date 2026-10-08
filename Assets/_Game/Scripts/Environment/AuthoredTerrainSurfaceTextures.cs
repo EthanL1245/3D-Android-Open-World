@@ -40,41 +40,47 @@ public sealed class AuthoredTerrainSurfaceTextures : MonoBehaviour
 
     public void ApplyAll()
     {
+        foreach(Terrain terrain in FindObjectsByType<Terrain>(FindObjectsSortMode.None))
+            ApplyToTerrain(terrain);
+    }
+
+    public static void ApplyToTerrain(Terrain terrain)
+    {
         EnsureTextures();
-        if (sand == null || grass == null || stone == null) return;
-
-        int changed = 0;
-        Terrain[] terrains = FindObjectsByType<Terrain>(FindObjectsSortMode.None);
-        foreach (Terrain terrain in terrains)
+        if(sand==null || grass==null || stone==null || terrain==null || terrain.terrainData==null)return;
+        TerrainData data=terrain.terrainData;
+        TerrainLayer[] layers=data.terrainLayers;
+        bool changed=false;
+        for(int i=0;i<layers.Length;i++)
         {
-            if (terrain == null || terrain.terrainData == null) continue;
-            TerrainLayer[] layers = terrain.terrainData.terrainLayers;
-            if (layers == null || layers.Length == 0) continue;
-
-            for (int i = 0; i < layers.Length; i++)
-            {
-                TerrainLayer layer = layers[i];
-                if (layer == null) continue;
-
-                Texture2D replacement = ChooseTexture(layer.name);
-
-                // IslandExpansionWorld appends two generated stone layers. The first
-                // historically had no name, so identify the final pair as stone too.
-                if (replacement == null && IslandExpansionWorld.Active != null &&
-                    IslandExpansionWorld.Active.Terrain == terrain && i >= layers.Length - 2)
-                {
-                    replacement = stone;
-                }
-
-                if (replacement != null && layer.diffuseTexture != replacement)
-                {
-                    layer.diffuseTexture = replacement;
-                    changed++;
-                }
-            }
+            TerrainLayer layer=layers[i];
+            Texture2D replacement=layer!=null?ChooseTexture(layer.name):null;
+            // Old expanded maps used a nameless stone layer at index 3. Appending
+            // Snapper's old layer shifted the "last two" heuristic; use roles.
+            if(replacement==null && layers.Length>=5)
+                replacement=i==0?sand:i==1?grass:(i>=2?stone:null);
+            if(replacement==null || (layer!=null && layer.diffuseTexture==replacement))continue;
+            var copy=layer!=null?Instantiate(layer):new TerrainLayer();
+            copy.name=layer!=null?layer.name:(i==0?"Warm sand":i==1?"Coastal meadow":"Restored stone");
+            copy.diffuseTexture=replacement;
+            if(layer==null)copy.tileSize=Vector2.one*(i==0?5f:i==1?6f:9f);
+            layers[i]=copy;
+            changed=true;
         }
-
-        Debug.Log("[TERRAIN TEXTURES] Applied supplied sand/grass/stone textures to " + changed + " terrain layer(s). Existing paint, tile sizes, normals and terrain geometry were preserved.");
+        if(!changed)return;
+        // Assign copies, not shared terrain layer assets; preserve weights across
+        // Unity's layer assignment. This also works during editor migration.
+        float[,,] paint=data.GetAlphamaps(0,0,data.alphamapWidth,data.alphamapHeight);
+        if(Application.isPlaying)
+        {
+            data=Instantiate(data);
+            terrain.terrainData=data;
+            var collider=terrain.GetComponent<TerrainCollider>();
+            if(collider!=null)collider.terrainData=data;
+        }
+        data.terrainLayers=layers;
+        data.SetAlphamaps(0,0,paint);
+        terrain.Flush();
     }
 
     private static Texture2D ChooseTexture(string layerName)
