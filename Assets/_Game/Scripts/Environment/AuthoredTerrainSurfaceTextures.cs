@@ -46,6 +46,15 @@ public sealed class AuthoredTerrainSurfaceTextures : MonoBehaviour
 
     public static void ApplyToTerrain(Terrain terrain)
     {
+        // Saved fishing maps own persistent TerrainData and hand-painted layers.
+        // Never swap them for temporary runtime copies when PrototypeWorld loads.
+        // The one-time editor recovery bakes stable layers into the scene instead.
+        if (Application.isPlaying && terrain != null)
+        {
+            var world = FindFirstObjectByType<IslandExpansionWorld>(FindObjectsInactive.Include);
+            if (world != null && world.HasSavedLayout && world.Terrain == terrain)
+                return;
+        }
         EnsureTextures();
         if(sand==null || grass==null || stone==null || terrain==null || terrain.terrainData==null)return;
         TerrainData data=terrain.terrainData;

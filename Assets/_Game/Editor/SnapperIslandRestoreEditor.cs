@@ -34,6 +34,7 @@ public static class SnapperIslandRestoreEditor
         if(!scene.IsValid() || !scene.isLoaded || string.IsNullOrEmpty(scene.path) || EditorSceneManager.IsPreviewScene(scene))return;
         var snapper=Find<SnapperIslandRuntime>(scene);
         var world=Find<IslandExpansionWorld>(scene);
+        if(world!=null && world.GetComponent<NonSnapperTerrainSurfaceState>()?.Restored==true)return;
         if(snapper==null || world==null || !snapper.HasSavedLayout || !world.HasSavedLayout || !snapper.NeedsSimpleIslandRepair)return;
         try { Repair(scene,world,snapper); }
         catch(Exception e) { Debug.LogError("Island restoration did not finish. Use Tools > Open World > Restore Simple Snapper and Terrain Textures. "+e); }
@@ -46,6 +47,12 @@ public static class SnapperIslandRestoreEditor
         if(!FishingMapSceneEditor.TryOpenFishingScene(out var scene))return;
         var world=Find<IslandExpansionWorld>(scene);
         var snapper=Find<SnapperIslandRuntime>(scene);
+        if(world!=null && world.GetComponent<NonSnapperTerrainSurfaceState>()?.Restored==true)
+        {
+            EditorUtility.DisplayDialog("Restored surface layers are protected",
+                "This legacy repair repaints all islands, including Snapper, and would overwrite your saved edits. It is disabled on maps repaired by Restore Grass and Rock (Except Snapper).", "OK");
+            return;
+        }
         if(world==null || snapper==null || !world.HasSavedLayout || !snapper.HasSavedLayout)
         {
             FishingMapSceneEditor.MakeEditable();
