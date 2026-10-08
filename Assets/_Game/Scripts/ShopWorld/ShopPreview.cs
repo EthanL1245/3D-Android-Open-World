@@ -202,6 +202,14 @@ public sealed class ShopPreview : MonoBehaviour
     private static void OrientLureSideProfile(GameObject lure)
     {
         if(lure==null)return;
+        Transform previewFrame=FindDeepChild(lure.transform,"PreviewFrame");
+        if(previewFrame!=null)
+        {
+            Quaternion source=Quaternion.LookRotation(previewFrame.forward,previewFrame.up);
+            lure.transform.rotation=Quaternion.LookRotation(Vector3.left,Vector3.up)*
+                Quaternion.Inverse(source)*lure.transform.rotation;
+            return;
+        }
         Transform lineAttach=FindDeepChild(lure.transform,"LineAttach");
         Renderer[] renderers=lure.GetComponentsInChildren<Renderer>(true)
             .Where(r=>r!=null && r.enabled && !IsUnderLightingRig(r.transform,lure.transform)).ToArray();

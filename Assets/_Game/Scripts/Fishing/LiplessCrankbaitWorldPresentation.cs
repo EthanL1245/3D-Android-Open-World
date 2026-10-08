@@ -13,6 +13,7 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 {
     private const float RetrieveDepth = 0.20f;
     private const float FloatDepth = 0.015f;
+    private const float CrankbaitBaseRoll = 10f;
 
     private FishingSystem fishing;
     private ShopProgress shopProgress;
@@ -130,6 +131,10 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
                 // degree turn. The child Animator still supplies the wobble.
                 lureRoot.transform.rotation =
                     Quaternion.LookRotation(retrieveDirection, Vector3.up) *
+                    // +Z points toward the player during retrieve: positive roll
+                    // is clockwise from that end. Keep it outside the Animator.
+                    Quaternion.AngleAxis(loadedVariant == ShopCatalog.MetalSpoonLureVariant
+                        ? 0f : CrankbaitBaseRoll, Vector3.forward) *
                     Quaternion.Inverse(localRetrieveFrame);
             }
         }
@@ -247,6 +252,13 @@ public sealed class LiplessCrankbaitWorldPresentation : MonoBehaviour
 
     private Quaternion MeasureLocalRetrieveFrame()
     {
+        // Models with a different authored axis convention provide an explicit
+        // forward/up marker. This changes only visual alignment, never the path.
+        Transform frame = lureRoot != null ? FindDeepChild(lureRoot.transform, "RetrieveFrame") : null;
+        if (frame != null)
+            return Quaternion.LookRotation(lureRoot.transform.InverseTransformDirection(frame.forward),
+                lureRoot.transform.InverseTransformDirection(frame.up));
+
         if (lureRoot == null || lineAttach == null || lineAttach.parent == lureRoot.transform)
             return Quaternion.identity;
 

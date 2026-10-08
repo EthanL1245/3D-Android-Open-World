@@ -110,7 +110,7 @@ public static class FishingRules
         float configured;
         if(TryConfiguredWeight(species,random01,out configured))return configured;
 
-        // Legacy fallback: Deep Flash biases size upward. In configured mode bait
+        // Legacy fallback: Metal Spoon biases size upward. In configured mode bait
         // chooses species only; biome + species owns the weight distribution exactly.
         float sizeBias=ShopCatalog.ActiveLureVariant==3 ? .18f : 0f;
         float sample=Mathf.Lerp(Mathf.Clamp01(random01),1f,sizeBias);

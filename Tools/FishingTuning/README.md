@@ -58,7 +58,7 @@ Shoreline depth quality is applied **after** the species/biome weight roll:
 Every fish probability is a WHOLE-NUMBER percent. Every biome+bait/lure row must total exactly `100`.
 The fish index hides 0% entries for the selected biome and equipped bait/lure; those entries are also excluded from rolls.
 
-Lure keys: `lure:0` Neon Breach, `lure:1` Reef Minnow, `lure:2` Fire Shad, `lure:3` Deep Flash, `lure:4` Bloody Bait.
+Lure keys: `lure:0` Neon Breach, `lure:1` Reef Minnow, `lure:2` Fire Shad, `lure:3` Metal Spoon, `lure:4` Bloody Bait.
 
 ## Validate in Unity
 `Tools -> Open World -> Validate Fishing Tuning`

@@ -24,6 +24,7 @@ public static class ShopCatalog
     public const int NeonBreachLureVariant=0;
     public const int FireShadLureVariant=2;
     public const int BloodyBaitLureVariant=4;
+    public const int MetalSpoonLureVariant=3; // Retains Deep Flash's saved ownership and tuning slot.
     public const int MaxRodTier=4;
     public const int MaxReelTier=3;
 
@@ -32,7 +33,7 @@ public static class ShopCatalog
         "Neon Breach Crankbait",
         "Reef Minnow",
         "Fire Shad Crankbait",
-        "Deep Flash",
+        "Metal Spoon",
         "Bloody Bait Crankbait"
     };
 
@@ -50,7 +51,7 @@ public static class ShopCatalog
         "Balanced permanent crankbait. Strong Sea Bass and Red Snapper focus.",
         "Quick-strike minnow. Highest Sea Bass odds and 15% more strike chance.",
         "Red Snapper specialist crankbait. Strongly favors Red Snapper while keeping the same tuna odds.",
-        "Deep-water flash lure. Slower strikes, larger fish, and the strongest tuna secondary odds.",
+        "Metal spoon. Slower strikes, larger fish, and the strongest tuna secondary odds.",
         "Blue-and-red permanent crankbait. Uses the same balanced fishing behavior as Neon Breach."
     };
 
@@ -71,7 +72,7 @@ public static class ShopCatalog
         {
             case 1:return "Fishing/ReefMinnowCrankbait";
             case 2:return "Fishing/FireShadCrankbait";
-            case 3:return "Fishing/DeepFlashCrankbait";
+            case MetalSpoonLureVariant:return "Fishing/MetalSpoon";
             case 4:return "Fishing/BloodyBaitCrankbait";
             default:return "Fishing/LiplessCrankbaitGreenStriped";
         }
