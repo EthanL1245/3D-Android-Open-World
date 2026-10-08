@@ -14,6 +14,9 @@ public static class SnapperIslandGeometry
     public const float ShoreGap=200f;
     public const float FishingMargin=50f;
     public const float CoastalShelfWidth=72f*DesignScale;
+    // The level shelf surrounds all sides, fades into the existing ocean floor,
+    // and never touches the dry island or any other island.
+    public const float UniformSeabedOuterDistance=82f;
 
     public static Vector3 Center(ReefZone reef)
     {
@@ -54,6 +57,31 @@ public static class SnapperIslandGeometry
         if(SnapperIslandRuntime.Ready && ContainsArea(p,SnapperIslandRuntime.Center))
             return ReefCatalog.SnapperBiomeId;
         return IslandExpansionWorld.FishingBiome(p);
+    }
+
+    /// <summary>
+    /// A quiet, gently undulating apron matching the seabed depth north of Snapper.
+    /// Retains the island/shoreline and smoothly blends into distant original relief.
+    /// No artificial rock pillars, trenches, or uniform featureless plane.
+    /// </summary>
+    public static float UniformSeabedHeight(Vector3 p,Vector3 center,float sea,float originalFloor,float northDepth)
+    {
+        if(Ellipse(p,center)<=1f)return originalFloor;
+        float distance=DistanceFromShore(p,center);
+        if(distance>=UniformSeabedOuterDistance)return originalFloor;
+
+        // The bottom begins at the existing beach edge (sea + 4 cm) to avoid a
+        // crack between the existing island surface and the new seabed.
+        float descent=Mathf.SmoothStep(0f,1f,Mathf.Clamp01(distance/30f));
+        float broad=(SeabedRelief.Noise(p.x*.045f+11f,p.z*.046f+71f)-.5f)*1.4f;
+        float detail=(SeabedRelief.Noise(p.x*.13f+37f,p.z*.12f+22f)-.5f)*.40f;
+        float variation=(broad+detail)*Mathf.SmoothStep(0f,1f,Mathf.Clamp01(distance/12f));
+        float shelf=sea+.04f-Mathf.Max(1f,northDepth)*descent+variation;
+
+        // Preserve all existing terrain outside the local apron. A wide falloff
+        // avoids creating a harsh circular outer cliff where the deep sea resumes.
+        float fade=1f-Mathf.SmoothStep(0f,1f,Mathf.InverseLerp(48f,UniformSeabedOuterDistance,distance));
+        return Mathf.Lerp(originalFloor,shelf,fade);
     }
 
     public static float Height(Vector3 p,Vector3 center,float sea,float existingFloor)

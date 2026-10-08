@@ -14,6 +14,11 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
     [SerializeField] private Transform savedArrival;
     public bool HasSavedLayout => savedLayout;
     [SerializeField, HideInInspector] private int simpleIslandVersion;
+    [SerializeField, HideInInspector] private int uniformSeabedVersion;
+    public bool HasUniformSeabed => uniformSeabedVersion>=1;
+#if UNITY_EDITOR
+    public void MarkUniformSeabedSaved() { uniformSeabedVersion=1; }
+#endif
     public bool NeedsSimpleIslandRepair => simpleIslandVersion < 1;
 
     private void Awake() { if(savedLayout) UseSavedLayout(); }
@@ -89,6 +94,8 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         }
 
         SculptTerrain(terrain,water.BaseWaterLevel);
+        LevelSeabedAroundSnapper(terrain,Center,water.BaseWaterLevel);
+        uniformSeabedVersion=1;
         PaintTerrain(terrain);
         CreateMarker();
         RemoveRockscape();
@@ -139,6 +146,64 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         if(collider!=null)collider.terrainData=data;
     }
 
+    /// <summary>
+    /// Localized bathymetry pass for both runtime-generated maps and editor-baked
+    /// layouts. Samples the EXISTING north seabed before writing any heights.
+    /// Never changes scene GameObjects (especially user-placed rock formations).
+    /// </summary>
+    public static int LevelSeabedAroundSnapper(Terrain terrain,Vector3 center,float sea)
+    {
+        if(terrain==null || terrain.terrainData==null)
+            throw new System.ArgumentNullException(nameof(terrain));
+
+        // Several nearby samples suppress single-cell ridges when establishing
+        // the user's preferred northern reference depth.
+        float northDepth=0f;
+        int samples=0;
+        for(int i=-2;i<=2;i++)
+        {
+            Vector3 position=center+new Vector3(i*4f,0f,SnapperIslandGeometry.RadiusZ+26f);
+            northDepth+=sea-(terrain.SampleHeight(position)+terrain.transform.position.y);
+            samples++;
+        }
+        northDepth=Mathf.Clamp(northDepth/samples,1.5f,35f);
+
+        TerrainData data=terrain.terrainData;
+        int resolution=data.heightmapResolution;
+        Vector3 origin=terrain.transform.position;
+        Vector3 size=data.size;
+        float reach=SnapperIslandGeometry.UniformSeabedOuterDistance;
+        int minX=Mathf.Clamp(Mathf.FloorToInt((center.x-SnapperIslandGeometry.RadiusX-reach-origin.x)/size.x*(resolution-1)),0,resolution-1);
+        int maxX=Mathf.Clamp(Mathf.CeilToInt((center.x+SnapperIslandGeometry.RadiusX+reach-origin.x)/size.x*(resolution-1)),0,resolution-1);
+        int minZ=Mathf.Clamp(Mathf.FloorToInt((center.z-SnapperIslandGeometry.RadiusZ-reach-origin.z)/size.z*(resolution-1)),0,resolution-1);
+        int maxZ=Mathf.Clamp(Mathf.CeilToInt((center.z+SnapperIslandGeometry.RadiusZ+reach-origin.z)/size.z*(resolution-1)),0,resolution-1);
+
+        int width=maxX-minX+1,height=maxZ-minZ+1;
+        float[,] original=data.GetHeights(minX,minZ,width,height);
+        int changed=0;
+        for(int z=0;z<height;z++)for(int x=0;x<width;x++)
+        {
+            Vector3 p=origin+new Vector3((minX+x)/(float)(resolution-1)*size.x,0f,
+                (minZ+z)/(float)(resolution-1)*size.z);
+            float previous=origin.y+original[z,x]*size.y;
+            float next=SnapperIslandGeometry.UniformSeabedHeight(p,center,sea,previous,northDepth);
+            if(Mathf.Abs(next-previous)<.002f)continue;
+            original[z,x]=Mathf.Clamp01((next-origin.y)/size.y);
+            changed++;
+        }
+
+        if(changed>0)
+        {
+            data.SetHeights(minX,minZ,original);
+            TerrainCollider collider=terrain.GetComponent<TerrainCollider>();
+            if(collider!=null && collider.terrainData!=data)collider.terrainData=data;
+            terrain.Flush();
+            Physics.SyncTransforms();
+        }
+        Debug.Log("[SNAPPER ISLAND] North-matched seabed: "+changed+" adjusted terrain samples, northern reference depth "+northDepth.ToString("F1")+"m.");
+        return changed;
+    }
+
     private void PaintTerrain(Terrain terrain)
     {
         // Paint only Snapper in existing layers. NEVER append a layer or reset
@@ -167,6 +232,8 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         var collider=terrain.GetComponent<TerrainCollider>();
         if(collider!=null)collider.terrainData=data;
         SculptTerrain(terrain,water.BaseWaterLevel);
+        LevelSeabedAroundSnapper(terrain,Center,water.BaseWaterLevel);
+        uniformSeabedVersion=1;
         if(restoreWorldSurfaces)IslandTerrainSurfaceRepair.RestoreWorldPaint(terrain,reef,expansion,water.BaseWaterLevel);
         PaintTerrain(terrain);
         AuthoredTerrainSurfaceTextures.ApplyToTerrain(terrain);
