@@ -64,7 +64,13 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
         if(savedLayout)
         {
             UseSavedLayout();
-            if(NeedsSimpleIslandRepair) RestoreSimpleIsland(true);
+            // Once the user has committed to the permanent, non-Snapper surface
+            // repair, do not run the legacy Snapper migration on Play/Build.
+            // That old path sculpts/repaints Snapper and removes old formations.
+            var surfaceState=FindFirstObjectByType<NonSnapperTerrainSurfaceState>(
+                Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+            if(NeedsSimpleIslandRepair && (surfaceState==null || !surfaceState.Restored))
+                RestoreSimpleIsland(true);
             return;
         }
         if(Ready && Application.isPlaying)return;
