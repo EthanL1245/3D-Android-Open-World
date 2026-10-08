@@ -24,10 +24,12 @@ public static class SnapperNorthSeabedEditor
         }
         if (!FishingMapSceneEditor.TryOpenFishingScene(out Scene scene)) return;
 
-        var terrain = Find<Terrain>(scene);
+        var world = Find<IslandExpansionWorld>(scene);
+        // There may be an inactive, pre-Suncrest Terrain left in older scenes.
+        // ALWAYS operate on the actual shared terrain used by fishing and builds.
+        var terrain = world != null ? world.Terrain : null;
         var reef = Find<ReefZone>(scene);
         var water = Find<OceanWater>(scene);
-        var world = Find<IslandExpansionWorld>(scene);
         var snapper = Find<SnapperIslandRuntime>(scene);
 
         if (terrain == null || reef == null || water == null || world == null || snapper == null ||
