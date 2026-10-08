@@ -34734,7 +34734,7 @@ TerrainCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_TerrainData: {fileID: 15600000, guid: cd31de17d5e335546a85608e7c0d7a4b, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: e7eaa40153d9c5c4f862d9a02be34531, type: 2}
   m_EnableTreeColliders: 1
 --- !u!218 &869948846
 Terrain:
@@ -34745,7 +34745,7 @@ Terrain:
   m_GameObject: {fileID: 869948843}
   m_Enabled: 1
   serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: cd31de17d5e335546a85608e7c0d7a4b, type: 2}
+  m_TerrainData: {fileID: 15600000, guid: e7eaa40153d9c5c4f862d9a02be34531, type: 2}
   m_TreeDistance: 5000
   m_TreeBillboardDistance: 50
   m_TreeCrossFadeLength: 5
@@ -88949,7 +88949,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2108885683}
   - component: {fileID: 2108885682}
-  - component: {fileID: 2108885684}
   m_Layer: 0
   m_Name: Island Expansion
   m_TagString: Untagged
@@ -89196,19 +89195,6 @@ Transform:
   - {fileID: 764368024}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2108885684
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2108885681}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c94678f6829645688d0273790158edb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NonSnapperTerrainSurfaceState
-  completedVersion: 1
 --- !u!1 &2110815194
 GameObject:
   m_ObjectHideFlags: 0
