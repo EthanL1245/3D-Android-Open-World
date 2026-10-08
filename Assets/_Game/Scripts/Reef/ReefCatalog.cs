@@ -26,15 +26,15 @@ public static class ReefCatalog
     // Embedded odds remain only as a fallback if an editable tuning CSV is invalid.
     public static readonly Zone[] Zones={
         new Zone(StarterId,StarterName,"A palm-lined beginner island, sandy coves and a broad shallow reef.",true,
-            new float[]{20,11,13,6,0,2,22,22,4,6,6,13,6,4,6,0,13,4,0,0,0,3}),
+            new float[]{20,11,13,6,0,2,22,22,4,6,6,13,6,4,6,0,13,4,0,0,0,3,0,0}),
         new Zone(RuggedId,"Brinebreak Isle","Rocky low hills, steep sandy shores and restless water. Land here to unlock fast travel.",false,
             new float[]{8,13,12,18,0,10,5,5,20,12,12,10,12,4,6}),
         new Zone("deep-ocean","Deep Ocean","Beyond the shared outer shelf. Pelagic fish, giant catches and demanding fights.",true,
             new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6}),
         new Zone(PelagicIslandGeometry.Id,PelagicIslandGeometry.Name,"A southern cay with pelagic fishing waters extending 75 m beyond the shore. Land here to unlock travel.",false,
             new float[]{35,0,0,0,0,20,0,0,15,15,0,0,0,15,0}),
-        new Zone(SnapperIslandGeometry.Id,SnapperIslandGeometry.Name,"A dedicated snapper island directly south of Suncrest. Snappers, blackfin barracuda and Blacktip Reef Sharks bite within 50 m of its coast. Land here to unlock travel.",false,
-            new float[]{0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,13,2,0,0,10,4})
+        new Zone(SnapperIslandGeometry.Id,SnapperIslandGeometry.Name,"A dedicated snapper island directly south of Suncrest. Snappers, blackfin and great barracuda, and Blacktip Reef Sharks bite within 50 m of its coast. Land here to unlock travel.",false,
+            new float[]{0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,13,2,0,0,10,4,2})
     };
 
     public static Zone Starter=>Zones[0];
@@ -70,7 +70,7 @@ public static class ReefCatalog
         if(biome==SnapperBiomeId)return Zones[SnapperBiomeId].weights;
         var original=BaseEquippedWeights(bait);if(biome<=0||biome>=Zones.Length)return original;
         var weights=new float[original.Length];
-        for(int i=0;i<weights.Length;i++)weights[i]=Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
+        for(int i=0;i<weights.Length;i++)weights[i]=i<Zones[biome].weights.Length && i<Starter.weights.Length && Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
         return weights;
     }
 
