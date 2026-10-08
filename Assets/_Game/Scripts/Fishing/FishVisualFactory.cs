@@ -84,6 +84,7 @@ public static class FishVisualFactory
             case FishCatalog.MuttonSnapperId:return "Fishing/MuttonSnapper";
             case FishCatalog.MangroveSnapperId:return "Fishing/MangroveSnapper";
             case FishCatalog.BlackfinBarracudaId:return "Fishing/BlackfinBarracuda";
+            case FishCatalog.GreatBarracudaId:return "Fishing/GreatBarracuda";
             default:return null;
         }
     }
