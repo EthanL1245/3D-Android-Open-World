@@ -4,7 +4,7 @@ Open `Assets/Scenes/PrototypeWorld.unity` outside Play Mode. Run
 **Tools > Open World > Restore Grass and Rock Textures (Except Snapper)**.
 
 This is a **one-time scene-editing operation**, not a runtime world regeneration.
-It bakes into a NEW persistent `TerrainData`, plus NEW saved grass/stone PNGs and
+It bakes into a NEW persistent `TerrainData`, plus NEW saved grass/stone image assets (original JPEG format) and
 three `TerrainLayer` assets. The originals, heights, mesh colliders, scenery
 and existing layer textures stay untouched.
 
