@@ -54,6 +54,41 @@ public static class YellowfinTunaImporter
             new List<PreviewFishRecord>();
     }
 
+
+    /// <summary>
+    /// Replace only the existing fish model and UV texture. Keeps its stable ID,
+    /// swim shader, YellowfinTunaPresentation, aquarium/held behavior, UI previews,
+    /// saved inventory and preview grants exactly as before.
+    /// The ZIP is preconverted from the user's Blender model to one static FBX
+    /// plus correctly encoded JPEG by FixedFishModelReplacer.
+    /// </summary>
+    public static void ImportFixedModelFromZip(string preparedZipPath)
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Exit Play Mode before replacing Yellowfin Tuna.");
+        if(!File.Exists(preparedZipPath))
+            throw new FileNotFoundException("Prepared Yellowfin Tuna package is missing.",preparedZipPath);
+
+        EnsureFolders();
+        ExtractSourceFiles(preparedZipPath);
+        ConfigureTexture();
+        ConfigureModelImporter(true);
+        GameObject source = AssetDatabase.LoadAssetAtPath<GameObject>(FbxPath);
+        MeshFilter filter = source != null ? source.GetComponentsInChildren<MeshFilter>(true)
+            .FirstOrDefault(m => m.sharedMesh != null) : null;
+        if(filter == null)throw new InvalidDataException("Converted tuna FBX must contain an intact static mesh with UVs.");
+        if(filter.sharedMesh.uv == null || filter.sharedMesh.uv.Length != filter.sharedMesh.vertexCount)
+            throw new InvalidDataException("New tuna mesh is missing its authored UVs.");
+        MeshAnalysis analysis = AnalyzeMesh(filter.sharedMesh,filter.transform);
+        Material material = BuildMaterial(analysis);
+        BuildGameplayPrefab(source,material,analysis);
+        ConfigureModelImporter(false);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Selection.activeObject = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        Debug.Log("[FIXED FISH] Yellowfin Tuna visual replacement installed. Gameplay, existing presentation and saved catches unchanged.");
+    }
+
     [MenuItem("Tools/Open World/Rebuild Yellowfin Tuna Movement")]
     public static void RebuildYellowfinTunaMovement()
     {
@@ -969,25 +1004,18 @@ public static class YellowfinTunaImporter
             );
         }
 
-        Material existing =
-            AssetDatabase
-                .LoadAssetAtPath<Material>(
-                    MaterialPath
-                );
-
-        if (existing != null)
+        // Update the material in place so existing Unity scene/UI references survive.
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
+        if(material == null)
         {
-            AssetDatabase.DeleteAsset(
-                MaterialPath
-            );
+            material = new Material(shader) { name = "YellowfinTuna" };
+            AssetDatabase.CreateAsset(material,MaterialPath);
         }
-
-        Material material =
-            new Material(shader)
-            {
-                name =
-                    "YellowfinTuna"
-            };
+        else
+        {
+            material.shader = shader;
+            material.name = "YellowfinTuna";
+        }
 
         Texture2D texture =
             AssetDatabase
@@ -1054,10 +1082,7 @@ public static class YellowfinTunaImporter
 
         material.enableInstancing = true;
 
-        AssetDatabase.CreateAsset(
-            material,
-            MaterialPath
-        );
+        EditorUtility.SetDirty(material);
 
         return material;
     }
@@ -1179,15 +1204,7 @@ public static class YellowfinTunaImporter
                 renderers
             );
 
-            if (AssetDatabase
-                .LoadAssetAtPath<GameObject>(
-                    PrefabPath) != null)
-            {
-                AssetDatabase.DeleteAsset(
-                    PrefabPath
-                );
-            }
-
+            // Overwrite in place to retain the prefab GUID used throughout the game.
             PrefabUtility.SaveAsPrefabAsset(
                 root,
                 PrefabPath
