@@ -10,11 +10,15 @@ public sealed class FishingHotspotEffect : MonoBehaviour
     private OceanWater ocean;
     private ParticleSystem rings, bubbles, splashes;
     private ParticleSystemRenderer ringRenderer;
-    private readonly MaterialPropertyBlock waves = new MaterialPropertyBlock();
+    private MaterialPropertyBlock waves;
     private float nextCluster, nextSplash;
 
     public void Initialize(OceanWater water, Material rippleMaterial, Material bubbleMaterial, Mesh mesh)
     {
+        // Initialize is called by FishingHotspotManager.Start on the main thread.
+        // Native Unity objects cannot be created in MonoBehaviour field initializers:
+        // Unity also constructs this component while serializing the prefab for builds.
+        waves = new MaterialPropertyBlock();
         ocean = water;
         rings = CreateSystem("Ripple Particles", rippleMaterial, 6, 2.5f, 2f);
         var main = rings.main;
