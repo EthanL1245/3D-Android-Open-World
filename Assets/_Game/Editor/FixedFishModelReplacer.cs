@@ -102,7 +102,7 @@ public static class FixedFishModelReplacer
     }
 
     private static string InstallKey(bool tuna) =>
-        "OpenWorld.FixedFishArt."+(tuna?"Yellowfin":"Mackerel")+".v1."+Application.dataPath.GetHashCode();
+        "OpenWorld.FixedFishArt."+(tuna?"Yellowfin":"Mackerel")+".v2."+Application.dataPath.GetHashCode();
     private static string Signature(string archive)
     {
         var info=new FileInfo(archive);
@@ -141,7 +141,8 @@ public static class FixedFishModelReplacer
         string blender=ResolveBlender(interactive);
         if(string.IsNullOrEmpty(blender))
             throw new InvalidOperationException("Blender executable was not found. Install Blender or use the manual menu command and select blender.exe.");
-        ExportBlender(blender,blend,fbx,work,tuna);
+        // Both replacement models have authored skeletal swim actions. Do not flatten tuna.
+        ExportBlender(blender,blend,fbx,work,false);
         if(!File.Exists(fbx) || new FileInfo(fbx).Length<1000)
             throw new InvalidDataException("Blender produced no usable fish FBX.");
 
@@ -157,7 +158,7 @@ public static class FixedFishModelReplacer
                 tuna?ConvertPngToJpeg(textureBytes):textureBytes);
         }
         if(tuna)
-            YellowfinTunaImporter.ImportFixedModelFromZip(convertedZip);
+            YellowfinTunaImporter.ImportFixedRiggedModelFromZip(convertedZip);
         else
             MackerelImporter.ImportFromZip(convertedZip,false);
 
@@ -165,7 +166,9 @@ public static class FixedFishModelReplacer
             "Assets/Resources/Fishing/Mackerel.prefab";
         GameObject prefab=AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         if(prefab==null)throw new InvalidOperationException("Updated fish prefab was not saved.");
-        if(tuna && prefab.GetComponent<YellowfinTunaPresentation>()==null)
+        if(tuna && (prefab.GetComponent<YellowfinTunaPresentation>()==null ||
+                    prefab.GetComponentInChildren<Animator>(true)==null ||
+                    prefab.GetComponentInChildren<Animator>(true).runtimeAnimatorController==null))
             throw new InvalidOperationException("Yellowfin presentation was not preserved.");
         if(!tuna && (prefab.GetComponent<MackerelPresentation>()==null ||
                      prefab.GetComponentInChildren<Animator>(true)==null))
