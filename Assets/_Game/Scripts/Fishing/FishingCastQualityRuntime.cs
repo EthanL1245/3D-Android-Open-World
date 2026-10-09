@@ -29,7 +29,6 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
 
     private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
     private static readonly FieldInfo StateField = typeof(FishingSystem).GetField("state", Flags);
-    private static readonly FieldInfo CastPointField = typeof(FishingSystem).GetField("castPoint", Flags);
     private static readonly FieldInfo PondCastField = typeof(FishingSystem).GetField("pondCast", Flags);
     private static readonly FieldInfo OriginalCastDistanceField = typeof(FishingSystem).GetField("originalCastDistance", Flags);
     private static readonly FieldInfo HookedWeightKgField = typeof(FishingSystem).GetField("hookedWeightKg", Flags);
@@ -73,7 +72,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         ocean = fishing != null && OceanWaterField != null ? OceanWaterField.GetValue(fishing) as OceanWater : null;
         terrain = Terrain.activeTerrain;
 
-        if (fishing == null || StateField == null || CastPointField == null ||
+        if (fishing == null || StateField == null ||
             PondCastField == null || OriginalCastDistanceField == null || HookedWeightKgField == null ||
             FishMaxHealthField == null || FishHealthPointsField == null || FishHealthField == null)
         {
@@ -93,7 +92,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         if ((state == "Charging" || state == "Casting") && state != previousState)
             ResetForNewCast();
 
-        // Capture the original landing before a retrieval lure moves castPoint.
+        // Measure the saved landing, independent of lure/fish movement.
         if (state == "Waiting" && !measured)
             MeasureLandingQuality();
 
@@ -136,8 +135,8 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
             return;
         }
 
-        Vector3 landing = (Vector3)CastPointField.GetValue(fishing);
-        biome = ResolveBiome(landing);
+        Vector3 landing = fishing.CastLandingPoint;
+        biome = fishing.CastBiome;
         castDepth = StableWaterDepth(landing);
         referenceDepth = ReferenceDepthForBiome(biome);
         depthRatio = referenceDepth > 0.001f ? Mathf.Clamp01(castDepth / referenceDepth) : 1f;
@@ -195,6 +194,13 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
 
     private float ReferenceDepthForBiome(int targetBiome)
     {
+        if (targetBiome == ReefCatalog.SnapperBiomeId)
+        {
+            var snapper = fishing.GetComponent<SnapperIslandFishingRuntime>();
+            if (snapper == null) snapper = fishing.gameObject.AddComponent<SnapperIslandFishingRuntime>();
+            float snapperDepth = snapper.ReferenceDepth();
+            return snapperDepth > 0.001f ? snapperDepth : Mathf.Max(1f, DeepestTerrainWaterDepth());
+        }
         targetBiome = Mathf.Clamp(targetBiome, 0, 2);
         if (biomeReferenceDepth[targetBiome] > 0.001f)
             return biomeReferenceDepth[targetBiome];

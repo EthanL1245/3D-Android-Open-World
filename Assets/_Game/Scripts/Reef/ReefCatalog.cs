@@ -83,6 +83,12 @@ public static class ReefCatalog
         var original=BaseEquippedWeights(bait);if(biome<=0||biome>=Zones.Length)return original;
         var weights=new float[original.Length];
         for(int i=0;i<weights.Length;i++)weights[i]=i<Zones[biome].weights.Length && i<Starter.weights.Length && Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
+        // Invalid tuning must not reintroduce snappers into Deep Ocean catches.
+        if(biome==2)
+        {
+            weights[FishCatalog.RedSnapperId]=0f;
+            if(FishCatalog.MangroveSnapperId<weights.Length)weights[FishCatalog.MangroveSnapperId]=0f;
+        }
         return weights;
     }
 

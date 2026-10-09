@@ -95,6 +95,10 @@ public class FishingSystem : MonoBehaviour
 
     private Vector3 castPoint;
     private bool pondCast;
+    private int castBiome;
+    private Vector3 castLandingPoint;
+    public int CastBiome => pondCast ? 0 : castBiome;
+    public Vector3 CastLandingPoint => castLandingPoint;
     private float chargeStarted,castHintTimer,castDepth;
     private bool castRangeAvailable;
     private float minimumCastPower;
@@ -888,6 +892,9 @@ public class FishingSystem : MonoBehaviour
         hud.SetActionInteractable(true);
         hud.SetCastPower(false,0,0);
         castOrigin=playerCamera.transform.position;
+        // Freeze the player's zone when the cast is released, before any movement.
+        castBiome=SnapperIslandGeometry.ResolveBiome(transform.position);
+        castLandingPoint=target;
         originalCastDistance=Vector3.ProjectOnPlane(target-castOrigin,Vector3.up).magnitude;
         activeBait=0; // Bait is committed only after a successful water landing.
         StartCoroutine(
@@ -1035,16 +1042,17 @@ public class FishingSystem : MonoBehaviour
     private void BeginBite()
     {
             PlayFishingSound(biteSplashSound);
-            fightBiome=pondCast?0:IslandExpansionWorld.FishingBiome(castPoint);
+            // Species and weight are rolled once from the cast's original zone.
+            fightBiome=CastBiome;
             float offshore=IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready
-                ? (fightBiome==2?IslandExpansionWorld.Active.OffshoreAt(castPoint):0f) : FishingRules.OffshoreFactor;
+                ? (fightBiome==2?IslandExpansionWorld.Active.OffshoreAt(castOrigin):0f) : FishingRules.OffshoreFactor;
             hookedSpeciesId =
                 RollBaitSpecies();
 
             hookedWeightKg =
                 activeBait==ShopCatalog.StarterLure
-                    ? FishingRules.WeightAtCastDistance(hookedSpeciesId,originalCastDistance,Random.value,offshore)
-                    : FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value,offshore);
+                    ? FishingRules.WeightAtCastDistance(hookedSpeciesId,originalCastDistance,Random.value,offshore,fightBiome)
+                    : FishingRules.WeightAtDepth(hookedSpeciesId,castDepth,Random.value,offshore,fightBiome);
 
             if(fightBiome==1)
             {

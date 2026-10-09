@@ -70,10 +70,11 @@ public static class FishingRules
         return Mathf.Lerp(normalWeight,Mathf.Max(normalWeight,giant),strength);
     }
 
-    private static bool TryConfiguredWeight(int species,float random01,out float weight)
+    private static bool TryConfiguredWeight(int species,float random01,int biome,out float weight)
     {
         weight=0f;
-        int biome=FishingTuning.LastBiome;
+        // Catch callers pass their frozen biome; preserve legacy callers' default.
+        if(biome<0)biome=FishingTuning.LastBiome;
         float desired;
         if(!FishingTuning.TryRollWeight(species,biome,random01,out desired))return false;
 
@@ -98,17 +99,17 @@ public static class FishingRules
         return true;
     }
 
-    public static float WeightAtDepth(int species,float depth,float random01,float offshore=-1)
+    public static float WeightAtDepth(int species,float depth,float random01,float offshore=-1,int biome=-1)
     {
         float configured;
-        if(TryConfiguredWeight(species,random01,out configured))return configured;
+        if(TryConfiguredWeight(species,random01,biome,out configured))return configured;
         return ApplyOffshoreSize(species,BaseWeightAtDepth(species,depth,random01),random01,offshore<0?OffshoreFactor:offshore);
     }
 
-    public static float WeightAtCastDistance(int species,float distance,float random01,float offshore=-1)
+    public static float WeightAtCastDistance(int species,float distance,float random01,float offshore=-1,int biome=-1)
     {
         float configured;
-        if(TryConfiguredWeight(species,random01,out configured))return configured;
+        if(TryConfiguredWeight(species,random01,biome,out configured))return configured;
 
         // Legacy fallback: Metal Spoon biases size upward. In configured mode bait
         // chooses species only; biome + species owns the weight distribution exactly.
