@@ -177,9 +177,9 @@ public static class BrinebreakMoveAndDepthEditor
             string files=RunGit(root,"diff --cached --name-only");
             if(string.IsNullOrWhiteSpace(files))
                 throw new InvalidOperationException("No map changes were staged.");
-            foreach(string line in files.Split(new[]{'\\n','\\r'},StringSplitOptions.RemoveEmptyEntries))
+            foreach(string line in files.Split(new[]{(char)10,(char)13},StringSplitOptions.RemoveEmptyEntries))
             {
-                string file=line.Replace('\\\\','/');
+                string file=line.Replace((char)92,'/');
                 if(file!=MainScene && file!=folder+".meta" && !file.StartsWith(folder+"/",StringComparison.Ordinal))
                     throw new InvalidOperationException("Unexpected staged path: "+file);
             }
