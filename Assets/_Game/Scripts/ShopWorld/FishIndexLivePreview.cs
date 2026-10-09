@@ -33,8 +33,15 @@ public sealed class FishIndexLivePreview : MonoBehaviour
         studio.allowMSAA=false;
 
         model=FishVisualFactory.CreateFish("IndexSwimmingFish",stage.transform,species,1f);
+        // The selected fish is a LIVE 3D model. Keep authored presentation scripts
+        // active (including the rigged Yellowfin), but disable unrelated gameplay.
         foreach(var script in model.GetComponentsInChildren<MonoBehaviour>(true))
-            script.enabled=script is HeroFishAnimator;
+            script.enabled=script is HeroFishAnimator ||
+                script is YellowfinTunaPresentation ||
+                script is MackerelPresentation ||
+                script is RedSnapperPresentation ||
+                script is GoatfishPresentation ||
+                script is YellowtailPresentation;
         foreach(var collider in model.GetComponentsInChildren<Collider>(true))collider.enabled=false;
         foreach(var body in model.GetComponentsInChildren<Rigidbody>(true))
         {body.isKinematic=true;body.detectCollisions=false;}
