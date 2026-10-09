@@ -107,30 +107,38 @@ public static class YellowfinTunaImporter
         ExtractSourceFiles(preparedZipPath);
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-        // SeaBassImporter uses the common five-bone authored swim workflow and
-        // prepares a looping Animator, aligned body, lip attachment and UV atlas.
-        // Its saved prefab path is the original YellowfinTuna prefab, so stored
-        // catches and all UI Resources.Load lookups continue to work.
-        SeaBassImporter.InstallModel("YellowfinTuna",PrefabPath,SourceFolder,TexturePath);
-
-        GameObject root=PrefabUtility.LoadPrefabContents(PrefabPath);
+        // Build and validate a temporary prefab FIRST. A mis-exported Blender
+        // action must never overwrite the last good gameplay/index prefab.
+        // The final save still targets the original Resources path and GUID.
+        const string candidate="Assets/_Game/Fishing/YellowfinTuna/YellowfinTuna_ImportCandidate.prefab";
         try
         {
-            var snapper=root.GetComponent<RedSnapperPresentation>();
-            if(snapper!=null)UnityEngine.Object.DestroyImmediate(snapper,true);
+            SeaBassImporter.InstallModel("YellowfinTuna",candidate,SourceFolder,TexturePath);
+            GameObject root=PrefabUtility.LoadPrefabContents(candidate);
+            try
+            {
+                var snapper=root.GetComponent<RedSnapperPresentation>();
+                if(snapper!=null)UnityEngine.Object.DestroyImmediate(snapper);
 
-            var tuna=root.GetComponent<YellowfinTunaPresentation>();
-            if(tuna==null)tuna=root.AddComponent<YellowfinTunaPresentation>();
-            var renderers=root.GetComponentsInChildren<Renderer>(true);
-            tuna.Configure(renderers);
+                var tuna=root.GetComponent<YellowfinTunaPresentation>();
+                if(tuna==null)tuna=root.AddComponent<YellowfinTunaPresentation>();
+                var renderers=root.GetComponentsInChildren<Renderer>(true);
+                tuna.Configure(renderers);
 
-            var animator=root.GetComponentInChildren<Animator>(true);
-            VerifyYellowfinSkeletalSwim(root,animator);
-            animator.applyRootMotion=false;
-            animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
-            PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
+                var animator=root.GetComponentInChildren<Animator>(true);
+                VerifyYellowfinSkeletalSwim(root,animator);
+                animator.applyRootMotion=false;
+                animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
+                if(PrefabUtility.SaveAsPrefabAsset(root,PrefabPath)==null)
+                    throw new InvalidOperationException("Could not save validated Yellowfin Tuna prefab.");
+            }
+            finally{PrefabUtility.UnloadPrefabContents(root);}
         }
-        finally{UnityEngine.Object.DestroyImmediate(root);}
+        finally
+        {
+            // No temporary fish prefab should be included in Android builds.
+            AssetDatabase.DeleteAsset(candidate);
+        }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
