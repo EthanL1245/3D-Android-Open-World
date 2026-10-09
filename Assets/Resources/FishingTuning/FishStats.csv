@@ -27,3 +27,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 23,Great Barracuda,3.2,48,792,3432,720,7200,3.85
 24,Bluefin Trevally,1,70,352,5500,286,8800,3.85
 25,Golden Trevally,1,70,317,4950,260,8000,3.75
+26,Giant Trevally,1.8,126,704,11000,572,17600,3.85
