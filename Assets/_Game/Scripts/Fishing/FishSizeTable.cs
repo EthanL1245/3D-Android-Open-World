@@ -30,7 +30,8 @@ public static class FishSizeTable
         GameplayCurve(9f,36), // Blackfin barracuda slender-body approximation kg = 9 * metres^3
         GameplayCurve(9f,40), // Great barracuda slender-body approximation kg = 9 * metres^3
         GameplayCurve(17f,36), // Bluefin trevally gameplay approximation kg = 17 * metres^3
-        GameplayCurve(18f,36) // Golden trevally gameplay approximation kg = 18 * metres^3
+        GameplayCurve(18f,36), // Golden trevally gameplay approximation kg = 18 * metres^3
+        GameplayCurve(17f,36) // Giant trevally uses the 1.8x Bluefin formula below
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
@@ -40,6 +41,9 @@ public static class FishSizeTable
     public static float WeightForLength(int species,float metres)
     {
         if(species==FishCatalog.BattleScarredMakoSharkId)return 1.5f*WeightForLength(FishCatalog.MakoSharkId,metres/1.5f);
+        // Giant Trevally scales both caught weight and rendered length 1.8x at
+        // the same Bluewater Cay size percentile, matching the shark variant pattern.
+        if(species==FishCatalog.GiantTrevallyId)return 1.8f*WeightForLength(FishCatalog.BluefinTrevallyId,metres/1.8f);
         var row=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
         float index=Math.Max(0,Math.Min(row.Length-1,metres/.05f-1));
         int low=(int)Math.Floor(index),high=Math.Min(low+1,row.Length-1);
@@ -49,6 +53,7 @@ public static class FishSizeTable
     public static float LengthMetres(int species,float kg)
     {
         if(species==FishCatalog.BattleScarredMakoSharkId)return 1.5f*LengthMetres(FishCatalog.MakoSharkId,kg/1.5f);
+        if(species==FishCatalog.GiantTrevallyId)return 1.8f*LengthMetres(FishCatalog.BluefinTrevallyId,kg/1.8f);
         var weights=Weights[Math.Max(0,Math.Min(Weights.Length-1,FishCatalog.CanonicalId(species)))];
         if(float.IsNaN(kg)||kg<=0)return .05f;
         if(kg>=weights[weights.Length-1])
