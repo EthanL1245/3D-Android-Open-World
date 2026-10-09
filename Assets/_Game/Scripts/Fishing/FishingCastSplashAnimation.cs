@@ -81,7 +81,8 @@ public sealed class FishingCastSplashAnimation : MonoBehaviour
 
         if (sharedMaterial == null)
         {
-            Shader shader = Shader.Find("OpenWorld/FishingHotspotParticles");
+            Shader shader = Resources.Load<Shader>("Fishing/Hotspots/HotspotParticles");
+            if (shader == null) shader = Shader.Find("OpenWorld/FishingHotspotParticles");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Unlit/Transparent");
             if (shader == null)
