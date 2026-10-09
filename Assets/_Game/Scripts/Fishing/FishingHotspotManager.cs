@@ -9,7 +9,9 @@ public sealed class FishingHotspotManager : MonoBehaviour
     public const int MaximumHotspots = 5;
     public const float MaximumPlayerDistance = 60f;
     public const float LandClearance = 15f;
-    public const float Radius = 2.8f;
+    // 1.8x the original 5.6m-wide visual and casting footprint.
+    public const float RippleScale = 1.8f;
+    public const float Radius = 2.8f * RippleScale;
     private readonly FishingHotspotEffect[] pool = new FishingHotspotEffect[MaximumHotspots];
     private readonly Collider[] obstacles = new Collider[64];
     private OceanWater ocean;
@@ -118,7 +120,7 @@ public sealed class FishingHotspotManager : MonoBehaviour
 
         // Check EVERY heightmap vertex in a conservatively expanded disk, not just
         // a few radial samples which can miss a narrow spit or a user-edited rock island.
-        // The entire 5.6m effect footprint stays >=15m from land, not only its centre.
+        // The entire 10.08m effect footprint stays >=15m from land, not only its centre.
         TerrainData data = terrain.terrainData;
         Vector3 origin = terrain.transform.position;
         Vector3 local = p - origin;
