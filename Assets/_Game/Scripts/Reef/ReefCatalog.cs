@@ -77,6 +77,7 @@ public static class ReefCatalog
             for(int i=0;i<baseline.Length && i<pelagic.Length;i++)pelagic[i]=baseline[i];
             pelagic[FishCatalog.BluefinTrevallyId]=5f;
             pelagic[FishCatalog.GoldenTrevallyId]=5f;
+            pelagic[FishCatalog.GiantTrevallyId]=3f;
             return pelagic;
         }
         var original=BaseEquippedWeights(bait);if(biome<=0||biome>=Zones.Length)return original;
