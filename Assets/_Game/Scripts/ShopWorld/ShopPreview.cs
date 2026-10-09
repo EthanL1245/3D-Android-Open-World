@@ -20,6 +20,24 @@ public sealed class ShopPreview : MonoBehaviour
     {
         target.enabled=false;
         string resolvedGear=ResolveGearKey(target,gear);
+        // The three bait illustrations are kept in a single transparent atlas:
+        // worm, shrimp, squid (left to right). All preview consumers share this
+        // path, including the shortcut, bait list, tackle store, and fish index.
+        int baitCell=resolvedGear=="Bait0" || resolvedGear=="Bait1"?0:
+                     resolvedGear=="Bait2"?1:resolvedGear=="Bait3"?2:-1;
+        if(baitCell>=0)
+        {
+            Texture2D baitIcons=Resources.Load<Texture2D>("Fishing/BaitIconsAtlas");
+            if(baitIcons!=null)
+            {
+                target.texture=baitIcons;
+                target.uvRect=new Rect(baitCell/3f,0f,1f/3f,1f);
+                target.enabled=true;
+                return;
+            }
+        }
+        // Cached render textures and lure/gear previews use their full UVs.
+        target.uvRect=new Rect(0f,0f,1f,1f);
         string key=(transparentBackground?"clear:":"")+(faceRight?"right:":"")+(fitWholeFish?"index:":"")+(resolvedGear??(species+":"+kg.ToString("R",System.Globalization.CultureInfo.InvariantCulture)));
         if(cache.TryGetValue(key,out var ready))
         {

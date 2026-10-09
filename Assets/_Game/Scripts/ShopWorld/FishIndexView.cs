@@ -186,7 +186,8 @@ public sealed class FishIndexView : MonoBehaviour
             {
                 var row=Row(76);
                 var icon=Picture(row,"BaitImage");
-                Anchor(icon.rectTransform,0,0,.29f,1,0,5,0,-5);PreserveImageAspect(icon);
+                Anchor(icon.rectTransform,0,0,.29f,1,0,5,0,-5);
+                PreserveImageAspect(icon,bait.PreviewKey!=null && bait.PreviewKey.StartsWith("Bait")?1f:2f);
                 snapshots.Attach(icon,0,1f,bait.PreviewKey,false,true);
                 var name=Label(row,bait.Name,21,Color.white);
                 Anchor(name.rectTransform,.31f,0,.81f,1,0,6,-8,-6);
@@ -281,7 +282,7 @@ public sealed class FishIndexView : MonoBehaviour
         var go=new GameObject(name,typeof(RectTransform),typeof(RawImage));go.transform.SetParent(parent,false);
         var image=go.GetComponent<RawImage>();image.raycastTarget=false;return image;
     }
-    private static void PreserveImageAspect(RawImage image)
+    private static void PreserveImageAspect(RawImage image,float ratio=2f)
     {
         // Fit inside the assigned slot, not the entire card/detail row.
         var source=image.rectTransform;
@@ -290,7 +291,7 @@ public sealed class FishIndexView : MonoBehaviour
         slot.anchorMin=source.anchorMin;slot.anchorMax=source.anchorMax;slot.pivot=source.pivot;
         slot.offsetMin=source.offsetMin;slot.offsetMax=source.offsetMax;
         source.SetParent(slot,false);
-        var fit=image.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.FitInParent;fit.aspectRatio=2f;
+        var fit=image.gameObject.AddComponent<AspectRatioFitter>();fit.aspectMode=AspectRatioFitter.AspectMode.FitInParent;fit.aspectRatio=ratio;
     }
     private static void Anchor(RectTransform rect,float x0,float y0,float x1,float y1,float left,float bottom,float right,float top)
     {rect.anchorMin=new Vector2(x0,y0);rect.anchorMax=new Vector2(x1,y1);rect.offsetMin=new Vector2(left,bottom);rect.offsetMax=new Vector2(right,top);}
