@@ -169,10 +169,12 @@ public static class CompactBrinebreakSceneEditor
                 " splat pixels, " + removedProps + " generated props removed, " +
                 removedCoral + " remaining coral objects removed. Backup and assets: " + folder);
 
-            EditorUtility.DisplayDialog("Brinebreak saved in Unity",
-                "Brinebreak's shoreline is now 3x smaller along both axes.\n\n" +
-                "The saved scene uses independent permanent TerrainData. The nearby generator-owned rocks and arrival/discovery markers are adjusted. Snapper, Suncrest, Bluewater and USER PLACED SCENERY are untouched.\n\n" +
-                "Commit and push PrototypeWorld.unity and the new CompactBrinebreak-* folder to GitHub. Local Unity saves are not uploaded automatically.", "OK");
+            bool upload = EditorUtility.DisplayDialog("Brinebreak saved in Unity",
+                "The smaller Brinebreak island and removed coral are saved in PrototypeWorld.unity.\n\n" +
+                "Would you like Unity to commit and push the updated scene and CompactBrinebreak assets to upstream/main now? Other staged files will never be included.",
+                "Commit and push", "I'll push later");
+            if (upload) CommitAndPushSavedMap(folder);
+
         }
         catch (Exception error)
         {
@@ -188,6 +190,82 @@ public static class CompactBrinebreakSceneEditor
         {
             EditorUtility.ClearProgressBar();
             running = false;
+        }
+    }
+
+    /// <summary>
+    /// Optional, explicitly approved upload. Only stages the scene plus the
+    /// newly baked asset folder, and refuses to commit any previously staged
+    /// unrelated changes. A failed push leaves the local commit intact.
+    /// </summary>
+    private static void CommitAndPushSavedMap(string bakedFolder)
+    {
+        string projectRoot = Path.GetDirectoryName(Application.dataPath);
+        try
+        {
+            string branch = RunGit(projectRoot, "branch --show-current");
+            if (branch.Trim() != "main")
+                throw new InvalidOperationException("Git branch is '" + branch.Trim() +
+                    "', not main. Switch to main and push the scene manually.");
+            string remote = RunGit(projectRoot, "remote get-url upstream").Trim();
+            if (remote.IndexOf("EthanL1245/3D-Android-Open-World", StringComparison.OrdinalIgnoreCase) < 0)
+                throw new InvalidOperationException("The upstream Git remote does not point to the fishing game's main repository.");
+
+            string staged = RunGit(projectRoot, "diff --cached --name-only");
+            if (!string.IsNullOrWhiteSpace(staged))
+                throw new InvalidOperationException(
+                    "There are already staged Git changes. To prevent accidentally committing your other work, automatic upload stopped. Commit/unstage those changes first, or push the saved scene manually.");
+
+            // Stage exactly the authored main scene and this conversion's data.
+            RunGit(projectRoot, "add -- \\"" + ScenePath + "\\" \\"" + bakedFolder + "\\"");
+            string selected = RunGit(projectRoot, "diff --cached --name-only");
+            if (string.IsNullOrWhiteSpace(selected))
+                throw new InvalidOperationException("There are no staged changes to upload.");
+            foreach (string line in selected.Split(new[] {'\n','\r'}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                string file=line.Replace('\\','/');
+                if (file != ScenePath && !file.StartsWith(bakedFolder + "/", StringComparison.Ordinal))
+                    throw new InvalidOperationException("Unexpected staged file '" + file + "'. Upload aborted.");
+            }
+            RunGit(projectRoot, "commit -m \\"Bake compact Brinebreak terrain and remove coral\\"");
+            RunGit(projectRoot, "push upstream main", 180000);
+            EditorUtility.DisplayDialog("Saved and pushed to GitHub",
+                "Your modified PrototypeWorld scene and all compact Brinebreak terrain assets were committed and pushed to upstream/main. The scene is now available for future updates.", "OK");
+        }
+        catch (Exception error)
+        {
+            Debug.LogWarning("[BRINEBREAK] Scene was saved in Unity, but automatic Git upload was not completed: " + error);
+            EditorUtility.DisplayDialog("Scene saved; GitHub upload needs attention",
+                "The resized island IS saved locally, but the Git push did not complete.\n\n" +
+                error.Message + "\n\n" +
+                "You can run git status in your Unity project folder and finish the push manually. Your terrain conversion does not need to be repeated.", "OK");
+        }
+    }
+
+    private static string RunGit(string directory, string arguments, int timeoutMs=120000)
+    {
+        var info = new System.Diagnostics.ProcessStartInfo("git", arguments)
+        {
+            WorkingDirectory=directory,
+            UseShellExecute=false,
+            CreateNoWindow=true,
+            RedirectStandardOutput=true,
+            RedirectStandardError=true
+        };
+        using (var process = System.Diagnostics.Process.Start(info))
+        {
+            if (process == null)
+                throw new IOException("Git did not start. Check Git for Windows is installed.");
+            if (!process.WaitForExit(timeoutMs))
+            {
+                process.Kill();
+                throw new TimeoutException("Git command timed out: " + arguments);
+            }
+            string stdout=process.StandardOutput.ReadToEnd();
+            string stderr=process.StandardError.ReadToEnd();
+            if (process.ExitCode!=0)
+                throw new IOException("git " + arguments + " failed: " + stderr + " " + stdout);
+            return stdout;
         }
     }
 
