@@ -4,19 +4,20 @@ Hotspots install automatically when the main FishingSystem starts. No scene rebu
 or terrain regeneration is required. Source art is copied unchanged from Ripple.png
 and Bubble.png. Texture import limits both to 512px with alpha and mipmaps on Android.
 
-- A pool of at most five effects, each 5.6m across; shared materials and ripple mesh.
+- A pool of at most five effects, each 10.08m across (1.8x the original 5.6m diameter); shared materials and ripple mesh.
 - The entire effect stays within 60m of the player and at least 15m from terrain land
   and exposed static mesh rocks. No Palm Pond, shop, or home hotspots.
 - At most eight placement probes and one new spot per second. Fewer than five is
   expected where insufficient valid water exists. Spots last 90–150 seconds.
-- 2.5s ripple lifetime, 0.7 rings/sec, 2m initial size scaled from 40% to 250%.
+- 2.5s ripple lifetime, 0.7 rings/sec, 3.6m initial size scaled from 40% to 250%.
+- Ring emission, bubble clusters, and splash placement grow spatially by 1.8x; particle timing and lifetimes remain unchanged.
 - Horizontal subdivided mesh particles follow the SAME wave phases and spatial
   storm blend as OceanWater. This replaces a plain horizontal billboard so ring
   edges also conform to wave crests. Bubbles and splash droplets use billboards.
 - Bubble clusters every 1.3–2.8s; a subtle five-droplet splash every 4–8s.
 - Inactive/out-of-range spots stop and clear particles, and are reused.
 
-A successful bait or lure landing inside the 2.8m radius locks +10% fish weight at
+A successful bait or lure landing inside the 5.04m radius locks +10% fish weight at
 the edge through +50% at the centre. The bonus is applied once, before existing
 cast-depth quality, temperament and health calculations. Existing species-to-length
 rules determine the model size. This can exceed the normal biome weight maximum.
