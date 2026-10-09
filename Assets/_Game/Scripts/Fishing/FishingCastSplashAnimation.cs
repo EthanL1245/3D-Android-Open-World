@@ -2,13 +2,16 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// Plays the 20 user-authored splash frames at a successful lure/bait water landing.
-/// Add the matching Splash01..Splash20 textures to Resources/Fishing/CastSplash.
+/// Plays 18 selected frames from the user-authored 20-frame splash sequence at a successful water landing.
+/// Add the matching Splash01..Splash20 textures except Splash14 and Splash17 to Resources/Fishing/CastSplash.
 /// This visual is independent of the persistent fishing hotspots and existing audio.
 /// </summary>
 public sealed class FishingCastSplashAnimation : MonoBehaviour
 {
-    private const int FrameCount = 20;
+    private const int FrameCount = 18;
+    // Preserve original numbering; skip Splash14 and Splash17 intentionally.
+    private static readonly int[] FrameNumbers =
+        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 18, 19, 20 };
     private const float FramesPerSecond = 20f;
     private const float WorldWidthMeters = 2.4f;
     // The supplied images have the waterline close to the bottom of the canvas.
@@ -63,14 +66,14 @@ public sealed class FishingCastSplashAnimation : MonoBehaviour
             Texture2D[] loaded = new Texture2D[FrameCount];
             for (int i = 0; i < FrameCount; ++i)
             {
-                // Explicit numeric paths ensure frame 1 is first and frame 20 is last.
-                loaded[i] = Resources.Load<Texture2D>(ResourcePrefix + (i + 1).ToString("00"));
+                // Preserve sequence without renaming source artwork; 14 and 17 are omitted.
+                loaded[i] = Resources.Load<Texture2D>(ResourcePrefix + FrameNumbers[i].ToString("00"));
                 if (loaded[i] == null)
                 {
                     if (!loggedMissingFrames)
                     {
                         Debug.LogWarning("Casting splash is missing Resources/Fishing/CastSplash/Splash" +
-                                         (i + 1).ToString("00") + ".png. Import all 20 splash frames.");
+                                         FrameNumbers[i].ToString("00") + ".png. Import the 18 selected splash frames.");
                         loggedMissingFrames = true;
                     }
                     return false;
