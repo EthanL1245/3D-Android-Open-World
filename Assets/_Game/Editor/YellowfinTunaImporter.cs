@@ -107,39 +107,92 @@ public static class YellowfinTunaImporter
         ExtractSourceFiles(preparedZipPath);
         AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
-        // SeaBassImporter uses the common five-bone authored swim workflow and
-        // prepares a looping Animator, aligned body, lip attachment and UV atlas.
-        // Its saved prefab path is the original YellowfinTuna prefab, so stored
-        // catches and all UI Resources.Load lookups continue to work.
-        SeaBassImporter.InstallModel("YellowfinTuna",PrefabPath,SourceFolder,TexturePath);
-
-        GameObject root=PrefabUtility.LoadPrefabContents(PrefabPath);
+        // Build and validate a temporary prefab FIRST. A mis-exported Blender
+        // action must never overwrite the last good gameplay/index prefab.
+        // The final save still targets the original Resources path and GUID.
+        const string candidate="Assets/_Game/Fishing/YellowfinTuna/YellowfinTuna_ImportCandidate.prefab";
         try
         {
-            var snapper=root.GetComponent<RedSnapperPresentation>();
-            if(snapper!=null)UnityEngine.Object.DestroyImmediate(snapper,true);
+            SeaBassImporter.InstallModel("YellowfinTuna",candidate,SourceFolder,TexturePath);
+            GameObject root=PrefabUtility.LoadPrefabContents(candidate);
+            try
+            {
+                var snapper=root.GetComponent<RedSnapperPresentation>();
+                if(snapper!=null)UnityEngine.Object.DestroyImmediate(snapper);
 
-            var tuna=root.GetComponent<YellowfinTunaPresentation>();
-            if(tuna==null)tuna=root.AddComponent<YellowfinTunaPresentation>();
-            var renderers=root.GetComponentsInChildren<Renderer>(true);
-            tuna.Configure(renderers);
+                var tuna=root.GetComponent<YellowfinTunaPresentation>();
+                if(tuna==null)tuna=root.AddComponent<YellowfinTunaPresentation>();
+                var renderers=root.GetComponentsInChildren<Renderer>(true);
+                tuna.Configure(renderers);
 
-            var animator=root.GetComponentInChildren<Animator>(true);
-            if(animator==null || animator.runtimeAnimatorController==null)
-                throw new InvalidOperationException("Yellowfin Tuna authored swim clip/Animator is missing.");
-            if(!root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Any(x=>x.sharedMesh!=null))
-                throw new InvalidOperationException("Yellowfin Tuna rigged mesh was not preserved.");
-
-            animator.applyRootMotion=false;
-            animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
-            PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
+                var animator=root.GetComponentInChildren<Animator>(true);
+                VerifyYellowfinSkeletalSwim(root,animator);
+                animator.applyRootMotion=false;
+                animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
+                if(PrefabUtility.SaveAsPrefabAsset(root,PrefabPath)==null)
+                    throw new InvalidOperationException("Could not save validated Yellowfin Tuna prefab.");
+            }
+            finally{PrefabUtility.UnloadPrefabContents(root);}
         }
-        finally{UnityEngine.Object.DestroyImmediate(root);}
+        finally
+        {
+            // No temporary fish prefab should be included in Android builds.
+            AssetDatabase.DeleteAsset(candidate);
+        }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Selection.activeObject=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         Debug.Log("[YELLOWFIN TUNA] Restored Blender skeletal swim animation; YellowfinTunaPresentation and existing fish prefab path preserved.");
+    }
+
+
+    // An Animator component alone is not proof of a working authored swim.
+    // Verify the FBX contains skinned bones AND a non-static bone transform
+    // curve, so missing/mis-exported actions cannot silently replace the fish.
+    private static void VerifyYellowfinSkeletalSwim(GameObject root, Animator animator)
+    {
+        if(animator==null || animator.runtimeAnimatorController==null)
+            throw new InvalidDataException("Yellowfin Tuna FBX has no assigned swim Animator.");
+        var meshes=root.GetComponentsInChildren<SkinnedMeshRenderer>(true)
+            .Where(r=>r!=null && r.sharedMesh!=null).ToArray();
+        if(meshes.Length==0 || !meshes.Any(r=>r.bones!=null && r.bones.Length>=3))
+            throw new InvalidDataException("The Yellowfin Tuna FBX has no skinned three-bone (or greater) fish rig.");
+        var animations=animator.runtimeAnimatorController.animationClips
+            .Where(clip=>clip!=null && clip.length>=0.08f).ToArray();
+        if(animations.Length==0)
+            throw new InvalidDataException("Yellowfin Tuna's Animator has no usable swim animation clip.");
+
+        bool movingBone=false;
+        foreach(var clip in animations)
+        foreach(var binding in AnimationUtility.GetCurveBindings(clip))
+        {
+            // Imported FBX transform curves can be named m_LocalRotation.x,
+            // localEulerAnglesRaw.y, m_LocalPosition.z, etc.
+            string p=binding.propertyName;
+            if(string.IsNullOrEmpty(binding.path) ||
+                (p.IndexOf("Rotation",StringComparison.OrdinalIgnoreCase)<0 &&
+                 p.IndexOf("Euler",StringComparison.OrdinalIgnoreCase)<0 &&
+                 p.IndexOf("Position",StringComparison.OrdinalIgnoreCase)<0))
+                continue;
+            var curve=AnimationUtility.GetEditorCurve(clip,binding);
+            if(curve==null || curve.length<2)continue;
+            float first=curve.keys[0].value;
+            for(int i=1;i<curve.length;i++)
+            {
+                if(Mathf.Abs(curve.keys[i].value-first)<=0.0001f)continue;
+                movingBone=true;
+                break;
+            }
+            if(movingBone)break;
+        }
+        if(!movingBone)
+            throw new InvalidDataException(
+                "Yellowfin Tuna FBX contains a rig but no moving bone transforms. "+
+                "Export the armature with its swim action baked into FBX; see Library/FixedFishImports/YellowfinTuna/BlenderExport.log.");
+
+        Debug.Log("[YELLOWFIN TUNA] Verified animated skinned FBX: "+
+            meshes.Length+" skinned mesh(es), "+animations.Length+" nonempty clip(s), moving transform keys.");
     }
 
     [MenuItem("Tools/Open World/Rebuild Yellowfin Tuna Movement")]
