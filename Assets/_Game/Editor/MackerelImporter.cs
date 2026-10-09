@@ -412,14 +412,8 @@ public static class MackerelImporter
                 animator
             );
 
-            if (AssetDatabase.LoadAssetAtPath<GameObject>(
-                    PrefabPath) != null)
-            {
-                AssetDatabase.DeleteAsset(
-                    PrefabPath
-                );
-            }
-
+            // Replace prefab contents in place, preserving its GUID and references
+            // from UI, gameplay, scenes, and saved aquarium assets.
             PrefabUtility.SaveAsPrefabAsset(
                 root,
                 PrefabPath
@@ -440,13 +434,8 @@ public static class MackerelImporter
 
     private static Material BuildMaterial()
     {
-        if (AssetDatabase.LoadAssetAtPath<Material>(
-                MaterialPath) != null)
-        {
-            AssetDatabase.DeleteAsset(
-                MaterialPath
-            );
-        }
+        // Keep the material GUID stable for any inspector references.
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
 
         Shader shader =
             Shader.Find(
@@ -465,8 +454,12 @@ public static class MackerelImporter
                 TexturePath
             );
 
-        Material material =
-            new Material(shader);
+        if (material == null)
+        {
+            material = new Material(shader);
+            AssetDatabase.CreateAsset(material, MaterialPath);
+        }
+        else material.shader = shader;
 
         material.name = "Mackerel";
 
@@ -490,10 +483,7 @@ public static class MackerelImporter
             0.32f
         );
 
-        AssetDatabase.CreateAsset(
-            material,
-            MaterialPath
-        );
+        EditorUtility.SetDirty(material);
 
         return material;
     }
@@ -501,30 +491,18 @@ public static class MackerelImporter
     private static AnimatorController BuildController(
         AnimationClip clip)
     {
-        if (AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(
-                ControllerPath) != null)
-        {
-            AssetDatabase.DeleteAsset(
-                ControllerPath
-            );
-        }
+        AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
+        if (controller == null)
+            controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
 
-        AnimatorController controller =
-            AnimatorController
-                .CreateAnimatorControllerAtPath(
-                    ControllerPath
-                );
-
-        AnimatorState state =
-            controller.layers[0]
-                .stateMachine
-                .AddState("Swim");
+        AnimatorStateMachine machine = controller.layers[0].stateMachine;
+        AnimatorState state = machine.states.Select(s => s.state)
+            .FirstOrDefault(s => s.name == "Swim") ?? machine.AddState("Swim");
 
         state.motion = clip;
 
-        controller.layers[0]
-            .stateMachine
-            .defaultState = state;
+        machine.defaultState = state;
+        EditorUtility.SetDirty(controller);
 
         return controller;
     }
