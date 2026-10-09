@@ -25,3 +25,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 21,Mangrove Snapper,0.5,10.5,165,715,90,1000,3.25
 22,Blackfin Barracuda,2,30,495,2145,450,4500,3.85
 23,Great Barracuda,3.2,48,792,3432,720,7200,3.85
+24,Bluefin Trevally,1,70,352,5500,286,8800,3.85
