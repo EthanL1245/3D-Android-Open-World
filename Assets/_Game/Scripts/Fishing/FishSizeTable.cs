@@ -28,7 +28,8 @@ public static class FishSizeTable
         GameplayCurve(8f,70), // Scarred variant delegates to the normal curve below
         GameplayCurve(15f,22), // Mangrove snapper gameplay approximation kg = 15 * metres^3
         GameplayCurve(9f,36), // Blackfin barracuda slender-body approximation kg = 9 * metres^3
-        GameplayCurve(9f,40) // Great barracuda slender-body approximation kg = 9 * metres^3
+        GameplayCurve(9f,40), // Great barracuda slender-body approximation kg = 9 * metres^3
+        GameplayCurve(17f,36) // Bluefin trevally gameplay approximation kg = 17 * metres^3
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
