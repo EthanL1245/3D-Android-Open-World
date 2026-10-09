@@ -13,9 +13,9 @@ public sealed class FishingCastSplashAnimation : MonoBehaviour
     private static readonly int[] FrameNumbers =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 18, 19, 20 };
     private const float FramesPerSecond = 20f;
-    private const float WorldWidthMeters = 2.4f;
-    // The supplied images have the waterline close to the bottom of the canvas.
-    private const float WaterlineFromBottom = 0.15f;
+    private const float WorldWidthMeters = 0.8f;
+    // Each supplied frame is bottom-aligned; pin the lowest visible pixels to the wave surface.
+    private const float WaterlineFromBottom = 0f;
     private const string ResourcePrefix = "Fishing/CastSplash/Splash";
     private static readonly int MainTexId = Shader.PropertyToID("_MainTex");
     private static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");

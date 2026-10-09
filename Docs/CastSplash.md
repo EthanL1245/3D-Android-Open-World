@@ -15,3 +15,7 @@ All 18 PNGs and their `.meta` files are committed under `Assets/Resources/Fishin
 ## Unity check
 
 Pull `main` and allow the Unity Editor to import the PNGs. Cast worms, shrimp, squid and each lure to open ocean and pond water. Confirm a splash at the impact point and no splash on invalid land casts. Test on Android to verify transparency, orientation and performance. Existing hotspot bonuses and splash audio are unchanged.
+
+## Bottom-aligned, smaller cast splash
+
+Every selected PNG is vertically shifted within its original 512 × 512 transparent canvas so the lowest visible pixel stays at the bottom edge across all frames. The upright splash quad now anchors its bottom edge to the current water surface (0 baseline offset), preventing vertical bobbing caused by changing transparent margins. The world-space effect width is 0.8 m, one-third of its previous 2.4 m width. The splash remains non-looping and the original 18-frame order and sound are unchanged.
