@@ -89,6 +89,59 @@ public static class YellowfinTunaImporter
         Debug.Log("[FIXED FISH] Yellowfin Tuna visual replacement installed. Gameplay, existing presentation and saved catches unchanged.");
     }
 
+
+    /// <summary>
+    /// Import the authored skinned Yellowfin Tuna (including the Blender animation
+    /// action), not a static mesh. Preserve the existing YellowfinTunaPresentation
+    /// component and prefab resource path used by the fishing and index systems.
+    /// The ZIP contains an FBX exported from the user's original rig + UV texture.
+    /// </summary>
+    public static void ImportFixedRiggedModelFromZip(string preparedZipPath)
+    {
+        if(EditorApplication.isPlayingOrWillChangePlaymode)
+            throw new InvalidOperationException("Exit Play Mode before changing Yellowfin Tuna.");
+        if(!File.Exists(preparedZipPath))
+            throw new FileNotFoundException("Yellowfin Tuna package is missing.",preparedZipPath);
+
+        EnsureFolders();
+        ExtractSourceFiles(preparedZipPath);
+        AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
+
+        // SeaBassImporter uses the common five-bone authored swim workflow and
+        // prepares a looping Animator, aligned body, lip attachment and UV atlas.
+        // Its saved prefab path is the original YellowfinTuna prefab, so stored
+        // catches and all UI Resources.Load lookups continue to work.
+        SeaBassImporter.InstallModel("YellowfinTuna",PrefabPath,SourceFolder,TexturePath);
+
+        GameObject root=PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var snapper=root.GetComponent<RedSnapperPresentation>();
+            if(snapper!=null)UnityEngine.Object.DestroyImmediate(snapper,true);
+
+            var tuna=root.GetComponent<YellowfinTunaPresentation>();
+            if(tuna==null)tuna=root.AddComponent<YellowfinTunaPresentation>();
+            var renderers=root.GetComponentsInChildren<Renderer>(true);
+            tuna.Configure(renderers);
+
+            var animator=root.GetComponentInChildren<Animator>(true);
+            if(animator==null || animator.runtimeAnimatorController==null)
+                throw new InvalidOperationException("Yellowfin Tuna authored swim clip/Animator is missing.");
+            if(!root.GetComponentsInChildren<SkinnedMeshRenderer>(true).Any(x=>x.sharedMesh!=null))
+                throw new InvalidOperationException("Yellowfin Tuna rigged mesh was not preserved.");
+
+            animator.applyRootMotion=false;
+            animator.cullingMode=AnimatorCullingMode.CullUpdateTransforms;
+            PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
+        }
+        finally{UnityEngine.Object.DestroyImmediate(root);}
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Selection.activeObject=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        Debug.Log("[YELLOWFIN TUNA] Restored Blender skeletal swim animation; YellowfinTunaPresentation and existing fish prefab path preserved.");
+    }
+
     [MenuItem("Tools/Open World/Rebuild Yellowfin Tuna Movement")]
     public static void RebuildYellowfinTunaMovement()
     {
