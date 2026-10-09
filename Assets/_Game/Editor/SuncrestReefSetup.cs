@@ -214,7 +214,8 @@ public static class SuncrestReefSetup
     private static float Rand(float min,float max)=>Mathf.Lerp(min,max,(float)random.NextDouble());
     private static void BuildScenery(Transform parent)
     {
-        var palm=BuildPalm();var rock=BuildRock();var grasses=BuildGrass();var reefCoral=BuildCoral();
+        var palm=BuildPalm();var rock=BuildRock();var grasses=BuildGrass();
+        // Coral decoration was retired. Never instantiate Coral in rebuilt reefs.
         int palms=Mathf.Clamp(Mathf.RoundToInt(rx*rz/150f),48,100);
         for(int i=0;i<palms;i++)
         {
@@ -236,7 +237,7 @@ public static class SuncrestReefSetup
             float a=Rand(0,Mathf.PI*2),extension=Rand(15,145);
             var local=new Vector3(Mathf.Cos(a)*(rx+extension),0,Mathf.Sin(a)*(rz+extension));
             float depth=sea-Height(local.x,local.z);if(depth<1.2f||depth>8)continue;
-            Place(i%4==0?rock:i%3==0?grasses:reefCoral,parent,local,Rand(.6f,1.7f));
+            Place(i%4==0?rock:grasses,parent,local,Rand(.6f,1.7f));
         }
         // Driftwood and shell banks decorate the sandy shore without buildings.
         for(int i=0;i<12;i++)

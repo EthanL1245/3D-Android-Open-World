@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   IslandName: Brinebreak Isle
   OffsetBeyondSuncrest: 550
-  IslandRadii: {x: 95, y: 65}
+  IslandRadii: {x: 31.6666667, y: 21.6666667}
   ShelfDepth: 28
   OceanDepth: 65
   DropoffWidth: 130

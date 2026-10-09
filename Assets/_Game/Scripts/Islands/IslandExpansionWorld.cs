@@ -70,7 +70,9 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(Config==null){Debug.LogError("Brinebreak expansion configuration missing.");return;}
         Active=this;sea=Water.BaseWaterLevel;originalData=Terrain.terrainData;originalPosition=Terrain.transform.position;
         NewCenter=reef.center+new Vector3(reef.islandRadiusX+Config.OffsetBeyondSuncrest,0,35);
-        PelagicCenter=PelagicIslandGeometry.Center(NewCenter,Config.IslandRadii);
+        // Bluewater Cay must NOT move just because Brinebreak's coastline shrank.
+        // Preserve its original position derived from the historical 95x65 radii.
+        PelagicCenter=PelagicIslandGeometry.Center(NewCenter,new Vector2(95f,65f));
         float left=reef.center.x-reef.islandRadiusX-reef.reefWidth-60;
         float right=NewCenter.x+Config.IslandRadii.x+150;
         ShelfCenter=new Vector3((left+right)*.5f,sea,reef.center.z+17.5f);
@@ -248,7 +250,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         approach.y=Terrain.SampleHeight(approach)+Terrain.transform.position.y+.12f;
         Arrival.SetPositionAndRotation(approach,Quaternion.Euler(0,90,0));
         var random=new System.Random(Config.ScenerySeed);
-        for(int i=0;i<145;i++)
+        for(int i=0;i<17;i++)
         {
             float angle=(float)random.NextDouble()*Mathf.PI*2;float radius=Mathf.Sqrt((float)random.NextDouble())*.94f;
             Vector3 p=NewCenter+new Vector3(Mathf.Cos(angle)*radius*Config.IslandRadii.x,0,Mathf.Sin(angle)*radius*Config.IslandRadii.y);
