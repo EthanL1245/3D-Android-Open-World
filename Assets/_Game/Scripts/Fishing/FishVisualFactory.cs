@@ -87,6 +87,7 @@ public static class FishVisualFactory
             case FishCatalog.GreatBarracudaId:return "Fishing/GreatBarracuda";
             case FishCatalog.BluefinTrevallyId:return "Fishing/BluefinTrevally";
             case FishCatalog.GoldenTrevallyId:return "Fishing/GoldenTrevally";
+            case FishCatalog.GiantTrevallyId:return "Fishing/GiantTrevally";
             default:return null;
         }
     }
