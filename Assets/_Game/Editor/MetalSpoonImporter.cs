@@ -46,7 +46,11 @@ public static class MetalSpoonImporter
     {
         if (importing) return;
         GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(Prefab);
-        if (!force && Ready(existing)) return;
+        if (!force && Ready(existing))
+        {
+            RestoreAuthoredSurface(existing);
+            return;
+        }
         importing = true;
         GameObject root = null;
         try
@@ -129,6 +133,70 @@ public static class MetalSpoonImporter
             Debug.Log("[METAL SPOON] Installed original UVs, texture, body + hook actions and non-hook line eye. Deep Flash slot/stats retained.");
         }
         finally { if (root != null) Object.DestroyImmediate(root); importing = false; }
+    }
+
+    [MenuItem("Tools/Open World/Reimport Metal Spoon Texture and UVs")]
+    public static void ReimportSurface()
+    {
+        AssetDatabase.ImportAsset(Folder + "/SpoonTexture.png", ImportAssetOptions.ForceUpdate);
+        AssetDatabase.ImportAsset(Folder + "/AuthoredSpoon.json", ImportAssetOptions.ForceUpdate);
+        EnsureInstalled();
+    }
+
+    private static void RestoreAuthoredSurface(GameObject prefab)
+    {
+        // Repair existing assets in place. Never rebuild the prefab/animation or
+        // change vertices, transforms, line anchors, or gameplay for a surface fix.
+        TextAsset source = AssetDatabase.LoadAssetAtPath<TextAsset>(Folder + "/AuthoredSpoon.json");
+        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(Folder + "/SpoonTexture.png");
+        if (source == null || texture == null)
+            throw new InvalidDataException("Metal Spoon source texture/UVs are missing.");
+        Export data = JsonUtility.FromJson<Export>(source.text);
+        bool changed = false;
+        foreach (Part part in data.parts)
+        {
+            Transform piece = prefab.transform.Find("AuthoredModel/" + part.name);
+            MeshFilter filter = piece != null ? piece.GetComponent<MeshFilter>() : null;
+            Mesh mesh = filter != null ? filter.sharedMesh : null;
+            if (mesh == null || mesh.vertexCount != part.uv.Length)
+                throw new InvalidDataException("Cannot restore UVs without matching authored mesh: " + part.name);
+            Vector2[] current = mesh.uv;
+            bool matches = current.Length == part.uv.Length;
+            for (int i = 0; matches && i < current.Length; i++)
+                matches = current[i].Equals(part.uv[i]);
+            if (!matches)
+            {
+                mesh.uv = part.uv;
+                mesh.RecalculateTangents();
+                EditorUtility.SetDirty(mesh);
+                changed = true;
+            }
+            // Blender's hook has an unconnected image node; only the body uses it.
+            if (part.name != "SpoonBody") continue;
+            Material material = piece.GetComponent<Renderer>().sharedMaterial;
+            if (material.GetTexture("_BaseMap") != texture ||
+                material.GetTextureScale("_BaseMap") != Vector2.one ||
+                material.GetTextureOffset("_BaseMap") != Vector2.zero)
+            {
+                material.SetTexture("_BaseMap", texture);
+                material.SetTextureScale("_BaseMap", Vector2.one);
+                material.SetTextureOffset("_BaseMap", Vector2.zero);
+                EditorUtility.SetDirty(material);
+                changed = true;
+            }
+        }
+        // Original Blender image node: Repeat, Linear. UV U spans -0.346..1.332;
+        // clamping it stretches edge pixels even when the UV data is correct.
+        TextureImporter importer = AssetImporter.GetAtPath(Folder + "/SpoonTexture.png") as TextureImporter;
+        if (importer != null && (importer.wrapModeU != TextureWrapMode.Repeat ||
+            importer.wrapModeV != TextureWrapMode.Repeat || importer.wrapModeW != TextureWrapMode.Repeat ||
+            importer.filterMode != FilterMode.Bilinear))
+        {
+            importer.wrapMode = TextureWrapMode.Repeat;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.SaveAndReimport();
+        }
+        if (changed) AssetDatabase.SaveAssets();
     }
 
     private static bool Ready(GameObject prefab)
