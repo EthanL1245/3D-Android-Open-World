@@ -8,18 +8,6 @@ using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 /// <summary>
-/// Records the one-time saved-scene conversion. Prevents repeated reshaping after
-/// the player manually edits the island or surrounding ocean in the Scene editor.
-/// </summary>
-[DisallowMultipleComponent]
-public sealed class CompactBrinebreakSavedMarker : MonoBehaviour
-{
-    [SerializeField, HideInInspector] private bool baked;
-    public bool IsBaked => baked;
-    public void MarkBaked() { baked = true; }
-}
-
-/// <summary>
 /// One-time conversion of the CURRENT editable PrototypeWorld scene. Generates
 /// persistent TerrainData assets; does not rebuild the world, relocate Bluewater,
 /// or touch USER PLACED SCENERY. Also removes the retired coral prefab instances.
