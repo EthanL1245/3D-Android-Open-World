@@ -392,6 +392,12 @@ public class YellowfinTunaPresentation : MonoBehaviour
             return;
         }
 
+        // The new authored/skinned Yellowfin model uses FishingEquipment,
+        // which has no _SideAxis; its Animator already drives the swim.
+        // Older shader-deformed tuna still need this orientation lookup.
+        if (!renderers[0].sharedMaterial.HasProperty("_SideAxis"))
+            return;
+
         Vector4 sideValue =
             renderers[0]
                 .sharedMaterial
@@ -506,7 +512,12 @@ public class YellowfinTunaPresentation : MonoBehaviour
         foreach (Renderer renderer
                  in renderers)
         {
-            if (renderer == null)
+            // Do not write shader-deformation controls to the new skinned
+            // model's FishingEquipment material. Its Animator owns the swim.
+            // Preserve the original property-block path for legacy tuna.
+            if (renderer == null ||
+                renderer.sharedMaterial == null ||
+                !renderer.sharedMaterial.HasProperty(SwimStrengthId))
                 continue;
 
             renderer.GetPropertyBlock(
