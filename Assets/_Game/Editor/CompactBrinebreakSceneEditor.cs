@@ -205,14 +205,14 @@ public static class CompactBrinebreakSceneEditor
                     "There are already staged Git changes. To prevent accidentally committing your other work, automatic upload stopped. Commit/unstage those changes first, or push the saved scene manually.");
 
             // Stage exactly the authored main scene and this conversion's data.
-            RunGit(projectRoot, "add -- " + ScenePath + " " + bakedFolder);
+            RunGit(projectRoot, "add -- " + ScenePath + " " + bakedFolder + " " + bakedFolder + ".meta");
             string selected = RunGit(projectRoot, "diff --cached --name-only");
             if (string.IsNullOrWhiteSpace(selected))
                 throw new InvalidOperationException("There are no staged changes to upload.");
             foreach (string line in selected.Split(new[] {'\n','\r'}, StringSplitOptions.RemoveEmptyEntries))
             {
                 string file=line.Replace('\\','/');
-                if (file != ScenePath && !file.StartsWith(bakedFolder + "/", StringComparison.Ordinal))
+                if (file != ScenePath && file != bakedFolder + ".meta" && !file.StartsWith(bakedFolder + "/", StringComparison.Ordinal))
                     throw new InvalidOperationException("Unexpected staged file '" + file + "'. Upload aborted.");
             }
             RunGit(projectRoot, "commit -m " + '"' + "Bake compact Brinebreak terrain and remove coral" + '"');
