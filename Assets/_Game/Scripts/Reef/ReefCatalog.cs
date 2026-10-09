@@ -68,6 +68,16 @@ public static class ReefCatalog
     private static float[] EquippedWeights(int bait,int biome)
     {
         if(biome==SnapperBiomeId)return Zones[SnapperBiomeId].weights;
+        // Legacy fallback only: keep the new species exclusive to Bluewater Cay,
+        // even when the editable fishing tables are temporarily invalid.
+        if(biome==PelagicIslandGeometry.BiomeId)
+        {
+            var pelagic=new float[FishCatalog.Count];
+            var baseline=Zones[PelagicIslandGeometry.BiomeId].weights;
+            for(int i=0;i<baseline.Length && i<pelagic.Length;i++)pelagic[i]=baseline[i];
+            pelagic[FishCatalog.BluefinTrevallyId]=5f;
+            return pelagic;
+        }
         var original=BaseEquippedWeights(bait);if(biome<=0||biome>=Zones.Length)return original;
         var weights=new float[original.Length];
         for(int i=0;i<weights.Length;i++)weights[i]=i<Zones[biome].weights.Length && i<Starter.weights.Length && Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
