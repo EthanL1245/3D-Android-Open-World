@@ -20,23 +20,23 @@ public sealed class FishingHotspotEffect : MonoBehaviour
         // Unity also constructs this component while serializing the prefab for builds.
         waves = new MaterialPropertyBlock();
         ocean = water;
-        rings = CreateSystem("Ripple Particles", rippleMaterial, 6, 2.5f, 2f);
+        rings = CreateSystem("Ripple Particles", rippleMaterial, 6, 2.5f, 2f * FishingHotspotManager.RippleScale);
         var main = rings.main;
         main.startSpeed = 0f;
         main.startColor = new Color(1f, 1f, 1f, 0.48f);
         var emission = rings.emission; emission.rateOverTime = 0.7f;
         var shape = rings.shape;
         shape.enabled = true; shape.shapeType = ParticleSystemShapeType.Circle;
-        shape.radius = 0.3f; shape.rotation = new Vector3(90f, 0f, 0f);
+        shape.radius = 0.3f * FishingHotspotManager.RippleScale; shape.rotation = new Vector3(90f, 0f, 0f);
         var size = rings.sizeOverLifetime;
         size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0f, 0.4f, 1f, 2.5f));
         ringRenderer = rings.GetComponent<ParticleSystemRenderer>();
         // A subdivided horizontal mesh provides the billboard's flat orientation,
-        // but lets the shader bend the entire 5m ring over large wave crests.
+        // but lets the shader bend the enlarged ring over large wave crests.
         ringRenderer.renderMode = ParticleSystemRenderMode.Mesh;
         ringRenderer.mesh = mesh;
         ringRenderer.alignment = ParticleSystemRenderSpace.World;
-        ringRenderer.localBounds = new Bounds(Vector3.zero, new Vector3(8f, 16f, 8f));
+        ringRenderer.localBounds = new Bounds(Vector3.zero, new Vector3(8f * FishingHotspotManager.RippleScale, 16f, 8f * FishingHotspotManager.RippleScale));
 
         bubbles = CreateSystem("Bubble Particles", bubbleMaterial, 24, 1.3f, 0.14f);
         main = bubbles.main;
@@ -107,11 +107,11 @@ public sealed class FishingHotspotEffect : MonoBehaviour
         if (Time.time >= nextCluster)
         {
             nextCluster = Time.time + Random.Range(1.3f, 2.8f);
-            Vector2 centre = Random.insideUnitCircle * 1.2f;
+            Vector2 centre = Random.insideUnitCircle * (1.2f * FishingHotspotManager.RippleScale);
             int count = Random.Range(3, 6);
             for (int i = 0; i < count; i++)
             {
-                Vector2 jitter = Random.insideUnitCircle * 0.2f;
+                Vector2 jitter = Random.insideUnitCircle * (0.2f * FishingHotspotManager.RippleScale);
                 var particle = new ParticleSystem.EmitParams {
                     position = new Vector3(centre.x + jitter.x, -0.16f, centre.y + jitter.y),
                     velocity = new Vector3(jitter.x * 0.15f, Random.Range(0.20f, 0.34f), jitter.y * 0.15f)
@@ -122,7 +122,7 @@ public sealed class FishingHotspotEffect : MonoBehaviour
         if (Time.time >= nextSplash)
         {
             nextSplash = Time.time + Random.Range(4f, 8f);
-            Vector2 centre = Random.insideUnitCircle * 0.9f;
+            Vector2 centre = Random.insideUnitCircle * (0.9f * FishingHotspotManager.RippleScale);
             for (int i = 0; i < 5; i++)
             {
                 Vector2 drift = Random.insideUnitCircle * 0.55f;
