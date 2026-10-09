@@ -30,9 +30,15 @@ public static class CompactBrinebreakSceneEditor
     private static void OfferOnceIfNeeded()
     {
         if (offered || running || EditorApplication.isPlayingOrWillChangePlaymode ||
-            EditorApplication.isCompiling || EditorApplication.isUpdating ||
             PrefabStageUtility.GetCurrentPrefabStage() != null)
             return;
+        // Unity may reload the editor assembly before its first asset refresh
+        // completes. Retry later rather than silently losing the one-time prompt.
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+        {
+            EditorApplication.delayCall += OfferOnceIfNeeded;
+            return;
+        }
         Scene scene = SceneManager.GetActiveScene();
         if (!TryGetWorld(scene, out IslandExpansionWorld world)) return;
         if (world.GetComponent<CompactBrinebreakSavedMarker>()?.IsBaked == true)
