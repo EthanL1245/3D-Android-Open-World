@@ -143,10 +143,12 @@ public static class BrinebreakMoveAndDepthEditor
             Debug.Log("[BRINEBREAK MOVE] Saved at "+newCenter+" (shift "+delta+"). "+
                 cells+" height samples, "+painted+" terrain paint cells, "+props+" generated objects. "+
                 "Bluewater, Suncrest, Snapper and user-placed scenery remain intact. Backup: "+folder);
-            EditorUtility.DisplayDialog("Brinebreak moved and saved",
+            bool upload=EditorUtility.DisplayDialog("Brinebreak moved and saved",
                 "Brinebreak has moved 100m toward Suncrest and its coastal seabed is ~1m deeper. "+
-                "The scene was saved, with backups in:\n"+folder+
-                "\n\nCommit the updated scene and this new folder to GitHub so future pulls preserve the map.","OK");
+                "The scene is saved, with backups in:\n"+folder+
+                "\n\nCommit and push the saved map and backups to upstream/main now?",
+                "Commit and push","I'll push later");
+            if(upload)CommitAndPushSavedMap(folder);
         }
         catch(Exception e)
         {
@@ -157,6 +159,59 @@ public static class BrinebreakMoveAndDepthEditor
             throw;
         }
         finally{EditorUtility.ClearProgressBar();working=false;}
+    }
+
+
+    private static void CommitAndPushSavedMap(string folder)
+    {
+        string root=Path.GetDirectoryName(Application.dataPath);
+        try
+        {
+            if(RunGit(root,"branch --show-current").Trim()!="main")
+                throw new InvalidOperationException("Switch to main before pushing this saved map.");
+            if(RunGit(root,"remote get-url upstream").IndexOf("EthanL1245/3D-Android-Open-World",StringComparison.OrdinalIgnoreCase)<0)
+                throw new InvalidOperationException("The upstream Git remote is not the fishing game's repository.");
+            if(!string.IsNullOrWhiteSpace(RunGit(root,"diff --cached --name-only")))
+                throw new InvalidOperationException("Unrelated files are already staged. Automatic push was skipped for safety.");
+            RunGit(root,"add -- "+MainScene+" "+folder+" "+folder+".meta");
+            string files=RunGit(root,"diff --cached --name-only");
+            if(string.IsNullOrWhiteSpace(files))
+                throw new InvalidOperationException("No map changes were staged.");
+            foreach(string line in files.Split(new[]{'\\n','\\r'},StringSplitOptions.RemoveEmptyEntries))
+            {
+                string file=line.Replace('\\\\','/');
+                if(file!=MainScene && file!=folder+".meta" && !file.StartsWith(folder+"/",StringComparison.Ordinal))
+                    throw new InvalidOperationException("Unexpected staged path: "+file);
+            }
+            RunGit(root,"commit -m \"Move Brinebreak 100m closer and deepen surrounding water\"");
+            RunGit(root,"push upstream main",180000);
+            EditorUtility.DisplayDialog("Brinebreak uploaded",
+                "Saved scene and new editable terrain assets were committed and pushed to upstream/main.","OK");
+        }
+        catch(Exception e)
+        {
+            Debug.LogWarning("[BRINEBREAK MOVE] The scene IS saved locally but GitHub push was not completed: "+e);
+            EditorUtility.DisplayDialog("Brinebreak saved locally",
+                "The map update succeeded and was saved. GitHub push could not finish:\\n"+
+                e.Message+"\\nCheck git status and push the saved main branch when ready.","OK");
+        }
+    }
+
+    private static string RunGit(string directory,string arguments,int timeoutMs=120000)
+    {
+        var info=new System.Diagnostics.ProcessStartInfo("git",arguments)
+        {
+            WorkingDirectory=directory,UseShellExecute=false,CreateNoWindow=true,
+            RedirectStandardOutput=true,RedirectStandardError=true
+        };
+        using(var process=System.Diagnostics.Process.Start(info))
+        {
+            if(process==null)throw new IOException("Git for Windows was not found.");
+            if(!process.WaitForExit(timeoutMs)){process.Kill();throw new TimeoutException("Git timed out: "+arguments);}
+            string stdout=process.StandardOutput.ReadToEnd(),stderr=process.StandardError.ReadToEnd();
+            if(process.ExitCode!=0)throw new IOException("git "+arguments+" failed: "+stderr+" "+stdout);
+            return stdout;
+        }
     }
 
     // Both heightmap sampling and paint use source-only data. The old island
