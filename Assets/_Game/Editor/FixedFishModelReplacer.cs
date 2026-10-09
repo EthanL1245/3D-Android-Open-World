@@ -195,7 +195,7 @@ public static class FixedFishModelReplacer
 
     private static void AddEntry(ZipArchive zip,string name,byte[] data)
     {
-        var entry=zip.CreateEntry(name,CompressionLevel.Fastest);
+        var entry=zip.CreateEntry(name,System.IO.Compression.CompressionLevel.Fastest);
         using(var file=entry.Open())file.Write(data,0,data.Length);
     }
 
