@@ -88,6 +88,13 @@ public class OceanWater : MonoBehaviour
         return BaseWaterLevel + EvaluateWaves(worldPosition.x, worldPosition.z);
     }
 
+    // Share the exact current wave phases with surface effects (no independent clocks).
+    public void CopyWaveProperties(MaterialPropertyBlock destination)
+    {
+        EnsureRenderer();
+        waterRenderer.GetPropertyBlock(destination);
+    }
+
     public bool IsPointUnderwater(Vector3 worldPosition)
     {
         return worldPosition.y < GetSurfaceHeight(worldPosition);

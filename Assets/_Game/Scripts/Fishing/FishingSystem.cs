@@ -96,6 +96,8 @@ public class FishingSystem : MonoBehaviour
     private Vector3 castPoint;
     private bool pondCast;
     private int castBiome;
+    private FishingHotspotManager hotspots;
+    private float castHotspotMultiplier = 1f;
     private Vector3 castLandingPoint;
     public int CastBiome => pondCast ? 0 : castBiome;
     public Vector3 CastLandingPoint => castLandingPoint;
@@ -256,6 +258,8 @@ public class FishingSystem : MonoBehaviour
         }
 
         terrain = Terrain.activeTerrain;
+        hotspots = GetComponent<FishingHotspotManager>();
+        if (hotspots == null) hotspots = gameObject.AddComponent<FishingHotspotManager>();
 
         minimumFishingDepth = 0.6f;
         deepWaterSafetyRadius = 0.75f;
@@ -895,6 +899,7 @@ public class FishingSystem : MonoBehaviour
         // Freeze the player's zone when the cast is released, before any movement.
         castBiome=SnapperIslandGeometry.ResolveBiome(transform.position);
         castLandingPoint=target;
+        castHotspotMultiplier=1f;
         originalCastDistance=Vector3.ProjectOnPlane(target-castOrigin,Vector3.up).magnitude;
         activeBait=0; // Bait is committed only after a successful water landing.
         StartCoroutine(
@@ -979,6 +984,9 @@ public class FishingSystem : MonoBehaviour
             yield break;
         }
         pondCast=PondWater.Active!=null && PondWater.Active.Contains(target);
+        // Capture eligibility once on a successful landing. Retrieving through a
+        // hotspot later or swimming across zones must never reroll this catch.
+        castHotspotMultiplier=!pondCast && hotspots!=null ? hotspots.LandingMultiplier(target) : 1f;
         TryGetTerrainWaterDepth(target,out _,out _,out castDepth);
         activeBait=shopProgress!=null ? shopProgress.TakeBait() : 0;
         if (rodView != null) rodView.SetCastPose(1f);
@@ -996,13 +1004,16 @@ public class FishingSystem : MonoBehaviour
         if(activeBait==ShopCatalog.StarterLure)
         {
             BeginLureRetrieve();hud.SetActionLabel("REEL");
-            hud.SetStatus("Hold REEL to work the lure. No bites while resting.");yield break;
+            hud.SetStatus("Hold REEL to work the lure. No bites while resting." + HotspotStatus());yield break;
         }
         hud.SetActionLabel("WAIT");
         hud.SetStatus(
-            "Waiting for a bite..."
+            "Waiting for a bite..." + HotspotStatus()
         );
     }
+
+    private string HotspotStatus() => castHotspotMultiplier > 1f
+        ? "  HOTSPOT: +" + Mathf.RoundToInt((castHotspotMultiplier - 1f) * 100f) + "% fish size" : "";
 
     private int fightBiome;
     private int RollBaitSpecies() => ReefCatalog.Roll(Random.value,activeBait,fightBiome);
@@ -1065,6 +1076,10 @@ public class FishingSystem : MonoBehaviour
                 float size=activeBait==ShopCatalog.StarterLure?Mathf.InverseLerp(species.MinWeightKg,species.MaxWeightKg,hookedWeightKg):Random.value;
                 hookedWeightKg=FishSizeTable.WeightForLength(hookedSpeciesId,Mathf.Lerp(.05f,.12f,size));
             }
+
+            // One multiplier on the original species' weight, before temperament/HP
+            // and the existing depth-quality pass. It may exceed the normal zone cap.
+            if(!pondCast) hookedWeightKg*=castHotspotMultiplier;
 
             fishUnconscious = false;
             fishOnShore = false;
