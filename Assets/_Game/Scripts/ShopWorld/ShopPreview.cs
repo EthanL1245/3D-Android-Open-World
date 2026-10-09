@@ -25,6 +25,13 @@ public sealed class ShopPreview : MonoBehaviour
         // path, including the shortcut, bait list, tackle store, and fish index.
         int baitCell=resolvedGear=="Bait0" || resolvedGear=="Bait1"?0:
                      resolvedGear=="Bait2"?1:resolvedGear=="Bait3"?2:-1;
+        // Leave each bait's surrounding icon frame unchanged. Scale only the
+        // artwork inside it by 15%, producing an even transparent margin.
+        // Restore the equipped shortcut when switching back to a lure.
+        if(baitCell>=0)
+            target.rectTransform.localScale=new Vector3(.85f,.85f,1f);
+        else if(target.name=="EquippedBaitPicture")
+            target.rectTransform.localScale=Vector3.one;
         if(baitCell>=0)
         {
             Texture2D baitIcons=Resources.Load<Texture2D>("Fishing/BaitIconsAtlas");
