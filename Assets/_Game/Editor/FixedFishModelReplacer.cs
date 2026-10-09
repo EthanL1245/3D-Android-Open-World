@@ -102,7 +102,7 @@ public static class FixedFishModelReplacer
     }
 
     private static string InstallKey(bool tuna) =>
-        "OpenWorld.FixedFishArt."+(tuna?"Yellowfin":"Mackerel")+".v2."+Application.dataPath.GetHashCode();
+        "OpenWorld.FixedFishArt."+(tuna?"Yellowfin.v3":"Mackerel.v2")+"."+Application.dataPath.GetHashCode();
     private static string Signature(string archive)
     {
         var info=new FileInfo(archive);
