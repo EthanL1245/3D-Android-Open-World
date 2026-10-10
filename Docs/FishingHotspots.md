@@ -18,8 +18,11 @@ and Bubble.png. Texture import limits both to 512px with alpha and mipmaps on An
 - Inactive/out-of-range spots stop and clear particles, and are reused.
 
 A successful bait or lure landing inside the 5.04m radius locks +10% fish weight at
-the edge through +50% at the centre. The bonus is applied once, before existing
-cast-depth quality, temperament and health calculations. Existing species-to-length
+the edge through +50% at the centre. The bonus is applied once, before temperament and health calculations.
+A successful ripple landing additionally bypasses cast-depth and close-water
+weight/fight-difficulty penalties on ALL existing and future islands and
+fishing biomes (not only Suncrest). Non-ripple casts keep normal depth-quality
+rules. Existing species-to-length
 rules determine the model size. This can exceed the normal biome weight maximum.
 Species selection still uses the player's zone at cast release. Crossing hotspots
 while retrieving, moving between zones, or a hotspot expiring cannot change the
@@ -40,6 +43,11 @@ particle settings live in FishingHotspotEffect.
 4. Retrieve an initially missed lure through a hotspot: no bonus should be awarded.
 5. Hook inside a hotspot, then move away/let it expire: catch weight/species remain
    unchanged. Cross an island boundary during the fight to verify the same.
+   On Suncrest, Brinebreak, Bluewater, Snapper and Deep Ocean (and any newly
+   added island), confirm an active ripple landing receives full depth-quality
+   weight and fight HP/difficulty plus its existing 10–50% bonus, even in
+   shallow water. An otherwise comparable non-ripple cast retains the depth
+   penalty.
 6. Travel to shop/home and back, and move more than 60m: old particles disappear,
    and the pool repopulates with no more than five objects active.
 7. On Android, check visibility from 20–30m and that no material renders pink.

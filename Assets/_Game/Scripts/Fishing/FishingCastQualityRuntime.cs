@@ -139,10 +139,11 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         biome = fishing.CastBiome;
         castDepth = StableWaterDepth(landing);
 
-        // Suncrest's active fish-activity ripples cancel the shallow/close cast
-        // depth penalty for this successful landing. The FishingSystem already
-        // froze ripple eligibility and its 10-50% bonus at water impact.
-        // Never query a moving lure or a later/expired hotspot for this rule.
+        // On EVERY island and in EVERY current or future fishing biome, a cast
+        // landing inside an active fishing ripple has full depth/close-cast
+        // quality. FishingSystem already froze eligibility and the 10-50%
+        // size bonus at water impact. Do not query later lure/player movement
+        // or a ripple that has since expired. Pond casts remain exempt above.
         if (ShouldWaiveShallowPenalty(biome, fishing.CastHitHotspot))
         {
             quality = 1f;
@@ -157,15 +158,17 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     }
 
     /// <summary>
-    /// Depth alone owns quality. The absolute floor is 20% potential, so a very
-    /// shallow cast can lose up to 80% of weight, but only 40% of fight HP/difficulty. The curved response
-    /// keeps shallow/intermediate water meaningfully worse instead of becoming nearly
-    /// full-quality too early.
+    /// All fishing biomes (existing and future) waive shallow/close-water penalties
+    /// when the cast hit an active ripple. The biome argument is retained for
+    /// existing callers, but intentionally never gates eligibility.
     /// </summary>
-    /// <summary>Suncrest Reef only. Snapper, Brinebreak, Bluewater and Deep Ocean keep their rules.</summary>
     public static bool ShouldWaiveShallowPenalty(int castBiome, bool hitRipple)
-        => hitRipple && castBiome == 0;
+        => hitRipple;
 
+    /// <summary>
+    /// On ordinary non-ripple casts, depth alone owns quality. The absolute
+    /// floor is 20% weight potential; fight HP/difficulty bottoms out at 60%.
+    /// </summary>
     public static float QualityFromDepthRatio(float ratio)
     {
         float depth01 = Mathf.Clamp01(ratio);

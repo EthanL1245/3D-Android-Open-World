@@ -38,13 +38,15 @@ already excludes saved fishing maps.
 
 ## Fishing ripples
 
-Only at the Suncrest starter biome (`castBiome == 0`), a successful water
-cast whose *frozen landing point* hit an active fishing hotspot has no
-cast-depth/close-water penalty: fish size/HP quality remains 100%. The
-previous hotspot size bonus still applies (10–50%, strongest in the centre).
-No waiver applies to non-hotspot casts or any other fishing biome. The
-eligibility is captured at water landing, so a lure moving through a ripple
-later does not retroactively earn the exemption.
+At **every island and fishing biome, existing or added in the future**, a
+successful water cast whose *frozen landing point* hit an active fishing ripple
+has no cast-depth/close-water penalty: fish weight potential and fight
+HP/difficulty quality remain 100%. The previous ripple size bonus still applies
+(10–50%, strongest in the centre). Only normal casts outside a ripple keep
+their depth/close-water penalties. The exemption is independent of biome ID,
+island name and shore distance. Eligibility is captured at water landing, so
+a lure moving through a ripple later does not retroactively earn it. Pond
+casts keep their separate existing rules.
 
-Source changes to this rule and the one-time grass editor are on main. The
+Source changes to this global ripple rule and the one-time grass editor are on main. The
 Unity scene/serialized TerrainData need the local editor pass to complete.
