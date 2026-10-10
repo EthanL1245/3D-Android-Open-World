@@ -485,6 +485,14 @@ public class FishingHUD : MonoBehaviour
         }
     }
 
+    // Hide the temporary center-screen catch card immediately when the rod is re-equipped.
+    public void DismissCatchPopup()
+    {
+        catchPanelTimer = 0f;
+        if (catchPanel != null)
+            catchPanel.SetActive(false);
+    }
+
     public void ShowCatch(
         CaughtFishRecord record,
         string heading = "CAUGHT!",
