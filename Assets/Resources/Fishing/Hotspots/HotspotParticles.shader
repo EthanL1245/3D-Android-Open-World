@@ -4,6 +4,7 @@ Shader "OpenWorld/FishingHotspotParticles"
     {
         _MainTex ("Particle Texture", 2D) = "white" {}
         _FollowSurface ("Conform to ocean", Float) = 0
+        _EffectAlpha ("Cast ripple opacity", Range(0,1)) = 1
     }
     SubShader
     {
@@ -22,7 +23,7 @@ Shader "OpenWorld/FishingHotspotParticles"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
             CBUFFER_START(UnityPerMaterial)
-                float _FollowSurface, _HotspotSeaLevel;
+                float _FollowSurface, _HotspotSeaLevel, _EffectAlpha;
                 float _WaveAmplitude1, _WaveAmplitude2, _WaveAmplitude3;
                 float _WaveLength1, _WaveLength2, _WaveLength3;
                 float4 _WaveDirection1, _WaveDirection2, _WaveDirection3;
@@ -65,6 +66,8 @@ Shader "OpenWorld/FishingHotspotParticles"
             half4 Frag(Varyings input):SV_Target
             {
                 half4 color = SAMPLE_TEXTURE2D(_MainTex,sampler_MainTex,input.uv) * input.color;
+                // Default 1.0 keeps existing hotspot and cast-splash appearance unchanged.
+                color.a *= saturate(_EffectAlpha);
                 color.rgb = MixFog(color.rgb,input.fog);
                 return color;
             }

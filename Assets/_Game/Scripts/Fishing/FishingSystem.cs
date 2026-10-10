@@ -995,6 +995,8 @@ public class FishingSystem : MonoBehaviour
         PlayFishingSound(waterLandingSound, 1.3f);
         // Play the supplied 20-frame animation only for a successful water landing.
         FishingCastSplashAnimation.Spawn(castPoint, oceanWater, playerCamera);
+        // A separate, horizontal ripple expands out to a one-metre radius.
+        FishingCastRippleEffect.Spawn(castPoint, oceanWater);
 
         state = FishingState.Waiting;
         stateTimer =

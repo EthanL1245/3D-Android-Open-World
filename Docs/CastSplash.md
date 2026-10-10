@@ -23,3 +23,11 @@ Every selected PNG is vertically shifted within its original 512 × 512 transpar
 ## Additional 50% scale reduction and 20% translucency
 
 The one-shot water-impact quad is now 0.4 m across (half the prior 0.8 m width). The upright quad uses 80% vertex alpha, multiplied by each frame texture's authored alpha in the existing unlit water-particle shader. This yields 20% lower opacity across every nontransparent splash pixel while leaving already invisible areas at alpha zero. Source PNGs are preserved unchanged, retaining their bottom-aligned content and the 18-frame sequence (excluding 14 and 17). The effect remains a visual-only cast landing change.
+
+## Expanding ring at cast impact
+
+The supplied transparent ripple image is imported as `Resources/Fishing/CastRipple/LureHitsWaterRipple.png`, resized to 512 px with only transparent margins trimmed for Android. `FishingCastRippleEffect` is instantiated in `FishingSystem.CastRoutine` alongside the existing upright splash and landing sound, only after a validated water landing (bait and lure). It is a separate transient visual, not a new fishing hotspot.
+
+The horizontal ring starts with a 0.08 m radius and smoothly grows to **1 m radius (2 m diameter)** over 1.25 seconds, fading continuously to **zero opacity** as it reaches maximum size. A subdivided mesh follows the same ocean waves as the hotspot rings; pond water stays on its own surface. The mesh uses `_EffectAlpha` in the existing hotspot shader, whose default value is 1.0 to preserve all existing hotspot and upright splash visuals. The one-shot GameObject is destroyed at the end. Fully transparent PNG areas remain invisible, and cast mechanics, hotspot bonuses, and audio are untouched.
+
+Unity/Android play checks: successful open-ocean cast, pond cast, failed land cast, repeated casts, large waves, and no pink shader/black quad.
