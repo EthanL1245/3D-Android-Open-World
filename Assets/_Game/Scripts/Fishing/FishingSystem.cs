@@ -100,6 +100,8 @@ public class FishingSystem : MonoBehaviour
     private Vector3 castLandingPoint;
     public int CastBiome => pondCast ? 0 : castBiome;
     public Vector3 CastLandingPoint => castLandingPoint;
+    /// <summary>Frozen on successful water landing; never changes as lure or player moves.</summary>
+    public bool CastHitHotspot => !pondCast && castHotspotMultiplier > 1.0001f;
     private float chargeStarted,castHintTimer,castDepth;
     private bool castRangeAvailable;
     private float minimumCastPower;

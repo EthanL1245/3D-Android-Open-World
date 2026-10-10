@@ -138,6 +138,19 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
         Vector3 landing = fishing.CastLandingPoint;
         biome = fishing.CastBiome;
         castDepth = StableWaterDepth(landing);
+
+        // Suncrest's active fish-activity ripples cancel the shallow/close cast
+        // depth penalty for this successful landing. The FishingSystem already
+        // froze ripple eligibility and its 10-50% bonus at water impact.
+        // Never query a moving lure or a later/expired hotspot for this rule.
+        if (ShouldWaiveShallowPenalty(biome, fishing.CastHitHotspot))
+        {
+            quality = 1f;
+            depthRatio = 1f;
+            referenceDepth = castDepth;
+            return;
+        }
+
         referenceDepth = ReferenceDepthForBiome(biome);
         depthRatio = referenceDepth > 0.001f ? Mathf.Clamp01(castDepth / referenceDepth) : 1f;
         quality = QualityFromDepthRatio(depthRatio);
@@ -149,6 +162,10 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
     /// keeps shallow/intermediate water meaningfully worse instead of becoming nearly
     /// full-quality too early.
     /// </summary>
+    /// <summary>Suncrest Reef only. Snapper, Brinebreak, Bluewater and Deep Ocean keep their rules.</summary>
+    public static bool ShouldWaiveShallowPenalty(int castBiome, bool hitRipple)
+        => hitRipple && castBiome == 0;
+
     public static float QualityFromDepthRatio(float ratio)
     {
         float depth01 = Mathf.Clamp01(ratio);
