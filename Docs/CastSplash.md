@@ -19,3 +19,7 @@ Pull `main` and allow the Unity Editor to import the PNGs. Cast worms, shrimp, s
 ## Bottom-aligned, smaller cast splash
 
 Every selected PNG is vertically shifted within its original 512 × 512 transparent canvas so the lowest visible pixel stays at the bottom edge across all frames. The upright splash quad now anchors its bottom edge to the current water surface (0 baseline offset), preventing vertical bobbing caused by changing transparent margins. The world-space effect width is 0.8 m, one-third of its previous 2.4 m width. The splash remains non-looping and the original 18-frame order and sound are unchanged.
+
+## Additional 50% scale reduction and 20% translucency
+
+The one-shot water-impact quad is now 0.4 m across (half the prior 0.8 m width). The upright quad uses 80% vertex alpha, multiplied by each frame texture's authored alpha in the existing unlit water-particle shader. This yields 20% lower opacity across every nontransparent splash pixel while leaving already invisible areas at alpha zero. Source PNGs are preserved unchanged, retaining their bottom-aligned content and the 18-frame sequence (excluding 14 and 17). The effect remains a visual-only cast landing change.

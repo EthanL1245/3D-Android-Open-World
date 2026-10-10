@@ -13,7 +13,7 @@ public sealed class FishingCastSplashAnimation : MonoBehaviour
     private static readonly int[] FrameNumbers =
         { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 18, 19, 20 };
     private const float FramesPerSecond = 20f;
-    private const float WorldWidthMeters = 0.8f;
+    private const float WorldWidthMeters = 0.4f;
     // Each supplied frame is bottom-aligned; pin the lowest visible pixels to the wave surface.
     private const float WaterlineFromBottom = 0f;
     private const string ResourcePrefix = "Fishing/CastSplash/Splash";
@@ -120,6 +120,13 @@ public sealed class FishingCastSplashAnimation : MonoBehaviour
             sharedQuad.uv = new[] {
                 new Vector2(0f, 0f), new Vector2(1f, 0f),
                 new Vector2(0f, 1f), new Vector2(1f, 1f)
+            };
+            // The hotspot unlit shader multiplies sampled PNG alpha by vertex alpha.
+            // 0.8 makes every visible splash pixel 20% more translucent and keeps
+            // already transparent PNG pixels fully transparent.
+            Color splashTint = new Color(1f, 1f, 1f, 0.8f);
+            sharedQuad.colors = new[] {
+                splashTint, splashTint, splashTint, splashTint
             };
             sharedQuad.triangles = new[] { 0, 1, 2, 1, 3, 2 };
             sharedQuad.RecalculateBounds();
