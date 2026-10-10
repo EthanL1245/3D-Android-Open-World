@@ -448,6 +448,7 @@ public class FishingSystem : MonoBehaviour
         if (hud != null)
         {
             hud.SetRodSelected(true);
+            hud.DismissCatchPopup();
             hud.SetActionVisible(true);
             hud.SetActionLabel("CAST");
             hud.SetStatus(
