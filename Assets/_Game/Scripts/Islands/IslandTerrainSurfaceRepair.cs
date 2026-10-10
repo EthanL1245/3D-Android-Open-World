@@ -47,6 +47,13 @@ public static class IslandTerrainSurfaceRepair
 
     public static void RestoreWorldPaint(Terrain terrain,ReefZone reef,IslandExpansionWorld world,float sea)
     {
+        // A saved starter-grass restoration is explicit user-owned scene paint.
+        // Never regenerate multi-island alphamaps over it through this older API.
+        if(world!=null && world.GetComponent<StarterIslandGrassLock>()?.IsSaved==true)
+        {
+            Debug.LogWarning("[SUNCREST GRASS] Refusing legacy full-world terrain repaint: the owner locked the saved starter grass. Request explicit authorization before changing it.");
+            return;
+        }
         TerrainData data=terrain.terrainData;
         Roles(data,out int sand,out int grass,out int stone,out int seabed);
         int w=data.alphamapWidth,h=data.alphamapHeight;
