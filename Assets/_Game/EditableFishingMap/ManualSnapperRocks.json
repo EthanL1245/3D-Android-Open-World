@@ -1,0 +1,312 @@
+{
+    "scene": "Assets/Scenes/PrototypeWorld.unity",
+    "ownershipRule": "HUMAN-OWNED. Future AI code must preserve these Blender source files and all existing manually placed rocks: do not move, remove, replace, resize, reparent, or change materials or UVs. Collision may only be changed at user's request.",
+    "blenderFiles": [
+        "Assets/Manually Added Assets/Snapper Island Main Rock Formation.blend",
+        "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+        "Assets/Manually Added Assets/Snapper Island Rock Single.blend"
+    ],
+    "rocks": [
+        {
+            "name": "rock",
+            "hierarchy": "Snapper Island Rock Formation New/rock",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-8039765736737727803-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 24.65308380126953,
+                "y": 13.26205062866211,
+                "z": -268.0547790527344
+            },
+            "worldRotation": {
+                "x": 270.019775390625,
+                "y": 88.78602600097656,
+                "z": 0.0
+            },
+            "worldScale": {
+                "x": 12.588828086853028,
+                "y": 12.588827133178711,
+                "z": 14.591286659240723
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.001",
+            "hierarchy": "Snapper Island Rock Formation New/rock.001",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-17869097395405316147-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 26.339231491088868,
+                "y": 11.497331619262696,
+                "z": -257.0851135253906
+            },
+            "worldRotation": {
+                "x": 90.0,
+                "y": 173.1568603515625,
+                "z": 0.0
+            },
+            "worldScale": {
+                "x": 12.588826179504395,
+                "y": 12.588826179504395,
+                "z": 9.895059585571289
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.002",
+            "hierarchy": "Snapper Island Rock Formation New/rock.002",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-3403348643546350386-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 18.431194305419923,
+                "y": 9.478797912597657,
+                "z": -266.19903564453127
+            },
+            "worldRotation": {
+                "x": 1.5960699319839478,
+                "y": 266.49078369140627,
+                "z": 337.73553466796877
+            },
+            "worldScale": {
+                "x": 8.700817108154297,
+                "y": 8.70081901550293,
+                "z": 6.839010715484619
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.003",
+            "hierarchy": "Snapper Island Rock Formation New/rock.003",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-8521217290299488569-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 17.052112579345704,
+                "y": 5.689788818359375,
+                "z": -258.798583984375
+            },
+            "worldRotation": {
+                "x": 1.5960689783096314,
+                "y": 277.88690185546877,
+                "z": 337.73553466796877
+            },
+            "worldScale": {
+                "x": 9.105606079101563,
+                "y": 7.37644624710083,
+                "z": 7.8576979637146
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.004",
+            "hierarchy": "Snapper Island Rock Formation New/rock.004",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-7634343226319462724-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 19.50571632385254,
+                "y": 11.473079681396485,
+                "z": -278.6975402832031
+            },
+            "worldRotation": {
+                "x": 3.7267143726348879,
+                "y": 353.65313720703127,
+                "z": 339.093505859375
+            },
+            "worldScale": {
+                "x": 10.910935401916504,
+                "y": 13.996376991271973,
+                "z": 7.866952896118164
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.005",
+            "hierarchy": "Snapper Island Rock Formation New/rock.005",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-565817681150903643-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": -0.9582443237304688,
+                "y": 11.497331619262696,
+                "z": -270.59344482421877
+            },
+            "worldRotation": {
+                "x": 86.12600708007813,
+                "y": 58.52627182006836,
+                "z": 221.41339111328126
+            },
+            "worldScale": {
+                "x": 12.607338905334473,
+                "y": 13.489577293395996,
+                "z": 15.893331527709961
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.006",
+            "hierarchy": "Snapper Island Rock Formation New/rock.006",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-6606494168103106637-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": -12.44083023071289,
+                "y": 9.33362865447998,
+                "z": -270.5036926269531
+            },
+            "worldRotation": {
+                "x": 279.3929748535156,
+                "y": 271.01641845703127,
+                "z": 11.0027437210083
+            },
+            "worldScale": {
+                "x": 12.770137786865235,
+                "y": 13.654646873474121,
+                "z": 22.28746795654297
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.008",
+            "hierarchy": "Snapper Island Rock Formation New/rock.008",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-2769217600245653662-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": 0.1722869873046875,
+                "y": 8.794857025146485,
+                "z": -278.36053466796877
+            },
+            "worldRotation": {
+                "x": 0.8901879191398621,
+                "y": 100.84891510009766,
+                "z": 334.0986328125
+            },
+            "worldScale": {
+                "x": 12.56235122680664,
+                "y": 12.562352180480957,
+                "z": 9.874250411987305
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.009",
+            "hierarchy": "Snapper Island Rock Formation New/rock.009",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-15805480412391624104-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": -18.35361671447754,
+                "y": 6.385065078735352,
+                "z": -260.36468505859377
+            },
+            "worldRotation": {
+                "x": 4.113245964050293,
+                "y": 345.3853759765625,
+                "z": 339.0899963378906
+            },
+            "worldScale": {
+                "x": 16.224212646484376,
+                "y": 11.255510330200196,
+                "z": 12.362491607666016
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.010",
+            "hierarchy": "Snapper Island Rock Formation New/rock.010",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-17789237148093319463-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": -5.39933967590332,
+                "y": 2.0392990112304689,
+                "z": -257.2282409667969
+            },
+            "worldRotation": {
+                "x": 354.6638488769531,
+                "y": 353.5304870605469,
+                "z": 221.1779022216797
+            },
+            "worldScale": {
+                "x": 11.436415672302246,
+                "y": 12.271920204162598,
+                "z": 15.640810012817383
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "rock.011",
+            "hierarchy": "Snapper Island Rock Formation New/rock.011",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-14759159953835227991-1074666100",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Formation New.blend",
+            "worldPosition": {
+                "x": -10.674299240112305,
+                "y": 17.554527282714845,
+                "z": -283.426025390625
+            },
+            "worldRotation": {
+                "x": 357.87445068359377,
+                "y": 353.3453369140625,
+                "z": 358.83734130859377
+            },
+            "worldScale": {
+                "x": 13.496831893920899,
+                "y": 37.1025390625,
+                "z": 14.450709342956543
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "Snapper Island Rock Single",
+            "hierarchy": "Snapper Island Rock Single",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-919132149155446097-37872867",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Single.blend",
+            "worldPosition": {
+                "x": 35.130001068115237,
+                "y": 3.2799999713897707,
+                "z": -278.4100036621094
+            },
+            "worldRotation": {
+                "x": 1.035584807395935,
+                "y": 263.0267028808594,
+                "z": 243.80023193359376
+            },
+            "worldScale": {
+                "x": 8.517878532409668,
+                "y": 8.616615295410157,
+                "z": 8.868385314941407
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        },
+        {
+            "name": "Snapper Island Rock Single (1)",
+            "hierarchy": "Snapper Island Rock Single (1)",
+            "sceneObjectId": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-919132149155446097-857496834",
+            "meshSource": "Assets/Manually Added Assets/Snapper Island Rock Single.blend",
+            "worldPosition": {
+                "x": 39.40999984741211,
+                "y": -0.6100000143051148,
+                "z": -268.9700012207031
+            },
+            "worldRotation": {
+                "x": 330.0136413574219,
+                "y": 293.27008056640627,
+                "z": 155.96690368652345
+            },
+            "worldScale": {
+                "x": 15.103964805603028,
+                "y": 15.279047012329102,
+                "z": 15.725484848022461
+            },
+            "humanOwned": false,
+            "hasExactCollider": true
+        }
+    ],
+    "rockMeshCount": 13,
+    "rockMeshesWithCollision": 13
+}

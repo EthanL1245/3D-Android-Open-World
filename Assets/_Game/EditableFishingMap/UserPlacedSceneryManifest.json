@@ -1,0 +1,6 @@
+{
+    "scene": "Assets/Scenes/PrototypeWorld.unity",
+    "ownershipRule": "HUMAN-OWNED: never programmatically move, rescale, delete, replace, repaint, or reparent any descendant of USER PLACED SCENERY. Use the scene and this manifest as input for future world code.",
+    "placedObjectCount": 0,
+    "objects": []
+}
