@@ -30,7 +30,6 @@ public class FishingSystem : MonoBehaviour
 
     [Header("Casting")]
     [SerializeField] private float preferredCastDistance = 16f;
-    [SerializeField] private float minimumCastDistance = 5f;
     [SerializeField] private float maximumCastDistance = 30f;
     [SerializeField] private float castDuration = 0.72f;
 
