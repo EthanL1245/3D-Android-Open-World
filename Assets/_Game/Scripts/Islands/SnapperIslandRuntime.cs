@@ -69,7 +69,13 @@ public sealed class SnapperIslandRuntime : MonoBehaviour
             // That old path sculpts/repaints Snapper and removes old formations.
             var surfaceState=FindFirstObjectByType<NonSnapperTerrainSurfaceState>(
                 Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
-            if(NeedsSimpleIslandRepair && (surfaceState==null || !surfaceState.Restored))
+            // Respect the protected starter grass even if a legacy Snapper
+            // migration flag is still serialized in a locally edited scene.
+            var grassLock=FindFirstObjectByType<StarterIslandGrassLock>(
+                Application.isPlaying?FindObjectsInactive.Exclude:FindObjectsInactive.Include);
+            if(NeedsSimpleIslandRepair &&
+               (surfaceState==null || !surfaceState.Restored) &&
+               (grassLock==null || !grassLock.IsSaved))
                 RestoreSimpleIsland(true);
             return;
         }

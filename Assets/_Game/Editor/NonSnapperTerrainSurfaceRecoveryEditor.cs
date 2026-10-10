@@ -46,6 +46,13 @@ public static class NonSnapperTerrainSurfaceRecoveryEditor
             return;
         }
 
+        if (world.GetComponent<StarterIslandGrassLock>()?.IsSaved == true)
+        {
+            EditorUtility.DisplayDialog("Protected starter grass",
+                "The user has permanently restored Suncrest grass. This legacy multi-island repaint command is disabled because it could overwrite that saved paint. The user must explicitly request an update to protected terrain.", "OK");
+            return;
+        }
+
         var previous = world.GetComponent<NonSnapperTerrainSurfaceState>();
         if (previous != null && previous.Restored)
         {

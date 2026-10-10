@@ -34,6 +34,7 @@ public static class SnapperIslandRestoreEditor
         if(!scene.IsValid() || !scene.isLoaded || string.IsNullOrEmpty(scene.path) || EditorSceneManager.IsPreviewScene(scene))return;
         var snapper=Find<SnapperIslandRuntime>(scene);
         var world=Find<IslandExpansionWorld>(scene);
+        if(world!=null && world.GetComponent<StarterIslandGrassLock>()?.IsSaved==true)return;
         if(world!=null && world.GetComponent<NonSnapperTerrainSurfaceState>()?.Restored==true)return;
         if(snapper==null || world==null || !snapper.HasSavedLayout || !world.HasSavedLayout || !snapper.NeedsSimpleIslandRepair)return;
         try { Repair(scene,world,snapper); }
@@ -47,6 +48,12 @@ public static class SnapperIslandRestoreEditor
         if(!FishingMapSceneEditor.TryOpenFishingScene(out var scene))return;
         var world=Find<IslandExpansionWorld>(scene);
         var snapper=Find<SnapperIslandRuntime>(scene);
+        if(world!=null && world.GetComponent<StarterIslandGrassLock>()?.IsSaved==true)
+        {
+            EditorUtility.DisplayDialog("Suncrest grass locked",
+                "This old world restoration could replace the owner's protected starter grass. It is disabled until the user explicitly requests a new grass or terrain change.", "OK");
+            return;
+        }
         if(world!=null && world.GetComponent<NonSnapperTerrainSurfaceState>()?.Restored==true)
         {
             EditorUtility.DisplayDialog("Restored surface layers are protected",
