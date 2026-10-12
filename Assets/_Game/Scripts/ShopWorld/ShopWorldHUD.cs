@@ -182,6 +182,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         bool index=page=="islands" || page=="reef-fish";
         if(index)heading.text=page=="islands"?"ISLAND / BIOME INDEX":ReefCatalog.Zones[indexBiome].name.ToUpperInvariant()+" • FISH INDEX";
         if(page=="bait")heading.text="BAIT / LURES";
+        if(page=="multiplayer")heading.text="MULTIPLAYER";
         if(habitatAddId!=null)
         {
             var habitat=ShopCatalog.Habitat(habitatAddId);
@@ -197,6 +198,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
         else if(page=="bait") BaitPage(false);
+        else if(page=="multiplayer") FishingMultiplayerPanel.Build(list,player);
         else if(page=="islands") IslandIndex(); else if(page=="reef-fish") ReefFishIndex();
         else if(habitatAddId!=null) HabitatFishPicker(habitatAddId);
         else HabitatPage(page);
@@ -637,6 +639,3 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
-
-
-

@@ -134,6 +134,10 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     {
         ClearList(list);
 
+        Button multiplayer=ButtonAt(list,"MULTIPLAYER  •  OPEN / JOIN SERVER",()=>hud.Open("multiplayer"));
+        multiplayer.gameObject.AddComponent<LayoutElement>().preferredHeight=100f;
+        SetButtonAvailable(multiplayer,!IsFishingBusy());
+
         GameObject hint=Panel("IslandTravelHint",list,new Color(.04f,.12f,.14f,.95f));
         hint.AddComponent<LayoutElement>().preferredHeight=78f;
         Text hintText=Label(hint.transform,"ISLAND FAST TRAVEL HAS MOVED TO  ISLAND / BIOME INDEX",22,gold,TextAnchor.MiddleCenter);
@@ -446,5 +450,3 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         rect.offsetMin=new Vector2(left,bottom);rect.offsetMax=new Vector2(right,top);
     }
 }
-
-
