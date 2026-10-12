@@ -13,6 +13,16 @@ for account in fishing-server fishing-deploy; do
 done
 install -d -m 755 /opt/fishing-server /usr/local/lib/fishing-server
 install -d -m 755 -o fishing-deploy -g fishing-deploy /opt/fishing-server/source /opt/fishing-server/releases /opt/fishing-server/npm-cache
+# Writable coordinator state gets its own persistent SELinux label.
+install -d -m 755 /var/lib/fishing-deployment
+if command -v selinuxenabled >/dev/null && selinuxenabled; then
+  if ! command -v semanage >/dev/null; then
+    dnf --disablerepo='*' --enablerepo=ol9_baseos_latest,ol9_appstream install -y policycoreutils-python-utils
+  fi
+  semanage fcontext -a -t init_var_lib_t '/var/lib/fishing-deployment(/.*)?' ||
+    semanage fcontext -m -t init_var_lib_t '/var/lib/fishing-deployment(/.*)?'
+  restorecon -RF /var/lib/fishing-deployment
+fi
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 for name in prepare.sh update.sh; do
@@ -33,7 +43,7 @@ User=fishing-server
 Group=fishing-server
 WorkingDirectory=/opt/fishing-server/current
 Environment=NODE_ENV=production HOST=127.0.0.1 PORT=3000
-EnvironmentFile=/opt/fishing-server/release.env
+EnvironmentFile=/var/lib/fishing-deployment/release.env
 ExecStart=/usr/bin/node --max-old-space-size=160 server.mjs
 Restart=always
 RestartSec=5

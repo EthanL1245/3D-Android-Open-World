@@ -59,4 +59,10 @@ sudo systemctl start fishing-update
 
 To pause automatic updates: `sudo systemctl stop fishing-update.timer`.
 To retry an unchanged failed release after fixing an environmental problem:
-`sudo rm /opt/fishing-server/failed-release`, then start fishing-update.
+`sudo rm /var/lib/fishing-deployment/failed-release`, then start fishing-update.
+
+Deployment metadata lives in `/var/lib/fishing-deployment`, labeled
+`init_var_lib_t` on SELinux hosts. The installer registers this exact directory
+mapping persistently and restores its labels without disabling enforcement. A
+success marker is written only after the health check passes, so an interrupted
+first install can be retried even when the current symlink already exists.
