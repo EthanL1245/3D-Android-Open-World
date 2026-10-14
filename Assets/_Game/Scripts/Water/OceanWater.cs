@@ -9,7 +9,13 @@ public class OceanWater : MonoBehaviour
     [SerializeField] private Transform followTarget;
 
     [Header("Infinite Ocean")]
+    [Tooltip("Approximate follow step in metres; actual step aligns to whole mesh cells to prevent wave popping.")]
     [SerializeField] private float followSnapDistance = 20f;
+
+    private Vector2 gridAnchor;
+    private Vector2 recenterStep;
+    private bool alignedGrid;
+
 
     [Header("Large Waves")]
     [SerializeField] private float waveAmplitude1 = 0.45f;
@@ -66,6 +72,7 @@ public class OceanWater : MonoBehaviour
         phaseTime = Time.timeAsDouble;
         EnsureRenderer();
         RefreshWaveLook();
+        ConfigureGridRecenter();
 
         if (propertyBlock == null)
         {
@@ -123,22 +130,56 @@ public class OceanWater : MonoBehaviour
         }
     }
 
+    private void ConfigureGridRecenter()
+    {
+        gridAnchor = new Vector2(transform.position.x, transform.position.z);
+        alignedGrid = false;
+
+        // The authored 600 m / 160-cell ocean has 3.75 m vertex spacing.
+        // Read the actual mesh in case the artist changes its resolution.
+        MeshFilter filter = GetComponent<MeshFilter>();
+        Mesh mesh = filter != null ? filter.sharedMesh : null;
+        if (mesh == null) return;
+        int row = Mathf.RoundToInt(Mathf.Sqrt(mesh.vertexCount));
+        if (row < 2 || row * row != mesh.vertexCount ||
+            Quaternion.Angle(transform.rotation, Quaternion.identity) > 0.001f)
+            return;
+
+        Vector3 scale = transform.lossyScale;
+        float spacingX = mesh.bounds.size.x * Mathf.Abs(scale.x) / (row - 1);
+        float spacingZ = mesh.bounds.size.z * Mathf.Abs(scale.z) / (row - 1);
+        if (spacingX <= 0.0001f || spacingZ <= 0.0001f) return;
+
+        // 20 metres is 5.333 grid cells. Moving 18.75 m (5 whole cells)
+        // keeps all overlapping vertices and their wave heights unchanged.
+        recenterStep = new Vector2(
+            spacingX * Mathf.Max(1, Mathf.RoundToInt(followSnapDistance / spacingX)),
+            spacingZ * Mathf.Max(1, Mathf.RoundToInt(followSnapDistance / spacingZ)));
+        alignedGrid = true;
+    }
+
     private void FollowTarget()
     {
         if (followTarget == null || followSnapDistance <= 0f)
             return;
 
         Vector3 current = transform.position;
+        Vector3 target = followTarget.position;
+        if (!alignedGrid)
+        {
+            // Unknown mesh layout: smooth movement is safer than a visible snap.
+            transform.position = new Vector3(target.x, current.y, target.z);
+            return;
+        }
 
-        float snappedX =
-            Mathf.Round(followTarget.position.x / followSnapDistance) *
-            followSnapDistance;
-
-        float snappedZ =
-            Mathf.Round(followTarget.position.z / followSnapDistance) *
-            followSnapDistance;
-
-        transform.position = new Vector3(snappedX, current.y, snappedZ);
+        // Retained world vertices are identical across whole-cell recentering.
+        // Waves, foam and ripple texture coordinates are all world-space.
+        float x = gridAnchor.x +
+            Mathf.Round((target.x - gridAnchor.x) / recenterStep.x) * recenterStep.x;
+        float z = gridAnchor.y +
+            Mathf.Round((target.z - gridAnchor.y) / recenterStep.y) * recenterStep.y;
+        if (!Mathf.Approximately(current.x, x) || !Mathf.Approximately(current.z, z))
+            transform.position = new Vector3(x, current.y, z);
     }
 
     private void ApplyShaderProperties()

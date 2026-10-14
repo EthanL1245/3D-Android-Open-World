@@ -112,3 +112,23 @@ No benchmark values or in-game screenshots have been invented for this change.
 - All three large Gerstner waves, water colors and transparency rules, normal
   sample count (one), fishing effects, and scene geometry are unchanged.
 - Unity screenshots and Android FPS need real-world verification.
+
+## October 13: eliminate ocean snapping while the player moves
+
+The previous `OceanWater.FollowTarget()` moved the 600 m ocean grid in
+20 m increments, but the authored 160-cell mesh has 3.75 m vertex spacing.
+Every 20 m recenter shifts its sampling lattice by a fractional cell, so
+the Gerstner waves, their interpolated normals and foam visibly pop.
+
+The new runtime derives world-space grid spacing once when enabled and moves
+the ocean by **whole multiples of that spacing**. With the existing mesh and
+old serialized 20 m interval, every step is 18.75 m (5 × 3.75 m). All
+overlapping vertices now occupy exactly their prior world locations.
+The shader's existing world-space Gerstner waves, ripples, foam and colors
+remain unchanged. Non-square or rotated meshes use continuous following
+instead of arbitrary stepping. Water level (Y), wave timing, CPU surface
+queries, fishing/boat physics and the saved Unity scene remain unchanged.
+
+Validate by walking and sprinting across recenter boundaries, riding boats,
+and looking at a distant fixed wave; there should be no visible jump at a
+boundary. This is a source fix, not a measured Android visual/FPS test.
