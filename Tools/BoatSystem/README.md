@@ -33,3 +33,22 @@ Unity/device acceptance checks:
 6. Travel while aboard/driving/placing: boat disappears, no stuck input or parenting. Return to Suncrest: stand at marina dock; boat remains owned and can be redeployed.
 
 Unity Editor/Android are not available in the remote code workspace, so generation, full Unity compilation, physics and visual acceptance must be checked in the editor after setup.
+
+## Wave-following hull rocking (October 13, 2026)
+
+Deployed rafts, rowboats, sailboats and yachts now pitch/roll from four surface
+samples near the bow, stern, port and starboard each FixedUpdate. A damped
+angular spring rotates the physical Rigidbody and deck, not just the model.
+Limits are 13°, 11°, 8° and 5° respectively. Existing wave amplitudes and
+appearance remain unchanged. No new render passes, textures, mesh density or
+objects are introduced.
+
+Steering, lateral resistance, thrust and clearance continue using horizontal
+yaw axes despite the tilted hull. Rowboat anti-flooding height accounts for
+the downward movement of its rotated hull, and BoatPassenger already carries
+the full boat rotation. All boats rock even without any driving input.
+
+After pulling, verify rocking at anchor and underway, boarding/rowing and
+walking/fishing on deck, crest water not clipping through the rowboat,
+collision clearance near shore, and Android frame timing. Source inspection
+is not a Unity build or device benchmark: the <=5% FPS target is unverified.
