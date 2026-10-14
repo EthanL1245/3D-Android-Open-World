@@ -28,15 +28,11 @@ Material:
         m_Texture: {fileID: 2800000, guid: 5a41567bebd94921969caee8a2ddab41, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _RippleNormalB:
-        m_Texture: {fileID: 2800000, guid: e0b0ee3292e14d1db5b90687aad8a049, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _ReferenceLook: 1
     - _GerstnerStrength: 0.18
-    - _RippleStrength: 0.42
+    - _RippleStrength: 0.24
     - _Alpha: 0.48
     - _FoamStrength: 1
     - _OceanTime: 0
