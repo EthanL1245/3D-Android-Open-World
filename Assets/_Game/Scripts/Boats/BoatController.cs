@@ -31,6 +31,18 @@ public sealed class BoatController : MonoBehaviour
     private const float RockingSpring = 26f;
     private const float RockingDamping = 8f;
 
+    // No ocean wave has a physical wall. Constrain the vertical response, and
+    // preserve the last real forward motion through successive deep-water crests.
+    private const float MaxCrestLift = 0.65f;
+    private const float BuoyancyRiseSpeed = 5.5f;
+    private const float BuoyancyFallSpeed = 5.0f;
+    private const float MaxOpenWaterDeceleration = 2.5f;
+    private readonly Collider[] waveSafetyContacts = new Collider[48];
+    private float filteredBuoyancyHeight;
+    private float lastDrivenForwardSpeed;
+    private bool buoyancyStarted;
+    private bool wasPropelling;
+
     public void Initialize(BoatData data,OceanWater ocean)
     {
         Data=data;water=ocean;body=GetComponent<Rigidbody>();
@@ -39,6 +51,22 @@ public sealed class BoatController : MonoBehaviour
         body.constraints &= ~(RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ);
         body.interpolation=RigidbodyInterpolation.Interpolate;
         body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+
+        // Water is visual/non-solid. If an older scene has an accidental ocean
+        // collider, do not let the hull collide with it during wave crossings.
+        if(water!=null)
+        {
+            var oceanColliders=water.GetComponentsInChildren<Collider>();
+            var hullColliders=GetComponentsInChildren<Collider>();
+            foreach(var oceanCollider in oceanColliders)
+                foreach(var hullCollider in hullColliders)
+                    if(oceanCollider!=hullCollider)
+                        Physics.IgnoreCollision(oceanCollider,hullCollider,true);
+        }
+
+        buoyancyStarted=false;
+        wasPropelling=false;
+        lastDrivenForwardSpeed=0f;
     }
 
     public bool Board()
@@ -146,6 +174,60 @@ public sealed class BoatController : MonoBehaviour
         return (bow+stern+starboard+port)*.25f;
     }
 
+    // Only restore speed after a sudden loss when we can prove the water ahead
+    // has no shoreline or real obstacle. Real collisions must still stop boats.
+    private bool HasClearOpenWaterAhead(Vector3 forward)
+    {
+        float hullWidth=Data.ID=="raft"?2.6749f:Mathf.Max(0.5f,Data.HullSize.x);
+        float hullLength=Data.ID=="raft"?4.5634f:Mathf.Max(0.5f,Data.HullSize.z);
+        Quaternion yaw=Quaternion.LookRotation(forward,Vector3.up);
+        Vector3 centre=body.position+forward*(hullLength*.34f);
+        float verticalExtent=Mathf.Abs(body.position.y-water.BaseWaterLevel)*.5f+1.6f;
+        centre.y=(body.position.y+water.BaseWaterLevel)*.5f;
+        Vector3 half=new Vector3(hullWidth*.5f+.25f,verticalExtent,hullLength*.18f+.65f);
+        int hits=Physics.OverlapBoxNonAlloc(centre,half,waveSafetyContacts,yaw,
+                                           Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
+        // A full buffer is ambiguous; fail safely instead of bypassing a collider.
+        if(hits==waveSafetyContacts.Length)return false;
+        for(int i=0;i<hits;i++)
+        {
+            Collider c=waveSafetyContacts[i];
+            if(c==null || c.transform.IsChildOf(transform))continue;
+            if(c is TerrainCollider)continue; // Depth is checked separately.
+            var rider=c.GetComponentInParent<BoatPassenger>();
+            if(rider!=null && rider.Boat==this)continue;
+            if(c.GetComponentInParent<OceanWater>()!=null)continue;
+            return false;
+        }
+        return true;
+    }
+
+    private void PreserveDeepWaterMomentum(Vector3 forward,Vector3 plannedDirection,
+                                           float propulsion,float targetSpeed,
+                                           float headingError,bool shallowAhead)
+    {
+        float current=Vector3.Dot(body.linearVelocity,forward);
+        // The player must still be actively propelling approximately forward.
+        // Releasing the input, braking, or deliberately turning remains natural.
+        bool driving=propulsion>.05f && plannedDirection.sqrMagnitude>.0001f
+                     && Mathf.Abs(headingError)<30f && !shallowAhead;
+        if(driving && wasPropelling && lastDrivenForwardSpeed>0.9f)
+        {
+            float expected=Mathf.Min(lastDrivenForwardSpeed,targetSpeed)
+                           -MaxOpenWaterDeceleration*Time.fixedDeltaTime;
+            if(expected>0.7f && current<expected && HasClearOpenWaterAhead(forward))
+            {
+                // Never touch vertical velocity (splashing/downward motion) or
+                // the sideways component. Only suppress implausible instant
+                // forward-speed loss in genuinely obstacle-free deep water.
+                body.linearVelocity+=forward*(expected-current);
+                current=expected;
+            }
+        }
+        wasPropelling=driving;
+        lastDrivenForwardSpeed=driving?Mathf.Max(0f,current):0f;
+    }
+
     private void FixedUpdate()
     {
         if(body==null || water==null || Data==null)return;
@@ -158,19 +240,31 @@ public sealed class BoatController : MonoBehaviour
         float highestWaveAtHull;
         ApplyWaveRocking(forward,right,out highestWaveAtHull);
         float centerSurface=water.GetSurfaceHeight(body.position);
-        float height=IsRowboat
-            ? Mathf.Max(centerSurface,highestWaveAtHull)+RowboatFreeboard
-            : centerSurface;
 
-        if(IsRowboat)
+        // Large offshore crests can rise far above the hull's centre. Trying to
+        // lift the ENTIRE rowboat above the highest bow crest makes it shoot up,
+        // crash down and feel stuck against the next wave. The bow may instead
+        // dip through the water briefly while the body follows the central swell.
+        float crestLift=IsRowboat
+            ? Mathf.Clamp(highestWaveAtHull-centerSurface,0f,MaxCrestLift)
+            : 0f;
+        float targetHeight=centerSurface+(IsRowboat?RowboatFreeboard+crestLift:0f);
+        if(!buoyancyStarted)
         {
-            // Keep the hollow floor above crests without teleporting upward or
-            // resetting horizontal momentum. The spring allows brief hull dips.
-            float rise=height-body.position.y;
-            float buoyancy=rise*105f-body.linearVelocity.y*18f;
-            body.AddForce(Vector3.up*Mathf.Clamp(buoyancy,-30f,48f),ForceMode.Acceleration);
+            filteredBuoyancyHeight=targetHeight;
+            buoyancyStarted=true;
         }
-        else body.AddForce(Vector3.up*((height-body.position.y)*18f-body.linearVelocity.y*7f),ForceMode.Acceleration);
+        float change=targetHeight-filteredBuoyancyHeight;
+        float rate=change>=0f?BuoyancyRiseSpeed:BuoyancyFallSpeed;
+        filteredBuoyancyHeight+=Mathf.Clamp(change,-rate*Time.fixedDeltaTime,
+                                            rate*Time.fixedDeltaTime);
+
+        // Vertical force is ONLY vertical: waves never directly brake X/Z.
+        float difference=filteredBuoyancyHeight-body.position.y;
+        float lift=IsRowboat
+            ? difference*28f-body.linearVelocity.y*11f
+            : difference*18f-body.linearVelocity.y*8f;
+        body.AddForce(Vector3.up*Mathf.Clamp(lift,-18f,24f),ForceMode.Acceleration);
 
         // Boats should track cleanly rather than skating sideways across the water.
         Vector3 planarVelocity=Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
@@ -228,8 +322,11 @@ public sealed class BoatController : MonoBehaviour
         // The full placement OverlapBox can falsely flag offshore colliders or
         // map edges as walls. Runtime pre-braking checks only real shallow terrain.
         // Actual rocks, docks and the shore retain their Rigidbody collisions.
-        if(BoatClearance.ApproachingShallowWater(Data,future,futureHeading,water))
+        bool shallowAhead=BoatClearance.ApproachingShallowWater(Data,future,futureHeading,water);
+        if(shallowAhead)
         {
+            wasPropelling=false;
+            lastDrivenForwardSpeed=0f;
             body.AddForce(-planarVelocity*7f,ForceMode.Acceleration);
             body.AddTorque(Vector3.up*(-body.angularVelocity.y*5f),ForceMode.Acceleration);
             return;
@@ -254,6 +351,14 @@ public sealed class BoatController : MonoBehaviour
             else if(forwardSpeed<Data.Speed)
                 body.AddForce(forward*inputAmount*Data.Speed*.8f*thrustScale,ForceMode.Acceleration);
         }
+
+        // A downward impact into the next large swell must not erase the
+        // forward speed the player was already carrying across open water.
+        // This is guarded by a non-alloc solid-obstacle check and seabed depth.
+        float targetForwardSpeed=speed*propulsion*
+            Mathf.Lerp(.22f,1f,Mathf.Clamp01(1f-Mathf.Abs(headingError)/120f));
+        PreserveDeepWaterMomentum(forward,desiredDirection,propulsion,
+                                  targetForwardSpeed,headingError,shallowAhead);
     }
 }
 
