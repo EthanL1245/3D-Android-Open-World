@@ -33,10 +33,10 @@ ModelImporter:
     clipAnimations:
     - serializedVersion: 16
       name: Swim
-      takeName: Armature|ArmatureAction
-      internalID: 4781951162920444690
-      firstFrame: 0
-      lastFrame: 19
+      takeName: Scene
+      internalID: -623603649343465320
+      firstFrame: 1
+      lastFrame: 20
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

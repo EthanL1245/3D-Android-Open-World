@@ -29,14 +29,19 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BodyMax: 0.25247937
-    - _BodyMin: -0.5924849
+    - _BodyMax: 7.4934464
+    - _BodyMin: -9.277853
     - _FresnelStrength: 0.055
+    - _PathSideSign: 1
     - _Smoothness: 0.34
     - _SwimPhase: 0
-    - _SwimSpeed: 5.6
-    - _SwimStrength: 0.115
-    - _TailAtMin: 1
+    - _SwimSpeed: 5.8
+    - _SwimStrength: 0.17
+    - _TailAtMin: 0
+    - _TrailYaw100: 0
+    - _TrailYaw25: 0
+    - _TrailYaw50: 0
+    - _TrailYaw75: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BodyAxis: {r: 1, g: 0, b: 0, a: 0}
