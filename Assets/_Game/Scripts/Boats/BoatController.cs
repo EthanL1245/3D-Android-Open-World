@@ -23,11 +23,20 @@ public sealed class BoatController : MonoBehaviour
     private OceanWater water;
     private Camera driverView;
 
+    // Four water samples steer the Rigidbody's pitch/roll without new meshes.
+    private const float RaftTiltLimit = 13f;
+    private const float RowboatTiltLimit = 11f;
+    private const float SailboatTiltLimit = 8f;
+    private const float YachtTiltLimit = 5f;
+    private const float RockingSpring = 26f;
+    private const float RockingDamping = 8f;
+
     public void Initialize(BoatData data,OceanWater ocean)
     {
         Data=data;water=ocean;body=GetComponent<Rigidbody>();
         body.mass=300;body.useGravity=false;body.linearDamping=.65f;body.angularDamping=3;
-        body.constraints=RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;
+        // Permit wave-induced pitching/rolling. Yaw is still controlled by steering.
+        body.constraints &= ~(RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ);
         body.interpolation=RigidbodyInterpolation.Interpolate;
         body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
     }
@@ -77,13 +86,54 @@ public sealed class BoatController : MonoBehaviour
         // The authored inner floor is at -0.247 m; clear the highest wave across
         // the entire hull rather than allowing bow/stern crests through the floor.
         for(int x=-1;x<=1;x++)for(int z=-4;z<=4;z++)
-            surface=Mathf.Max(surface,ocean.GetSurfaceHeight(position+rotation*new Vector3(x*1.2f,0,z*.96f)));
+        {
+            Vector3 offset=rotation*new Vector3(x*1.2f,0f,z*.96f);
+            // A lowered bow/side needs more clearance above the wave crest.
+            surface=Mathf.Max(surface,ocean.GetSurfaceHeight(position+offset)-offset.y);
+        }
         return surface+.38f;
+    }
+
+    private void ApplyWaveRocking(Vector3 forward,Vector3 right)
+    {
+        // Use the same wave simulation as vertical buoyancy. Probes remain
+        // horizontal rather than following the hull's current tilt.
+        bool raft=Data.ID=="raft";
+        float width=raft?2.6749f:Mathf.Max(.5f,Data.HullSize.x);
+        float length=raft?4.5634f:Mathf.Max(.5f,Data.HullSize.z);
+        float halfWidth=Mathf.Max(.35f,width*.42f);
+        float halfLength=Mathf.Max(.35f,length*.42f);
+        Vector3 center=body.position;
+        float bow=water.GetSurfaceHeight(center+forward*halfLength);
+        float stern=water.GetSurfaceHeight(center-forward*halfLength);
+        float starboard=water.GetSurfaceHeight(center+right*halfWidth);
+        float port=water.GetSurfaceHeight(center-right*halfWidth);
+
+        float forwardSlope=(bow-stern)/(2f*halfLength);
+        float rightSlope=(starboard-port)/(2f*halfWidth);
+        Vector3 desiredUp=(Vector3.up-forward*forwardSlope-right*rightSlope).normalized;
+        float maxTilt=raft?RaftTiltLimit:IsRowboat?RowboatTiltLimit:
+                      Data.ID=="yacht"?YachtTiltLimit:SailboatTiltLimit;
+        desiredUp=Vector3.RotateTowards(Vector3.up,desiredUp,maxTilt*Mathf.Deg2Rad,0f);
+
+        // Angular spring/damping affects pitch and roll but not steering yaw.
+        Vector3 tiltError=Vector3.ProjectOnPlane(
+            Vector3.Cross(body.rotation*Vector3.up,desiredUp),Vector3.up);
+        Vector3 tiltVelocity=Vector3.ProjectOnPlane(body.angularVelocity,Vector3.up);
+        Vector3 acceleration=tiltError*RockingSpring-tiltVelocity*RockingDamping;
+        body.AddTorque(Vector3.ClampMagnitude(acceleration,8f),ForceMode.Acceleration);
     }
 
     private void FixedUpdate()
     {
         if(body==null || water==null || Data==null)return;
+
+        // Horizontal axes keep thrust and collision checks stable while tilted.
+        Vector3 forward=Vector3.ProjectOnPlane(body.rotation*Vector3.forward,Vector3.up);
+        if(forward.sqrMagnitude<.0001f)forward=Vector3.forward;
+        forward.Normalize();
+        Vector3 right=Vector3.Cross(Vector3.up,forward);
+        ApplyWaveRocking(forward,right);
 
         float height=FloatingHeight(Data,water,body.position,body.rotation);
         if(IsRowboat)
@@ -102,7 +152,7 @@ public sealed class BoatController : MonoBehaviour
 
         // Boats should track cleanly rather than skating sideways across the water.
         Vector3 planarVelocity=Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up);
-        Vector3 side=transform.right*Vector3.Dot(planarVelocity,transform.right);
+        Vector3 side=right*Vector3.Dot(planarVelocity,right);
         body.AddForce(-side*9f,ForceMode.Acceleration);
 
         Vector2 input=Driver!=null?Driver.Controls.BoatInput:Vector2.zero;
@@ -114,7 +164,8 @@ public sealed class BoatController : MonoBehaviour
         float speed=RowingSpeed;
         Vector3 desiredDirection=Vector3.zero;
         float headingError=0f;
-        Quaternion futureHeading=body.rotation;
+        // Clearance and steering predictions must ignore hull pitch/roll.
+        Quaternion futureHeading=Quaternion.LookRotation(forward,Vector3.up);
 
         if(Driver!=null && inputAmount>.05f)
         {
@@ -123,8 +174,8 @@ public sealed class BoatController : MonoBehaviour
 
             Vector3 lookForward=Vector3.ProjectOnPlane(look.forward,Vector3.up);
             Vector3 lookRight=Vector3.ProjectOnPlane(look.right,Vector3.up);
-            if(lookForward.sqrMagnitude<.0001f)lookForward=transform.forward;
-            if(lookRight.sqrMagnitude<.0001f)lookRight=transform.right;
+            if(lookForward.sqrMagnitude<.0001f)lookForward=forward;
+            if(lookRight.sqrMagnitude<.0001f)lookRight=right;
             lookForward.Normalize();lookRight.Normalize();
 
             // Same mental model as walking: joystick direction is interpreted in
@@ -135,7 +186,7 @@ public sealed class BoatController : MonoBehaviour
             if(desiredDirection.sqrMagnitude>.0001f)
             {
                 desiredDirection.Normalize();
-                headingError=Vector3.SignedAngle(transform.forward,desiredDirection,Vector3.up);
+                headingError=Vector3.SignedAngle(forward,desiredDirection,Vector3.up);
 
                 // Deliberately slower than first-person turning. The desired yaw
                 // speed tops out at 32 degrees/sec and the torque eases into it.
@@ -145,23 +196,24 @@ public sealed class BoatController : MonoBehaviour
                 body.AddTorque(Vector3.up*yawAcceleration,ForceMode.Acceleration);
 
                 float predictedTurn=Mathf.Clamp(headingError,-18f,18f);
-                futureHeading=Quaternion.AngleAxis(predictedTurn,Vector3.up)*body.rotation;
+                futureHeading=Quaternion.AngleAxis(predictedTurn,Vector3.up)*futureHeading;
             }
         }
 
-        if(rearPaddling && inputAmount<=.05f)desiredDirection=transform.forward;
+        if(rearPaddling && inputAmount<=.05f)desiredDirection=forward;
         Vector3 predictedForward=futureHeading*Vector3.forward;
         Vector3 future=body.position+planarVelocity*.8f+predictedForward*(propulsion*1.5f);
         if(!BoatClearance.Valid(Data,future,futureHeading,water,transform,Driver!=null?Driver.transform:null))
         {
             body.AddForce(-planarVelocity*12f,ForceMode.Acceleration);
-            body.AddTorque(-body.angularVelocity*12f,ForceMode.Acceleration);
+            // Stop yaw, but allow the wave-following spring to keep tilting.
+            body.AddTorque(Vector3.up*(-body.angularVelocity.y*12f),ForceMode.Acceleration);
             return;
         }
 
         if(propulsion>.05f && desiredDirection.sqrMagnitude>.0001f)
         {
-            float forwardSpeed=Vector3.Dot(planarVelocity,transform.forward);
+            float forwardSpeed=Vector3.Dot(planarVelocity,forward);
             float alignment=Mathf.Clamp01(1f-Mathf.Abs(headingError)/120f);
             float thrustScale=Mathf.Lerp(.22f,1f,alignment);
 
@@ -173,10 +225,10 @@ public sealed class BoatController : MonoBehaviour
                 // active rower doubles the target (including on partial stick input).
                 float target=speed*propulsion*thrustScale;
                 float acceleration=(target-forwardSpeed)*2.5f+forwardSpeed*body.linearDamping;
-                body.AddForce(transform.forward*acceleration,ForceMode.Acceleration);
+                body.AddForce(forward*acceleration,ForceMode.Acceleration);
             }
             else if(forwardSpeed<Data.Speed)
-                body.AddForce(transform.forward*inputAmount*Data.Speed*.8f*thrustScale,ForceMode.Acceleration);
+                body.AddForce(forward*inputAmount*Data.Speed*.8f*thrustScale,ForceMode.Acceleration);
         }
     }
 }
