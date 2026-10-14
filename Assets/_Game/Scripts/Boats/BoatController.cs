@@ -128,7 +128,7 @@ public sealed class BoatController : MonoBehaviour
 
         // Reuse wave rocking's four probes, accounting for lowered sides of a
         // pitched/rolled hull, then cover curvature with four corner probes.
-        highestWaveAtHull=0f;
+        highestWaveAtHull=float.NegativeInfinity;
         if(IsRowboat)
         {
             Vector3 pitchOffset=body.rotation*Vector3.forward*halfLength;
