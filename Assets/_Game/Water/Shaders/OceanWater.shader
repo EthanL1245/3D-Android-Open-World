@@ -2,6 +2,7 @@ Shader "OpenWorld/OceanWater"
 {
     Properties
     {
+        [Toggle(_WATER_REFERENCE_LOOK)] _ReferenceLook ("Improved Ocean Look", Float) = 0
         _ShallowColor ("Shallow Color", Color) = (0.05, 0.55, 0.72, 1)
         _DeepColor ("Deep Color", Color) = (0.01, 0.10, 0.28, 1)
         _FoamColor ("Foam Color", Color) = (0.86, 0.96, 1.0, 1)
@@ -58,6 +59,8 @@ Shader "OpenWorld/OceanWater"
             #pragma target 3.0
             #pragma vertex Vert
             #pragma fragment Frag
+            // Keep both paths in builds for an exact visual/performance A/B comparison.
+            #pragma multi_compile_local _ _WATER_REFERENCE_LOOK
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -72,6 +75,7 @@ Shader "OpenWorld/OceanWater"
                 float _WaterFogDensity;
                 float _Smoothness;
                 float _SpecularStrength;
+                float _ReferenceLook;
 
                 float _WaveAmplitude1;
                 float _WaveLength1;
@@ -108,6 +112,9 @@ Shader "OpenWorld/OceanWater"
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS : TEXCOORD1;
                 float waveHeight : TEXCOORD2;
+                #if defined(_WATER_REFERENCE_LOOK)
+                float2 waterData : TEXCOORD3;
+                #endif
             };
 
             float2 NormalizeDirection(float2 direction)
@@ -229,9 +236,102 @@ Shader "OpenWorld/OceanWater"
 
                 output.waveHeight = totalHeight;
 
+                #if defined(_WATER_REFERENCE_LOOK)
+                // Move linear eye depth and the local crest amplitude out of Frag.
+                float islandBlend = 1.0 - smoothstep(_IslandWaveCenter.z,
+                    max(_IslandWaveCenter.z + 0.01, _IslandWaveCenter.w),
+                    distance(worldPosition.xz, _IslandWaveCenter.xy));
+                float localScale = lerp(1.0, _IslandWaveAmplitude,
+                                       islandBlend * saturate(_IslandWaveEnabled));
+                output.waterData = float2(-TransformWorldToView(worldPosition).z,
+                    max(0.001, (_WaveAmplitude1 + _WaveAmplitude2 + _WaveAmplitude3) * localScale));
+                #endif
+
                 return output;
             }
 
+            #if defined(_WATER_REFERENCE_LOOK)
+            half4 Frag(Varyings input) : SV_Target
+            {
+                float3 toCamera = GetWorldSpaceViewDir(input.positionWS);
+                float cameraDistance = max(length(toCamera), 0.001);
+                half3 viewDirection = toCamera / cameraDistance;
+
+                // Two smooth, periodic slope bands: arithmetic only, no normal-map
+                // samples or per-pixel trigonometry. World anchoring avoids jumps
+                // when the ocean mesh follows the player. This is shading only;
+                // the CPU/GPU surface heights used by boats and lures stay identical.
+                float2 phase = float2(dot(input.positionWS.xz, float2(0.82, 0.37)),
+                                      dot(input.positionWS.xz, float2(-0.53, 1.13)));
+                phase += _Time.y * float2(0.19, -0.14);
+                half2 bandLimit = 1.0 - smoothstep(0.25, 0.75, fwidth(phase));
+                half2 band = frac(phase) * 2.0 - 1.0;
+                half2 slope = band * (1.0 - abs(band)) * 4.0;
+                half detailFade = saturate((100.0 - cameraDistance) / 80.0);
+                half2 ripple = slope * bandLimit * detailFade;
+                half3 normalWS = normalize(input.normalWS + half3(
+                    ripple.x * 0.13 - ripple.y * 0.055, 0.0,
+                    ripple.x * 0.06 + ripple.y * 0.10));
+
+                Light mainLight = GetMainLight();
+                half diffuse = saturate(dot(normalWS, mainLight.direction));
+                half facing = saturate(abs(dot(normalWS, viewDirection)));
+                half fresnel = 1.0 - facing;
+                fresnel *= fresnel;
+                fresnel *= fresnel;
+
+                // Reuse the depth texture already required by UnderwaterVisuals.
+                // Optical path length, rather than player biome, controls transparency.
+                float2 screenUV = GetNormalizedScreenSpaceUV(input.positionCS);
+                float sceneDepth = LinearEyeDepth(SampleSceneDepth(screenUV), _ZBufferParams);
+                float surfaceDepth = max(0.01, input.waterData.x);
+                float column = min(500.0, max(0.0, sceneDepth - surfaceDepth)
+                                   * cameraDistance / surfaceDepth);
+                half waterFog = 1.0 - exp(-column * max(0.01, _WaterFogDensity));
+                half shore = 1.0 - smoothstep(0.08, 0.85, column);
+
+                // Retain the biome material/property-block tints, shifting the green
+                // reef palette toward turquoise and the offshore palette toward blue.
+                half3 shallowColor = _ShallowColor.rgb * half3(0.60, 0.90, 1.16);
+                half3 deepColor = _DeepColor.rgb * half3(0.65, 0.66, 1.18);
+                half3 baseColor = lerp(shallowColor, deepColor, waterFog);
+                half3 color = baseColor * (0.55 + mainLight.color * diffuse * 0.45);
+
+                // Cheap sky tint at grazing angles; no reflection camera, cubemap,
+                // opaque-texture copy or screen-space reflection pass.
+                half horizon = saturate((cameraDistance - 75.0) / 325.0);
+                half3 skyTint = lerp(half3(0.12, 0.30, 0.49),
+                                    half3(0.28, 0.43, 0.57), horizon);
+                color = lerp(color, skyTint * (0.40 + mainLight.color * 0.60),
+                             fresnel * 0.48);
+
+                half3 halfDirection = SafeNormalize(mainLight.direction + viewDirection);
+                // Broaden distant highlights as the fine ripples fade, reducing sparkle aliasing.
+                half specularPower = lerp(48.0, lerp(90.0, 300.0, _Smoothness), detailFade);
+                half specular = pow(saturate(dot(normalWS, halfDirection)), specularPower);
+                color += specular * mainLight.color * _SpecularStrength
+                         * lerp(0.28, 1.0, detailFade);
+
+                // Account for the existing local rough-water multiplier so Brinebreak
+                // does not become a continuous white sheet at larger wave amplitudes.
+                half crest = smoothstep(0.74, 0.98, input.waveHeight / max(0.001, input.waterData.y));
+                half breakup = smoothstep(0.15, 0.85, ripple.x * ripple.y * 0.5 + 0.5);
+                half foam = (crest * 0.16 + shore * 0.22) * breakup
+                            * _FoamStrength * detailFade;
+                color = lerp(color, _FoamColor.rgb, saturate(foam));
+
+                // Faint shallow-water light bands share the ripple arithmetic. These
+                // are a surface suggestion, not an extra projected-caustics pass.
+                half lightBands = saturate((abs(ripple.x + ripple.y) - 1.2) * 1.25);
+                color += shallowColor * lightBands * (1.0 - waterFog) * 0.07 * diffuse;
+
+                half alpha = saturate(_Alpha * lerp(0.65, 1.0, waterFog)
+                                      + fresnel * 0.25 + foam * 0.10);
+                alpha = lerp(alpha, 1.0, waterFog);
+                return half4(color, alpha);
+            }
+            #else
+            // Original rendering path retained verbatim for performance comparison.
             half4 Frag(Varyings input) : SV_Target
             {
                 float3 normalWS = normalize(input.normalWS);
@@ -353,6 +453,7 @@ Shader "OpenWorld/OceanWater"
                 alpha=lerp(alpha,1.0,waterFog);
                 return half4(color, alpha);
             }
+            #endif
 
             ENDHLSL
         }

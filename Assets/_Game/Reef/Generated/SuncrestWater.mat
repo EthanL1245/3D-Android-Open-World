@@ -11,7 +11,8 @@ Material:
   m_Shader: {fileID: 4800000, guid: c628dd5db0bebb24082f25dc2699801d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
+  m_ValidKeywords:
+  - _WATER_REFERENCE_LOOK
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -25,6 +26,7 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _ReferenceLook: 1
     - _Alpha: 0.48
     - _FoamStrength: 1
     - _OceanTime: 0
