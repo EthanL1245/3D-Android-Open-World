@@ -42,6 +42,13 @@ public class FirstPersonController : MonoBehaviour
     [SerializeField] private float sprintFovBoost = 4f;
     [SerializeField] private float fovLerpSpeed = 7f;
 
+    [Header("Boat Camera Rocking")]
+    [SerializeField, Range(0f, 1f)] private float boatCameraTiltAmount = 1f;
+    [SerializeField, Min(0f)] private float boatCameraTiltFollowSpeed = 10f;
+
+    private BoatPassenger boatPassenger;
+    private Quaternion boatCameraTilt = Quaternion.identity;
+
     private CharacterController controller;
     private Camera playerCamera;
 
@@ -62,6 +69,7 @@ public class FirstPersonController : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        boatPassenger = GetComponent<BoatPassenger>();
 
         if (cameraTransform != null)
         {
@@ -95,6 +103,9 @@ public class FirstPersonController : MonoBehaviour
     private FishingSystem swimmingFishing;
     private void LateUpdate()
     {
+        // Apply hull tilt after input and movement, even if a menu is open.
+        UpdateBoatCameraRocking();
+
         // Stow before rendering, even if movement entered swimming after the
         // fishing Update ran this frame. This also restores the swim controls.
         if(IsSwimming)
@@ -642,6 +653,35 @@ public class FirstPersonController : MonoBehaviour
         return false;
     }
 
+    private void UpdateBoatCameraRocking()
+    {
+        if(cameraTransform==null)return;
+
+        Quaternion target=Quaternion.identity;
+        if(boatPassenger!=null && boatPassenger.Boat!=null)
+        {
+            // Only inherit pitch and roll. Leave the player's mouse/touch yaw
+            // independent of the boat's heading.
+            Vector3 localBoatUp=Quaternion.Inverse(transform.rotation)*
+                                boatPassenger.Boat.transform.up;
+            Quaternion fullTilt=Quaternion.FromToRotation(Vector3.up,localBoatUp);
+            target=Quaternion.Slerp(Quaternion.identity,fullTilt,boatCameraTiltAmount);
+        }
+
+        // Smooth the interpolated Rigidbody tilt, then ease back to an upright
+        // camera when disembarking. No parenting or positional head bobbing.
+        float follow=1f-Mathf.Exp(-boatCameraTiltFollowSpeed*Time.deltaTime);
+        boatCameraTilt=Quaternion.Slerp(boatCameraTilt,target,follow);
+        ApplyCameraLookRotation();
+    }
+
+    private void ApplyCameraLookRotation()
+    {
+        if(cameraTransform!=null)
+            cameraTransform.localRotation=boatCameraTilt*
+                Quaternion.Euler(cameraPitch,0f,0f);
+    }
+
     private void UpdateCameraFov()
     {
         if (playerCamera == null)
@@ -715,15 +755,7 @@ public class FirstPersonController : MonoBehaviour
                 maxLookAngle
             );
 
-        if (cameraTransform != null)
-        {
-            cameraTransform.localRotation =
-                Quaternion.Euler(
-                    cameraPitch,
-                    0f,
-                    0f
-                );
-        }
+        ApplyCameraLookRotation();
     }
 }
 
