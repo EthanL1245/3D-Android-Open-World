@@ -7,19 +7,26 @@ Baseline commit: `753518eb7b74c4b76401c5394577354bdf923d14`.
 
 - Turquoise shallows and richer blue offshore water, still modulated by the existing biome tints.
 - Depth-dependent transparency and color from the existing depth texture.
-- Two moving, world-anchored fine ripple bands perturb the lighting normal only.
-- Sun highlights with distant detail fading and screen-derivative filtering to reduce aliasing.
-- Broken, restrained crest/shore foam and faint shallow surface light bands.
+- Three overlapping Gerstner waves with the existing distinct directions and
+  wavelengths (20 m, 9 m and 4 m), plus bounded horizontal motion.
+- Two independent, seamless 128 x 128 normal maps scroll at different velocities,
+  rotation and scales. They replace the periodic crossed bands that caused the grid.
+- Sun highlights with distant detail fading and mipmapped filtering to reduce aliasing.
+- Broken, restrained crest/shore foam, without the artificial shallow light lines.
 - Grazing-angle sky color and a softer distant horizon.
 
 The main scene already references `SuncrestWater.mat`; enabling its shader keyword
 updates the saved scene's appearance without regenerating or modifying the map.
 `OceanWater.mat` is enabled too. Pond and shop materials keep the original shader path.
-Wave heights, timing, CPU water queries, boats, fishing hotspots and splashes are unchanged.
+Vertical amplitudes, phase timing and biome multipliers are preserved. CPU surface
+queries and the shared hotspot/cast-ripple shader invert the horizontal displacement
+before sampling height. This keeps floating objects and surface effects aligned.
+Pond queries still use the existing pond path. The original-look toggle disables
+Gerstner displacement as well as the new shading.
 
 This is an inexpensive approximation of the reference, not a photorealistic renderer.
-The light bands are surface shading, not projected seabed caustics; the sky tint is
-an approximation rather than a reflection of scene objects.
+There are no projected seabed caustics; the sky tint is an approximation rather
+than a reflection of scene objects.
 
 ## Performance scope and validation status
 
@@ -29,14 +36,16 @@ implementation environment. Source checks are not a Unity shader compilation,
 rendered visual test, or GPU benchmark.
 
 Both variants retain one transparent pass and one depth sample per fragment.
-No added textures, render targets, cameras, post-processing, particles, mesh density,
-CPU frame callbacks, or camera depth/opaque-texture settings. Fine ripples use
-arithmetic rather than additional texture fetches or fragment sine/cosine calls.
-Eye depth and local crest amplitude are calculated per vertex in the improved path.
-The improved path adds fragment arithmetic and one float2 interpolator; their cost
-is device-dependent and could exceed the requested budget in a fill-rate-bound view.
+The improved path now also samples two 128 x 128 compressed, mipmapped normal maps
+(about 52 KiB of source PNG data combined). No extra render targets, cameras,
+post-processing, particles, mesh density or camera depth/opaque-texture settings.
+The vertex Gerstner implementation shares sine/cosine results between vertical and
+horizontal motion, and calculates the island blend once for all three waves.
+Surface-height queries add two bounded inverse steps. Two texture reads and this
+additional arithmetic have device-dependent cost and may exceed the requested
+budget; measure the full game, including boat/fishing activity.
 
-The original shader functions are preserved behind the disabled keyword. Both
+The original rendering equations are preserved behind the disabled keyword. Both
 variants are retained with `multi_compile_local` so the original path is available
 even in builds. Original material colors, alpha and biome settings are preserved.
 
@@ -64,3 +73,15 @@ even in builds. Original material colors, alpha and biome settings are preserved
    Leave **Use Improved Look** selected when preparing the improved candidate.
 
 No benchmark values or in-game screenshots have been invented for this change.
+
+## Numerical checks for the grid correction
+
+- Tested 80,000 positions covering gentle and rough waves, including the island
+  blend. Maximum height error after two inverse steps: 2.218 mm relative to the
+  analytic displaced surface. This does not measure mesh interpolation error.
+- Horizontal Jacobians and vertical gradients agree with independent finite
+  differences; no horizontal folding in the tested samples.
+- Both texture fields have normalized vectors, continuous wrap-edge statistics,
+  and independent patterns. Import as linear normal maps with Repeat and mipmaps.
+- `generate_normals.py` reproduces the numerical normal-map assets offline using
+  NumPy and Pillow. No texture generation occurs at runtime.

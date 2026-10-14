@@ -16,7 +16,7 @@ Shader "OpenWorld/FishingHotspotParticles"
             ZWrite Off
             Cull Off
             HLSLPROGRAM
-            #pragma target 2.0
+            #pragma target 3.0
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_fog
@@ -29,7 +29,9 @@ Shader "OpenWorld/FishingHotspotParticles"
                 float4 _WaveDirection1, _WaveDirection2, _WaveDirection3;
                 float4 _WavePhases, _IslandWavePhases, _IslandWaveCenter;
                 float _IslandWaveEnabled, _IslandWaveAmplitude;
+                float _GerstnerStrength;
             CBUFFER_END
+            #include "Assets/_Game/Water/Shaders/OceanGerstner.hlsl"
             struct Attributes { float4 positionOS:POSITION; half4 color:COLOR; float2 uv:TEXCOORD0; };
             struct Varyings { float4 positionCS:SV_POSITION; half4 color:COLOR; float2 uv:TEXCOORD0; half fog:TEXCOORD1; };
             float Wave(float2 p, float amplitude, float wavelength, float2 direction, float phase, float islandPhase)
@@ -52,10 +54,13 @@ Shader "OpenWorld/FishingHotspotParticles"
                 float3 world = TransformObjectToWorld(input.positionOS.xyz);
                 if (_FollowSurface > 0.5)
                 {
+                    float2 sampleXZ = world.xz;
+                    if (_GerstnerStrength > 0.0)
+                        sampleXZ = OceanUndisplacedPosition(sampleXZ);
                     world.y = _HotspotSeaLevel + 0.055 +
-                        Wave(world.xz,_WaveAmplitude1,_WaveLength1,_WaveDirection1.xy,_WavePhases.x,_IslandWavePhases.x) +
-                        Wave(world.xz,_WaveAmplitude2,_WaveLength2,_WaveDirection2.xy,_WavePhases.y,_IslandWavePhases.y) +
-                        Wave(world.xz,_WaveAmplitude3,_WaveLength3,_WaveDirection3.xy,_WavePhases.z,_IslandWavePhases.z);
+                        Wave(sampleXZ,_WaveAmplitude1,_WaveLength1,_WaveDirection1.xy,_WavePhases.x,_IslandWavePhases.x) +
+                        Wave(sampleXZ,_WaveAmplitude2,_WaveLength2,_WaveDirection2.xy,_WavePhases.y,_IslandWavePhases.y) +
+                        Wave(sampleXZ,_WaveAmplitude3,_WaveLength3,_WaveDirection3.xy,_WavePhases.z,_IslandWavePhases.z);
                 }
                 output.positionCS = TransformWorldToHClip(world);
                 output.color = input.color;

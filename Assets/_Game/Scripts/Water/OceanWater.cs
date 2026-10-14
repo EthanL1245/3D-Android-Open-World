@@ -32,6 +32,8 @@ public class OceanWater : MonoBehaviour
     private MaterialPropertyBlock propertyBlock;
     private Vector4 wavePhases, islandWavePhases;
     private double phaseTime;
+    private float gerstnerStrength;
+    private static readonly int GerstnerStrengthId = Shader.PropertyToID("_GerstnerStrength");
 
     private void AdvanceWavePhases()
     {
@@ -54,6 +56,7 @@ public class OceanWater : MonoBehaviour
     {
         phaseTime = Time.timeAsDouble;
         EnsureRenderer();
+        RefreshWaveLook();
         propertyBlock = new MaterialPropertyBlock();
         OceanAmbienceRuntime.EnsureInstalled();
     }
@@ -62,6 +65,7 @@ public class OceanWater : MonoBehaviour
     {
         phaseTime = Time.timeAsDouble;
         EnsureRenderer();
+        RefreshWaveLook();
 
         if (propertyBlock == null)
         {
@@ -79,13 +83,24 @@ public class OceanWater : MonoBehaviour
     {
         waterRenderer = renderer;
         followTarget = target;
+        RefreshWaveLook();
     }
 
     public float GetSurfaceHeight(Vector3 worldPosition)
     {
         if(PondWater.TrySurface(worldPosition,out float pondHeight))return pondHeight;
         AdvanceWavePhases();
-        return BaseWaterLevel + EvaluateWaves(worldPosition.x, worldPosition.z);
+        Vector2 sample = new Vector2(worldPosition.x, worldPosition.z);
+        if (gerstnerStrength > 0f)
+        {
+            Vector2 target = sample;
+            // Gerstner vertices move horizontally. Invert that small displacement
+            // before sampling height so boats/lures follow the rendered surface.
+            // Kept identical to OceanUndisplacedPosition in OceanGerstner.hlsl.
+            for (int i = 0; i < 2; i++)
+                sample = target - HorizontalDisplacement(sample);
+        }
+        return BaseWaterLevel + EvaluateWaves(sample.x, sample.y);
     }
 
     // Share the exact current wave phases with surface effects (no independent clocks).
@@ -132,6 +147,8 @@ public class OceanWater : MonoBehaviour
             return;
 
         waterRenderer.GetPropertyBlock(propertyBlock);
+        RefreshWaveLook();
+        propertyBlock.SetFloat(GerstnerStrengthId, gerstnerStrength);
 
         AdvanceWavePhases();
         propertyBlock.SetVector("_WavePhases", wavePhases);
@@ -233,6 +250,45 @@ public class OceanWater : MonoBehaviour
                 islandWavePhases[2],
                 waveDirection3
             );
+    }
+
+    private void RefreshWaveLook()
+    {
+        Material material = waterRenderer != null ? waterRenderer.sharedMaterial : null;
+        gerstnerStrength = material != null && material.IsKeywordEnabled("_WATER_REFERENCE_LOOK") &&
+            material.HasProperty(GerstnerStrengthId)
+            ? Mathf.Clamp(material.GetFloat(GerstnerStrengthId), 0f, 0.35f) : 0f;
+    }
+
+    private Vector2 HorizontalDisplacement(Vector2 p)
+    {
+        float blend = 0f, multiplier = 1f;
+        var expansion = IslandExpansionWorld.Active;
+        if (expansion != null && expansion.Ready)
+        {
+            float inner = Mathf.Max(expansion.Config.IslandRadii.x, expansion.Config.IslandRadii.y) + 40f;
+            blend = IslandGeometry.StormBlend(new Vector3(p.x, 0f, p.y), expansion.NewCenter,
+                inner, inner + expansion.Config.WaveBlendDistance);
+            multiplier = expansion.Config.WaveAmplitudeMultiplier;
+        }
+        return HorizontalWave(p, waveAmplitude1, waveLength1, waveDirection1, wavePhases.x,
+                   islandWavePhases.x, blend, multiplier) +
+               HorizontalWave(p, waveAmplitude2, waveLength2, waveDirection2, wavePhases.y,
+                   islandWavePhases.y, blend, multiplier) +
+               HorizontalWave(p, waveAmplitude3, waveLength3, waveDirection3, wavePhases.z,
+                   islandWavePhases.z, blend, multiplier);
+    }
+
+    private Vector2 HorizontalWave(Vector2 p, float amplitude, float wavelength, Vector2 direction,
+        float phase, float islandPhase, float blend, float multiplier)
+    {
+        Vector2 d = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
+        float k = 2f * Mathf.PI / Mathf.Max(0.1f, wavelength);
+        float orbit = Mathf.Min(Mathf.Abs(amplitude) * gerstnerStrength, 0.05f / k);
+        float roughOrbit = Mathf.Min(Mathf.Abs(amplitude * multiplier) * gerstnerStrength, 0.05f / k);
+        float spatial = Vector2.Dot(p, d) * k;
+        return d * Mathf.Lerp(orbit * Mathf.Cos(spatial + phase),
+                             roughOrbit * Mathf.Cos(spatial + islandPhase), blend);
     }
 
     private float EvaluateWave(
