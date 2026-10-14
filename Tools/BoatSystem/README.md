@@ -95,3 +95,27 @@ no longer synthesizes a physics wall.
 Test at deep-water swells, rough-water biome boundaries, near a shallow
 coast, and around rocks/dock. Watch the rowboat floor, player boarding,
 fishing, and Android FPS. Unity runtime and FPS still need device verification.
+
+## October 13: resilient boat crossings through consecutive big waves
+
+A rowboat no longer tries to levitate its entire hull to the highest bow or
+corner crest during a big offshore swell. The previously unbounded highest
+crest target created huge vertical accelerations as the bow dropped into the
+next wave. Instead, the target follows the centre sample, with at most 0.65 m
+extra lift from the bow/edge; some temporary bow immersion is deliberate.
+A speed-limited buoyancy target and a vertical-only damped spring keep the
+up/down response smooth without teleporting the Rigidbody.
+
+The second defence preserves the last legitimate forward speed when an input-
+held boat abruptly loses momentum in open water. It touches ONLY the forward
+horizontal velocity component, never the vertical motion or lateral drift.
+It does not run during turns, throttle release or shallow-water braking, and
+only activates after a non-alloc physics overlap confirms no real solid
+obstacle ahead. Real shorelines, rocks and docks still physically stop boats.
+If a legacy OceanWater GameObject carries an unintended collider, hull/water
+collision pairs are ignored upon boat initialization.
+
+The one-time water collider setup adds no runtime graphics work. The
+contact query runs only when a sudden forward slowdown is detected. Android
+and Unity runtime acceptance are still required; no FPS or gameplay
+success claims without device tests.
