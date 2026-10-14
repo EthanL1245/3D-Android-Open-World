@@ -52,3 +52,25 @@ After pulling, verify rocking at anchor and underway, boarding/rowing and
 walking/fishing on deck, crest water not clipping through the rowboat,
 collision clearance near shore, and Android frame timing. Source inspection
 is not a Unity build or device benchmark: the <=5% FPS target is unverified.
+
+## October 13: smooth wave crossing, no false "wall" braking
+
+- The rowboat no longer chases the **maximum crest height at 27 hull points**
+  or instantly writes its Rigidbody Y position/vertical velocity. The authored
+  hull now uses the same four points as wave rocking plus a centre sample,
+  averages the target surface and adds 0.30 m centre freeboard (the shallow interior floor is about 0.247 m below the root). A damped vertical
+  spring with a small immersion-dependent lift allows some water entry at a
+  breaking bow but recovers without snapping or stopping horizontal travel.
+- All other boats keep their previous vertical buoyancy spring; pitch/roll
+  stabilization remains as previously implemented.
+- Navigation obstruction checks are evaluated at the still-water elevation,
+  so wave crests and troughs cannot change the clearance overlap height.
+  Underwater terrain depth, shore obstacles and actual solid collisions are
+  still enforced by BoatClearance and the Rigidbody.
+- Four rocking samples are reused for rowboat flotation, replacing the old
+  27 additional hull-surface samples with only one additional centre sample
+  per FixedUpdate. This reduces CPU height-query work for the rowboat.
+- Verify forward progress into swell in deep open water, wave crossing on the
+  reef shelf, actual braking near shallow terrain and rocks, stable occupants
+  while steering/fishing, and the Android <=5% FPS target. Unity/device runtime
+  validation is still required.

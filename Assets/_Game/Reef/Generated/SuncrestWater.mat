@@ -32,7 +32,7 @@ Material:
     m_Floats:
     - _ReferenceLook: 1
     - _GerstnerStrength: 0.18
-    - _RippleStrength: 0.24
+    - _RippleStrength: 0.18
     - _Alpha: 0.48
     - _FoamStrength: 1
     - _OceanTime: 0

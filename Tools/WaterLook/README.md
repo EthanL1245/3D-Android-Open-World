@@ -100,3 +100,15 @@ No benchmark values or in-game screenshots have been invented for this change.
   fish/lure physics, hotspots, scene terrain, and original-look comparison mode.
 - Shader source and material invariants were checked; actual rendered appearance
   and the requested <=5% Android FPS budget remain unverified pending device tests.
+
+## October 13 second refinement: bluer surface
+
+- Halved improved-look sun glint contribution (0.16–0.62 to 0.08–0.31)
+  and the crest/shore foam coefficients (0.12/0.17 to 0.06/0.085).
+  This targets roughly half the previous white micro-ripple lighting; it is not
+  a literal measurement of white pixels in a rendered game screenshot.
+- Softened the remaining small-ripple normal amplitude from 0.24 to 0.18
+  in both ocean material assets and the shader default.
+- All three large Gerstner waves, water colors and transparency rules, normal
+  sample count (one), fishing effects, and scene geometry are unchanged.
+- Unity screenshots and Android FPS need real-world verification.

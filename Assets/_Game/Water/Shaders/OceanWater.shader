@@ -4,7 +4,7 @@ Shader "OpenWorld/OceanWater"
     {
         [Toggle(_WATER_REFERENCE_LOOK)] _ReferenceLook ("Improved Ocean Look", Float) = 0
         [Normal] _RippleNormalA ("Broad Irregular Ripples", 2D) = "bump" {}
-        _RippleStrength ("Ripple Normal Strength", Range(0, 1)) = 0.24
+        _RippleStrength ("Ripple Normal Strength", Range(0, 1)) = 0.18
         _GerstnerStrength ("Gerstner Horizontal Motion", Range(0, 0.35)) = 0.18
         _ShallowColor ("Shallow Color", Color) = (0.05, 0.55, 0.72, 1)
         _DeepColor ("Deep Color", Color) = (0.01, 0.10, 0.28, 1)
@@ -326,17 +326,17 @@ Shader "OpenWorld/OceanWater"
                              fresnel * 0.48);
 
                 half3 halfDirection = SafeNormalize(mainLight.direction + viewDirection);
-                // Broaden distant highlights as the fine ripples fade, reducing sparkle aliasing.
+                // Keep the sun glint soft so the broad ripples do not turn the sea white.
                 half specularPower = lerp(48.0, lerp(90.0, 300.0, _Smoothness), detailFade);
                 half specular = pow(saturate(dot(normalWS, halfDirection)), specularPower);
                 color += specular * mainLight.color * _SpecularStrength
-                         * lerp(0.16, 0.62, detailFade);
+                         * lerp(0.08, 0.31, detailFade);
 
                 // Account for the existing local rough-water multiplier so Brinebreak
                 // does not become a continuous white sheet at larger wave amplitudes.
                 half crest = smoothstep(0.74, 0.98, input.waveHeight / max(0.001, input.waterData.y));
                 half breakup = smoothstep(0.08, 0.36, length(normalA.xy));
-                half foam = (crest * 0.12 + shore * 0.17) * breakup
+                half foam = (crest * 0.06 + shore * 0.085) * breakup
                             * _FoamStrength * detailFade;
                 color = lerp(color, _FoamColor.rgb, saturate(foam));
 
