@@ -79,27 +79,25 @@ public sealed class BoatController : MonoBehaviour
         if(Driver!=null)Driver.SnapToRowingSeat();
     }
 
-    private const float RowboatFreeboard = 0.30f;
+    private const float RowboatFreeboard = 0.50f;
 
-    // Used for the placement preview, and matches the runtime four-point mean.
-    // Averaging avoids lifting the whole boat onto one high crest at the bow.
+    // The interior floor must clear the highest wave under the actual hull.
     public static float FloatingHeight(BoatData data,OceanWater ocean,Vector3 position,Quaternion rotation)
     {
-        float surface=ocean.GetSurfaceHeight(position);
-        if(data==null || data.ID!="rowboat")return surface;
-        Vector3 forward=Vector3.ProjectOnPlane(rotation*Vector3.forward,Vector3.up).normalized;
-        if(forward.sqrMagnitude<.0001f)forward=Vector3.forward;
-        Vector3 right=Vector3.Cross(Vector3.up,forward);
+        float highest=ocean.GetSurfaceHeight(position);
+        if(data==null || data.ID!="rowboat")return highest;
         float halfLength=Mathf.Max(.35f,data.HullSize.z*.42f);
         float halfWidth=Mathf.Max(.35f,data.HullSize.x*.42f);
-        float around=ocean.GetSurfaceHeight(position+forward*halfLength)
-                    +ocean.GetSurfaceHeight(position-forward*halfLength)
-                    +ocean.GetSurfaceHeight(position+right*halfWidth)
-                    +ocean.GetSurfaceHeight(position-right*halfWidth);
-        return Mathf.Lerp(surface,around*.25f,.5f)+RowboatFreeboard;
+        for(int x=-1;x<=1;x++)
+        for(int z=-1;z<=1;z++)
+        {
+            Vector3 offset=rotation*new Vector3(x*halfWidth,0f,z*halfLength);
+            highest=Mathf.Max(highest,ocean.GetSurfaceHeight(position+offset)-offset.y);
+        }
+        return highest+RowboatFreeboard;
     }
 
-    private float ApplyWaveRocking(Vector3 forward,Vector3 right)
+    private float ApplyWaveRocking(Vector3 forward,Vector3 right,out float highestWaveAtHull)
     {
         // Use the same wave simulation as vertical buoyancy. Probes remain
         // horizontal rather than following the hull's current tilt.
@@ -127,6 +125,24 @@ public sealed class BoatController : MonoBehaviour
         Vector3 tiltVelocity=Vector3.ProjectOnPlane(body.angularVelocity,Vector3.up);
         Vector3 acceleration=tiltError*RockingSpring-tiltVelocity*RockingDamping;
         body.AddTorque(Vector3.ClampMagnitude(acceleration,8f),ForceMode.Acceleration);
+
+        // Reuse wave rocking's four probes, accounting for lowered sides of a
+        // pitched/rolled hull, then cover curvature with four corner probes.
+        highestWaveAtHull=float.NegativeInfinity;
+        if(IsRowboat)
+        {
+            Vector3 pitchOffset=body.rotation*Vector3.forward*halfLength;
+            Vector3 rollOffset=body.rotation*Vector3.right*halfWidth;
+            highestWaveAtHull=Mathf.Max(Mathf.Max(bow-pitchOffset.y,stern+pitchOffset.y),
+                                        Mathf.Max(starboard-rollOffset.y,port+rollOffset.y));
+            for(int x=-1;x<=1;x+=2)
+            for(int z=-1;z<=1;z+=2)
+            {
+                Vector3 offset=body.rotation*new Vector3(x*halfWidth,0f,z*halfLength);
+                highestWaveAtHull=Mathf.Max(highestWaveAtHull,
+                    water.GetSurfaceHeight(center+offset)-offset.y);
+            }
+        }
         return (bow+stern+starboard+port)*.25f;
     }
 
@@ -139,21 +155,20 @@ public sealed class BoatController : MonoBehaviour
         if(forward.sqrMagnitude<.0001f)forward=Vector3.forward;
         forward.Normalize();
         Vector3 right=Vector3.Cross(Vector3.up,forward);
-        float surroundingSurface=ApplyWaveRocking(forward,right);
+        float highestWaveAtHull;
+        ApplyWaveRocking(forward,right,out highestWaveAtHull);
         float centerSurface=water.GetSurfaceHeight(body.position);
         float height=IsRowboat
-            ? Mathf.Lerp(centerSurface,surroundingSurface,.5f)+RowboatFreeboard
+            ? Mathf.Max(centerSurface,highestWaveAtHull)+RowboatFreeboard
             : centerSurface;
 
         if(IsRowboat)
         {
-            // The former maximum-of-27-points snap teleported the hull upward as
-            // soon as its bow touched a crest. A damped spring lets it dip into
-            // the swell slightly before floating back up, without killing speed.
-            float immersion=Mathf.Max(0f,centerSurface+.04f-body.position.y);
-            float extraLift=Mathf.Min(immersion*12f,18f);
-            body.AddForce(Vector3.up*((height-body.position.y)*34f
-                -body.linearVelocity.y*11f+extraLift),ForceMode.Acceleration);
+            // Keep the hollow floor above crests without teleporting upward or
+            // resetting horizontal momentum. The spring allows brief hull dips.
+            float rise=height-body.position.y;
+            float buoyancy=rise*105f-body.linearVelocity.y*18f;
+            body.AddForce(Vector3.up*Mathf.Clamp(buoyancy,-30f,48f),ForceMode.Acceleration);
         }
         else body.AddForce(Vector3.up*((height-body.position.y)*18f-body.linearVelocity.y*7f),ForceMode.Acceleration);
 
@@ -210,16 +225,13 @@ public sealed class BoatController : MonoBehaviour
         if(rearPaddling && inputAmount<=.05f)desiredDirection=forward;
         Vector3 predictedForward=futureHeading*Vector3.forward;
         Vector3 future=body.position+planarVelocity*.8f+predictedForward*(propulsion*1.5f);
-        // Navigation clearance must not change merely because a wave trough
-        // lowered the boat into the seabed's physics overlap box. Check obstacles
-        // at calm sea level; actual terrain depth and shoreline still block travel.
-        Vector3 clearancePosition=future;
-        clearancePosition.y=water.BaseWaterLevel;
-        if(!BoatClearance.Valid(Data,clearancePosition,futureHeading,water,transform,Driver!=null?Driver.transform:null))
+        // The full placement OverlapBox can falsely flag offshore colliders or
+        // map edges as walls. Runtime pre-braking checks only real shallow terrain.
+        // Actual rocks, docks and the shore retain their Rigidbody collisions.
+        if(BoatClearance.ApproachingShallowWater(Data,future,futureHeading,water))
         {
-            body.AddForce(-planarVelocity*12f,ForceMode.Acceleration);
-            // Stop yaw, but allow the wave-following spring to keep tilting.
-            body.AddTorque(Vector3.up*(-body.angularVelocity.y*12f),ForceMode.Acceleration);
+            body.AddForce(-planarVelocity*7f,ForceMode.Acceleration);
+            body.AddTorque(Vector3.up*(-body.angularVelocity.y*5f),ForceMode.Acceleration);
             return;
         }
 
