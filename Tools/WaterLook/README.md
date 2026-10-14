@@ -9,9 +9,11 @@ Baseline commit: `753518eb7b74c4b76401c5394577354bdf923d14`.
 - Depth-dependent transparency and color from the existing depth texture.
 - Three overlapping Gerstner waves with the existing distinct directions and
   wavelengths (20 m, 9 m and 4 m), plus bounded horizontal motion.
-- Two independent, seamless 128 x 128 normal maps scroll at different velocities,
-  rotation and scales. They replace the periodic crossed bands that caused the grid.
-- Sun highlights with distant detail fading and mipmapped filtering to reduce aliasing.
+- One seamless, mipmapped broad-ripple normal map scrolls over the water.
+  The fine map layer was removed after visual feedback to roughly halve small-wave
+  clutter and save one texture read per water pixel. No grid bands return.
+- Smaller, less bright surface glints and gentler, broken foam; more open blue water.
+  Distant detail fades and uses mipmapped filtering to reduce aliasing.
 - Broken, restrained crest/shore foam, without the artificial shallow light lines.
 - Grazing-angle sky color and a softer distant horizon.
 
@@ -36,13 +38,14 @@ implementation environment. Source checks are not a Unity shader compilation,
 rendered visual test, or GPU benchmark.
 
 Both variants retain one transparent pass and one depth sample per fragment.
-The improved path now also samples two 128 x 128 compressed, mipmapped normal maps
-(about 52 KiB of source PNG data combined). No extra render targets, cameras,
+The improved path now samples just one 128 x 128 compressed, mipmapped normal map.
+The second texture remains in the repository for historical rollback but is no longer
+used in the shader. No extra render targets, cameras,
 post-processing, particles, mesh density or camera depth/opaque-texture settings.
 The vertex Gerstner implementation shares sine/cosine results between vertical and
 horizontal motion, and calculates the island blend once for all three waves.
-Surface-height queries add two bounded inverse steps. Two texture reads and this
-additional arithmetic have device-dependent cost and may exceed the requested
+Surface-height queries still add two bounded inverse steps. One extra texture read
+and the Gerstner arithmetic have device-dependent cost and may exceed the requested
 budget; measure the full game, including boat/fishing activity.
 
 The original rendering equations are preserved behind the disabled keyword. Both
@@ -81,7 +84,19 @@ No benchmark values or in-game screenshots have been invented for this change.
   analytic displaced surface. This does not measure mesh interpolation error.
 - Horizontal Jacobians and vertical gradients agree with independent finite
   differences; no horizontal folding in the tested samples.
-- Both texture fields have normalized vectors, continuous wrap-edge statistics,
-  and independent patterns. Import as linear normal maps with Repeat and mipmaps.
+- The remaining normal field has normalized vectors and continuous wrap edges.
+  Import as a linear normal map with Repeat and mipmaps.
 - `generate_normals.py` reproduces the numerical normal-map assets offline using
   NumPy and Pillow. No texture generation occurs at runtime.
+
+## October 13 follow-up: quieter, faster surface
+
+- Removed the finer scrolling normal layer entirely (two normal samples to one
+  in the improved fragment path). The broad layer remains irregular and animated.
+- Reduced broad normal strength from 0.42 to 0.24 on both ocean materials, and
+  its UV scale from 0.047 to 0.040 to space out surface ripples a little more.
+- Cut glint intensity and gently reduced crest/shore foam so the sea reads bluer.
+- Unchanged: all three Gerstner waves, displacement, biome conditions, boats,
+  fish/lure physics, hotspots, scene terrain, and original-look comparison mode.
+- Shader source and material invariants were checked; actual rendered appearance
+  and the requested <=5% Android FPS budget remain unverified pending device tests.
