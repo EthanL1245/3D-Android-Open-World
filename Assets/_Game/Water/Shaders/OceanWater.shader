@@ -4,8 +4,7 @@ Shader "OpenWorld/OceanWater"
     {
         [Toggle(_WATER_REFERENCE_LOOK)] _ReferenceLook ("Improved Ocean Look", Float) = 0
         [Normal] _RippleNormalA ("Broad Irregular Ripples", 2D) = "bump" {}
-        [Normal] _RippleNormalB ("Fine Irregular Ripples", 2D) = "bump" {}
-        _RippleStrength ("Ripple Normal Strength", Range(0, 1)) = 0.42
+        _RippleStrength ("Ripple Normal Strength", Range(0, 1)) = 0.24
         _GerstnerStrength ("Gerstner Horizontal Motion", Range(0, 0.35)) = 0.18
         _ShallowColor ("Shallow Color", Color) = (0.05, 0.55, 0.72, 1)
         _DeepColor ("Deep Color", Color) = (0.01, 0.10, 0.28, 1)
@@ -109,7 +108,6 @@ Shader "OpenWorld/OceanWater"
             CBUFFER_END
 
             TEXTURE2D(_RippleNormalA); SAMPLER(sampler_RippleNormalA);
-            TEXTURE2D(_RippleNormalB); SAMPLER(sampler_RippleNormalB);
             #include "OceanGerstner.hlsl"
 
             struct Attributes
@@ -285,21 +283,14 @@ Shader "OpenWorld/OceanWater"
                 float cameraDistance = max(length(toCamera), 0.001);
                 half3 viewDirection = toCamera / cameraDistance;
 
-                // Independent broadband normal fields replace the regular crossed
-                // bands. Incommensurate scales, rotation and different velocities
-                // hide tiling. Mipmaps and distance fade suppress distant shimmer.
+                // One broad, world-anchored scrolling normal field. Eliminating the
+                // fine layer reduces scattered small ripples and saves one fragment
+                // texture fetch. Mipmaps and distance fade reduce offshore shimmer.
                 float2 worldXZ = input.positionWS.xz;
-                float2 uvA = worldXZ * 0.047 + _Time.y * float2(0.009, 0.004);
-                float2 rotatedXZ = float2(0.8 * worldXZ.x - 0.6 * worldXZ.y,
-                                          0.6 * worldXZ.x + 0.8 * worldXZ.y);
-                float2 uvB = rotatedXZ * 0.079 + _Time.y * float2(-0.006, 0.011);
+                float2 uvA = worldXZ * 0.040 + _Time.y * float2(0.009, 0.004);
                 half3 normalA = UnpackNormal(SAMPLE_TEXTURE2D(_RippleNormalA, sampler_RippleNormalA, uvA));
-                half3 normalB = UnpackNormal(SAMPLE_TEXTURE2D(_RippleNormalB, sampler_RippleNormalB, uvB));
-                // Rotate the second sampled normal back into world XZ coordinates.
-                half2 slopeB = half2(0.8 * normalB.x + 0.6 * normalB.y,
-                                    -0.6 * normalB.x + 0.8 * normalB.y);
-                half detailFade = 1.0 - smoothstep(25.0, 140.0, cameraDistance);
-                half2 ripple = (normalA.xy + slopeB * 0.65) * _RippleStrength * detailFade;
+                half detailFade = 1.0 - smoothstep(22.0, 125.0, cameraDistance);
+                half2 ripple = normalA.xy * _RippleStrength * detailFade;
                 half3 normalWS = normalize(input.normalWS + half3(ripple.x, 0.0, ripple.y));
 
                 Light mainLight = GetMainLight();
@@ -339,13 +330,13 @@ Shader "OpenWorld/OceanWater"
                 half specularPower = lerp(48.0, lerp(90.0, 300.0, _Smoothness), detailFade);
                 half specular = pow(saturate(dot(normalWS, halfDirection)), specularPower);
                 color += specular * mainLight.color * _SpecularStrength
-                         * lerp(0.28, 1.0, detailFade);
+                         * lerp(0.16, 0.62, detailFade);
 
                 // Account for the existing local rough-water multiplier so Brinebreak
                 // does not become a continuous white sheet at larger wave amplitudes.
                 half crest = smoothstep(0.74, 0.98, input.waveHeight / max(0.001, input.waterData.y));
-                half breakup = smoothstep(0.12, 0.46, length(normalA.xy + slopeB));
-                half foam = (crest * 0.16 + shore * 0.22) * breakup
+                half breakup = smoothstep(0.08, 0.36, length(normalA.xy));
+                half foam = (crest * 0.12 + shore * 0.17) * breakup
                             * _FoamStrength * detailFade;
                 color = lerp(color, _FoamColor.rgb, saturate(foam));
 
