@@ -119,3 +119,23 @@ The one-time water collider setup adds no runtime graphics work. The
 contact query runs only when a sudden forward slowdown is detected. Android
 and Unity runtime acceptance are still required; no FPS or gameplay
 success claims without device tests.
+
+## October 14: camera follows boat rocking
+
+While aboard a raft, rowboat, sailboat or yacht, the first-person camera now
+inherits the hull's interpolated pitch and roll, smoothly damped at the camera
+without rotating the player's CharacterController. Works while driving, rowing
+and walking/fishing on deck. Existing mouse and mobile look yaw stays independent
+of the boat's yaw, and normal look pitch remains user-controlled. On disembark,
+teleport or boat removal, the camera levels gradually back to normal.
+
+Tuning on `FirstPersonController`: Boat Camera Tilt Amount defaults to 1.0
+(full hull tilt); Boat Camera Tilt Follow Speed defaults to 10.0. The tilt is
+applied in LateUpdate after movement and input, including when menus block
+look input. Neither floating, collision detection nor camera position changes,
+and no mesh, material, or extra rendering work is added.
+
+Validate in Unity/Android: traverse waves while at helm and on deck, test
+rotating the view and looking up/down, then disembark and inspect horizon
+leveling. Check fishing aim and underwater transitions. This change has not
+been play-tested on an Android device.
