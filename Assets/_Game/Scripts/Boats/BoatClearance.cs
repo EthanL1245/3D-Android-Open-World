@@ -8,6 +8,39 @@ public static class BoatClearance
     private static readonly Vector3 AuthoredRaftHullSize = new Vector3(2.6749f,1.254236f,4.5634f);
     private const float AuthoredRaftDraft = .45f;
 
+    // Strict placement checks must not be used to cancel thrust on open waves.
+    // Navigation only checks the seabed; solid props still collide normally.
+    public static bool ApproachingShallowWater(BoatData data, Vector3 position, Quaternion rotation, OceanWater water)
+    {
+        if(data==null || water==null)return false;
+        bool raft=data.ID=="raft";
+        Vector3 size=raft?AuthoredRaftHullSize:data.HullSize;
+        float draft=raft?AuthoredRaftDraft:data.Draft;
+        float halfX=size.x*.5f+(raft?.18f:.6f);
+        float halfZ=size.z*.5f+(raft?.35f:.6f);
+        float requiredDepth=draft+.65f;
+        foreach(var terrain in Terrain.activeTerrains)
+        {
+            if(terrain==null || terrain.terrainData==null)continue;
+            Vector3 min=terrain.transform.position, dimensions=terrain.terrainData.size;
+            // Four footprint corners plus the hull centre: stable through swells.
+            for(int x=-1;x<=1;x+=2)
+            for(int z=-1;z<=1;z+=2)
+            {
+                Vector3 p=position+rotation*new Vector3(x*halfX,0f,z*halfZ);
+                Vector3 local=p-min;
+                if(local.x<0f || local.z<0f || local.x>dimensions.x || local.z>dimensions.z)continue;
+                float ground=terrain.SampleHeight(p)+min.y;
+                if(water.BaseWaterLevel-ground<requiredDepth)return true;
+            }
+            Vector3 c=position-min;
+            if(c.x>=0f && c.z>=0f && c.x<=dimensions.x && c.z<=dimensions.z
+                && water.BaseWaterLevel-(terrain.SampleHeight(position)+min.y)<requiredDepth)return true;
+        }
+        // Open water outside finite terrain does not create an invisible wall.
+        return false;
+    }
+
     public static bool Valid(BoatData data, Vector3 position, Quaternion rotation, OceanWater water, Transform ignored=null, Transform player=null)
     {
         if(data==null || water==null || PondWater.TrySurface(position,out _))return false;
