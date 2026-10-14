@@ -58,7 +58,7 @@ is not a Unity build or device benchmark: the <=5% FPS target is unverified.
 - The rowboat no longer chases the **maximum crest height at 27 hull points**
   or instantly writes its Rigidbody Y position/vertical velocity. The authored
   hull now uses the same four points as wave rocking plus a centre sample,
-  averages the target surface and adds 0.18 m freeboard. A damped vertical
+  averages the target surface and adds 0.30 m centre freeboard (the shallow interior floor is about 0.247 m below the root). A damped vertical
   spring with a small immersion-dependent lift allows some water entry at a
   breaking bow but recovers without snapping or stopping horizontal travel.
 - All other boats keep their previous vertical buoyancy spring; pitch/roll
