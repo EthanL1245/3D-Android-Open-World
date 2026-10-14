@@ -16,8 +16,8 @@ public static class BoatClearance
         bool raft=data.ID=="raft";
         Vector3 size=raft?AuthoredRaftHullSize:data.HullSize;
         float draft=raft?AuthoredRaftDraft:data.Draft;
-        float halfX=size.x*.5f+(raft?.18f:.6f);
-        float halfZ=size.z*.5f+(raft?.35f:.6f);
+        float halfX=size.x*.5f+(raft ? 0.18f : 0.6f);
+        float halfZ=size.z*.5f+(raft ? 0.35f : 0.6f);
         float requiredDepth=draft+.65f;
         foreach(var terrain in Terrain.activeTerrains)
         {
