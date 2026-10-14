@@ -79,7 +79,7 @@ public sealed class BoatController : MonoBehaviour
         if(Driver!=null)Driver.SnapToRowingSeat();
     }
 
-    private const float RowboatFreeboard = 0.18f;
+    private const float RowboatFreeboard = 0.30f;
 
     // Used for the placement preview, and matches the runtime four-point mean.
     // Averaging avoids lifting the whole boat onto one high crest at the bow.
