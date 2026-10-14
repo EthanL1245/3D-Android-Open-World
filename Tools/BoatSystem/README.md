@@ -74,3 +74,24 @@ is not a Unity build or device benchmark: the <=5% FPS target is unverified.
   reef shelf, actual braking near shallow terrain and rocks, stable occupants
   while steering/fishing, and the Android <=5% FPS target. Unity/device runtime
   validation is still required.
+
+## Follow-up: wave crossings and rowboat interior
+
+The last buoyancy change left the shallow interior too close to the wave
+surface. Rowboat flotation now uses a raised target relative to the **highest
+wave beneath the hull**, including bow/stern, both sides, and four corners.
+The four rocking samples are reused. The physics spring remains continuous
+with bounded acceleration and never teleports the Rigidbody. Resting freeboard
+is 0.50 m above the highest sampled waterline; the authored interior floor
+is roughly 0.247 m below the hull origin.
+
+The previous runtime navigation code used a *placement* check with a broad
+collider OverlapBox, which can create false-positive instant braking in open
+water. Navigation now checks stable seabed depth only. Solid colliders on
+the shoreline, rocks and dock still stop real physical contacts. Strict
+full-hull placement validation is unchanged. Out-of-terrain open water
+no longer synthesizes a physics wall.
+
+Test at deep-water swells, rough-water biome boundaries, near a shallow
+coast, and around rocks/dock. Watch the rowboat floor, player boarding,
+fishing, and Android FPS. Unity runtime and FPS still need device verification.
