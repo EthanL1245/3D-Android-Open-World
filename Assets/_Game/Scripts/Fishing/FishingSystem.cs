@@ -95,6 +95,11 @@ public class FishingSystem : MonoBehaviour
     public bool IsRodEquipped => rodEquipped && !shopMode && isActiveAndEnabled;
     public int CastSequence { get; private set; }
     private float networkCastStarted;
+    public bool NetworkHasFish => IsRodEquipped && state == FishingState.Fighting;
+    public bool NetworkLureInWater => IsRodEquipped && state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure;
+    public bool NetworkIsReeling => (NetworkHasFish || NetworkLureInWater) && !ShopWorldHUD.MenuOpen &&
+        hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
+    public float NetworkReelTime { get; private set; }
     public float NetworkCastDuration => Mathf.Max(.1f, castDuration);
     public float NetworkCastAge => state == FishingState.Casting
         ? Mathf.Max(0f, Time.time - networkCastStarted) : -1f;
@@ -375,6 +380,8 @@ public class FishingSystem : MonoBehaviour
                 );
                 break;
         }
+
+        if (NetworkIsReeling) NetworkReelTime += Time.deltaTime;
 
         if (rodView != null)
         {
@@ -922,6 +929,7 @@ public class FishingSystem : MonoBehaviour
         state = FishingState.Casting;
         CastSequence = CastSequence == int.MaxValue ? 1 : CastSequence + 1;
         networkCastStarted = Time.time;
+        NetworkReelTime = 0f;
         hud.SetActionLabel("...");
         hud.SetStatus("Casting...");
 

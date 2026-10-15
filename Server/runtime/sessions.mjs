@@ -29,11 +29,14 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
       if (value[key] !== undefined && (!Number.isInteger(value[key]) || value[key] < 0 || value[key] > max)) fail(400, 'Invalid fishing animation state.');
     if (value.castAge !== undefined && (typeof value.castAge !== 'number' || !Number.isFinite(value.castAge) || value.castAge < -1 || value.castAge > 60)) fail(400, 'Invalid cast age.');
     if (value.castDuration !== undefined && (typeof value.castDuration !== 'number' || !Number.isFinite(value.castDuration) || value.castDuration < .1 || value.castDuration > 60)) fail(400, 'Invalid cast duration.');
+    if (value.reelTime !== undefined && (typeof value.reelTime !== 'number' || !Number.isFinite(value.reelTime) || value.reelTime < 0 || value.reelTime > 10000000)) fail(400, 'Invalid reel animation time.');
     return { x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       rodEquipped: value.rodEquipped === true, rodTier: value.rodTier ?? 0,
       castSequence: value.castSequence ?? 0, castAge: value.castAge ?? -1,
-      castDuration: value.castDuration ?? .72 };
+      castDuration: value.castDuration ?? .72,
+      reeling: value.reeling === true, hasFish: value.hasFish === true,
+      lureInWater: value.lureInWater === true, reelTime: value.reelTime ?? 0 };
   }
   function add(room, data) {
     const p = { id: randomBytes(8).toString('hex'), token: randomBytes(32).toString('hex'),

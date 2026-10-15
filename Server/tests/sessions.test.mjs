@@ -87,3 +87,30 @@ test('observer receives equipped rod and timed cast, then unequip; old clients d
   for(const change of [{rodTier:9},{castSequence:-1},{castSequence:1.5},{castAge:'0'},{castAge:61},{castDuration:0}])
     assert.equal((await post('/v1/state',{pose:{...fishing,...change}},guest.token)).status,400);
 });
+
+test('reeling, fish pulling, and paused lure poses preserve the sender animation clock',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  const base={...pose(),rodEquipped:true,castSequence:1,castAge:-1};
+  async function exchange(state) {
+    assert.equal((await post('/v1/state',{pose:{...base,...state}},guest.token)).ok,true);
+    return (await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+  }
+  for(const state of [
+    {hasFish:true,lureInWater:false,reeling:true,reelTime:.35},
+    {hasFish:true,lureInWater:false,reeling:false,reelTime:.35},
+    {hasFish:false,lureInWater:true,reeling:true,reelTime:.55},
+    {hasFish:false,lureInWater:true,reeling:false,reelTime:.55},
+    {hasFish:false,lureInWater:true,reeling:false,reelTime:.55},
+    {hasFish:false,lureInWater:true,reeling:true,reelTime:.7},
+    {hasFish:false,lureInWater:false,reeling:false,reelTime:.7}
+  ]) {
+    const observed=await exchange(state);
+    for(const key of Object.keys(state)) assert.equal(observed[key],state[key]);
+  }
+  const old=(await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===host.id);
+  assert.equal(old.reelTime,0);assert.equal(old.hasFish,false);assert.equal(old.lureInWater,false);assert.equal(old.reeling,false);
+  for(const reelTime of [-1,'1',10000001])
+    assert.equal((await post('/v1/state',{pose:{...base,reelTime}},guest.token)).status,400);
+});

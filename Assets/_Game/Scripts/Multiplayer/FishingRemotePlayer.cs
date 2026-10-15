@@ -20,13 +20,15 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable;
-    private AnimationClip walkClip, idleClip, castClip;
+    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable;
+    private AnimationClip walkClip, idleClip, castClip, reelClip, pullClip;
     private Transform leftHand, rodSocket;
     private GameObject heldRod;
     private int rodTier = -1, seenCastSequence;
     private bool rodEquipped, casting, receivedFishingState;
     private float castClock, castDuration = .72f, castBlend;
+    private bool reeling, hasFish, lureInWater;
+    private float reelClock, pullClock, reelBlend, pullBlend, lastAuthorReelTime = -1f;
 
     public void Initialize(string displayName, string identity)
     {
@@ -77,6 +79,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (leftHand == null) leftHand = FishingRemoteAvatarAsset.FindBone(visual.transform, "Hand.L");
         if (leftHand == null)
             Debug.LogError("Multiplayer: left hand was not found on the instantiated avatar. Rebuild Female Multiplayer Avatar.");
+        reelClip = asset.ReelClip;
+        pullClip = asset.PullClip;
+        if (reelClip == null || pullClip == null)
+            Debug.LogError("Multiplayer: reeling/pulling clips are missing. Rebuild the game with both animation FBXs.");
         castClip = asset.CastClip;
         if (castClip == null)
             Debug.LogError("Multiplayer: casting clip is missing from the avatar catalog. Rebuild the game with the casting FBX.");
@@ -88,7 +94,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 3);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 5);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
@@ -98,6 +104,18 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 castPlayable = AnimationClipPlayable.Create(animationGraph, castClip);
                 animationGraph.Connect(castPlayable, 0, animationMixer, 2);
             }
+            if (reelClip != null)
+            {
+                reelPlayable = AnimationClipPlayable.Create(animationGraph, reelClip);
+                animationGraph.Connect(reelPlayable, 0, animationMixer, 3);
+            }
+            if (pullClip != null)
+            {
+                pullPlayable = AnimationClipPlayable.Create(animationGraph, pullClip);
+                animationGraph.Connect(pullPlayable, 0, animationMixer, 4);
+            }
+            animationMixer.SetInputWeight(3, 0f);
+            animationMixer.SetInputWeight(4, 0f);
             animationMixer.SetInputWeight(2, 0f);
             animationMixer.SetInputWeight(0, 1f);
             animationMixer.SetInputWeight(1, 0f);
@@ -147,6 +165,15 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         // when castAge is already -1. Do not abort playback on subsequent idle packets.
         bool newCast = peer.castSequence != 0 && peer.castSequence != seenCastSequence;
         bool playCast = newCast && (receivedFishingState || peer.castAge >= 0f);
+        hasFish = rodEquipped && peer.hasFish;
+        lureInWater = rodEquipped && peer.lureInWater;
+        reeling = rodEquipped && peer.reeling && (hasFish || lureInWater);
+        // The sender's accumulated reeling time preserves the exact stopped pose,
+        // including a quick press/release that happens between observer polls.
+        if (!reeling || newCast || peer.reelTime != lastAuthorReelTime)
+            reelClock = Mathf.Max(0f, peer.reelTime);
+        lastAuthorReelTime = peer.reelTime;
+        if (newCast) pullClock = 0f;
         seenCastSequence = peer.castSequence;
         receivedFishingState = true;
         if (castClip != null && rodEquipped && playCast)
@@ -208,9 +235,25 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             castBlend = Mathf.MoveTowards(castBlend, casting && rodEquipped ? 1f : 0f, dt * 12f);
             if (castPlayable.IsValid())
                 castPlayable.SetTime(Mathf.Clamp01(castClock / castDuration) * castClip.length);
-            animationMixer.SetInputWeight(0, (1f - walkBlend) * (1f - castBlend));
-            animationMixer.SetInputWeight(1, walkBlend * (1f - castBlend));
+            bool showReel = rodEquipped && reelClip != null &&
+                (reeling || (lureInWater && !hasFish && reelClock > 0f));
+            bool showPull = rodEquipped && pullClip != null && hasFish && !reeling;
+            if (reeling && !casting && Time.realtimeSinceStartup - lastPacket < 1f)
+                reelClock += dt;
+            if (showPull && !casting) pullClock += dt;
+            if (reelPlayable.IsValid())
+                reelPlayable.SetTime(reelClock % Mathf.Max(.01f, reelClip.length));
+            if (pullPlayable.IsValid())
+                pullPlayable.SetTime(pullClock % Mathf.Max(.01f, pullClip.length));
+            reelBlend = Mathf.MoveTowards(reelBlend, showReel ? 1f : 0f, dt * 8f);
+            pullBlend = Mathf.MoveTowards(pullBlend, showPull ? 1f : 0f, dt * 8f);
+            float fishingWeight = Mathf.Clamp01(reelBlend + pullBlend);
+            float locomotionWeight = (1f - fishingWeight) * (1f - castBlend);
+            animationMixer.SetInputWeight(0, (1f - walkBlend) * locomotionWeight);
+            animationMixer.SetInputWeight(1, walkBlend * locomotionWeight);
             animationMixer.SetInputWeight(2, castBlend);
+            animationMixer.SetInputWeight(3, reelBlend * (1f - castBlend));
+            animationMixer.SetInputWeight(4, pullBlend * (1f - castBlend));
             animationGraph.Evaluate(0f);
         }
 
@@ -242,6 +285,15 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             if (rodSocket == null) CreateLeftHandSocket();
             heldRod = Instantiate(prefab, rodSocket, false);
             heldRod.name = "Remote Left Hand Fishing Rod";
+            Transform reelMount = heldRod.transform.Find("ReelMount");
+            if (reelMount != null)
+            {
+                // Observer-only: scale around the rod axis so the reel stays attached.
+                // Move the attachment 3.5 cm along the prefab's +Y (toward its tip).
+                Vector3 mount = reelMount.localPosition;
+                reelMount.localScale *= .4f; // 2.5 times smaller.
+                reelMount.localPosition = new Vector3(mount.x * .4f, mount.y + .035f, mount.z * .4f);
+            }
             // These prefabs point along +Y with the handle just above the reel seat.
             // Cancel FBX unit scaling so the rod remains a sensible world size.
             Vector3 scale = rodSocket.lossyScale;
