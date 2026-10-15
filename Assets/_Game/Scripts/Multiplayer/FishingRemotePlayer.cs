@@ -223,7 +223,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 idlePlayable.SetTime(0f); // No idle clip: hold the walk's starting pose.
             else
             {
-                idleClock += dt;
+                idleClock += dt * .65f;
                 idlePlayable.SetTime(idleClock % Mathf.Max(.01f, idleClip.length));
             }
 
@@ -242,7 +242,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 reelClock += dt;
             if (showPull && !casting) pullClock += dt;
             if (reelPlayable.IsValid())
-                reelPlayable.SetTime(reelClock % Mathf.Max(.01f, reelClip.length));
+                // Scale at sampling so network updates and paused lure poses use the same speed.
+                reelPlayable.SetTime((reelClock * .75f) % Mathf.Max(.01f, reelClip.length));
             if (pullPlayable.IsValid())
                 pullPlayable.SetTime(pullClock % Mathf.Max(.01f, pullClip.length));
             reelBlend = Mathf.MoveTowards(reelBlend, showReel ? 1f : 0f, dt * 8f);
