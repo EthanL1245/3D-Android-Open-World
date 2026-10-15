@@ -91,6 +91,13 @@ public class FishingSystem : MonoBehaviour
     private Transform unconsciousFishMouthMarker;
 
     private bool rodEquipped = true;
+    // Presentation state only; observers never control the local fishing simulation.
+    public bool IsRodEquipped => rodEquipped && !shopMode && isActiveAndEnabled;
+    public int CastSequence { get; private set; }
+    private float networkCastStarted;
+    public float NetworkCastDuration => Mathf.Max(.1f, castDuration);
+    public float NetworkCastAge => state == FishingState.Casting
+        ? Mathf.Max(0f, Time.time - networkCastStarted) : -1f;
 
     private Vector3 castPoint;
     private bool pondCast;
@@ -913,6 +920,8 @@ public class FishingSystem : MonoBehaviour
         Vector3 target)
     {
         state = FishingState.Casting;
+        CastSequence = CastSequence == int.MaxValue ? 1 : CastSequence + 1;
+        networkCastStarted = Time.time;
         hud.SetActionLabel("...");
         hud.SetStatus("Casting...");
 

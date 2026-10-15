@@ -68,3 +68,22 @@ test('oversized and non-JSON requests cannot crash the server',async t=>{
   } catch(e) { assert.equal(e.cause?.code,'UND_ERR_SOCKET'); }
   assert.equal((await fetch(url+'/health')).status,200);
 });
+
+test('observer receives equipped rod and timed cast, then unequip; old clients default safely',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  const fishing={...pose(3),rodEquipped:true,rodTier:2,castSequence:1,castAge:.2,castDuration:.72};
+  await post('/v1/state',{pose:fishing},guest.token);
+  const seen=(await post('/v1/state',{pose:pose()},host.token)).players;
+  const observed=seen.find(p=>p.id===guest.id);
+  for(const key of ['rodEquipped','rodTier','castSequence','castAge','castDuration']) assert.equal(observed[key],fishing[key]);
+  const old=seen.find(p=>p.id===host.id);
+  assert.equal(old.rodEquipped,false);assert.equal(old.castAge,-1);assert.equal(old.castSequence,0);
+  await post('/v1/state',{pose:{...fishing,rodEquipped:false,castAge:-1}},guest.token);
+  const unequipped=(await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+  assert.equal(unequipped.rodEquipped,false);assert.equal(unequipped.castAge,-1);
+  assert.equal(unequipped.castSequence,1);
+  for(const change of [{rodTier:9},{castSequence:-1},{castSequence:1.5},{castAge:'0'},{castAge:61},{castDuration:0}])
+    assert.equal((await post('/v1/state',{pose:{...fishing,...change}},guest.token)).status,400);
+});

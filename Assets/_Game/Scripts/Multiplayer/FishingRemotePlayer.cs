@@ -7,7 +7,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 {
     private const string AvatarResource = "Multiplayer/FemaleRemoteAvatar";
     private const float WalkingThreshold = 0.12f;
-    private const float DefaultHeight = 2.05f;
+    private const float AvatarScale = 1.2f;
+    private const float DefaultHeight = 2.05f * AvatarScale;
 
     public int World { get; private set; }
 
@@ -19,8 +20,13 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable walkPlayable, idlePlayable;
-    private AnimationClip walkClip, idleClip;
+    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable;
+    private AnimationClip walkClip, idleClip, castClip;
+    private Transform leftHand, rodSocket;
+    private GameObject heldRod;
+    private int rodTier = -1, seenCastSequence;
+    private bool rodEquipped, casting;
+    private float castClock, castDuration = .72f, castBlend;
 
     public void Initialize(string displayName, string identity)
     {
@@ -67,6 +73,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         animator.runtimeAnimatorController = null;
 
+        leftHand = visual.transform.Find("Armature/UpperArm.L/Forearm.L/Hand.L");
+        castClip = asset.CastClip;
         walkClip = asset.WalkClip;
         idleClip = asset.IdleClip != null ? asset.IdleClip : walkClip;
 
@@ -75,11 +83,17 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 2);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 3);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
             animationGraph.Connect(walkPlayable, 0, animationMixer, 1);
+            if (castClip != null)
+            {
+                castPlayable = AnimationClipPlayable.Create(animationGraph, castClip);
+                animationGraph.Connect(castPlayable, 0, animationMixer, 2);
+            }
+            animationMixer.SetInputWeight(2, 0f);
             animationMixer.SetInputWeight(0, 1f);
             animationMixer.SetInputWeight(1, 0f);
 
@@ -106,7 +120,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (!hasBounds || bounds.size.y < .001f)
             return DefaultHeight;
 
-        float uniformScale = Mathf.Clamp(1.72f / bounds.size.y, .01f, 100f);
+        float uniformScale = Mathf.Clamp(1.72f * AvatarScale / bounds.size.y, .01f, 100f);
         visual.transform.localScale *= uniformScale;
 
         hasBounds = false;
@@ -122,6 +136,20 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     public void Receive(FishingMultiplayer.Peer peer)
     {
         World = peer.world;
+        UpdateHeldRod(peer.rodEquipped && !peer.swimming, peer.rodTier);
+        if (castClip != null && rodEquipped && peer.castAge >= 0f)
+        {
+            if (peer.castSequence != seenCastSequence)
+            {
+                seenCastSequence = peer.castSequence;
+                castClock = Mathf.Max(0f, peer.castAge);
+                castDuration = Mathf.Clamp(peer.castDuration, .1f, 60f);
+                casting = castClock < castDuration;
+            }
+            else if (casting)
+                castClock = Mathf.Max(castClock, peer.castAge);
+        }
+        else casting = false;
         swimming = peer.swimming;
         target = new Vector3(peer.x, peer.y, peer.z);
         facing = Quaternion.Euler(0, peer.yaw, 0);
@@ -166,13 +194,78 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 idlePlayable.SetTime(idleClock % Mathf.Max(.01f, idleClip.length));
             }
 
-            animationMixer.SetInputWeight(0, 1f - walkBlend);
-            animationMixer.SetInputWeight(1, walkBlend);
+            if (casting)
+            {
+                castClock += dt;
+                if (castClock >= castDuration) casting = false;
+            }
+            castBlend = Mathf.MoveTowards(castBlend, casting && rodEquipped ? 1f : 0f, dt * 12f);
+            if (castPlayable.IsValid())
+                castPlayable.SetTime(Mathf.Clamp01(castClock / castDuration) * castClip.length);
+            animationMixer.SetInputWeight(0, (1f - walkBlend) * (1f - castBlend));
+            animationMixer.SetInputWeight(1, walkBlend * (1f - castBlend));
+            animationMixer.SetInputWeight(2, castBlend);
             animationGraph.Evaluate(0f);
         }
 
         if (label != null && Camera.main != null)
             label.rotation = Camera.main.transform.rotation;
+    }
+
+    private void UpdateHeldRod(bool equipped, int tier)
+    {
+        rodEquipped = equipped;
+        if (!equipped)
+        {
+            if (heldRod != null) heldRod.SetActive(false);
+            return;
+        }
+        if (leftHand == null) return;
+        tier = Mathf.Clamp(tier, 0, ShopCatalog.MaxRodTier);
+        if (heldRod == null || tier != rodTier)
+        {
+            GameObject prefab = Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(tier));
+            if (prefab == null) prefab = Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(0));
+            if (prefab == null) return;
+            if (heldRod != null) { heldRod.SetActive(false); Destroy(heldRod); }
+            if (rodSocket == null) CreateLeftHandSocket();
+            heldRod = Instantiate(prefab, rodSocket, false);
+            heldRod.name = "Remote Left Hand Fishing Rod";
+            // These prefabs point along +Y with the handle just above the reel seat.
+            // Cancel FBX unit scaling so the rod remains a sensible world size.
+            Vector3 scale = rodSocket.lossyScale;
+            heldRod.transform.localScale = new Vector3(
+                AvatarScale / Mathf.Max(.0001f, Mathf.Abs(scale.x)),
+                AvatarScale / Mathf.Max(.0001f, Mathf.Abs(scale.y)),
+                AvatarScale / Mathf.Max(.0001f, Mathf.Abs(scale.z)));
+            heldRod.transform.localRotation = Quaternion.identity;
+            heldRod.transform.position = rodSocket.position - rodSocket.up * (.23f * AvatarScale);
+            foreach (Collider collider in heldRod.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+            foreach (MonoBehaviour script in heldRod.GetComponentsInChildren<MonoBehaviour>(true)) script.enabled = false;
+            foreach (Animation animation in heldRod.GetComponentsInChildren<Animation>(true)) animation.enabled = false;
+            foreach (Animator animator in heldRod.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
+            foreach (Rigidbody body in heldRod.GetComponentsInChildren<Rigidbody>(true))
+            { body.isKinematic = true; body.detectCollisions = false; }
+            rodTier = tier;
+        }
+        heldRod.SetActive(true);
+    }
+
+    private void CreateLeftHandSocket()
+    {
+        rodSocket = new GameObject("Left Hand Rod Grip").transform;
+        rodSocket.SetParent(leftHand, false);
+        Transform index = leftHand.Find("Second1.L");
+        Transform pinky = leftHand.Find("Pinky1.L");
+        if (index == null || pinky == null) return;
+        Vector3 indexBase = leftHand.InverseTransformPoint(index.position);
+        Vector3 pinkyBase = leftHand.InverseTransformPoint(pinky.position);
+        Vector3 palm = (indexBase + pinkyBase) * .5f;
+        Vector3 across = (indexBase - pinkyBase).normalized;
+        Vector3 normal = Vector3.Cross(across, palm.normalized).normalized;
+        rodSocket.localPosition = palm * .8f;
+        if (across.sqrMagnitude > .5f && normal.sqrMagnitude > .5f)
+            rodSocket.localRotation = Quaternion.LookRotation(normal, across);
     }
 
     private void OnDestroy()

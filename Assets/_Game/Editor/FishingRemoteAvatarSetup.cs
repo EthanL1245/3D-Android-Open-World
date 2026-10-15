@@ -11,6 +11,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
 {
     internal const string SourcePath = "Assets/Manually Added Assets/Female Character Model.fbx";
     public const string IdleSourcePath = "Assets/Manually Added Assets/Female Idle.fbx";
+    public const string CastSourcePath = "Assets/Manually Added Assets/Female Casting Fishing Rod.fbx";
     private const string ResourceFolder = "Assets/Resources/Multiplayer";
     private const string CatalogPath = ResourceFolder + "/FemaleRemoteAvatar.asset";
 
@@ -21,7 +22,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         {
             if (state == PlayModeStateChange.ExitingEditMode && !EnsureSetup(false))
             {
-                Debug.LogError("Multiplayer avatar setup failed. Check the female model and idle FBX import errors before entering Play Mode.");
+                Debug.LogError("Multiplayer avatar setup failed. Check the female model, idle and cast FBX import errors before entering Play Mode.");
             }
         };
     }
@@ -44,13 +45,13 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
     {
         if (!EnsureSetup(true))
             EditorUtility.DisplayDialog("Female Multiplayer Avatar",
-                "The model, walk or idle animation is missing or has incompatible bone paths. Check the Console for details.", "OK");
+                "The model, walk, idle or casting animation is missing or has incompatible bone paths. Check the Console for details.", "OK");
     }
 
     public void OnPreprocessBuild(BuildReport report)
     {
         if (!EnsureSetup(false))
-            throw new BuildFailedException("Missing or incompatible female multiplayer avatar, walk or idle clip. Open Tools/Open World/Rebuild Female Multiplayer Avatar and check the imported FBX animation.");
+            throw new BuildFailedException("Missing or incompatible female multiplayer avatar, walk, idle or casting clip. Open Tools/Open World/Rebuild Female Multiplayer Avatar and check the imported FBX animation.");
     }
 
     internal static bool EnsureSetup(bool verbose)
@@ -84,7 +85,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
 
         // Use the separately exported idle clip without replacing the original
         // textured FBX or its walking animation.
-        AnimationClip separateIdle = FindIdleAnimation();
+        AnimationClip separateIdle = FindAnimation(IdleSourcePath, "idle");
         if (separateIdle != null)
             idle = separateIdle;
         if (idle == null)
@@ -92,7 +93,14 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             Debug.LogError("Multiplayer: missing idle animation at " + IdleSourcePath + ". Pull the FBX and its .meta file before building.");
             return false;
         }
-        if (!ValidateIdleBindings(model, idle)) return false;
+        if (!ValidateBindings(model, idle)) return false;
+        AnimationClip cast = FindAnimation(CastSourcePath, "cast");
+        if (cast == null)
+        {
+            Debug.LogError("Multiplayer: missing casting animation at " + CastSourcePath);
+            return false;
+        }
+        if (!ValidateBindings(model, cast)) return false;
 
         if (!AssetDatabase.IsValidFolder(ResourceFolder))
             AssetDatabase.CreateFolder("Assets/Resources", "Multiplayer");
@@ -104,12 +112,13 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.IdleClip != idle;
+        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.IdleClip != idle || catalog.CastClip != cast;
         if (changed)
         {
             catalog.ModelPrefab = model;
             catalog.WalkClip = walk;
             catalog.IdleClip = idle;
+            catalog.CastClip = cast;
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
         }
@@ -117,11 +126,11 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         if (verbose || changed)
             Debug.Log("Multiplayer: female FBX connected with walk animation '" + walk.name +
                       "' and " + (idle != null ? "idle animation '" + idle.name + "'." : "walk start pose while idle.") +
-                      " Existing FBX materials and animations are preserved.");
+                      " Casting animation: '" + cast.name + "'. Existing FBX materials and animations are preserved.");
         return true;
     }
 
-    private static bool ValidateIdleBindings(GameObject model, AnimationClip idle)
+    private static bool ValidateBindings(GameObject model, AnimationClip idle)
     {
         int boneCurves = 0;
         foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(idle))
@@ -129,31 +138,31 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             if (binding.type != typeof(Transform) || string.IsNullOrEmpty(binding.path)) continue;
             if (model.transform.Find(binding.path) == null)
             {
-                Debug.LogError("Multiplayer: idle curve targets missing bone '" + binding.path +
-                    "'. Reimport Female Idle.fbx with Preserve Hierarchy enabled.");
+                Debug.LogError("Multiplayer: clip '" + idle.name + "' targets missing bone '" + binding.path +
+                    "'. Reimport the animation FBX with Preserve Hierarchy enabled.");
                 return false;
             }
             boneCurves++;
         }
         if (boneCurves == 0)
-            Debug.LogError("Multiplayer: idle clip has no bone animation curves.");
+            Debug.LogError("Multiplayer: clip '" + idle.name + "' has no bone animation curves.");
         return boneCurves > 0;
     }
 
-    private static AnimationClip FindIdleAnimation()
+    private static AnimationClip FindAnimation(string path, string preferredName)
     {
-        if (AssetDatabase.LoadAssetAtPath<GameObject>(IdleSourcePath) == null)
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
             return null;
 
         AnimationClip firstUsable = null;
-        foreach (UnityEngine.Object item in AssetDatabase.LoadAllAssetsAtPath(IdleSourcePath))
+        foreach (UnityEngine.Object item in AssetDatabase.LoadAllAssetsAtPath(path))
         {
             AnimationClip clip = item as AnimationClip;
             if (clip == null || clip.length < .05f ||
                 clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (clip.name.IndexOf("idle", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (clip.name.IndexOf(preferredName, StringComparison.OrdinalIgnoreCase) >= 0)
                 return clip;
             if (firstUsable == null)
                 firstUsable = clip; // This FBX calls its animation take "Scene".
@@ -167,7 +176,8 @@ public sealed class FishingRemoteIdleModelImport : AssetPostprocessor
 {
     private void OnPreprocessModel()
     {
-        if (assetPath != FishingRemoteAvatarSetup.IdleSourcePath) return;
+        if (assetPath != FishingRemoteAvatarSetup.IdleSourcePath &&
+            assetPath != FishingRemoteAvatarSetup.CastSourcePath) return;
         ModelImporter importer = assetImporter as ModelImporter;
         if (importer == null) return;
         importer.importAnimation = true;
@@ -191,7 +201,8 @@ public sealed class FishingRemoteAvatarImportWatcher : AssetPostprocessor
         for (int i = 0; i < importedAssets.Length; i++)
         {
             if (importedAssets[i] != FishingRemoteAvatarSetup.SourcePath &&
-                importedAssets[i] != FishingRemoteAvatarSetup.IdleSourcePath) continue;
+                importedAssets[i] != FishingRemoteAvatarSetup.IdleSourcePath &&
+                importedAssets[i] != FishingRemoteAvatarSetup.CastSourcePath) continue;
             EditorApplication.delayCall += () => FishingRemoteAvatarSetup.EnsureSetup(false);
             break;
         }
