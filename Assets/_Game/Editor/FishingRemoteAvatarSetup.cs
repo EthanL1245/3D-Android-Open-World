@@ -17,14 +17,26 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
     static FishingRemoteAvatarSetup()
     {
         EditorApplication.delayCall += SetupOnLoad;
+        EditorApplication.playModeStateChanged += state =>
+        {
+            if (state == PlayModeStateChange.ExitingEditMode && !EnsureSetup(false))
+            {
+                Debug.LogError("Multiplayer avatar setup failed. Check the female model and idle FBX import errors before entering Play Mode.");
+            }
+        };
     }
 
     public int callbackOrder => -200;
 
     private static void SetupOnLoad()
     {
-        if (!EditorApplication.isPlayingOrWillChangePlaymode && !EditorApplication.isCompiling && !EditorApplication.isUpdating)
-            EnsureSetup(false);
+        if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+        if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+        {
+            EditorApplication.delayCall += SetupOnLoad;
+            return;
+        }
+        EnsureSetup(false);
     }
 
     [MenuItem("Tools/Open World/Rebuild Female Multiplayer Avatar")]
@@ -32,13 +44,13 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
     {
         if (!EnsureSetup(true))
             EditorUtility.DisplayDialog("Female Multiplayer Avatar",
-                "The FBX or its walking clip could not be found. Verify the model's Animation tab and try again.", "OK");
+                "The model, walk or idle animation is missing or has incompatible bone paths. Check the Console for details.", "OK");
     }
 
     public void OnPreprocessBuild(BuildReport report)
     {
         if (!EnsureSetup(false))
-            throw new BuildFailedException("Missing female multiplayer avatar or walk clip. Open Tools/Open World/Rebuild Female Multiplayer Avatar and check the imported FBX animation.");
+            throw new BuildFailedException("Missing or incompatible female multiplayer avatar, walk or idle clip. Open Tools/Open World/Rebuild Female Multiplayer Avatar and check the imported FBX animation.");
     }
 
     internal static bool EnsureSetup(bool verbose)
@@ -75,6 +87,12 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         AnimationClip separateIdle = FindIdleAnimation();
         if (separateIdle != null)
             idle = separateIdle;
+        if (idle == null)
+        {
+            Debug.LogError("Multiplayer: missing idle animation at " + IdleSourcePath + ". Pull the FBX and its .meta file before building.");
+            return false;
+        }
+        if (!ValidateIdleBindings(model, idle)) return false;
 
         if (!AssetDatabase.IsValidFolder(ResourceFolder))
             AssetDatabase.CreateFolder("Assets/Resources", "Multiplayer");
@@ -101,6 +119,25 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
                       "' and " + (idle != null ? "idle animation '" + idle.name + "'." : "walk start pose while idle.") +
                       " Existing FBX materials and animations are preserved.");
         return true;
+    }
+
+    private static bool ValidateIdleBindings(GameObject model, AnimationClip idle)
+    {
+        int boneCurves = 0;
+        foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(idle))
+        {
+            if (binding.type != typeof(Transform) || string.IsNullOrEmpty(binding.path)) continue;
+            if (model.transform.Find(binding.path) == null)
+            {
+                Debug.LogError("Multiplayer: idle curve targets missing bone '" + binding.path +
+                    "'. Reimport Female Idle.fbx with Preserve Hierarchy enabled.");
+                return false;
+            }
+            boneCurves++;
+        }
+        if (boneCurves == 0)
+            Debug.LogError("Multiplayer: idle clip has no bone animation curves.");
+        return boneCurves > 0;
     }
 
     private static AnimationClip FindIdleAnimation()
@@ -136,6 +173,12 @@ public sealed class FishingRemoteIdleModelImport : AssetPostprocessor
         importer.importAnimation = true;
         importer.animationType = ModelImporterAnimationType.Generic;
         importer.avatarSetup = ModelImporterAvatarSetup.NoAvatar;
+        // Animation-only FBX has one root (Armature); the mesh FBX has several.
+        // Keep Armature below the prefab root so both clips use Armature/... paths.
+        importer.preserveHierarchy = true;
+        importer.optimizeGameObjects = false;
+        importer.optimizeBones = false;
+        importer.animationCompression = ModelImporterAnimationCompression.Off;
     }
 }
 
