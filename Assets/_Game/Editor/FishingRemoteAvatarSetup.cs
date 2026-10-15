@@ -10,6 +10,7 @@ using UnityEngine;
 public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
 {
     internal const string SourcePath = "Assets/Manually Added Assets/Female Character Model.fbx";
+    public const string IdleSourcePath = "Assets/Manually Added Assets/Female Idle.fbx";
     private const string ResourceFolder = "Assets/Resources/Multiplayer";
     private const string CatalogPath = ResourceFolder + "/FemaleRemoteAvatar.asset";
 
@@ -69,6 +70,12 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         if (walk == null) walk = fallback; // FBX takes can have generic names, e.g. "Take 001".
         if (walk == null) return false;
 
+        // Use the separately exported idle clip without replacing the original
+        // textured FBX or its walking animation.
+        AnimationClip separateIdle = FindIdleAnimation();
+        if (separateIdle != null)
+            idle = separateIdle;
+
         if (!AssetDatabase.IsValidFolder(ResourceFolder))
             AssetDatabase.CreateFolder("Assets/Resources", "Multiplayer");
 
@@ -95,9 +102,44 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
                       " Existing FBX materials and animations are preserved.");
         return true;
     }
+
+    private static AnimationClip FindIdleAnimation()
+    {
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(IdleSourcePath) == null)
+            return null;
+
+        AnimationClip firstUsable = null;
+        foreach (UnityEngine.Object item in AssetDatabase.LoadAllAssetsAtPath(IdleSourcePath))
+        {
+            AnimationClip clip = item as AnimationClip;
+            if (clip == null || clip.length < .05f ||
+                clip.name.StartsWith("__preview__", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (clip.name.IndexOf("idle", StringComparison.OrdinalIgnoreCase) >= 0)
+                return clip;
+            if (firstUsable == null)
+                firstUsable = clip; // This FBX calls its animation take "Scene".
+        }
+        return firstUsable;
+    }
 }
 
-// Keep the generated build reference current when the user reimports the FBX.
+// Keep the character's imported materials and walking FBX untouched.
+public sealed class FishingRemoteIdleModelImport : AssetPostprocessor
+{
+    private void OnPreprocessModel()
+    {
+        if (assetPath != FishingRemoteAvatarSetup.IdleSourcePath) return;
+        ModelImporter importer = assetImporter as ModelImporter;
+        if (importer == null) return;
+        importer.importAnimation = true;
+        importer.animationType = ModelImporterAnimationType.Generic;
+        importer.avatarSetup = ModelImporterAvatarSetup.NoAvatar;
+    }
+}
+
+// Keep the generated build reference current when either FBX is reimported.
 public sealed class FishingRemoteAvatarImportWatcher : AssetPostprocessor
 {
     private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets,
@@ -105,7 +147,8 @@ public sealed class FishingRemoteAvatarImportWatcher : AssetPostprocessor
     {
         for (int i = 0; i < importedAssets.Length; i++)
         {
-            if (importedAssets[i] != FishingRemoteAvatarSetup.SourcePath) continue;
+            if (importedAssets[i] != FishingRemoteAvatarSetup.SourcePath &&
+                importedAssets[i] != FishingRemoteAvatarSetup.IdleSourcePath) continue;
             EditorApplication.delayCall += () => FishingRemoteAvatarSetup.EnsureSetup(false);
             break;
         }
