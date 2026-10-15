@@ -7,7 +7,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 {
     private const string AvatarResource = "Multiplayer/FemaleRemoteAvatar";
     private const float WalkingThreshold = 0.12f;
-    private const float AvatarScale = 1.2f;
+    private const float AvatarScale = 1.32f;
+    private const float FeetOffset = -.10f;
     private const float DefaultHeight = 2.05f * AvatarScale;
 
     public int World { get; private set; }
@@ -152,8 +153,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             if (!hasBounds) { bounds = renderer.bounds; hasBounds = true; }
             else bounds.Encapsulate(renderer.bounds);
         }
-        visual.transform.position += Vector3.up * (transform.position.y - bounds.min.y);
-        return Mathf.Clamp(bounds.max.y - bounds.min.y + .22f, 1.5f, 3f);
+        visual.transform.position += Vector3.up * (transform.position.y + FeetOffset - bounds.min.y);
+        return Mathf.Clamp(bounds.max.y - bounds.min.y + FeetOffset + .22f, 1.5f, 3f);
     }
 
     public void Receive(FishingMultiplayer.Peer peer)
