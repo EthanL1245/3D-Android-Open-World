@@ -101,6 +101,18 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             return false;
         }
         if (!ValidateBindings(model, cast)) return false;
+        Transform hand = FishingRemoteAvatarAsset.FindBone(model.transform, "Hand.L");
+        if (hand == null)
+        {
+            Debug.LogError("Multiplayer: imported character has no left-hand bone. The rod cannot be attached.");
+            return false;
+        }
+        string leftHandPath = AnimationUtility.CalculateTransformPath(hand, model.transform);
+        if (Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(0)) == null)
+        {
+            Debug.LogError("Multiplayer: missing Resources/Fishing/FishingRodReel prefab.");
+            return false;
+        }
 
         if (!AssetDatabase.IsValidFolder(ResourceFolder))
             AssetDatabase.CreateFolder("Assets/Resources", "Multiplayer");
@@ -112,13 +124,14 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.IdleClip != idle || catalog.CastClip != cast;
+        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.IdleClip != idle || catalog.CastClip != cast || catalog.LeftHandPath != leftHandPath;
         if (changed)
         {
             catalog.ModelPrefab = model;
             catalog.WalkClip = walk;
             catalog.IdleClip = idle;
             catalog.CastClip = cast;
+            catalog.LeftHandPath = leftHandPath;
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
         }

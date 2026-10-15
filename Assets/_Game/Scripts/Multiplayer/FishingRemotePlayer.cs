@@ -25,7 +25,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private Transform leftHand, rodSocket;
     private GameObject heldRod;
     private int rodTier = -1, seenCastSequence;
-    private bool rodEquipped, casting;
+    private bool rodEquipped, casting, receivedFishingState;
     private float castClock, castDuration = .72f, castBlend;
 
     public void Initialize(string displayName, string identity)
@@ -73,8 +73,13 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         animator.runtimeAnimatorController = null;
 
-        leftHand = visual.transform.Find("Armature/UpperArm.L/Forearm.L/Hand.L");
+        leftHand = string.IsNullOrEmpty(asset.LeftHandPath) ? null : visual.transform.Find(asset.LeftHandPath);
+        if (leftHand == null) leftHand = FishingRemoteAvatarAsset.FindBone(visual.transform, "Hand.L");
+        if (leftHand == null)
+            Debug.LogError("Multiplayer: left hand was not found on the instantiated avatar. Rebuild Female Multiplayer Avatar.");
         castClip = asset.CastClip;
+        if (castClip == null)
+            Debug.LogError("Multiplayer: casting clip is missing from the avatar catalog. Rebuild the game with the casting FBX.");
         walkClip = asset.WalkClip;
         idleClip = asset.IdleClip != null ? asset.IdleClip : walkClip;
 
@@ -137,19 +142,20 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     {
         World = peer.world;
         UpdateHeldRod(peer.rodEquipped && !peer.swimming, peer.rodTier);
-        if (castClip != null && rodEquipped && peer.castAge >= 0f)
+        // The sequence survives the short local Casting state. HTTP polling can
+        // miss that state entirely, so a new sequence must still play once even
+        // when castAge is already -1. Do not abort playback on subsequent idle packets.
+        bool newCast = peer.castSequence != 0 && peer.castSequence != seenCastSequence;
+        bool playCast = newCast && (receivedFishingState || peer.castAge >= 0f);
+        seenCastSequence = peer.castSequence;
+        receivedFishingState = true;
+        if (castClip != null && rodEquipped && playCast)
         {
-            if (peer.castSequence != seenCastSequence)
-            {
-                seenCastSequence = peer.castSequence;
-                castClock = Mathf.Max(0f, peer.castAge);
-                castDuration = Mathf.Clamp(peer.castDuration, .1f, 60f);
-                casting = castClock < castDuration;
-            }
-            else if (casting)
-                castClock = Mathf.Max(castClock, peer.castAge);
+            castClock = 0f;
+            castDuration = Mathf.Max(.1f, castClip.length);
+            casting = true;
         }
-        else casting = false;
+        if (!rodEquipped) casting = false;
         swimming = peer.swimming;
         target = new Vector3(peer.x, peer.y, peer.z);
         facing = Quaternion.Euler(0, peer.yaw, 0);
@@ -226,7 +232,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         {
             GameObject prefab = Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(tier));
             if (prefab == null) prefab = Resources.Load<GameObject>(ShopCatalog.RodPrefabResource(0));
-            if (prefab == null) return;
+            if (prefab == null)
+            {
+                if (rodTier != -2) Debug.LogError("Multiplayer: no fishing rod prefab in Resources/Fishing.");
+                rodTier = -2;
+                return;
+            }
             if (heldRod != null) { heldRod.SetActive(false); Destroy(heldRod); }
             if (rodSocket == null) CreateLeftHandSocket();
             heldRod = Instantiate(prefab, rodSocket, false);
@@ -255,8 +266,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     {
         rodSocket = new GameObject("Left Hand Rod Grip").transform;
         rodSocket.SetParent(leftHand, false);
-        Transform index = leftHand.Find("Second1.L");
-        Transform pinky = leftHand.Find("Pinky1.L");
+        Transform index = FishingRemoteAvatarAsset.FindBone(leftHand, "Second1.L");
+        Transform pinky = FishingRemoteAvatarAsset.FindBone(leftHand, "Pinky1.L");
         if (index == null || pinky == null) return;
         Vector3 indexBase = leftHand.InverseTransformPoint(index.position);
         Vector3 pinkyBase = leftHand.InverseTransformPoint(pinky.position);
