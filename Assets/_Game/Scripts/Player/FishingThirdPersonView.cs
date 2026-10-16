@@ -70,7 +70,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     {
         if (!IsThirdPerson || previousSeparation < 1f || separation < 1f) return;
         zoomDistance = Mathf.Clamp(zoomDistance * previousSeparation / separation,
-            MinZoomDistance, MaxZoomDistance);
+            ClosestFullBodyDistance(), MaxZoomDistance);
     }
 
     public void Orbit(float yawDelta)
@@ -85,12 +85,26 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         if (IsThirdPerson) transform.rotation = Quaternion.Euler(0f, orbitYaw, 0f);
     }
 
+    private float ClosestFullBodyDistance()
+    {
+        if (view == null || avatar == null) return MinZoomDistance;
+        // Fit the full character vertically, with head/feet padding and body depth.
+        float halfFov = Mathf.Clamp(view.fieldOfView, 10f, 150f) * .5f * Mathf.Deg2Rad;
+        float fitDistance = avatar.BodyHeight * .5f * 1.2f / Mathf.Tan(halfFov) + .3f;
+        return Mathf.Clamp(fitDistance, MinZoomDistance, MaxZoomDistance);
+    }
+
     private void CameraPose(out Vector3 position, out Quaternion rotation)
     {
         rotation = Quaternion.AngleAxis(
             Mathf.DeltaAngle(transform.eulerAngles.y, orbitYaw), Vector3.up) * view.transform.rotation;
-        Vector3 pivot = view.transform.position + Vector3.up * .65f;
-        Vector3 offset = rotation * new Vector3(.35f * zoomDistance / MaxZoomDistance, 0f, -zoomDistance);
+        float closest = ClosestFullBodyDistance();
+        float framedDistance = Mathf.Clamp(zoomDistance, closest, MaxZoomDistance);
+        float closeBlend = 1f - Mathf.InverseLerp(closest, MaxZoomDistance, framedDistance);
+        Vector3 farPivot = view.transform.position + Vector3.up * .65f;
+        // Lower the focus from above the head to the body's centre as we zoom in.
+        Vector3 pivot = avatar != null ? Vector3.Lerp(farPivot, avatar.BodyCenter, closeBlend) : farPivot;
+        Vector3 offset = rotation * new Vector3(.35f * framedDistance / MaxZoomDistance, 0f, -framedDistance);
         float distance = offset.magnitude;
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
             distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);

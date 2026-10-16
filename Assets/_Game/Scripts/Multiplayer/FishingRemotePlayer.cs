@@ -13,6 +13,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private const float DefaultHeight = 2.05f * AvatarScale;
 
     public int World { get; private set; }
+    public float BodyHeight { get; private set; } = 1.72f * AvatarScale;
+    public Vector3 BodyCenter => transform.position + Vector3.up * (FeetOffset + BodyHeight * .5f);
     public Transform RodTip => observerRodView != null ? observerRodView.RodTip : null;
     private FishingMultiplayer localSource;
 
@@ -209,6 +211,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             if (!hasBounds) { bounds = renderer.bounds; hasBounds = true; }
             else bounds.Encapsulate(renderer.bounds);
         }
+        BodyHeight = bounds.size.y;
         visual.transform.position += Vector3.up * (transform.position.y + FeetOffset - bounds.min.y);
         return Mathf.Clamp(bounds.max.y - bounds.min.y + FeetOffset + .22f, 1.5f, 3f);
     }
