@@ -21,14 +21,14 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable;
-    private AnimationClip walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip;
+    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable;
+    private AnimationClip walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip;
     private Transform leftHand, rodSocket, rightHand, heldMouth;
     private GameObject heldFish;
     private LineRenderer heldString;
     private Material heldStringMaterial;
     private int heldSpecies = -1;
-    private float heldWeight, walkReelClock, holdFishClock, walkReelBlend, holdFishBlend;
+    private float heldWeight, walkReelClock, holdFishClock, walkReelBlend, holdFishBlend, walkHoldFishClock, walkHoldFishBlend;
     private Vector3 rightGripLocal;
     private GameObject heldRod;
     private FishingRodView observerRodView;
@@ -98,6 +98,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         }
         walkReelClip = asset.WalkReelClip;
         holdFishClip = asset.HoldFishClip;
+        walkHoldFishClip = asset.WalkHoldFishClip;
         reelClip = asset.ReelClip;
         pullClip = asset.PullClip;
         if (reelClip == null || pullClip == null)
@@ -113,7 +114,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 7);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 8);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
@@ -143,6 +144,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 holdFishPlayable = AnimationClipPlayable.Create(animationGraph, holdFishClip);
                 animationGraph.Connect(holdFishPlayable, 0, animationMixer, 6);
             }
+            if (walkHoldFishClip != null)
+            {
+                walkHoldFishPlayable = AnimationClipPlayable.Create(animationGraph, walkHoldFishClip);
+                animationGraph.Connect(walkHoldFishPlayable, 0, animationMixer, 7);
+            }
+            animationMixer.SetInputWeight(7, 0f);
             animationMixer.SetInputWeight(5, 0f);
             animationMixer.SetInputWeight(6, 0f);
             animationMixer.SetInputWeight(3, 0f);
@@ -283,6 +290,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             pullBlend = Mathf.MoveTowards(pullBlend, showPull ? 1f : 0f, dt * 8f);
             bool showWalkReel = moving && rodEquipped && (reeling || hasFish) && walkReelClip != null;
             bool showHold = heldFish != null && holdFishClip != null;
+            bool showWalkHold = showHold && moving && walkHoldFishClip != null;
+            if (showWalkHold) walkHoldFishClock += dt * Mathf.Clamp(speed / 2f, .7f, 2f);
+            if (walkHoldFishPlayable.IsValid())
+                walkHoldFishPlayable.SetTime(walkHoldFishClock % Mathf.Max(.01f, walkHoldFishClip.length));
+            walkHoldFishBlend = Mathf.MoveTowards(walkHoldFishBlend, showWalkHold ? 1f : 0f, dt * 8f);
             if (showWalkReel) walkReelClock += dt * .75f;
             if (showHold) holdFishClock += dt;
             if (walkReelPlayable.IsValid())
@@ -301,7 +313,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationMixer.SetInputWeight(3, reelBlend * stationaryWeight);
             animationMixer.SetInputWeight(4, pullBlend * stationaryWeight);
             animationMixer.SetInputWeight(5, walkReelBlend * freeWeight);
-            animationMixer.SetInputWeight(6, holdFishBlend);
+            animationMixer.SetInputWeight(6, holdFishBlend * (1f - walkHoldFishBlend));
+            animationMixer.SetInputWeight(7, holdFishBlend * walkHoldFishBlend);
             animationGraph.Evaluate(0f);
         }
 
@@ -396,6 +409,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         heldSpecies = species;
         heldWeight = weight;
         holdFishClock = 0f;
+        walkHoldFishClock = 0f;
         heldFish = FishWorldSize.Create("Remote Held Fish", transform, species, weight);
         foreach (Collider collider in heldFish.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
         foreach (Rigidbody body in heldFish.GetComponentsInChildren<Rigidbody>(true))
