@@ -35,6 +35,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
     if (value.heldFishSpecies >= 0 && !(value.heldFishWeight > 0)) fail(400, 'Missing held fish weight.');
     return { x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
+      sprinting: value.sprinting === true && value.swimming !== true,
       rodEquipped: value.rodEquipped === true, rodTier: value.rodTier ?? 0,
       castSequence: value.castSequence ?? 0, castAge: value.castAge ?? -1,
       castDuration: value.castDuration ?? .72,

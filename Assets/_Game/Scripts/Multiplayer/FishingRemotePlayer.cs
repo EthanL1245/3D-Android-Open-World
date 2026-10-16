@@ -28,14 +28,14 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private Vector3 target, previous;
     private Quaternion facing;
-    private bool initialized, swimming;
-    private float speed, lastPacket, walkClock, idleClock, walkBlend;
+    private bool initialized, swimming, sprinting;
+    private float speed, lastPacket, walkClock, idleClock, walkBlend, runClock, runBlend;
     private Transform label;
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable;
-    private AnimationClip walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip;
+    private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable;
+    private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip;
     private Transform leftHand, rodSocket, rightHand, heldMouth;
     private GameObject heldFish;
     private LineRenderer heldString;
@@ -127,6 +127,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         castClip = asset.CastClip;
         if (castClip == null)
             Debug.LogError("Multiplayer: casting clip is missing from the avatar catalog. Rebuild the game with the casting FBX.");
+        runClip = asset.RunClip;
         walkClip = asset.WalkClip;
         idleClip = asset.IdleClip != null ? asset.IdleClip : walkClip;
 
@@ -135,7 +136,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 8);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 9);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
@@ -170,6 +171,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 walkHoldFishPlayable = AnimationClipPlayable.Create(animationGraph, walkHoldFishClip);
                 animationGraph.Connect(walkHoldFishPlayable, 0, animationMixer, 7);
             }
+            if (runClip != null)
+            {
+                runPlayable = AnimationClipPlayable.Create(animationGraph, runClip);
+                animationGraph.Connect(runPlayable, 0, animationMixer, 8);
+            }
+            animationMixer.SetInputWeight(8, 0f);
             animationMixer.SetInputWeight(7, 0f);
             animationMixer.SetInputWeight(5, 0f);
             animationMixer.SetInputWeight(6, 0f);
@@ -246,6 +253,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         }
         if (!rodEquipped) casting = false;
         swimming = peer.swimming;
+        sprinting = peer.sprinting && !swimming;
         target = new Vector3(peer.x, peer.y, peer.z);
         facing = Quaternion.Euler(0, peer.yaw, 0);
         lastPacket = Time.realtimeSinceStartup;
@@ -278,6 +286,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (animationGraph.IsValid())
         {
             bool moving = speed > WalkingThreshold && !swimming;
+            bool running = moving && sprinting && runClip != null && Time.realtimeSinceStartup - lastPacket < 1f;
+            runBlend = Mathf.MoveTowards(runBlend, running ? 1f : 0f, dt * 8f);
+            if (running) runClock += dt;
+            if (runPlayable.IsValid())
+                runPlayable.SetTime(runClock % Mathf.Max(.01f, runClip.length));
             float desiredBlend = moving ? Mathf.Clamp01(speed / .7f) : 0f;
             walkBlend = Mathf.MoveTowards(walkBlend, desiredBlend, dt * 7f);
             if (moving)
@@ -335,7 +348,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             float stationaryWeight = freeWeight * (1f - walkReelBlend);
             float locomotionWeight = (1f - fishingWeight) * stationaryWeight;
             animationMixer.SetInputWeight(0, (1f - walkBlend) * locomotionWeight);
-            animationMixer.SetInputWeight(1, walkBlend * locomotionWeight);
+            animationMixer.SetInputWeight(1, walkBlend * (1f - runBlend) * locomotionWeight);
+            animationMixer.SetInputWeight(8, walkBlend * runBlend * locomotionWeight);
             animationMixer.SetInputWeight(2, castBlend * (1f - holdFishBlend));
             animationMixer.SetInputWeight(3, reelBlend * stationaryWeight);
             animationMixer.SetInputWeight(4, pullBlend * stationaryWeight);

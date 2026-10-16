@@ -149,3 +149,15 @@ test('four-character room codes are distinct and accept lowercase with surroundi
   const joined=await post('/v1/join',{...hello,code:'  '+first.code.toLowerCase()+'  '});
   assert.equal(joined.ok,true);assert.equal(joined.hostId,first.id);
 });
+
+test('sprint state reaches observers, clears on walking, and defaults off for older clients and swimming',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  for(const fields of [{sprinting:true},{sprinting:false},{},{sprinting:true,swimming:true}]){
+    const sent=await post('/v1/state',{pose:{...pose(8),...fields}},guest.token);
+    assert.equal(sent.ok,true);
+    const seen=await post('/v1/state',{pose:pose()},host.token);
+    assert.equal(seen.players.find(p=>p.id===guest.id).sprinting,fields.sprinting===true && fields.swimming!==true);
+  }
+});

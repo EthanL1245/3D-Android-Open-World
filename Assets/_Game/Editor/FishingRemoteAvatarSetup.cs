@@ -10,6 +10,7 @@ using UnityEngine;
 public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
 {
     internal const string SourcePath = "Assets/Manually Added Assets/Female Character Model.fbx";
+    public const string RunSourcePath = "Assets/Manually Added Assets/Female Running.fbx";
     public const string IdleSourcePath = "Assets/Manually Added Assets/Female Idle.fbx";
     public const string CastSourcePath = "Assets/Manually Added Assets/Female Casting Fishing Rod.fbx";
     public const string ReelSourcePath = "Assets/Manually Added Assets/Female Reeling.fbx";
@@ -87,6 +88,13 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         }
         if (walk == null) walk = fallback; // FBX takes can have generic names, e.g. "Take 001".
         if (walk == null) return false;
+        AnimationClip run = FindAnimation(RunSourcePath, "run");
+        if (run == null)
+        {
+            Debug.LogError("Multiplayer: missing Female Running FBX animation.");
+            return false;
+        }
+        if (!ValidateBindings(model, run)) return false;
 
         // Use the separately exported idle clip without replacing the original
         // textured FBX or its walking animation.
@@ -151,11 +159,12 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.IdleClip != idle || catalog.CastClip != cast || catalog.LeftHandPath != leftHandPath || catalog.ReelClip != reel || catalog.PullClip != pull || catalog.WalkReelClip != walkReel || catalog.HoldFishClip != holdFish || catalog.WalkHoldFishClip != walkHoldFish;
+        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.RunClip != run || catalog.IdleClip != idle || catalog.CastClip != cast || catalog.LeftHandPath != leftHandPath || catalog.ReelClip != reel || catalog.PullClip != pull || catalog.WalkReelClip != walkReel || catalog.HoldFishClip != holdFish || catalog.WalkHoldFishClip != walkHoldFish;
         if (changed)
         {
             catalog.ModelPrefab = model;
             catalog.WalkClip = walk;
+            catalog.RunClip = run;
             catalog.IdleClip = idle;
             catalog.CastClip = cast;
             catalog.ReelClip = reel;
@@ -221,7 +230,8 @@ public sealed class FishingRemoteIdleModelImport : AssetPostprocessor
 {
     private void OnPreprocessModel()
     {
-        if (assetPath != FishingRemoteAvatarSetup.IdleSourcePath &&
+        if (assetPath != FishingRemoteAvatarSetup.RunSourcePath &&
+            assetPath != FishingRemoteAvatarSetup.IdleSourcePath &&
             assetPath != FishingRemoteAvatarSetup.CastSourcePath &&
             assetPath != FishingRemoteAvatarSetup.ReelSourcePath &&
             assetPath != FishingRemoteAvatarSetup.PullSourcePath &&
@@ -250,7 +260,8 @@ public sealed class FishingRemoteAvatarImportWatcher : AssetPostprocessor
     {
         for (int i = 0; i < importedAssets.Length; i++)
         {
-            if (importedAssets[i] != FishingRemoteAvatarSetup.SourcePath &&
+            if (importedAssets[i] != FishingRemoteAvatarSetup.RunSourcePath &&
+                importedAssets[i] != FishingRemoteAvatarSetup.SourcePath &&
                 importedAssets[i] != FishingRemoteAvatarSetup.IdleSourcePath &&
                 importedAssets[i] != FishingRemoteAvatarSetup.CastSourcePath &&
                 importedAssets[i] != FishingRemoteAvatarSetup.ReelSourcePath &&

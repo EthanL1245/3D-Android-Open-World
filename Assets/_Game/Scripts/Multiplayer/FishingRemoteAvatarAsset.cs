@@ -6,6 +6,7 @@ public sealed class FishingRemoteAvatarAsset : ScriptableObject
 {
     public GameObject ModelPrefab;
     public AnimationClip WalkClip;
+    public AnimationClip RunClip;
     public AnimationClip IdleClip;
     public AnimationClip CastClip;
     public AnimationClip ReelClip;
