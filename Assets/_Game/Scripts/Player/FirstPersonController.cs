@@ -63,6 +63,7 @@ public class FirstPersonController : MonoBehaviour
     private float mobileSprintHoldTimer;
     private bool mobileSprintLatched;
 
+    public Camera ViewCamera => playerCamera;
     public bool IsSwimming { get; private set; }
     public bool IsSprinting { get; private set; }
 

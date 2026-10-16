@@ -3,6 +3,7 @@ using UnityEngine.Animations;
 using UnityEngine.Playables;
 
 // A visual-only network avatar. The local player still owns movement, collisions and fishing.
+[DefaultExecutionOrder(200)]
 public sealed class FishingRemotePlayer : MonoBehaviour
 {
     private const string AvatarResource = "Multiplayer/FemaleRemoteAvatar";
@@ -12,6 +13,16 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private const float DefaultHeight = 2.05f * AvatarScale;
 
     public int World { get; private set; }
+    public Transform RodTip => observerRodView != null ? observerRodView.RodTip : null;
+    private FishingMultiplayer localSource;
+
+    public void FollowLocal(FishingMultiplayer source)
+    {
+        localSource = source;
+        initialized = false;
+        speed = 0f;
+        if (source != null) Receive(source.LocalPose());
+    }
 
     private Vector3 target, previous;
     private Quaternion facing;
@@ -42,9 +53,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private bool reeling, hasFish, lureInWater;
     private float reelClock, pullClock, reelBlend, pullBlend, lastAuthorReelTime = -1f;
 
-    public void Initialize(string displayName, string identity)
+    public void Initialize(string displayName, string identity, bool showName = true)
     {
         float labelHeight = CreateFemaleModel();
+        if (!showName) return;
 
         var text = new GameObject("Name").AddComponent<TextMesh>();
         label = text.transform;
@@ -201,7 +213,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         return Mathf.Clamp(bounds.max.y - bounds.min.y + FeetOffset + .22f, 1.5f, 3f);
     }
 
-    public void Receive(FishingMultiplayer.Peer peer)
+    public void Receive(FishingMultiplayer.Pose peer)
     {
         World = peer.world;
         bool holding = peer.heldFishSpecies >= 0 && peer.heldFishWeight > 0f && !peer.rodEquipped && !peer.swimming;
@@ -245,12 +257,13 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private void Update()
     {
+        if (localSource != null) Receive(localSource.LocalPose());
         float dt = Time.unscaledDeltaTime;
         if (!initialized || dt <= 0f) return;
 
         float blend = 1f - Mathf.Exp(-12f * dt);
-        transform.position = Vector3.Lerp(transform.position, target, blend);
-        transform.rotation = Quaternion.Slerp(transform.rotation, facing, blend);
+        transform.position = localSource != null ? target : Vector3.Lerp(transform.position, target, blend);
+        transform.rotation = localSource != null ? facing : Quaternion.Slerp(transform.rotation, facing, blend);
         float measured = Vector3.ProjectOnPlane(transform.position - previous, Vector3.up).magnitude / dt;
         previous = transform.position;
         speed = Mathf.Lerp(speed, Time.realtimeSinceStartup - lastPacket > 1f ? 0f : measured, blend);

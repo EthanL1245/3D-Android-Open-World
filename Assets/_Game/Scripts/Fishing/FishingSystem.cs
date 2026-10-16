@@ -52,6 +52,7 @@ public class FishingSystem : MonoBehaviour
     private Transform rodTip;
     private FishingRodView rodView;
     private LineRenderer fishingLine;
+    public LineRenderer PresentationLine => fishingLine;
     private GameObject bobber;
 
     private GameObject bobberIndicatorRoot;
@@ -1411,7 +1412,7 @@ public class FishingSystem : MonoBehaviour
             damageDisplayTimer+=Time.deltaTime;
             if(pendingDamage>0 && (damageDisplayTimer>=.35f || fishHealthPoints==0))
             {
-                hud.ShowDamage(pendingDamage,playerCamera.WorldToScreenPoint(bobber.transform.position));
+                hud.ShowDamage(pendingDamage,FishingThirdPersonView.WorldToScreenPoint(playerCamera, bobber.transform.position));
                 pendingDamage=0;damageDisplayTimer=0;
             }
             if (fishHealth <= 0f)
@@ -2817,7 +2818,7 @@ public class FishingSystem : MonoBehaviour
         }
 
         Vector3 screenPoint =
-            playerCamera.WorldToScreenPoint(
+            FishingThirdPersonView.WorldToScreenPoint(playerCamera,
                 GetLineTargetPosition() +
                 Vector3.up * 0.52f
             );

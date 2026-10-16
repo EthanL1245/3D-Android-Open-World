@@ -32,7 +32,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Font font;
     private GameObject root, modal, nearbyButton;
     private GameObject storeHeader, storeBody;
-    private Button menuClose;
+    private Button menuClose, perspectiveToggle;
     private RectTransform list;
     private ScrollRect scroll;
     private Text heading, wallet, feedback, nearLabel;
@@ -151,6 +151,14 @@ public sealed class ShopWorldHUD : MonoBehaviour
         heading=Label(modal.transform,"MENU / TRAVEL",36,gold); Anchor(heading.rectTransform,0,1,1,1,24,-62,-150,-12);
         wallet=Label(modal.transform,"",22,Color.white); Anchor(wallet.rectTransform,0,1,1,1,24,-92,-24,-62);
         Button close=ButtonAt(modal.transform,"CLOSE",Close); menuClose=close; Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(160,64));
+        perspectiveToggle=ButtonAt(modal.transform,"",()=>
+        {
+            var view=FishingThirdPersonView.For(player);
+            if(view!=null) { view.Toggle(); perspectiveToggle.GetComponent<Image>().color=view.IsThirdPerson?gold:teal; }
+        });
+        perspectiveToggle.gameObject.name="Toggle Third Person";
+        Rect(perspectiveToggle.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-190,-16),new Vector2(64,64));
+        FishingHudSymbol.Add(perspectiveToggle.transform,FishingHudSymbol.Kind.Camera,new Vector2(.5f,.5f),Vector2.zero,48);
         string[] tabs={"travel","bag","equipment"}; string[] names={"TRAVEL","FISH BAG","EQUIPMENT"};
         for(int i=0;i<tabs.Length;i++) { string tab=tabs[i]; var b=ButtonAt(modal.transform,names[i],()=>Open(tab)); navigationTabs.Add(b.gameObject); Anchor(b.GetComponent<RectTransform>(),i/3f,1,(i+1)/3f,1,16,-148,-16,-103); }
         GameObject viewport=Panel("ScrollViewport",modal.transform,new Color(0,0,0,0.1f));
@@ -190,6 +198,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
         }
         bool independent=index || page=="bait" || habitatAddId!=null;
         SetStorePresentation(shopSession=="gear");
+        perspectiveToggle.gameObject.SetActive(page=="travel");
+        if(page=="travel") Anchor(heading.rectTransform,0,1,1,1,24,-62,-270,-12);
         bool fishIndex=page=="reef-fish";
         heading.gameObject.SetActive(!fishIndex);wallet.gameObject.SetActive(!fishIndex);
         feedback.gameObject.SetActive(!fishIndex);scroll.gameObject.SetActive(!fishIndex);

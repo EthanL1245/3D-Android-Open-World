@@ -4,7 +4,7 @@ using UnityEngine.UI;
 // Resolution-independent HUD artwork, drawn without font-dependent glyphs.
 public sealed class FishingHudSymbol : MaskableGraphic
 {
-    public enum Kind { Reel, Bolt, Pin, Island, Gear, Cart }
+    public enum Kind { Reel, Bolt, Pin, Island, Gear, Cart, Camera }
     public Kind kind;
     public static void Add(Transform parent, Kind kind, Vector2 anchor, Vector2 position, float size)
     {
@@ -50,6 +50,10 @@ public sealed class FishingHudSymbol : MaskableGraphic
         vh.Clear();
         switch(kind)
         {
+            case Kind.Camera:
+                Quad(vh,.10f,.25f,.80f,.06f); Quad(vh,.10f,.70f,.80f,.06f);
+                Quad(vh,.10f,.25f,.06f,.51f); Quad(vh,.84f,.25f,.06f,.51f);
+                Quad(vh,.23f,.76f,.22f,.09f); Ring(vh,.52f,.50f,.17f,.055f); break;
             case Kind.Reel:
                 Ring(vh,.5f,.5f,.44f,.065f,.8f);
                 Quad(vh,.30f,.25f,.31f,.5f); Quad(vh,.25f,.22f,.08f,.56f); Quad(vh,.60f,.22f,.08f,.56f);

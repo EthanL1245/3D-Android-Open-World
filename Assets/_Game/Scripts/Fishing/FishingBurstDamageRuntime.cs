@@ -296,7 +296,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             GameObject bobber = BobberField != null ? BobberField.GetValue(fishing) as GameObject : null;
             Camera camera = PlayerCameraField != null ? PlayerCameraField.GetValue(fishing) as Camera : null;
             if (bobber != null && camera != null)
-                screenPoint = camera.WorldToScreenPoint(bobber.transform.position);
+                screenPoint = FishingThirdPersonView.WorldToScreenPoint(camera, bobber.transform.position);
 
             // Show the rolled attack value, not the remaining-HP-capped value. A
             // finishing critical keeps its rolled attack number even if the fish had

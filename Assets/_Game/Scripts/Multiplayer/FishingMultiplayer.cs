@@ -61,7 +61,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
         Status=host?"Opening server…":"Joining server…";
         loop=StartCoroutine(ConnectAndPoll(host,code));
     }
-    private Pose LocalPose()
+    public Pose LocalPose()
     {
         Vector3 p=transform.position;
         if(fishing==null)fishing=GetComponent<FishingSystem>();
