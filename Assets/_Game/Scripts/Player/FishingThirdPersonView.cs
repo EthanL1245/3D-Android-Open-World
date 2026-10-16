@@ -9,6 +9,8 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     public bool IsThirdPerson { get; private set; }
     private Camera view;
     private float orbitYaw;
+    private const float MinZoomDistance = 1.2f, MaxZoomDistance = 3.4f;
+    private float zoomDistance = MaxZoomDistance;
     private FishingSystem fishing;
     private FishingRemotePlayer avatar;
     private bool rendering;
@@ -63,6 +65,14 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     // A render interrupted by scene changes must never leave gameplay at the boom position.
     private void Update() => RestoreRenderPose();
 
+    // Fingers spreading apart move closer; bringing them together zooms out.
+    public void PinchZoom(float previousSeparation, float separation)
+    {
+        if (!IsThirdPerson || previousSeparation < 1f || separation < 1f) return;
+        zoomDistance = Mathf.Clamp(zoomDistance * previousSeparation / separation,
+            MinZoomDistance, MaxZoomDistance);
+    }
+
     public void Orbit(float yawDelta)
     {
         orbitYaw = Mathf.Repeat(orbitYaw + yawDelta, 360f);
@@ -80,7 +90,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         rotation = Quaternion.AngleAxis(
             Mathf.DeltaAngle(transform.eulerAngles.y, orbitYaw), Vector3.up) * view.transform.rotation;
         Vector3 pivot = view.transform.position + Vector3.up * .65f;
-        Vector3 offset = rotation * new Vector3(.35f, 0f, -3.4f);
+        Vector3 offset = rotation * new Vector3(.35f * zoomDistance / MaxZoomDistance, 0f, -zoomDistance);
         float distance = offset.magnitude;
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
             distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);

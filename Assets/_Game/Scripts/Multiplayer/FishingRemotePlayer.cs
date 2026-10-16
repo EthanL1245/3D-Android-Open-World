@@ -263,7 +263,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
         float blend = 1f - Mathf.Exp(-12f * dt);
         transform.position = localSource != null ? target : Vector3.Lerp(transform.position, target, blend);
-        transform.rotation = localSource != null ? facing : Quaternion.Slerp(transform.rotation, facing, blend);
+        // Smooth the visual avatar only; local movement and aiming stay immediate.
+        transform.rotation = Quaternion.Slerp(transform.rotation, facing, blend);
         float measured = Vector3.ProjectOnPlane(transform.position - previous, Vector3.up).magnitude / dt;
         previous = transform.position;
         speed = Mathf.Lerp(speed, Time.realtimeSinceStartup - lastPacket > 1f ? 0f : measured, blend);
