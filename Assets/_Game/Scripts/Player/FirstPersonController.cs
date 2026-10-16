@@ -51,6 +51,7 @@ public class FirstPersonController : MonoBehaviour
 
     private CharacterController controller;
     private Camera playerCamera;
+    private FishingThirdPersonView thirdPersonView;
 
     private Vector3 planarVelocity;
     private Vector3 swimVelocity;
@@ -206,6 +207,10 @@ public class FirstPersonController : MonoBehaviour
                 ReadMovementInput(),
                 1f
             );
+
+        if (thirdPersonView == null) thirdPersonView = GetComponent<FishingThirdPersonView>();
+        if (thirdPersonView != null && thirdPersonView.IsThirdPerson && input.sqrMagnitude > .0001f)
+            thirdPersonView.AlignForMovement();
 
         bool jumpPressed =
             ReadJumpPressed();
@@ -742,9 +747,11 @@ public class FirstPersonController : MonoBehaviour
                 touchSensitivity;
         }
 
-        transform.Rotate(
-            Vector3.up * lookDelta.x
-        );
+        if (thirdPersonView == null) thirdPersonView = GetComponent<FishingThirdPersonView>();
+        if (thirdPersonView != null && thirdPersonView.IsThirdPerson)
+            thirdPersonView.Orbit(lookDelta.x);
+        else
+            transform.Rotate(Vector3.up * lookDelta.x);
 
         cameraPitch -=
             lookDelta.y;

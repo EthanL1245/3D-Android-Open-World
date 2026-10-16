@@ -8,6 +8,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
 {
     public bool IsThirdPerson { get; private set; }
     private Camera view;
+    private float orbitYaw;
     private FishingSystem fishing;
     private FishingRemotePlayer avatar;
     private bool rendering;
@@ -46,6 +47,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         if (view == null) return;
         RestoreRenderPose();
         IsThirdPerson = !IsThirdPerson;
+        if (IsThirdPerson) orbitYaw = transform.eulerAngles.y;
         if (IsThirdPerson && avatar == null)
         {
             avatar = new GameObject("Local Third Person Angler").AddComponent<FishingRemotePlayer>();
@@ -61,11 +63,24 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     // A render interrupted by scene changes must never leave gameplay at the boom position.
     private void Update() => RestoreRenderPose();
 
+    public void Orbit(float yawDelta)
+    {
+        orbitYaw = Mathf.Repeat(orbitYaw + yawDelta, 360f);
+    }
+
+    // Forward/strafe controls follow the view only when movement is requested.
+    // Looking around while standing or fishing never rotates the character.
+    public void AlignForMovement()
+    {
+        if (IsThirdPerson) transform.rotation = Quaternion.Euler(0f, orbitYaw, 0f);
+    }
+
     private void CameraPose(out Vector3 position, out Quaternion rotation)
     {
-        rotation = view.transform.rotation;
+        rotation = Quaternion.AngleAxis(
+            Mathf.DeltaAngle(transform.eulerAngles.y, orbitYaw), Vector3.up) * view.transform.rotation;
         Vector3 pivot = view.transform.position + Vector3.up * .65f;
-        Vector3 offset = rotation * new Vector3(.35f, 0f, -4.2f);
+        Vector3 offset = rotation * new Vector3(.35f, 0f, -3.4f);
         float distance = offset.magnitude;
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
             distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
