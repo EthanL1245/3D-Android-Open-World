@@ -30,6 +30,9 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private int heldSpecies = -1;
     private float heldWeight, walkReelClock, holdFishClock, walkReelBlend, holdFishBlend, walkHoldFishClock, walkHoldFishBlend;
     private Vector3 rightGripLocal;
+    private Transform rightStringAnchor;
+    private CaughtFishFlop heldFishFlop;
+    private float heldFishMovementSwing, heldFishSwayPhase;
     private GameObject heldRod;
     private FishingRodView observerRodView;
     private bool observerRodBent;
@@ -96,6 +99,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             if (index != null && pinky != null)
                 rightGripLocal = (rightHand.InverseTransformPoint(index.position) + rightHand.InverseTransformPoint(pinky.position)) * .4f;
         }
+        // Follow the animated middle finger rather than a fixed palm midpoint.
+        rightStringAnchor = rightHand != null
+            ? FishingRemoteAvatarAsset.FindBone(rightHand, "Third1.R") : null;
+        if (rightStringAnchor == null) rightStringAnchor = rightHand;
         walkReelClip = asset.WalkReelClip;
         holdFishClip = asset.HoldFishClip;
         walkHoldFishClip = asset.WalkHoldFishClip;
@@ -247,6 +254,9 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         float measured = Vector3.ProjectOnPlane(transform.position - previous, Vector3.up).magnitude / dt;
         previous = transform.position;
         speed = Mathf.Lerp(speed, Time.realtimeSinceStartup - lastPacket > 1f ? 0f : measured, blend);
+
+        heldFishMovementSwing = CaughtFishFlop.SmoothHeldMovement(
+            heldFishMovementSwing, heldFish != null ? speed : 0f, Time.deltaTime);
 
         if (animationGraph.IsValid())
         {
@@ -410,6 +420,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         heldWeight = weight;
         holdFishClock = 0f;
         walkHoldFishClock = 0f;
+        heldFishMovementSwing = 0f;
+        heldFishSwayPhase = Random.Range(0f, Mathf.PI * 2f);
         heldFish = FishWorldSize.Create("Remote Held Fish", transform, species, weight);
         foreach (Collider collider in heldFish.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
         foreach (Rigidbody body in heldFish.GetComponentsInChildren<Rigidbody>(true))
@@ -448,6 +460,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         heldString.enabled = true;
         CaughtFishFlop flop = heldFish.GetComponent<CaughtFishFlop>();
         if (flop == null) flop = heldFish.AddComponent<CaughtFishFlop>();
+        heldFishFlop = flop;
         flop.ConfigurePlayerHeld();
         flop.PoseUpdated = PinHeldFish;
         PinHeldFish();
@@ -485,9 +498,16 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private void PinHeldFish()
     {
         if (heldFish == null || heldMouth == null || rightHand == null) return;
-        Vector3 top = rightHand.TransformPoint(rightGripLocal);
-        Vector3 mouth = top + Vector3.down * .10f; // World metres; independent of avatar/FBX scale.
-        heldFish.transform.rotation = transform.rotation * Quaternion.AngleAxis(86f, Vector3.up) * Quaternion.Euler(-90f, 0f, 0f);
+        Vector3 top = rightStringAnchor != null && rightStringAnchor != rightHand
+            ? rightStringAnchor.position : rightHand.TransformPoint(rightGripLocal);
+        CaughtFishFlop.EvaluateHeldSway(Time.time * 5.8f + heldFishSwayPhase,
+            heldFishMovementSwing, heldFishFlop != null ? heldFishFlop.SwingBoost : 0f,
+            out Vector3 swayOffset, out Quaternion swayRotation);
+        // Preserve the first-person sway pattern, constrained to a 10 cm string.
+        Vector3 stringDirection = (Vector3.down * .10f + transform.rotation * swayOffset).normalized;
+        Vector3 mouth = top + stringDirection * .10f;
+        heldFish.transform.rotation = transform.rotation * Quaternion.AngleAxis(86f, Vector3.up) *
+            Quaternion.Euler(-90f, 0f, 0f) * swayRotation;
         heldFish.transform.position += mouth - heldMouth.position;
         if (heldString != null)
         {
@@ -506,6 +526,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             Destroy(heldFish);
         }
         heldFish = null;
+        heldFishFlop = null;
         heldMouth = null;
         heldSpecies = -1;
         if (heldString != null) heldString.enabled = false;

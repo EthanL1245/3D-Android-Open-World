@@ -68,6 +68,26 @@ public sealed class CaughtFishFlop : MonoBehaviour
         }
     }
 
+    // Shared presentation motion for first-person and observer-held catches.
+    public static float SmoothHeldMovement(float current, float speed, float dt)
+    {
+        return Mathf.Lerp(current, Mathf.Clamp01(speed / 5f), 1f - Mathf.Exp(-8f * dt));
+    }
+
+    public static void EvaluateHeldSway(float time, float movement, float struggle,
+        out Vector3 offset, out Quaternion rotation)
+    {
+        float gain = .10f + movement * .50f + struggle * .35f;
+        offset = new Vector3(
+            Mathf.Sin(time * .82f) * .085f + Mathf.Sin(time * 1.63f + .8f) * .022f,
+            -Mathf.Abs(Mathf.Sin(time * .82f)) * .010f,
+            Mathf.Sin(time * .64f + 1.1f) * .028f) * gain;
+        rotation = Quaternion.Euler(
+            Mathf.Sin(time * 1.65f) * 10f * gain,
+            Mathf.Sin(time * 1.12f) * 8f * gain,
+            Mathf.Sin(time * 2.05f) * 18f * gain);
+    }
+
     public void ConfigureHanging(Vector3 point, Vector3 localAttachment)
     {
         hangingDisplay = true;

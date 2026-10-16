@@ -3257,65 +3257,14 @@ public class FishingSystem : MonoBehaviour
             ? heldFishPlayerController.velocity : Vector3.zero;
         // Ground-stick/gravity must not look like walking while standing still.
         movement.y = 0f;
-        float movementTarget = Mathf.Clamp01(movement.magnitude / 5f);
-        heldFishMovementSwing = Mathf.Lerp(heldFishMovementSwing, movementTarget,
-            1f - Mathf.Exp(-8f * Time.deltaTime));
-        // Idle is 10% of the old baseline. Body animation remains untouched;
-        // struggles add a modest pendulum impulse that decays with SwingBoost.
-        float swingGain = 0.10f + heldFishMovementSwing * 0.50f
-            + (struggle != null ? struggle.SwingBoost * 0.35f : 0f);
-
-        // Swing the MOUTH ATTACHMENT itself like a pendulum. The fish then
-        // hangs from that moving point, so the line and fish visibly swing
-        // together instead of the line being forced vertical every frame.
+        heldFishMovementSwing = CaughtFishFlop.SmoothHeldMovement(
+            heldFishMovementSwing, movement.magnitude, Time.deltaTime);
+        CaughtFishFlop.EvaluateHeldSway(time, heldFishMovementSwing,
+            struggle != null ? struggle.SwingBoost : 0f,
+            out Vector3 swayOffset, out Quaternion swayRotation);
         if (heldHookPoint != null)
-        {
-            float swingX =
-                Mathf.Sin(
-                    time * 0.82f
-                ) * 0.085f +
-                Mathf.Sin(
-                    time * 1.63f +
-                    0.8f
-                ) * 0.022f;
-
-            float swingZ =
-                Mathf.Sin(
-                    time * 0.64f +
-                    1.1f
-                ) * 0.028f;
-
-            float lift =
-                -Mathf.Abs(
-                    Mathf.Sin(
-                        time * 0.82f
-                    )
-                ) * 0.010f;
-
-            heldHookPoint.localPosition =
-                heldMouthRestLocalPosition +
-                new Vector3(
-                    swingX*swingGain,
-                    lift*swingGain,
-                    swingZ*swingGain
-                );
-        }
-
-        // Small idle drift, movement-driven swing, and a brief struggle impulse.
-        // Re-pin the animated mouth after rotating the whole fish.
-        heldFishVisual.transform.localRotation =
-            heldFishBaseRotation *
-            Quaternion.Euler(
-                Mathf.Sin(
-                    time * 1.65f
-                ) * 10f*swingGain,
-                Mathf.Sin(
-                    time * 1.12f
-                ) * 8f*swingGain,
-                Mathf.Sin(
-                    time * 2.05f
-                ) * 18f*swingGain
-            );
+            heldHookPoint.localPosition = heldMouthRestLocalPosition + swayOffset;
+        heldFishVisual.transform.localRotation = heldFishBaseRotation * swayRotation;
 
         if (heldHookPoint != null &&
             heldFishMouthMarker != null)
