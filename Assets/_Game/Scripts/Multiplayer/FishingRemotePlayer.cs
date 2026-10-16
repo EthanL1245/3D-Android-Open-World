@@ -31,6 +31,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private float heldWeight, walkReelClock, holdFishClock, walkReelBlend, holdFishBlend;
     private Vector3 rightGripLocal;
     private GameObject heldRod;
+    private FishingRodView observerRodView;
+    private bool observerRodBent;
     private int rodTier = -1, seenCastSequence;
     private bool rodEquipped, casting, receivedFishingState;
     private float castClock, castDuration = .72f, castBlend;
@@ -355,6 +357,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             foreach (Animator animator in heldRod.GetComponentsInChildren<Animator>(true)) animator.enabled = false;
             foreach (Rigidbody body in heldRod.GetComponentsInChildren<Rigidbody>(true))
             { body.isKinematic = true; body.detectCollisions = false; }
+            // Reuse the first-person mesh flex on this observer-only mesh instance.
+            // The component stays disabled; only explicit presentation calls run.
+            observerRodView = heldRod.GetComponent<FishingRodView>();
+            if (observerRodView != null) observerRodView.InitializePose();
+            observerRodBent = false;
             rodTier = tier;
         }
         heldRod.SetActive(true);
@@ -434,7 +441,31 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private void LateUpdate()
     {
+        UpdateObserverRodBend();
         PinHeldFish();
+    }
+
+    private void UpdateObserverRodBend()
+    {
+        if (observerRodView == null) return;
+        bool shouldBend = rodEquipped && heldRod != null && heldRod.activeInHierarchy &&
+            reeling && (hasFish || lureInWater) && !casting && castBlend < .1f &&
+            Time.realtimeSinceStartup - lastPacket < 1f;
+        if (!shouldBend)
+        {
+            if (observerRodBent) observerRodView.ResetMotion();
+            observerRodBent = false;
+            return;
+        }
+
+        // Approximate the pull ahead and below the angler; no lure position,
+        // tension or bend angles need to be synchronized over the network.
+        Vector3 pullTarget = heldRod.transform.position + transform.forward * 12f + Vector3.down * 3f;
+        float tension = hasFish ? .45f + .10f * Mathf.Sin(Time.unscaledTime * 2.3f) : 0f;
+        // A hooked fish gets the same extra reel load as first person. Lure-only
+        // retrieval uses the gentler base curve, without the fighting boost.
+        observerRodView.SetLinePull(pullTarget, tension, hasFish, Time.unscaledDeltaTime);
+        observerRodBent = true;
     }
 
     private void PinHeldFish()
