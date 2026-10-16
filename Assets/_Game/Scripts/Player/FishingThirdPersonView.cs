@@ -87,6 +87,9 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     private void BeginRender(Camera camera)
     {
         if (!IsThirdPerson || camera != view || rendering) return;
+        // Read the final rod flex before moving the eye for rendering. This includes
+        // current tension, fish modes, reel load, lure flex and release/relaxation.
+        if (avatar != null && fishing != null) avatar.CopyLocalRodBend(fishing.PresentationRod);
         CameraPose(out Vector3 position, out Quaternion rotation);
         savedPosition = view.transform.localPosition;
         savedRotation = view.transform.localRotation;

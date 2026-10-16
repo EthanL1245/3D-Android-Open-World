@@ -485,9 +485,19 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         PinHeldFish();
     }
 
+    // Called immediately before the local camera renders, after all first-person
+    // LateUpdate effects (including lure flex) have finished.
+    public void CopyLocalRodBend(FishingRodView source)
+    {
+        if (localSource == null || observerRodView == null || !rodEquipped ||
+            heldRod == null || !heldRod.activeInHierarchy) return;
+        observerRodView.CopyPresentationBendFrom(source);
+    }
+
     private void UpdateObserverRodBend()
     {
-        if (observerRodView == null) return;
+        // Local third person gets the actual final bend, not the network approximation.
+        if (localSource != null || observerRodView == null) return;
         bool shouldBend = rodEquipped && heldRod != null && heldRod.activeInHierarchy &&
             (hasFish || (reeling && lureInWater)) && !casting && castBlend < .1f &&
             Time.realtimeSinceStartup - lastPacket < 1f;

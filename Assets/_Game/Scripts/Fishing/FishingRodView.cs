@@ -309,6 +309,20 @@ public sealed class FishingRodView : MonoBehaviour
         );
     }
 
+    // Copy the already-smoothed first-person bend without advancing its simulation.
+    // Convert through world space because the avatar hand has a different rod pose.
+    public void CopyPresentationBendFrom(FishingRodView source)
+    {
+        if (source == null || !source.initialized || source.rodTransform == null ||
+            !initialized || rodTransform == null || runtimeRodMesh == null)
+            return;
+
+        currentBendDegrees = source.currentBendDegrees;
+        Vector3 worldPull = source.rodTransform.TransformDirection(source.currentPullDirectionRod);
+        currentPullDirectionRod = rodTransform.InverseTransformDirection(worldPull).normalized;
+        ApplyRodCurve(currentPullDirectionRod, currentBendDegrees);
+    }
+
     public void RelaxLinePull(
         float deltaTime)
     {
