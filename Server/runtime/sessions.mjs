@@ -9,6 +9,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
   const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
   const snapshot = room => [...room.players.values()].map(p => ({ id: p.id, name: p.name, ...p.pose,
     boat:clock()-p.seen>3000?null:p.pose.boat,
+    lineKind:clock()-p.seen>1000?0:p.pose.lineKind,
     boatInputX:clock()-p.seen>1000?0:p.pose.boatInputX,
     boatInputY:clock()-p.seen>1000?0:p.pose.boatInputY }));
   function remove(p) {
@@ -38,7 +39,17 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
     if (value.heldFishSpecies !== undefined && (!Number.isInteger(value.heldFishSpecies) || value.heldFishSpecies < -1 || value.heldFishSpecies > 4096)) fail(400, 'Invalid held fish.');
     if (value.heldFishWeight !== undefined && (typeof value.heldFishWeight !== 'number' || !Number.isFinite(value.heldFishWeight) || value.heldFishWeight < 0 || value.heldFishWeight > 1000000)) fail(400, 'Invalid held fish weight.');
     if (value.heldFishSpecies >= 0 && !(value.heldFishWeight > 0)) fail(400, 'Missing held fish weight.');
-    return { ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
+    const lineKind=value.lineKind??0, lureVariant=value.lureVariant??0;
+    if(!Number.isInteger(lineKind)||lineKind<0||lineKind>3||!Number.isInteger(lureVariant)||lureVariant<0||lureVariant>4)
+      fail(400,'Invalid fishing line state.');
+    for(const key of ['lineX','lineY','lineZ'])
+      if(value[key]!==undefined&&(typeof value[key]!=='number'||!Number.isFinite(value[key])||Math.abs(value[key])>100000))
+        fail(400,'Invalid fishing line position.');
+    if(lineKind && !['lineX','lineY','lineZ'].every(key=>typeof value[key]==='number'))fail(400,'Missing fishing line position.');
+    const visibleLine=value.rodEquipped===true && value.swimming!==true && value.world===0 ? lineKind : 0;
+    return { lineKind:visibleLine,lureVariant:visibleLine?lureVariant:0,
+      lineX:visibleLine?value.lineX:0,lineY:visibleLine?value.lineY:0,lineZ:visibleLine?value.lineZ:0,
+      ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       sprinting: value.sprinting === true && value.swimming !== true,
       rodEquipped: value.rodEquipped === true, rodTier: value.rodTier ?? 0,
@@ -115,3 +126,4 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
   server.on('close',()=>clearInterval(timer));
   return server;
 }
+

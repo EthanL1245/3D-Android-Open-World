@@ -101,6 +101,14 @@ public class FishingSystem : MonoBehaviour
     public bool NetworkLureInWater => IsRodEquipped && state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure;
     public bool NetworkIsReeling => (NetworkHasFish || NetworkLureInWater) && !ShopWorldHUD.MenuOpen &&
         hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
+    // 0 hidden, 1 retrieving lure, 2 bait bobber, 3 lure-hooked fish (line endpoint only).
+    public int NetworkLineKind => !IsRodEquipped || fishingLine==null || !fishingLine.enabled ||
+        bobber==null || !bobber.activeSelf || (state!=FishingState.Waiting && state!=FishingState.Fighting)
+        ? 0 : activeBait==ShopCatalog.StarterLure ? (state==FishingState.Fighting?3:1) : 2;
+    public int NetworkLureVariant => shopProgress!=null ? shopProgress.Data.lureEquipped : 0;
+    // Includes final lure line-tie and unconscious fish-mouth presentation adjustments.
+    public Vector3 NetworkLineEnd => fishingLine!=null && fishingLine.positionCount>=2
+        ? fishingLine.GetPosition(fishingLine.positionCount-1) : GetLineTargetPosition();
     public float NetworkReelTime { get; private set; }
     public float NetworkCastDuration => Mathf.Max(.1f, castDuration);
     public float NetworkCastAge => state == FishingState.Casting
@@ -4248,6 +4256,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 

@@ -51,6 +51,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private Transform rightStringAnchor;
     private CaughtFishFlop heldFishFlop;
     private float heldFishMovementSwing, heldFishSwayPhase;
+    private FishingRemoteLine remoteLine;
     private GameObject heldRod;
     private FishingRodView observerRodView;
     private bool observerRodBent;
@@ -231,6 +232,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     public void Receive(FishingMultiplayer.Pose peer)
     {
         World = peer.world;
+        // Local third person already renders the original fishing line and lure.
+        if(localSource==null)
+        {
+            if(remoteLine==null && peer.lineKind!=0)remoteLine=gameObject.AddComponent<FishingRemoteLine>();
+            if(remoteLine!=null)remoteLine.Receive(peer);
+        }
         bool changedBoat=rideOwner!=peer.rideOwner || rideKey!=peer.rideKey || rideSeat!=peer.rideSeat;
         rideOwner=peer.rideOwner;rideKey=peer.rideKey;rideSeat=peer.rideSeat;rideYaw=peer.rideYaw;
         rideTarget=new Vector3(peer.rideX,peer.rideY,peer.rideZ);
@@ -521,6 +528,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private void LateUpdate()
     {
         UpdateObserverRodBend();
+        if(remoteLine!=null)remoteLine.Present(rodEquipped && observerRodView!=null ? observerRodView.RodTip : null);
         PinHeldFish();
     }
 
@@ -601,3 +609,4 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph.Destroy();
     }
 }
+

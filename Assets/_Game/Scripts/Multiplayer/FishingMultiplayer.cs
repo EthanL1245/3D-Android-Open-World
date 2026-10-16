@@ -13,6 +13,8 @@ public sealed class FishingMultiplayer : MonoBehaviour
     [Serializable] public class BoatPose { public string key,kind; public float x,y,z,pitch,yaw,roll; }
     [Serializable] public class Pose {
         public BoatPose boat;
+        public int lineKind,lureVariant;
+        public float lineX,lineY,lineZ;
         public string rideOwner="",rideKey="";
         public int rideSeat=-1,rideRevision;
         public float rideX,rideY,rideZ,rideYaw,boatInputX,boatInputY,boatLookYaw;
@@ -91,13 +93,26 @@ public sealed class FishingMultiplayer : MonoBehaviour
             castSequence=fishing!=null ? fishing.CastSequence : 0,
             castAge=fishing!=null ? fishing.NetworkCastAge : -1f,
             castDuration=fishing!=null ? fishing.NetworkCastDuration : .72f};
+        if(fishing!=null && !pose.swimming && pose.world==0)
+        {
+            pose.lineKind=fishing.NetworkLineKind;
+            if(pose.lineKind!=0)
+            {
+                Vector3 end=fishing.NetworkLineEnd;
+                // Centimetre precision bounds payload size; reuse the existing 10 Hz poll.
+                pose.lineX=Mathf.Round(end.x*100f)/100f;
+                pose.lineY=Mathf.Round(end.y*100f)/100f;
+                pose.lineZ=Mathf.Round(end.z*100f)/100f;
+                pose.lureVariant=Mathf.Clamp(fishing.NetworkLureVariant,0,ShopCatalog.LureVariantCount-1);
+            }
+        }
         if(boats!=null)boats.Capture(pose);
         return pose;
     }
     private IEnumerator ConnectAndPoll(bool host,string code)
     {
         Reply answer=null;
-        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-boats-v5",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
+        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-lines-v6",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
         Busy=false;
         if(answer==null || !answer.ok || string.IsNullOrEmpty(answer.token))
         {ClearSession();Status=answer!=null?answer.error:"Connection failed.";loop=null;yield break;}
@@ -209,3 +224,4 @@ public sealed class FishingMultiplayer : MonoBehaviour
         ClearSession();
     }
 }
+

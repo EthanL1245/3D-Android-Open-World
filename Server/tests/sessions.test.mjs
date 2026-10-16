@@ -256,3 +256,26 @@ test('Unity empty boat object allows fresh open, join and polling without placin
   for(const boat of [[],false,{...empty,key:'boat1'},{...empty,kind:'rowboat'},{...empty,x:1},{...empty,x:'0'}])
     assert.equal((await post('/v1/state',{pose:{...fresh,boat}},host.token)).status,400);
 });
+
+
+test('observer receives lure and bait endpoints through existing snapshots, and clears stale or inactive lines',async t=>{
+  let now=0;const post=await fixture(t,{clock:()=>now});
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  for(const lineKind of [1,2,3]) {
+    const state={...pose(),rodEquipped:true,lineKind,lureVariant:3,lineX:12.34,lineY:-.25,lineZ:22.5,hasFish:lineKind!==1};
+    assert.equal((await post('/v1/state',{pose:state},guest.token)).ok,true);
+    const peer=(await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+    for(const key of ['lineKind','lureVariant','lineX','lineY','lineZ'])assert.equal(peer[key],state[key]);
+  }
+  now=1100;
+  assert.equal((await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id).lineKind,0);
+  for(const extra of [{rodEquipped:false},{swimming:true},{world:1},{lineKind:0}]) {
+    const reply=await post('/v1/state',{pose:{...pose(),rodEquipped:true,lineKind:2,lineX:1,lineY:0,lineZ:2,...extra}},guest.token);
+    assert.equal(reply.players.find(p=>p.id===guest.id).lineKind,0);
+  }
+  for(const fields of [{lineKind:4},{lineKind:1.5},{lureVariant:5},{lineKind:1},{lineX:'2'},{lineZ:100001}])
+    assert.equal((await post('/v1/state',{pose:{...pose(),...fields}},guest.token)).status,400);
+  const legacy=await post('/v1/state',{pose:pose()},guest.token);
+  assert.equal(legacy.players.find(p=>p.id===guest.id).lineKind,0);
+});
