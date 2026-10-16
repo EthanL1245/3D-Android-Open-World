@@ -88,9 +88,9 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     private float ClosestFullBodyDistance()
     {
         if (view == null || avatar == null) return MinZoomDistance;
-        // Fit the full character vertically, with head/feet padding and body depth.
+        // Keep body framing with a slightly tighter close-up margin.
         float halfFov = Mathf.Clamp(view.fieldOfView, 10f, 150f) * .5f * Mathf.Deg2Rad;
-        float fitDistance = avatar.BodyHeight * .5f * 1.2f / Mathf.Tan(halfFov) + .3f;
+        float fitDistance = avatar.BodyHeight * .5f * 1.2f / Mathf.Tan(halfFov) + .15f;
         return Mathf.Clamp(fitDistance, MinZoomDistance, MaxZoomDistance);
     }
 
@@ -102,8 +102,8 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         float framedDistance = Mathf.Clamp(zoomDistance, closest, MaxZoomDistance);
         float closeBlend = 1f - Mathf.InverseLerp(closest, MaxZoomDistance, framedDistance);
         Vector3 farPivot = view.transform.position + Vector3.up * .65f;
-        // Lower the focus from above the head to the body's centre as we zoom in.
-        Vector3 pivot = avatar != null ? Vector3.Lerp(farPivot, avatar.BodyCenter, closeBlend) : farPivot;
+        // Bring the close-up focus slightly above body centre, toward the chest.
+        Vector3 pivot = avatar != null ? Vector3.Lerp(farPivot, avatar.BodyCenter + Vector3.up * .18f, closeBlend) : farPivot;
         Vector3 offset = rotation * new Vector3(.35f * framedDistance / MaxZoomDistance, 0f, -framedDistance);
         float distance = offset.magnitude;
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
