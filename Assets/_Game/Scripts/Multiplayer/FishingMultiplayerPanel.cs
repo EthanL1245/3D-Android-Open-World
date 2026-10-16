@@ -24,7 +24,7 @@ public sealed class FishingMultiplayerPanel : MonoBehaviour
         status=Label("",145,65,25);
         guestName=Field("Your name",220);guestName.characterLimit=20;
         guestName.text=session!=null?session.PlayerName:"Angler";
-        code=Field("Enter 8-character room code",300);code.characterLimit=8;code.contentType=InputField.ContentType.Alphanumeric;
+        code=Field("Enter 4-character room code",300);code.characterLimit=4;code.contentType=InputField.ContentType.Alphanumeric;
         open=Action("OPEN SERVER",390,0,.49f,()=>{session.PlayerName=guestName.text;session.OpenServer();});
         join=Action("JOIN SERVER",390,.51f,1,()=>{session.PlayerName=guestName.text;session.JoinServer(code.text);});
         copy=Action("COPY ROOM CODE",480,0,.49f,()=>GUIUtility.systemCopyBuffer=session.Code);

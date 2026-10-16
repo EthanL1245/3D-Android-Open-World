@@ -60,7 +60,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
       if (path === '/v1/open') {
         if (rooms.size >= 8) fail(503, 'All rooms are in use. Try again later.');
         let code;
-        do { code = Array.from({length:8}, () => alphabet[randomInt(alphabet.length)]).join(''); } while (rooms.has(code));
+        do { code = Array.from({length:4}, () => alphabet[randomInt(alphabet.length)]).join(''); } while (rooms.has(code));
         room = { code, build: data.build, players: new Map(), host: null };
         rooms.set(code, room);
       } else {

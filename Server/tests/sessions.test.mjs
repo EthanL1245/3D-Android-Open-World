@@ -15,7 +15,7 @@ async function fixture(t,options={}) {
 const hello = {protocol:PROTOCOL,build:'1.0',name:'Tester',pose:pose()};
 test('two players open/join and exchange walking poses without crossing rooms',async t=>{
   const post=await fixture(t);
-  const a=await post('/v1/open',hello);assert.equal(a.ok,true);assert.equal(a.code.length,8);
+  const a=await post('/v1/open',hello);assert.equal(a.ok,true);assert.equal(a.code.length,4);
   const b=await post('/v1/join',{...hello,code:a.code,name:'Guest'});assert.equal(b.players.length,2);assert.equal(b.hostId,a.id);
   const c=await post('/v1/open',hello);
   const moved=await post('/v1/state',{pose:pose(12)},b.token);assert.equal(moved.ok,true);
@@ -28,7 +28,7 @@ test('two players open/join and exchange walking poses without crossing rooms',a
 test('version mismatch, missing rooms, invalid positions, and malformed body rejected',async t=>{
   const post=await fixture(t);const a=await post('/v1/open',hello);
   assert.equal((await post('/v1/join',{...hello,code:a.code,build:'different'})).status,409);
-  assert.equal((await post('/v1/join',{...hello,code:'NOTAROOM'})).status,404);
+  assert.equal((await post('/v1/join',{...hello,code:'0000'})).status,404);
   assert.equal((await post('/v1/open',{...hello,protocol:'old'})).status,409);
   assert.equal((await post('/v1/state',{pose:pose(100001)},a.token)).status,400);
   assert.equal((await post('/v1/state',{pose:{x:'0'}},a.token)).status,400);
@@ -53,8 +53,8 @@ test('room capacity is eight; rate limiting bounds attempts',async t=>{
   let now=0;const post=await fixture(t,{clock:()=>now});const a=await post('/v1/open',hello);
   for(let i=0;i<7;i++){now+=1100;assert.equal((await post('/v1/join',{...hello,code:a.code})).ok,true);}
   now+=1100;assert.equal((await post('/v1/join',{...hello,code:a.code})).status,409);
-  await post('/v1/join',{...hello,code:'NOTAROOM'});await post('/v1/join',{...hello,code:'NOTAROOM'});await post('/v1/join',{...hello,code:'NOTAROOM'});
-  assert.equal((await post('/v1/join',{...hello,code:'NOTAROOM'})).status,429);
+  await post('/v1/join',{...hello,code:'0000'});await post('/v1/join',{...hello,code:'0000'});await post('/v1/join',{...hello,code:'0000'});
+  assert.equal((await post('/v1/join',{...hello,code:'0000'})).status,429);
 });
 test('oversized and non-JSON requests cannot crash the server',async t=>{
   const server=createSessionServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -136,4 +136,16 @@ test('observer receives moving fishing state and held fish identity; clearing re
   const legacy=await exchange({});assert.equal(legacy.heldFishSpecies,-1);assert.equal(legacy.heldFishWeight,0);
   for (const fields of [{heldFishSpecies:-2},{heldFishSpecies:1.5},{heldFishSpecies:1,heldFishWeight:0},{heldFishWeight:-1},{heldFishWeight:'3'}])
     assert.equal((await post('/v1/state',{pose:{...pose(),...fields}},guest.token)).status,400);
+});
+
+
+test('four-character room codes are distinct and accept lowercase with surrounding spaces',async t=>{
+  const post=await fixture(t);
+  const first=await post('/v1/open',hello);
+  const second=await post('/v1/open',hello);
+  assert.match(first.code,/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/);
+  assert.match(second.code,/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}$/);
+  assert.notEqual(first.code,second.code);
+  const joined=await post('/v1/join',{...hello,code:'  '+first.code.toLowerCase()+'  '});
+  assert.equal(joined.ok,true);assert.equal(joined.hostId,first.id);
 });

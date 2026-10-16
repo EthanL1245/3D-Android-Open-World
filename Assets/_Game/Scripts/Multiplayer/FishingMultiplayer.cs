@@ -51,7 +51,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     private void Begin(bool host,string code)
     {
         if(Busy || Connected || player==null)return;
-        if(!host && code.Length!=8){Status="Enter the host's 8-character room code.";return;}
+        if(!host && code.Length!=4){Status="Enter the host's 4-character room code.";return;}
         var travel=ShopDimensionManager.Instance;
         if(travel!=null && (travel.Traveling || travel.Destination!=0))
         {Status="Return to the fishing islands before opening or joining.";return;}

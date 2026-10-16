@@ -273,7 +273,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             bool showPull = rodEquipped && pullClip != null && hasFish && !reeling;
             if (reeling && !casting && Time.realtimeSinceStartup - lastPacket < 1f)
                 reelClock += dt;
-            if (showPull && !casting) pullClock += dt;
+            if (showPull && !casting) pullClock += dt * .8f;
             if (reelPlayable.IsValid())
                 // Scale at sampling so network updates and paused lure poses use the same speed.
                 reelPlayable.SetTime((reelClock * .75f) % Mathf.Max(.01f, reelClip.length));
@@ -449,7 +449,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     {
         if (observerRodView == null) return;
         bool shouldBend = rodEquipped && heldRod != null && heldRod.activeInHierarchy &&
-            reeling && (hasFish || lureInWater) && !casting && castBlend < .1f &&
+            (hasFish || (reeling && lureInWater)) && !casting && castBlend < .1f &&
             Time.realtimeSinceStartup - lastPacket < 1f;
         if (!shouldBend)
         {
@@ -461,10 +461,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         // Approximate the pull ahead and below the angler; no lure position,
         // tension or bend angles need to be synchronized over the network.
         Vector3 pullTarget = heldRod.transform.position + transform.forward * 12f + Vector3.down * 3f;
-        float tension = hasFish ? .45f + .10f * Mathf.Sin(Time.unscaledTime * 2.3f) : 0f;
-        // A hooked fish gets the same extra reel load as first person. Lure-only
-        // retrieval uses the gentler base curve, without the fighting boost.
-        observerRodView.SetLinePull(pullTarget, tension, hasFish, Time.unscaledDeltaTime);
+        float tension = hasFish ? (reeling ? .45f + .10f * Mathf.Sin(Time.unscaledTime * 2.3f) : .60f) : 0f;
+        // Lure: base curve. Fish without reeling: medium tension-only curve.
+        // Fish with reeling: add the stronger first-person reel-load boost.
+        observerRodView.SetLinePull(pullTarget, tension, hasFish && reeling, Time.unscaledDeltaTime);
         observerRodBent = true;
     }
 

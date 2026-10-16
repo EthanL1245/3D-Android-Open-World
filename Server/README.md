@@ -1,7 +1,7 @@
 # Fishing guest multiplayer
 
 `MENU / TRAVEL → MULTIPLAYER` now offers **Open Server**, **Join Server**, an
-8-character room code, **Copy Room Code**, and **Leave Server**. Opening creates a
+4-character room code, **Copy Room Code**, and **Leave Server**. Opening creates a
 room on Oracle; it does not host a process on the player's device. Up to eight
 players per room can see animated, interpolated avatars walking/swimming around
 the fishing islands. Players keep their existing world positions when joining:
