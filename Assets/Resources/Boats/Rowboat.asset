@@ -16,6 +16,6 @@ MonoBehaviour:
   Cost: 900
   Speed: 4.5
   MaxCapacity: 2
-  HullSize: {x: 2.53, y: 0.93, z: 7.86}
-  Draft: 0.45
+  HullSize: {x: 2.024, y: 0.744, z: 6.288}
+  Draft: 0.36
   Prefab: {fileID: 6107733725261549221, guid: 397d13b4d22ab8640882b31aea937fef, type: 3}

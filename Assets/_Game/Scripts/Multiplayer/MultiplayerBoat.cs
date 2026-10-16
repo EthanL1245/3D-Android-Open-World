@@ -45,6 +45,9 @@ public sealed class MultiplayerBoat : MonoBehaviour
         float blend=1f-Mathf.Exp(-14f*Time.unscaledDeltaTime);
         body.position=Vector3.Lerp(transform.position,target,blend);
         body.rotation=Quaternion.Slerp(transform.rotation,rotation,blend);
+        // Passenger queries/movement run next in Update, before the next physics
+        // tick. Keep the moving collider and displayed hull at the same pose.
+        Physics.SyncTransforms();
     }
     public int DesiredSeat => Boat.IsRowboat && Session!=null && OwnerId!=Session.LocalId?2:1;
     public bool SeatAvailable(BoatPassenger passenger)

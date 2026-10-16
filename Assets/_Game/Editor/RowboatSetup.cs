@@ -35,7 +35,7 @@ public static class RowboatSetup
     {
         var old=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
         var existing=AssetDatabase.LoadAssetAtPath<BoatData>(DataPath);
-        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==3)return;
+        if(old!=null && existing!=null && existing.Prefab==old && old.GetComponent<RowboatPaddleAnimator>()?.SourceVersion==3 && old.transform.localScale==Vector3.one*.8f)return;
         Directory.CreateDirectory(Generated);Directory.CreateDirectory("Assets/Resources/Boats");AssetDatabase.Refresh();
         Source solo=Read("Solo",3),tandem=Read("Tandem",5);
         var hull=MakeMaterial("Hull","Rowboat Textures.png");
@@ -44,10 +44,13 @@ public static class RowboatSetup
         if(data==null)
         {
             data=ScriptableObject.CreateInstance<BoatData>();data.name="Rowboat";data.ID="rowboat";data.Cost=900;data.Speed=4.5f;
-            data.MaxCapacity=2;data.HullSize=new Vector3(2.53f,.93f,7.86f);data.Draft=.45f;
+            data.MaxCapacity=2;
             AssetDatabase.CreateAsset(data,DataPath);
         }
+        // World-space physics/clearance dimensions match the uniformly scaled prefab.
+        data.HullSize=new Vector3(2.024f,.744f,6.288f);data.Draft=.36f;
         var root=new GameObject("Rowboat");
+        root.transform.localScale=Vector3.one*.8f;
         try
         {
             var rb=root.AddComponent<Rigidbody>();rb.useGravity=false;rb.mass=300;rb.linearDamping=.65f;rb.angularDamping=3;

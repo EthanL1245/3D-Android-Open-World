@@ -123,7 +123,7 @@ public sealed class BoatController : MonoBehaviour
         if(Driver!=null)Driver.SnapToRowingSeat();
     }
 
-    private const float RowboatFreeboard = 0.50f;
+    private const float RowboatFreeboard = 0.40f;
 
     // The interior floor must clear the highest wave under the actual hull.
     public static float FloatingHeight(BoatData data,OceanWater ocean,Vector3 position,Quaternion rotation)

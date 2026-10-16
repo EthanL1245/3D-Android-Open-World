@@ -29,7 +29,11 @@ public sealed class BoatPassenger : MonoBehaviour
             Vector3 relative=transform.position-lastPosition;
             Vector3 target=Boat.transform.position+Boat.transform.rotation*Quaternion.Inverse(lastRotation)*relative;
             if(Driving)target=Boat.SeatFor(this).position;
-            if(capsule!=null && capsule.enabled)capsule.Move(target-transform.position);
+            // Platform transport is not a walking sweep: the hull has already
+            // moved into our old capsule position. Sweeping out of that overlap
+            // makes collision recovery/step offset kick the passenger upward.
+            // Seat anchors must remain exact, including on a network replica.
+            SetPlatformPosition(target);
             lastPosition=Boat.transform.position;
             lastRotation=Boat.transform.rotation;
         }
@@ -86,14 +90,15 @@ public sealed class BoatPassenger : MonoBehaviour
     private bool IsAboveBoatFootprint(BoatController boat)
     {
         if(boat==null || boat.Data==null)return false;
-        Vector3 local=boat.transform.InverseTransformPoint(transform.position);
+        // HullSize describes world metres, including the prefab's uniform scale.
+        Vector3 local=Quaternion.Inverse(boat.transform.rotation)*(transform.position-boat.transform.position);
         Vector3 size=boat.Data.HullSize;
         if(boat.Data.ID=="raft")size=new Vector3(2.6749f,1.2542f,4.5634f);
         float halfX=size.x*.5f+.18f;
         float halfZ=size.z*.5f+.22f;
         // Wide enough vertically for a normal jump, but not enough to keep a player
         // attached after genuinely leaving/falling away from the boat.
-        return Mathf.Abs(local.x)<=halfX && Mathf.Abs(local.z)<=halfZ && local.y>(boat.IsRowboat?-.38f:-1.1f) && local.y<3.25f;
+        return Mathf.Abs(local.x)<=halfX && Mathf.Abs(local.z)<=halfZ && local.y>(boat.IsRowboat?-.38f*boat.transform.lossyScale.y:-1.1f) && local.y<3.25f;
     }
 
     public bool BoardFromWater(BoatController boat)
@@ -129,13 +134,19 @@ public sealed class BoatPassenger : MonoBehaviour
         }
     }
 
+    private void SetPlatformPosition(Vector3 position)
+    {
+        bool enabled=capsule!=null && capsule.enabled;
+        if(enabled)capsule.enabled=false;
+        transform.position=position;
+        if(enabled)capsule.enabled=true;
+    }
+
     public void SnapToRowingSeat()
     {
         if(!Driving || capsule==null)return;
         // Boarding a seat crosses benches; do not sweep the capsule through them.
-        bool enabled=capsule.enabled;capsule.enabled=false;
-        transform.position=Boat.SeatFor(this).position;
-        capsule.enabled=enabled;
+        SetPlatformPosition(Boat.SeatFor(this).position);
         lastPosition=Boat.transform.position;lastRotation=Boat.transform.rotation;
         Controls.ResetMotion();
     }
