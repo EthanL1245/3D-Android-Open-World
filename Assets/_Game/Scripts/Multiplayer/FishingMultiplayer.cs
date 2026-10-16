@@ -13,14 +13,14 @@ public sealed class FishingMultiplayer : MonoBehaviour
     [Serializable] public class BoatPose { public string key,kind; public float x,y,z,pitch,yaw,roll; }
     [Serializable] public class Pose {
         public BoatPose boat;
-        public int lineKind,lureVariant;
+        public int lineKind,lureVariant,islandMask=1;
         public float lineX,lineY,lineZ;
         public string rideOwner="",rideKey="";
         public int rideSeat=-1,rideRevision;
         public float rideX,rideY,rideZ,rideYaw,boatInputX,boatInputY,boatLookYaw;
  public float x,y,z,yaw; public int world; public bool swimming, sprinting, rodEquipped, reeling, hasFish, lureInWater; public float reelTime, heldFishWeight; public int heldFishSpecies = -1; public int rodTier, castSequence; public float castAge = -1f, castDuration = .72f; }
     [Serializable] public class Peer : Pose { public string id,name; }
-    [Serializable] public class Reply { public bool ok; public string error,id,token,code,hostId; public Peer[] players; }
+    [Serializable] public class Reply { public bool ok; public string error,id,token,code,hostId; public Peer[] players; public FishingTournament.View tournament; }
     [Serializable] private class Message
     {
         public string protocol=Protocol, build, code, name;
@@ -34,6 +34,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     public bool IsHost { get; private set; }
     public string PlayerName { get; set; } = "Angler";
     public string LocalId => id;
+    internal string SessionToken => token;
     private FishingBoatMultiplayer boats;
     private string token, id;
     private bool previousBackground, backgroundOverride;
@@ -106,13 +107,15 @@ public sealed class FishingMultiplayer : MonoBehaviour
                 pose.lureVariant=Mathf.Clamp(fishing.NetworkLureVariant,0,ShopCatalog.LureVariantCount-1);
             }
         }
+        if(equipment!=null && equipment.Data!=null)
+            pose.islandMask=1|4|(equipment.Data.brinebreakDiscovered?2:0)|(equipment.Data.bluewaterDiscovered?8:0)|(equipment.Data.snapperDiscovered?16:0);
         if(boats!=null)boats.Capture(pose);
         return pose;
     }
     private IEnumerator ConnectAndPoll(bool host,string code)
     {
         Reply answer=null;
-        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-lines-v6",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
+        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|tournaments-v7",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
         Busy=false;
         if(answer==null || !answer.ok || string.IsNullOrEmpty(answer.token))
         {ClearSession();Status=answer!=null?answer.error:"Connection failed.";loop=null;yield break;}
@@ -165,6 +168,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     }
     private void Apply(Reply reply)
     {
+        GetComponent<FishingTournament>()?.Apply(reply.tournament);
         lastSnapshot=Time.realtimeSinceStartup;
         Peer[] peers=reply.players ?? new Peer[0];
         if(boats!=null)boats.Apply(peers);
@@ -224,4 +228,5 @@ public sealed class FishingMultiplayer : MonoBehaviour
         ClearSession();
     }
 }
+
 

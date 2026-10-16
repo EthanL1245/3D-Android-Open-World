@@ -107,14 +107,15 @@ public sealed class BoatSystem : MonoBehaviour
         if(!placementStatus && status!=null && statusUntil>0f && Time.unscaledTime>=statusUntil)
             ClearNotice();
 
-        bool otherMenu=ShopWorldHUD.MenuOpen || (controls.BoatUIBlocked && !shop.activeSelf);
+        bool tournamentNearby=GetComponent<FishingTournament>()?.NearStand??false;
+        bool otherMenu=ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen || (controls.BoatUIBlocked && !shop.activeSelf);
         if(!OnIsland || otherMenu){CancelPlacement();if(shop.activeSelf)CloseShop();}
         if(shop.activeSelf && !NearMarina)CloseShop();
         if(slotLabel!=null){slotLabel.text=Selected!=null?Selected.name.ToUpperInvariant():"BOAT";slotImage.color=PlacementMode?new Color(.05f,.45f,.35f,.95f):new Color(.05f,.07f,.09f,.72f);}
 
         bool board=passenger.Boat==null && NearestBoat()!=null;
         bool helm=passenger.Boat!=null && passenger.Boat.CanUseSeat(passenger);
-        interact.gameObject.SetActive(!otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
+        interact.gameObject.SetActive(!tournamentNearby && !otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
         interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?(passenger.Boat.IsRowboat?"STOP ROWING":"LEAVE HELM"):passenger.Boat.IsRowboat?"ROW BOAT":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
 
         if(Keyboard.current!=null && Keyboard.current.digit2Key.wasPressedThisFrame && !shop.activeSelf && !otherMenu)TogglePlacement();
@@ -257,6 +258,7 @@ public sealed class BoatSystem : MonoBehaviour
 
     private void OnDestroy(){CancelPlacement();if(ActiveBoat!=null)Destroy(ActiveBoat.gameObject);}
 }
+
 
 
 

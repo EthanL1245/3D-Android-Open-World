@@ -7,9 +7,16 @@ using System.Collections.Generic;
     public List<CaughtFishRecord> fish = new List<CaughtFishRecord>();
 }
 
+[Serializable] public sealed class TournamentWager
+{
+    public string id,ticket;
+    public int amount,balance;
+}
+
 [Serializable] public sealed class ShopLedger
 {
     public int version = 1, coins;
+    public List<TournamentWager> tournamentWagers = new List<TournamentWager>();
     public bool brinebreakDiscovered;
     public bool bluewaterDiscovered;
     public bool snapperDiscovered;
@@ -238,6 +245,7 @@ using System.Collections.Generic;
         coins+=value; return true;
     }
 }
+
 
 
 

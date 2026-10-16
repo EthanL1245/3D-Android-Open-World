@@ -279,3 +279,20 @@ test('observer receives lure and bait endpoints through existing snapshots, and 
   const legacy=await post('/v1/state',{pose:pose()},guest.token);
   assert.equal(legacy.players.find(p=>p.id===guest.id).lineKind,0);
 });
+
+
+test('HTTP tournament invitations, scoring, snapshots and receipt recovery work without leaking wager secrets',async t=>{
+ let now=1000;const post=await fixture(t,{clock:()=>now,timeout:1000000,tournamentRandom:()=>0});
+ const state={...pose(),islandMask:31,castSequence:10};
+ const host=await post('/v1/open',{...hello,pose:state});const guest=await post('/v1/join',{...hello,code:host.code,pose:state});
+ const id='1'.repeat(32),ht='2'.repeat(32),gt='3'.repeat(32);
+ const send=(p,tournament,castSequence=10)=>post('/v1/tournament',{pose:{...state,castSequence},tournament},p.token);
+ let reply=await send(host,{op:'create',id,ticket:ht,island:0,wager:75,balance:100});assert.equal(reply.ok,true);assert.equal(reply.tournament.phase,'inviting');
+ assert.equal(JSON.stringify(reply).includes(ht),false);
+ reply=await send(guest,{op:'join',id,ticket:gt,balance:100});assert.equal(reply.tournament.phase,'countdown');
+ now=6000;await post('/v1/state',{pose:state},host.token);
+ reply=await send(guest,{op:'catch',id,island:0,species:reply.tournament.species,cast:11,kg:2},11);assert.equal(reply.ok,true);
+ now=366000;reply=await post('/v1/state',{pose:state},host.token);
+ assert.equal(reply.tournament.winnerId,guest.id);
+ const payout=await post('/v1/tournament-receipt',{ticket:gt,cancelMissing:true});assert.equal(payout.payout,150);assert.equal(payout.ready,true);
+});

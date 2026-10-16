@@ -49,6 +49,52 @@ moving hull. Release seats, walk/fish on the deck, leave/reboard, and disconnect
 the owner. Repeat guest helm use with a sailboat/yacht and check the raft's
 single-passenger limit. Also confirm offline boating still works.
 
+## Fishing tournaments
+
+A tournament booth is added to the right side of the Suncrest marina, viewed from
+land toward the pier. The host visits it, chooses an unlocked island and a wager
+of 1–1,000,000 in-game coins, then invites the current room. Other players receive
+a Join/Decline prompt anywhere in the world. Players without that island unlocked
+cannot enter; unanswered invitations decline after 45 seconds. At least two
+entrants are required. The host can cancel during invitations for full refunds.
+
+After all decisions, the server randomly chooses one species that can actually
+spawn in that island's tuning tables. Everyone sees the target for five seconds,
+then the server runs a six-minute contest. Only successfully landed fish from new
+casts in the selected island's waters count. A full bag/released fish, pond catch,
+wrong species, old cast, or duplicate report cannot score. Points are summed at
+100 per kg (each catch rounded to a whole point). The winner takes the entire
+pool. Ties use biggest individual catch, then earliest attainment of the tied
+score, then joining order for an exact simultaneous tie. No qualifying catches
+means all entrants are refunded. Results show each entrant's points, the winner,
+and the biggest qualifying catch in kilograms; the top-right × closes the panel.
+
+The local shop save atomically stores the coin debit and its recovery ticket.
+The server persists escrow receipts in `DATA_DIR/tournament-escrow.json` using
+atomic file replacement. Repeated requests cannot charge or score twice. Pending
+entries are refunded on a server restart or host disconnect. Guests leaving
+before play starts are refunded; after play starts their existing score and stake
+remain, and winnings can still be recovered. Completed payouts survive restarts.
+Clients retry unresolved receipts every five seconds, including after restarting
+the game. Never delete the server escrow file or a player's pending wager records
+while money remains unresolved. No new account/cloud-save system is introduced:
+unlocks, balances and catches still originate in the existing client-owned save
+and simulation; this is not a tamper-proof competitive economy.
+
+Normal tournament state rides on existing room snapshots. Extra requests occur
+only for decisions/catches and unresolved-receipt recovery; there is no server-side
+fish simulation. `tournament-species.mjs` is generated from the current
+`BiomeFishWeights.csv` and `BiomeBaitSpeciesChance.csv` (including the 50% hotspot
+weight allowance). Regenerate that list when fish availability/tuning changes.
+The existing deployment service's StateDirectory provides the writable DATA_DIR.
+
+Validate with `node --test Server/tests/*.test.mjs`. In Unity, build both clients,
+check booth placement/access, locked-island prompts, wager debits, target reveal,
+countdown, six-minute HUD, catch scoring, final leaderboard and close button.
+Test host/guest disconnects and restart with an unsettled entry. Remote bait
+fishing now displays only the line endpoint; retrieval lures remain visible.
+Unity compilation and device playtesting are separate from the backend tests.
+
 ## One-time network activation on the existing Oracle VM
 
 The private deployment health service remains on `127.0.0.1:3000`. Game traffic
@@ -86,7 +132,7 @@ Home and confirm the avatar hides; return to the fishing world to show it again.
 Check Leave Server, an invalid code, and a disconnected network. Confirm offline
 movement and fishing continue independently afterward.
 
-Automated backend tests: `node --test Server/tests/sessions.test.mjs` (Node 24).
+Automated backend tests: `node --test Server/tests/*.test.mjs` (Node 24).
 These cover actual HTTP open/join/movement exchange, room isolation, token
 rejection, invalid/version-mismatched requests, capacity, host/guest leave,
 expiry, and attempt limiting. Unity compilation, Android permissions/UI, and
@@ -125,3 +171,4 @@ sudo systemctl start fishing-update
 Pause deployment: `sudo systemctl stop fishing-update.timer`.
 Retry an unchanged failed version after fixing its environment:
 `sudo rm /var/lib/fishing-deployment/failed-release`, then start fishing-update.
+

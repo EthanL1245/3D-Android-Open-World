@@ -4,7 +4,7 @@ using UnityEngine;
 public sealed class FishingRemoteLine : MonoBehaviour
 {
     private LineRenderer line;
-    private Material lineMaterial,bobberMaterial;
+    private Material lineMaterial;
     private GameObject tackle;
     private Transform tie;
     private Animator animator;
@@ -43,7 +43,7 @@ public sealed class FishingRemoteLine : MonoBehaviour
             line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;
         }
         position=Vector3.Lerp(position,target,1f-Mathf.Exp(-18f*Time.unscaledDeltaTime));
-        if(tackle==null && (kind==1 || kind==2))CreateTackle();
+        if(tackle==null && kind==1)CreateTackle();
         if(tackle!=null)
         {
             tackle.SetActive(true);
@@ -63,16 +63,6 @@ public sealed class FishingRemoteLine : MonoBehaviour
 
     private void CreateTackle()
     {
-        if(kind==2)
-        {
-            tackle=GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            var collider=tackle.GetComponent<Collider>();collider.enabled=false;Destroy(collider);
-            tackle.transform.SetParent(transform,false);tackle.transform.localScale=Vector3.one*.16f;
-            bobberMaterial=new Material(lineMaterial);SetColor(bobberMaterial,new Color(.88f,.10f,.08f));
-            tackle.GetComponent<Renderer>().sharedMaterial=bobberMaterial;
-            tackle.name="Observer Bait Bobber";
-            return;
-        }
         var prefab=Resources.Load<GameObject>(ShopCatalog.LurePrefabResource(variant));
         if(prefab==null)return;
         tackle=Instantiate(prefab,transform,false);tackle.name="Observer Retrieval Lure";
@@ -104,9 +94,9 @@ public sealed class FishingRemoteLine : MonoBehaviour
     private void ClearTackle()
     {
         if(tackle!=null){tackle.SetActive(false);Destroy(tackle);}
-        if(bobberMaterial!=null)Destroy(bobberMaterial);
-        tackle=null;tie=null;animator=null;bobberMaterial=null;
+        tackle=null;tie=null;animator=null;
     }
     private void OnDisable(){Hide();positionReady=false;}
     private void OnDestroy(){ClearTackle();if(lineMaterial!=null)Destroy(lineMaterial);}
 }
+

@@ -17,7 +17,7 @@ const server = http.createServer({ requestTimeout: 10000, headersTimeout: 10000 
 });
 server.maxConnections = 128;
 server.listen(port, host, () => console.log(`Fishing service listening on ${host}:${port}`));
-const game = process.env.MULTIPLAYER_PUBLIC === '1' ? createSessionServer() : null;
+const game = process.env.MULTIPLAYER_PUBLIC === '1' ? createSessionServer({ledgerPath:(process.env.DATA_DIR || '.')+'/tournament-escrow.json'}) : null;
 if (game) game.listen(Number(process.env.GAME_PORT || 3001), process.env.GAME_HOST || '0.0.0.0', () => console.log('Guest multiplayer listener ready'));
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
@@ -26,3 +26,4 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
     setTimeout(() => process.exit(1), 5000).unref();
   });
 }
+

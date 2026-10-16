@@ -99,9 +99,9 @@ public class FishingSystem : MonoBehaviour
     private float networkCastStarted;
     public bool NetworkHasFish => IsRodEquipped && state == FishingState.Fighting;
     public bool NetworkLureInWater => IsRodEquipped && state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure;
-    public bool NetworkIsReeling => (NetworkHasFish || NetworkLureInWater) && !ShopWorldHUD.MenuOpen &&
+    public bool NetworkIsReeling => (NetworkHasFish || NetworkLureInWater) && !(ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) &&
         hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
-    // 0 hidden, 1 retrieving lure, 2 bait bobber, 3 lure-hooked fish (line endpoint only).
+    // 0 hidden, 1 retrieving lure; 2 bait and 3 lure-hooked fish use line endpoints only.
     public int NetworkLineKind => !IsRodEquipped || fishingLine==null || !fishingLine.enabled ||
         bobber==null || !bobber.activeSelf || (state!=FishingState.Waiting && state!=FishingState.Fighting)
         ? 0 : activeBait==ShopCatalog.StarterLure ? (state==FishingState.Fighting?3:1) : 2;
@@ -142,7 +142,7 @@ public class FishingSystem : MonoBehaviour
     private float fragileBreakTimer;
     private FishingStatusOutline fragileOutline;
     private bool FragileWarningActive => isActiveAndEnabled && rodEquipped && !shopMode &&
-        !ShopWorldHUD.MenuOpen && state == FishingState.Fighting && !fishUnconscious && !IsSkillStunned &&
+        !(ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) && state == FishingState.Fighting && !fishUnconscious && !IsSkillStunned &&
         hookedTemperament == FishTemperament.Fragile && CurrentDrag != FishingDragRules.Low;
     private bool FragileWarningFlashing => FragileWarningActive && fragileBreakTimer >= FishingDragRules.FragileWarningSeconds;
     private bool FragileFlashOn => ((int)(Time.unscaledTime * 16f) & 1) != 0;
@@ -348,7 +348,7 @@ public class FishingSystem : MonoBehaviour
         if(rodEquipped && MustStowForSwimming())
         {UnequipHands();return;}
 
-        if(shopMode || ShopWorldHUD.MenuOpen) return;
+        if(shopMode || (ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen)) return;
         if (hud == null)
             return;
 
@@ -800,7 +800,7 @@ public class FishingSystem : MonoBehaviour
     private void UpdateLinePullSound()
     {
         bool pulling = audioFocused && !audioPaused && rodEquipped && !shopMode &&
-            !ShopWorldHUD.MenuOpen && state == FishingState.Fighting &&
+            !(ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) && state == FishingState.Fighting &&
             !fishUnconscious && !IsSkillStunned &&
             hud != null && hud.ActionInput != null && !hud.ActionInput.IsHeld;
         if (!pulling)
@@ -832,7 +832,7 @@ public class FishingSystem : MonoBehaviour
         // that hold starts audio as soon as reeling becomes valid, without a new tap.
         bool canReel = state == FishingState.Fighting || state == FishingState.Bite ||
             (state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure);
-        if (!audioFocused || audioPaused || !rodEquipped || shopMode || ShopWorldHUD.MenuOpen || !canReel ||
+        if (!audioFocused || audioPaused || !rodEquipped || shopMode || (ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) || !canReel ||
             hud == null || hud.ActionInput == null || !hud.ActionInput.IsHeld)
             StopReelSound();
         else if (reelAudio != null && !reelAudio.IsPlaying)
@@ -1598,6 +1598,7 @@ public class FishingSystem : MonoBehaviour
 
         CaughtFishRecord record =
             inventory.Fish[newIndex];
+        if(!pondCast)GetComponent<FishingTournament>()?.ReportCatch(record,CastBiome,CastSequence);
 
         ResetLine();
 
@@ -4256,6 +4257,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 
