@@ -288,7 +288,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             bool moving = speed > WalkingThreshold && !swimming;
             bool running = moving && sprinting && runClip != null && Time.realtimeSinceStartup - lastPacket < 1f;
             runBlend = Mathf.MoveTowards(runBlend, running ? 1f : 0f, dt * 8f);
-            if (running) runClock += dt;
+            if (running) runClock += dt * 1.25f;
             if (runPlayable.IsValid())
                 runPlayable.SetTime(runClock % Mathf.Max(.01f, runClip.length));
             float desiredBlend = moving ? Mathf.Clamp01(speed / .7f) : 0f;
