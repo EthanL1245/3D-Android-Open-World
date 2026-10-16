@@ -12,7 +12,8 @@ travel to the same island to meet. Offline play makes no network requests.
 This first version is shared player presence, not full server-authoritative game
 simulation. The server owns room membership, tokens, capacity and lifecycle,
 validates message shape/world bounds, and relays client-reported positions. Local
-movement physics stays on each device. Fish, catches, ripples, boats, inventories,
+movement physics stays on each device. Boats are shared with owner-simulated physics
+and server-validated boarding/seat claims. Fish, catches, ripples, inventories,
 economy, home worlds and saves are not synchronized. No accounts or cloud saves.
 Other avatars are hidden in shop/home dimensions. There is no player collision.
 
@@ -22,6 +23,31 @@ failures the game returns to offline and players can open/join again. Backend
 restarts clear rooms; open a new room afterward. Android backgrounding can expire
 a session. Protocol and Application.version must match on both devices; install
 the same newly built game on both devices for testing.
+
+## Shared boats
+
+Placed boats appear for every player in the same room on the fishing islands.
+Players can step aboard or use BOARD BOAT near the deck entrance, then use the
+existing ROW BOAT / DRIVE BOAT control. Capacity limits still apply. On a rowboat,
+the owner uses the front seat and the guest uses the rear seat; leaving the front
+seat never promotes the guest. Each player's movement input drives their own oars.
+The front rower steers, the rear rower adds propulsion, and both rowing together
+use the existing two-rower speed. Larger boats retain one helm and walking decks.
+
+The boat owner simulates hull physics and sends the transform with their normal
+player snapshots. Guests use solid interpolated copies and send rowing/helm input
+through the same connection. Avatars follow boat-local positions. Boat placement,
+purchases and saves remain owner-only; occupied boats cannot be repositioned.
+Removing a boat, traveling out of the fishing world, or disconnecting removes its
+shared copy and releases passengers. Stale input stops after one second; a boat
+whose owner stops responding disappears after three seconds.
+
+After rebuilding both clients, place a rowboat, board with both players, and test
+front-only, rear-only and simultaneous rowing. Confirm the guest cannot claim the
+front seat, each oar pair stops with its own input, and both avatars stay on the
+moving hull. Release seats, walk/fish on the deck, leave/reboard, and disconnect
+the owner. Repeat guest helm use with a sailboat/yacht and check the raft's
+single-passenger limit. Also confirm offline boating still works.
 
 ## One-time network activation on the existing Oracle VM
 

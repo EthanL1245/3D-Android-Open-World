@@ -30,8 +30,8 @@ public sealed class RowboatPaddleAnimator : MonoBehaviour
     }
     private void Update()
     {
-        bool front=boat!=null && IsRowing(boat.Driver);
-        bool rear=boat!=null && IsRowing(boat.SecondRower);
+        bool front=boat!=null && boat.FrontPaddling;
+        bool rear=boat!=null && boat.RearPaddling;
 #if UNITY_EDITOR
         if(previewPaddlers>=0){front=previewPaddlers>=1;rear=previewPaddlers>=2;}
 #endif
@@ -47,7 +47,6 @@ public sealed class RowboatPaddleAnimator : MonoBehaviour
             Apply(TandemStroke,TandemParts,rearTime,2);
         }
     }
-    private static bool IsRowing(BoatPassenger p)=>p!=null && p.Controls!=null && p.Controls.BoatInput.sqrMagnitude>.0025f;
     private static void Apply(RowboatStrokeData data,Transform[] parts,float time,int first)
     {
         if(data==null || data.Tracks==null || parts==null)return;

@@ -28,6 +28,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private Vector3 target, previous;
     private Quaternion facing;
+    private string rideOwner,rideKey;
+    private int rideSeat=-1;
+    private float rideYaw;
+    private Vector3 rideTarget,ridePosition;
+    private MultiplayerBoat riddenBoat;
     private bool initialized, swimming, sprinting;
     private float speed, lastPacket, walkClock, idleClock, walkBlend, runClock, runBlend;
     private Transform label;
@@ -226,6 +231,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     public void Receive(FishingMultiplayer.Pose peer)
     {
         World = peer.world;
+        bool changedBoat=rideOwner!=peer.rideOwner || rideKey!=peer.rideKey || rideSeat!=peer.rideSeat;
+        rideOwner=peer.rideOwner;rideKey=peer.rideKey;rideSeat=peer.rideSeat;rideYaw=peer.rideYaw;
+        rideTarget=new Vector3(peer.rideX,peer.rideY,peer.rideZ);
+        if(changedBoat){ridePosition=rideTarget;speed=0f;}
+        riddenBoat=rideSeat>=0?MultiplayerBoat.Find(rideOwner,rideKey):null;
         bool holding = peer.heldFishSpecies >= 0 && peer.heldFishWeight > 0f && !peer.rodEquipped && !peer.swimming;
         UpdateHeldFish(holding ? peer.heldFishSpecies : -1, peer.heldFishWeight);
         UpdateHeldRod(peer.rodEquipped && !peer.swimming && !holding, peer.rodTier);
@@ -273,10 +283,21 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (!initialized || dt <= 0f) return;
 
         float blend = 1f - Mathf.Exp(-12f * dt);
-        transform.position = localSource != null ? target : Vector3.Lerp(transform.position, target, blend);
+        float boatWalkingSpeed=-1f;
+        if(riddenBoat!=null)
+        {
+            Vector3 oldLocal=ridePosition;
+            ridePosition=localSource!=null?rideTarget:Vector3.Lerp(ridePosition,rideTarget,blend);
+            Transform seat=rideSeat==2?riddenBoat.Boat.SecondRowingSeat:rideSeat==1?riddenBoat.Boat.DriverSeat:null;
+            target=seat!=null?seat.position:riddenBoat.transform.TransformPoint(ridePosition);
+            facing=Quaternion.Euler(0f,riddenBoat.transform.eulerAngles.y+(seat!=null?0f:rideYaw),0f);
+            boatWalkingSpeed=seat!=null?0f:Vector3.ProjectOnPlane(ridePosition-oldLocal,Vector3.up).magnitude/dt;
+        }
+        transform.position = localSource != null || riddenBoat!=null ? target : Vector3.Lerp(transform.position, target, blend);
         // Smooth the visual avatar only; local movement and aiming stay immediate.
         transform.rotation = Quaternion.Slerp(transform.rotation, facing, blend);
         float measured = Vector3.ProjectOnPlane(transform.position - previous, Vector3.up).magnitude / dt;
+        if(boatWalkingSpeed>=0f)measured=boatWalkingSpeed;
         previous = transform.position;
         speed = Mathf.Lerp(speed, Time.realtimeSinceStartup - lastPacket > 1f ? 0f : measured, blend);
 

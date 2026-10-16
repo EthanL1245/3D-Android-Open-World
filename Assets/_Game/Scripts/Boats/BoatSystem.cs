@@ -112,7 +112,7 @@ public sealed class BoatSystem : MonoBehaviour
         if(shop.activeSelf && !NearMarina)CloseShop();
         if(slotLabel!=null){slotLabel.text=Selected!=null?Selected.name.ToUpperInvariant():"BOAT";slotImage.color=PlacementMode?new Color(.05f,.45f,.35f,.95f):new Color(.05f,.07f,.09f,.72f);}
 
-        bool board=passenger.Boat==null && ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4;
+        bool board=passenger.Boat==null && NearestBoat()!=null;
         bool helm=passenger.Boat!=null && passenger.Boat.CanUseSeat(passenger);
         interact.gameObject.SetActive(!otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
         interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?(passenger.Boat.IsRowboat?"STOP ROWING":"LEAVE HELM"):passenger.Boat.IsRowboat?"ROW BOAT":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
@@ -169,12 +169,22 @@ public sealed class BoatSystem : MonoBehaviour
         if(ActiveBoat!=null){ActiveBoat.gameObject.SetActive(false);Destroy(ActiveBoat.gameObject);ActiveBoat=null;}
     }
 
+    private BoatController NearestBoat()
+    {
+        BoatController own=ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4?ActiveBoat:null;
+        var multiplayer=GetComponent<FishingBoatMultiplayer>();
+        var other=multiplayer!=null?multiplayer.NearestBoardable():null;
+        if(own==null)return other;
+        return other!=null && Vector3.Distance(transform.position,other.DeckExit.position)<Vector3.Distance(transform.position,own.DeckExit.position)?other:own;
+    }
+
     private void Interact()
     {
         if(passenger.Boat!=null){passenger.ToggleHelm();return;}
-        if(ActiveBoat!=null && Vector3.Distance(transform.position,ActiveBoat.DeckExit.position)<4)
+        BoatController nearby=NearestBoat();
+        if(nearby!=null)
         {
-            if(!passenger.BoardFromWater(ActiveBoat))Notice("Boat is full.");
+            if(!passenger.BoardFromWater(nearby))Notice("Boat is full.");
             return;
         }
         if(!NearMarina)return;

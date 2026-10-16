@@ -1,4 +1,5 @@
 import http from 'node:http';
+import { boatPose, acceptBoatRide, pruneBoatRiders } from './boats.mjs';
 import { randomBytes, randomInt } from 'node:crypto';
 
 export const PROTOCOL = 'fishing-walk-v1';
@@ -6,10 +7,14 @@ const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) {
   const rooms = new Map(), sessions = new Map(), limits = new Map();
   const fail = (status, message) => { throw Object.assign(new Error(message), { status }); };
-  const snapshot = room => [...room.players.values()].map(p => ({ id: p.id, name: p.name, ...p.pose }));
+  const snapshot = room => [...room.players.values()].map(p => ({ id: p.id, name: p.name, ...p.pose,
+    boat:clock()-p.seen>3000?null:p.pose.boat,
+    boatInputX:clock()-p.seen>1000?0:p.pose.boatInputX,
+    boatInputY:clock()-p.seen>1000?0:p.pose.boatInputY }));
   function remove(p) {
     sessions.delete(p.token);
     p.room.players.delete(p.id);
+    pruneBoatRiders(p.room);
     if (p.id === p.room.host) {
       for (const peer of p.room.players.values()) sessions.delete(peer.token);
       rooms.delete(p.room.code);
@@ -33,7 +38,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
     if (value.heldFishSpecies !== undefined && (!Number.isInteger(value.heldFishSpecies) || value.heldFishSpecies < -1 || value.heldFishSpecies > 4096)) fail(400, 'Invalid held fish.');
     if (value.heldFishWeight !== undefined && (typeof value.heldFishWeight !== 'number' || !Number.isFinite(value.heldFishWeight) || value.heldFishWeight < 0 || value.heldFishWeight > 1000000)) fail(400, 'Invalid held fish weight.');
     if (value.heldFishSpecies >= 0 && !(value.heldFishWeight > 0)) fail(400, 'Missing held fish weight.');
-    return { x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
+    return { ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       sprinting: value.sprinting === true && value.swimming !== true,
       rodEquipped: value.rodEquipped === true, rodTier: value.rodTier ?? 0,
@@ -48,6 +53,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
       name: typeof data.name === 'string' ? data.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0,20) || 'Angler' : 'Angler',
       pose: pose(data.pose), seen: clock(), room };
     room.players.set(p.id, p); sessions.set(p.token, p);
+    acceptBoatRide(p,null);
     if (!room.host) room.host = p.id;
     return p;
   }
@@ -77,7 +83,9 @@ export function createSessionServer({ clock = Date.now, timeout = 30000 } = {}) 
     if (!p) fail(401, 'Session ended. The host may have left. Open or join again.');
     if (path === '/v1/leave') { remove(p); return {ok:true}; }
     if (path !== '/v1/state') fail(404, 'Not found.');
+    const previous=p.pose;
     p.pose = pose(data.pose); p.seen = clock();
+    acceptBoatRide(p,previous); pruneBoatRiders(p.room);
     return { ok:true, code:p.room.code, hostId:p.room.host, players:snapshot(p.room) };
   }
   const server = http.createServer({ requestTimeout:5000, headersTimeout:5000, maxHeaderSize:8192 }, async (req, res) => {

@@ -161,3 +161,75 @@ test('sprint state reaches observers, clears on walking, and defaults off for ol
     assert.equal(seen.players.find(p=>p.id===guest.id).sprinting,fields.sprinting===true && fields.swimming!==true);
   }
 });
+
+const rowboat={key:'boat1',kind:'rowboat',x:0,y:0,z:0,pitch:2,yaw:30,roll:1};
+const ride=(owner,seat,extra={})=>({...pose(),rideOwner:owner.id,rideKey:'boat1',rideSeat:seat,rideRevision:1,boatInputY:1,...extra});
+test('shared rowboat reserves owner front and guest rear and broadcasts independent rowing',async t=>{
+  const post=await fixture(t);
+  const owner=await post('/v1/open',{...hello,pose:{...pose(),boat:rowboat}});
+  const guest=await post('/v1/join',{...hello,code:owner.code});
+  let reply=await post('/v1/state',{pose:ride(owner,1)},guest.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,0);
+  assert.equal(reply.players.find(p=>p.id===guest.id).boatInputY,0);
+  await post('/v1/state',{pose:ride(owner,2)},guest.token);
+  reply=await post('/v1/state',{pose:ride(owner,1,{boat:rowboat})},owner.token);
+  assert.deepEqual(reply.players.find(p=>p.id===owner.id).boat,rowboat);
+  for(const [player,seat] of [[owner,1],[guest,2]]) {
+    const observed=reply.players.find(p=>p.id===player.id);
+    assert.equal(observed.rideSeat,seat);assert.equal(observed.boatInputY,1);
+  }
+  reply=await post('/v1/state',{pose:{...pose(),boat:rowboat}},owner.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,2,'rear is never promoted when owner leaves seat');
+  const third=await post('/v1/join',{...hello,code:owner.code});
+  reply=await post('/v1/state',{pose:ride(owner,2)},third.token);
+  assert.equal(reply.players.find(p=>p.id===third.id).rideSeat,-1,'empty owner place remains reserved');
+  await post('/v1/leave',{},guest.token);
+  reply=await post('/v1/state',{pose:ride(owner,2)},third.token);
+  assert.equal(reply.players.find(p=>p.id===third.id).rideSeat,2);
+});
+
+test('boat removal, replacement, world travel and owner disconnect release riders',async t=>{
+  const post=await fixture(t);const host=await post('/v1/open',hello);
+  const owner=await post('/v1/join',{...hello,code:host.code,pose:{...pose(),boat:rowboat}});
+  for(const change of [{boat:null},{boat:{...rowboat,key:'replacement'}},{boat:rowboat,world:1}]) {
+    await post('/v1/state',{pose:{...pose(),boat:rowboat}},owner.token);
+    let reply=await post('/v1/state',{pose:ride(owner,2)},host.token);
+    assert.equal(reply.players.find(p=>p.id===host.id).rideSeat,2);
+    reply=await post('/v1/state',{pose:{...pose(),...change}},owner.token);
+    assert.equal(reply.players.find(p=>p.id===host.id).rideSeat,-1);
+  }
+  await post('/v1/state',{pose:{...pose(),boat:rowboat}},owner.token);
+  await post('/v1/state',{pose:ride(owner,2)},host.token);
+  await post('/v1/leave',{},owner.token);
+  const reply=await post('/v1/state',{pose:ride(owner,2)},host.token);
+  assert.equal(reply.players.find(p=>p.id===host.id).rideSeat,-1);
+});
+
+test('boat capacity, distance, world, identity and malformed states are checked',async t=>{
+  const post=await fixture(t);
+  const owner=await post('/v1/open',{...hello,pose:{...pose(),boat:{...rowboat,kind:'raft'}}});
+  await post('/v1/state',{pose:ride(owner,1,{boat:{...rowboat,kind:'raft'}})},owner.token);
+  const guest=await post('/v1/join',{...hello,code:owner.code});
+  let reply=await post('/v1/state',{pose:ride(owner,1)},guest.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,-1);
+  await post('/v1/state',{pose:{...pose(),boat:rowboat}},owner.token);
+  for(const fields of [{x:100},{world:1},{rideKey:'wrong'},{rideOwner:guest.id}]) {
+    reply=await post('/v1/state',{pose:ride(owner,2,fields)},guest.token);
+    assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,-1);
+  }
+  for(const fields of [{boat:{...rowboat,kind:'unknown'}},{boatInputX:2},{rideSeat:1.5},{rideRevision:-1},{rideX:20}])
+    assert.equal((await post('/v1/state',{pose:{...pose(),...fields}},guest.token)).status,400);
+});
+
+test('stale rowing input stops before disconnected boat disappears',async t=>{
+  let now=0;const post=await fixture(t,{clock:()=>now});
+  const owner=await post('/v1/open',{...hello,pose:{...pose(),boat:rowboat}});
+  const guest=await post('/v1/join',{...hello,code:owner.code});
+  await post('/v1/state',{pose:ride(owner,1,{boat:rowboat})},owner.token);
+  now=1100;
+  let observed=(await post('/v1/state',{pose:pose()},guest.token)).players.find(p=>p.id===owner.id);
+  assert.equal(observed.boatInputY,0);assert.deepEqual(observed.boat,rowboat);
+  now=3100;
+  observed=(await post('/v1/state',{pose:pose()},guest.token)).players.find(p=>p.id===owner.id);
+  assert.equal(observed.boat,null);
+});

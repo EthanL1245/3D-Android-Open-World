@@ -119,9 +119,8 @@ public sealed class RaftPaddleAnimator : MonoBehaviour
         if (boat == null || body == null) return;
 
         float forwardSpeed = Vector3.Dot(body.linearVelocity, transform.forward);
-        bool hasDriverInput = boat.Driver != null && boat.Driver.Controls != null &&
-                              boat.Driver.Controls.BoatInput.sqrMagnitude > 0.0025f;
-        bool shouldRow = hasDriverInput && forwardSpeed > MinimumForwardSpeed;
+        bool hasDriverInput = boat.FrontPaddling;
+        bool shouldRow = hasDriverInput && ((boat.Shared != null && boat.Shared.Replica) || forwardSpeed > MinimumForwardSpeed);
 
         if (graphReady)
             UpdateAuthoredClip(shouldRow);

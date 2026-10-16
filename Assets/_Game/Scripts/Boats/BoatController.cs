@@ -9,15 +9,24 @@ public sealed class BoatController : MonoBehaviour
     public Transform SecondRowingSeat;
     public BoatPassenger SecondRower {get;private set;}
     public bool IsRowboat => Data!=null && Data.ID=="rowboat";
-    public int ActivePaddlers => (HasInput(Driver)?1:0)+(IsRowboat && HasInput(SecondRower)?1:0);
+    public MultiplayerBoat Shared;
+    public Vector2 NetworkFrontInput, NetworkRearInput;
+    public float NetworkFrontYaw;
+    public bool NetworkHasDriver;
+    public int NetworkOtherPassengers;
+    public bool FrontPaddling => HasInput(Driver) || NetworkFrontInput.sqrMagnitude>.0025f;
+    public bool RearPaddling => IsRowboat && (HasInput(SecondRower) || NetworkRearInput.sqrMagnitude>.0025f);
+    public int ActivePaddlers => (FrontPaddling?1:0)+(RearPaddling?1:0);
+    public void ClearNetworkInput(){NetworkFrontInput=NetworkRearInput=Vector2.zero;NetworkHasDriver=false;}
     public float RowingSpeed => Data==null?0f:Data.Speed*(IsRowboat?Mathf.Max(1,ActivePaddlers):1);
     private static bool HasInput(BoatPassenger p) => p!=null && p.Controls!=null && p.Controls.BoatInput.sqrMagnitude>.0025f;
     public Transform SeatFor(BoatPassenger p) => p==SecondRower?SecondRowingSeat:DriverSeat;
-    public bool CanUseSeat(BoatPassenger p) => p!=null && (p.Driving ||
+    public bool CanUseSeat(BoatPassenger p) => p!=null && (p.Driving || (Shared!=null ? Shared.SeatAvailable(p) : (
         (Driver==null && Vector3.Distance(p.transform.position,DriverSeat.position)<2.5f) ||
-        (IsRowboat && SecondRower==null && SecondRowingSeat!=null && Vector3.Distance(p.transform.position,SecondRowingSeat.position)<2.5f));
+        (IsRowboat && SecondRower==null && SecondRowingSeat!=null && Vector3.Distance(p.transform.position,SecondRowingSeat.position)<2.5f))));
     public BoatPassenger Driver {get;private set;}
-    public int PassengerCount {get;private set;}
+    private int localPassengerCount;
+    public int PassengerCount => localPassengerCount + NetworkOtherPassengers;
 
     private Rigidbody body;
     private OceanWater water;
@@ -71,21 +80,27 @@ public sealed class BoatController : MonoBehaviour
 
     public bool Board()
     {
-        if(Data==null || PassengerCount>=Data.MaxCapacity)return false;
-        PassengerCount++;
+        if(Data==null || PassengerCount>=Data.MaxCapacity || (Shared!=null && !Shared.CanBoard))return false;
+        localPassengerCount++;
         return true;
     }
 
     public void Leave(BoatPassenger passenger)
     {
         ReleaseHelm(passenger);
-        PassengerCount=Mathf.Max(0,PassengerCount-1);
+        localPassengerCount=Mathf.Max(0,localPassengerCount-1);
     }
 
     public bool TakeHelm(BoatPassenger passenger)
     {
         if(passenger==null || passenger.Boat!=this)return false;
         if(Driver==passenger || SecondRower==passenger)return true;
+        if(Shared!=null)
+        {
+            if(!Shared.SeatAvailable(passenger))return false;
+            if(Shared.DesiredSeat==2){SecondRower=passenger;return true;}
+            Driver=passenger;driverView=passenger.GetComponentInChildren<Camera>();return true;
+        }
         if(Driver!=null)
         {
             if(!IsRowboat || SecondRower!=null || SecondRowingSeat==null)return false;
@@ -101,6 +116,7 @@ public sealed class BoatController : MonoBehaviour
     {
         if(SecondRower==passenger)SecondRower=null;
         if(Driver!=passenger)return;
+        if(Shared!=null){Driver=null;driverView=null;return;}
         // The remaining rower takes the front seat so solo always uses the front pair.
         Driver=SecondRower;SecondRower=null;
         driverView=Driver!=null?Driver.GetComponentInChildren<Camera>():null;
@@ -230,7 +246,7 @@ public sealed class BoatController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(body==null || water==null || Data==null)return;
+        if(body==null || water==null || Data==null || (Shared!=null && Shared.Replica))return;
 
         // Horizontal axes keep thrust and collision checks stable while tilted.
         Vector3 forward=Vector3.ProjectOnPlane(body.rotation*Vector3.forward,Vector3.up);
@@ -271,11 +287,11 @@ public sealed class BoatController : MonoBehaviour
         Vector3 side=right*Vector3.Dot(planarVelocity,right);
         body.AddForce(-side*9f,ForceMode.Acceleration);
 
-        Vector2 input=Driver!=null?Driver.Controls.BoatInput:Vector2.zero;
+        Vector2 input=Driver!=null?Driver.Controls.BoatInput:NetworkFrontInput;
         float inputAmount=Mathf.Clamp01(input.magnitude);
         // Only the driver steers. A rear rower can propel the current heading while
         // the driver rests, but never contributes merely by being aboard.
-        bool rearPaddling=IsRowboat && HasInput(SecondRower);
+        bool rearPaddling=RearPaddling;
         float propulsion=rearPaddling?1f:inputAmount;
         float speed=RowingSpeed;
         Vector3 desiredDirection=Vector3.zero;
@@ -283,13 +299,13 @@ public sealed class BoatController : MonoBehaviour
         // Clearance and steering predictions must ignore hull pitch/roll.
         Quaternion futureHeading=Quaternion.LookRotation(forward,Vector3.up);
 
-        if(Driver!=null && inputAmount>.05f)
+        if((Driver!=null || NetworkHasDriver) && inputAmount>.05f)
         {
-            if(driverView==null)driverView=Driver.GetComponentInChildren<Camera>();
-            Transform look=driverView!=null?driverView.transform:Driver.transform;
+            if(driverView==null && Driver!=null)driverView=Driver.GetComponentInChildren<Camera>();
+            Quaternion look=Driver!=null?(driverView!=null?driverView.transform.rotation:Driver.transform.rotation):Quaternion.Euler(0f,NetworkFrontYaw,0f);
 
-            Vector3 lookForward=Vector3.ProjectOnPlane(look.forward,Vector3.up);
-            Vector3 lookRight=Vector3.ProjectOnPlane(look.right,Vector3.up);
+            Vector3 lookForward=Vector3.ProjectOnPlane(look*Vector3.forward,Vector3.up);
+            Vector3 lookRight=Vector3.ProjectOnPlane(look*Vector3.right,Vector3.up);
             if(lookForward.sqrMagnitude<.0001f)lookForward=forward;
             if(lookRight.sqrMagnitude<.0001f)lookRight=right;
             lookForward.Normalize();lookRight.Normalize();

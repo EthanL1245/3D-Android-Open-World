@@ -5,12 +5,18 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 
-// Guest presence only: local physics remains responsive; Oracle owns room membership.
+// Player presence and owner-simulated boats; the server owns room membership and seats.
 public sealed class FishingMultiplayer : MonoBehaviour
 {
     public const string Endpoint = "http://129.153.55.216:3001";
     public const string Protocol = "fishing-walk-v1";
-    [Serializable] public class Pose { public float x,y,z,yaw; public int world; public bool swimming, sprinting, rodEquipped, reeling, hasFish, lureInWater; public float reelTime, heldFishWeight; public int heldFishSpecies = -1; public int rodTier, castSequence; public float castAge = -1f, castDuration = .72f; }
+    [Serializable] public class BoatPose { public string key,kind; public float x,y,z,pitch,yaw,roll; }
+    [Serializable] public class Pose {
+        public BoatPose boat;
+        public string rideOwner="",rideKey="";
+        public int rideSeat=-1,rideRevision;
+        public float rideX,rideY,rideZ,rideYaw,boatInputX,boatInputY,boatLookYaw;
+ public float x,y,z,yaw; public int world; public bool swimming, sprinting, rodEquipped, reeling, hasFish, lureInWater; public float reelTime, heldFishWeight; public int heldFishSpecies = -1; public int rodTier, castSequence; public float castAge = -1f, castDuration = .72f; }
     [Serializable] public class Peer : Pose { public string id,name; }
     [Serializable] public class Reply { public bool ok; public string error,id,token,code,hostId; public Peer[] players; }
     [Serializable] private class Message
@@ -25,6 +31,8 @@ public sealed class FishingMultiplayer : MonoBehaviour
     public int PlayerCount { get; private set; }
     public bool IsHost { get; private set; }
     public string PlayerName { get; set; } = "Angler";
+    public string LocalId => id;
+    private FishingBoatMultiplayer boats;
     private string token, id;
     private bool previousBackground, backgroundOverride;
     private FirstPersonController player;
@@ -44,6 +52,8 @@ public sealed class FishingMultiplayer : MonoBehaviour
     private void Awake()
     {
         player=GetComponent<FirstPersonController>();
+        boats=GetComponent<FishingBoatMultiplayer>();
+        if(boats==null)boats=gameObject.AddComponent<FishingBoatMultiplayer>();
         PlayerName=PlayerPrefs.GetString("MultiplayerGuestName","Angler");
     }
     public void OpenServer() { Begin(true,""); }
@@ -66,7 +76,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
         Vector3 p=transform.position;
         if(fishing==null)fishing=GetComponent<FishingSystem>();
         if(equipment==null)equipment=GetComponent<ShopProgress>();
-        return new Pose {x=p.x,y=p.y,z=p.z,yaw=transform.eulerAngles.y,
+        var pose = new Pose {x=p.x,y=p.y,z=p.z,yaw=transform.eulerAngles.y,
             world=ShopDimensionManager.Instance!=null?ShopDimensionManager.Instance.Destination:0,
             swimming=player!=null && player.IsSwimming,
             sprinting=player!=null && player.IsSprinting && !player.IsSwimming,
@@ -81,11 +91,13 @@ public sealed class FishingMultiplayer : MonoBehaviour
             castSequence=fishing!=null ? fishing.CastSequence : 0,
             castAge=fishing!=null ? fishing.NetworkCastAge : -1f,
             castDuration=fishing!=null ? fishing.NetworkCastDuration : .72f};
+        if(boats!=null)boats.Capture(pose);
+        return pose;
     }
     private IEnumerator ConnectAndPoll(bool host,string code)
     {
         Reply answer=null;
-        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-fishing-v4",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
+        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-boats-v5",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
         Busy=false;
         if(answer==null || !answer.ok || string.IsNullOrEmpty(answer.token))
         {ClearSession();Status=answer!=null?answer.error:"Connection failed.";loop=null;yield break;}
@@ -140,6 +152,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     {
         lastSnapshot=Time.realtimeSinceStartup;
         Peer[] peers=reply.players ?? new Peer[0];
+        if(boats!=null)boats.Apply(peers);
         PlayerCount=peers.Length;
         Status="Room "+Code+"  •  "+PlayerCount+"/8 players"+(IsHost?"  •  You are the host":"");
         var present=new HashSet<string>();
@@ -185,6 +198,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     private void ClearSession()
     {
         if(backgroundOverride){Application.runInBackground=previousBackground;backgroundOverride=false;}
+        if(boats!=null)boats.Clear();
         token=null;id=null;Code="";PlayerCount=0;IsHost=false;
         foreach(var remote in remotes.Values)if(remote!=null)Destroy(remote.gameObject);
         remotes.Clear();
