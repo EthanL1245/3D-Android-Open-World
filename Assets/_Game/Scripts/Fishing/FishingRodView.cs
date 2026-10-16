@@ -320,7 +320,9 @@ public sealed class FishingRodView : MonoBehaviour
         currentBendDegrees = source.currentBendDegrees;
         Vector3 worldPull = source.rodTransform.TransformDirection(source.currentPullDirectionRod);
         currentPullDirectionRod = rodTransform.InverseTransformDirection(worldPull).normalized;
-        ApplyRodCurve(currentPullDirectionRod, currentBendDegrees);
+        // Local third-person presentation only: amplify the final curve and tip
+        // together, after the normal limit, so even strong loads remain truly 2x.
+        ApplyRodCurve(currentPullDirectionRod, currentBendDegrees, 2f);
     }
 
     public void RelaxLinePull(
@@ -461,7 +463,8 @@ public sealed class FishingRodView : MonoBehaviour
 
     private void ApplyRodCurve(
         Vector3 pullDirectionRod,
-        float bendDegrees)
+        float bendDegrees,
+        float visualIntensity = 1f)
     {
         if (runtimeRodMesh == null ||
             restVerticesRod == null ||
@@ -482,7 +485,7 @@ public sealed class FishingRodView : MonoBehaviour
             bendStartHeight;
 
         float bendRadians =
-            Mathf.Deg2Rad *
+            Mathf.Deg2Rad * visualIntensity *
             Mathf.Clamp(
                 bendDegrees,
                 0f,
