@@ -5,9 +5,17 @@ function key(v) { if(v===undefined||v===null)return ''; if(typeof v!=='string'||
 export function boatPose(v) {
   let boat=null;
   if(v.boat!=null){
-    const b=v.boat;if(typeof b!=='object'||!Object.hasOwn(boats,b.kind)||!key(b.key))invalid();
-    boat={key:key(b.key),kind:b.kind,x:number(b.x,-100000,100000),y:number(b.y,-100000,100000),z:number(b.z,-100000,100000),
-      pitch:number(b.pitch,-360,360),yaw:number(b.yaw,-360,360),roll:number(b.roll,-360,360)};
+    const b=v.boat;
+    if(typeof b!=='object'||Array.isArray(b))invalid();
+    // JsonUtility can serialize a null inline BoatPose as an empty, zeroed object.
+    // Treat that representation exactly like null; partial/invalid real boats still fail.
+    const emptyIdentity=(b.key==null||b.key==='')&&(b.kind==null||b.kind==='');
+    const emptyPose=['x','y','z','pitch','yaw','roll'].every(field=>b[field]===undefined||b[field]===0);
+    if(!(emptyIdentity&&emptyPose)){
+      if(!Object.hasOwn(boats,b.kind)||!key(b.key))invalid();
+      boat={key:key(b.key),kind:b.kind,x:number(b.x,-100000,100000),y:number(b.y,-100000,100000),z:number(b.z,-100000,100000),
+        pitch:number(b.pitch,-360,360),yaw:number(b.yaw,-360,360),roll:number(b.roll,-360,360)};
+    }
   }
   const seat=number(v.rideSeat,-1,2,-1),revision=number(v.rideRevision,0,2147483647);
   if(!Number.isInteger(seat)||!Number.isInteger(revision))invalid();

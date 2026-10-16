@@ -50,7 +50,7 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
         var present=new HashSet<string>();
         foreach(var peer in peers)
         {
-            if(peer.id==session.LocalId || peer.boat==null || peer.world!=0)continue;
+            if(peer.id==session.LocalId || peer.boat==null || string.IsNullOrEmpty(peer.boat.key) || string.IsNullOrEmpty(peer.boat.kind) || peer.world!=0)continue;
             present.Add(peer.id);
             if(replicas.TryGetValue(peer.id,out var old) && (old==null || old.Key!=peer.boat.key || old.Boat.Data.ID!=peer.boat.kind))
             {Remove(peer.id);old=null;}

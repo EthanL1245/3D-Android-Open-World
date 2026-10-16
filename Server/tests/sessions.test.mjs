@@ -233,3 +233,26 @@ test('stale rowing input stops before disconnected boat disappears',async t=>{
   observed=(await post('/v1/state',{pose:pose()},guest.token)).players.find(p=>p.id===owner.id);
   assert.equal(observed.boat,null);
 });
+
+test('Unity empty boat object allows fresh open, join and polling without placing a boat',async t=>{
+  const post=await fixture(t);
+  const empty={key:'',kind:'',x:0,y:0,z:0,pitch:0,yaw:0,roll:0};
+  const fresh={...pose(),boat:empty,rideOwner:'',rideKey:'',rideSeat:-1,rideRevision:0};
+  const host=await post('/v1/open',{...hello,pose:fresh});
+  assert.equal(host.ok,true);assert.equal(host.players[0].boat,null);
+  const guest=await post('/v1/join',{...hello,code:host.code,pose:fresh});
+  assert.equal(guest.ok,true);assert.equal(guest.players.length,2);
+  for(const boat of [empty,{},null,{...empty,key:null,kind:null}]) {
+    const reply=await post('/v1/state',{pose:{...fresh,boat}},guest.token);
+    assert.equal(reply.ok,true);
+    assert.equal(reply.players.find(p=>p.id===guest.id).boat,null);
+  }
+  await post('/v1/state',{pose:{...pose(),boat:rowboat}},host.token);
+  await post('/v1/state',{pose:ride(host,2)},guest.token);
+  const removed=await post('/v1/state',{pose:fresh},host.token);
+  assert.equal(removed.ok,true);
+  assert.equal(removed.players.find(p=>p.id===host.id).boat,null);
+  assert.equal(removed.players.find(p=>p.id===guest.id).rideSeat,-1);
+  for(const boat of [[],false,{...empty,key:'boat1'},{...empty,kind:'rowboat'},{...empty,x:1},{...empty,x:'0'}])
+    assert.equal((await post('/v1/state',{pose:{...fresh,boat}},host.token)).status,400);
+});
