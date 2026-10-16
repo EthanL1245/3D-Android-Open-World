@@ -10,7 +10,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
 {
     public const string Endpoint = "http://129.153.55.216:3001";
     public const string Protocol = "fishing-walk-v1";
-    [Serializable] public class Pose { public float x,y,z,yaw; public int world; public bool swimming, rodEquipped, reeling, hasFish, lureInWater; public float reelTime; public int rodTier, castSequence; public float castAge = -1f, castDuration = .72f; }
+    [Serializable] public class Pose { public float x,y,z,yaw; public int world; public bool swimming, rodEquipped, reeling, hasFish, lureInWater; public float reelTime, heldFishWeight; public int heldFishSpecies = -1; public int rodTier, castSequence; public float castAge = -1f, castDuration = .72f; }
     [Serializable] public class Peer : Pose { public string id,name; }
     [Serializable] public class Reply { public bool ok; public string error,id,token,code,hostId; public Peer[] players; }
     [Serializable] private class Message
@@ -70,6 +70,8 @@ public sealed class FishingMultiplayer : MonoBehaviour
             world=ShopDimensionManager.Instance!=null?ShopDimensionManager.Instance.Destination:0,
             swimming=player!=null && player.IsSwimming,
             rodEquipped=fishing!=null && fishing.IsRodEquipped,
+            heldFishSpecies=fishing!=null ? fishing.NetworkHeldSpecies : -1,
+            heldFishWeight=fishing!=null ? fishing.NetworkHeldWeight : 0f,
             reeling=fishing!=null && fishing.NetworkIsReeling,
             hasFish=fishing!=null && fishing.NetworkHasFish,
             lureInWater=fishing!=null && fishing.NetworkLureInWater,
@@ -82,7 +84,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
     private IEnumerator ConnectAndPoll(bool host,string code)
     {
         Reply answer=null;
-        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-fishing-v3",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
+        yield return Post(host?"/v1/open":"/v1/join",new Message {build=Application.version+"|avatar-fishing-v4",code=code,name=PlayerName,pose=LocalPose()},null,r=>answer=r);
         Busy=false;
         if(answer==null || !answer.ok || string.IsNullOrEmpty(answer.token))
         {ClearSession();Status=answer!=null?answer.error:"Connection failed.";loop=null;yield break;}

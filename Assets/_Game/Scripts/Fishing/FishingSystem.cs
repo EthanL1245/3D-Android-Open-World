@@ -215,6 +215,9 @@ public class FishingSystem : MonoBehaviour
         }
     }
     private CaughtFishRecord heldRecord;
+    public int NetworkHeldSpecies => heldRecord != null && heldFishVisual != null && !rodEquipped && !shopMode
+        ? heldRecord.speciesId : -1;
+    public float NetworkHeldWeight => NetworkHeldSpecies >= 0 ? heldRecord.weightKg : 0f;
     public bool IsHolding(CaughtFishRecord record) => heldRecord==record && heldFishVisual!=null;
     public void PrepareForMenu()
     {
@@ -3625,7 +3628,7 @@ public class FishingSystem : MonoBehaviour
             );
     }
 
-    private Vector3 FindFishMouthLocalPosition(
+    public static Vector3 FindFishMouthLocalPosition(
         GameObject fish)
     {
         var authoredMouth=FindDeepChildByName(fish.transform,"AuthoredMouthAnchor");
@@ -3751,7 +3754,7 @@ public class FishingSystem : MonoBehaviour
             );
     }
 
-    private float GetFishMouthInset(
+    private static float GetFishMouthInset(
         GameObject fish)
     {
         Renderer[] renderers =
@@ -3846,7 +3849,7 @@ public class FishingSystem : MonoBehaviour
         }
     }
 
-    private float FindFrontmostLocalZ(
+    private static float FindFrontmostLocalZ(
         GameObject fish)
     {
         Renderer[] renderers =

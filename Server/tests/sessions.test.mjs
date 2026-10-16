@@ -114,3 +114,26 @@ test('reeling, fish pulling, and paused lure poses preserve the sender animation
   for(const reelTime of [-1,'1',10000001])
     assert.equal((await post('/v1/state',{pose:{...base,reelTime}},guest.token)).status,400);
 });
+
+test('observer receives moving fishing state and held fish identity; clearing removes the catch',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  async function exchange(fields) {
+    assert.equal((await post('/v1/state',{pose:{...pose(),...fields}},guest.token)).ok,true);
+    return (await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+  }
+  const walking=await exchange({x:4,rodEquipped:true,reeling:true,lureInWater:true});
+  assert.equal(walking.x,4);assert.equal(walking.reeling,true);
+  const fighting=await exchange({x:6,rodEquipped:true,reeling:false,hasFish:true});
+  assert.equal(fighting.x,6);assert.equal(fighting.hasFish,true);
+  const held=await exchange({heldFishSpecies:21,heldFishWeight:2.75,rodEquipped:false});
+  assert.equal(held.heldFishSpecies,21);assert.equal(held.heldFishWeight,2.75);assert.equal(held.rodEquipped,false);
+  const switched=await exchange({heldFishSpecies:5,heldFishWeight:15});
+  assert.equal(switched.heldFishSpecies,5);assert.equal(switched.heldFishWeight,15);
+  const cleared=await exchange({rodEquipped:true,heldFishSpecies:-1,heldFishWeight:0});
+  assert.equal(cleared.heldFishSpecies,-1);
+  const legacy=await exchange({});assert.equal(legacy.heldFishSpecies,-1);assert.equal(legacy.heldFishWeight,0);
+  for (const fields of [{heldFishSpecies:-2},{heldFishSpecies:1.5},{heldFishSpecies:1,heldFishWeight:0},{heldFishWeight:-1},{heldFishWeight:'3'}])
+    assert.equal((await post('/v1/state',{pose:{...pose(),...fields}},guest.token)).status,400);
+});
