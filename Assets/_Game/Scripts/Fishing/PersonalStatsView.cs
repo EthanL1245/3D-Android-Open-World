@@ -8,17 +8,32 @@ public static class PersonalStatsView
     private static readonly Dictionary<string, Sprite> artwork = new Dictionary<string, Sprite>();
     private static readonly Color Cyan = new Color(.1f,.95f,1f);
     private static readonly Color Detail = new Color(.67f,.89f,.96f);
-    public static Sprite Art(string name)
+    public static Sprite Art(string name, bool locked = false)
     {
-        if(artwork.TryGetValue(name,out Sprite sprite))return sprite;
+        string key = locked ? name + "_Locked" : name;
+        if(artwork.TryGetValue(key,out Sprite sprite))return sprite;
         var source=Resources.Load<TextAsset>("Progression/"+name+".png");
         if(source==null)return null;
         var texture=new Texture2D(2,2,TextureFormat.RGBA32,false);
-        if(!texture.LoadImage(source.bytes,true)){Object.Destroy(texture);return null;}
+        if(!texture.LoadImage(source.bytes,!locked)){Object.Destroy(texture);return null;}
+        if(locked)
+        {
+            // Cache a genuinely desaturated version once; preserve the supplied alpha.
+            // Unlocked cards and combat buttons continue to use the original artwork.
+            Color32[] pixels=texture.GetPixels32();
+            for(int i=0;i<pixels.Length;i++)
+            {
+                Color32 c=pixels[i];
+                byte grey=(byte)Mathf.RoundToInt((c.r*.2126f+c.g*.7152f+c.b*.0722f)*.65f);
+                pixels[i]=new Color32(grey,grey,grey,c.a);
+            }
+            texture.SetPixels32(pixels);
+            texture.Apply(false,true);
+        }
         texture.wrapMode=TextureWrapMode.Clamp;
         // Keep original pixels; the card artwork includes transparent outer padding.
         sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),100);
-        artwork[name]=sprite;
+        artwork[key]=sprite;
         Resources.UnloadAsset(source);
         return sprite;
     }
@@ -57,8 +72,11 @@ public static class PersonalStatsView
     public static GameObject Build(Transform parent,AnglerProgression data)
     {
         if(data==null)data=new AnglerProgression();
-        var root=Panel(parent,"PersonalStatsContent",.012f,.025f,.988f,.84f,false);
-        var band=Panel(root.transform,"LevelAndExperience",0,.78f,1,1);
+        var root=Panel(parent,"PersonalStatsContent",.012f,.025f,.988f,1f,false);
+        // CLOSE ends 80 canvas units below the modal top. Keep a compact 28-unit
+        // header gap at every aspect ratio, then give the recovered height to the body.
+        root.GetComponent<RectTransform>().offsetMax=new Vector2(-4f,-108f);
+        var band=Panel(root.transform,"LevelAndExperience",0,.80f,1,1);
         var shield=Panel(band.transform,"LevelShield",.012f,.04f,.14f,.96f,false).GetComponent<Image>();
         shield.sprite=Art("LevelShield");shield.color=Color.white;shield.preserveAspect=true;
         Label(shield.transform,"LV\n"+data.level,30,.19f,.18f,.81f,.82f,Color.white,TextAnchor.MiddleCenter).fontStyle=FontStyle.Bold;
@@ -68,7 +86,7 @@ public static class PersonalStatsView
         Meter(band.transform,max?1f:(float)(data.experience/AnglerProgression.RequiredXp(data.level)),.15f,.12f,.61f,.29f);
         string next=data.level<80?"Next special ability\nLEVEL "+((data.level/20+1)*20):"ALL CURRENT ABILITIES UNLOCKED";
         Label(band.transform,next,26,.66f,.18f,.97f,.85f,Detail);
-        var left=Panel(root.transform,"FishingAttributes",0,0,.505f,.77f);
+        var left=Panel(root.transform,"FishingAttributes",0,0,.505f,.79f);
         Label(left.transform,"FISHING ATTRIBUTES",29,.03f,.89f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         string[] descriptions={"Extra damage per reel hit","Boosts damage after the raw bonus","Retrieve line faster","Reduces tension gain","Bonus damage for your charged yank","Permanent larger-fish weight bonus"};
         for(int i=0;i<6;i++)
@@ -80,7 +98,7 @@ public static class PersonalStatsView
             Label(row.transform,"+"+data.Value(i)+(i==0?"":"%"),26,.80f,.25f,.98f,.91f,Cyan,TextAnchor.MiddleRight);
             Meter(row.transform,data.Value(i)/100f,.03f,.07f,.78f,.21f);
         }
-        var right=Panel(root.transform,"SpecialAbilities",.51f,0,1,.77f);
+        var right=Panel(root.transform,"SpecialAbilities",.51f,0,1,.79f);
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"UNLOCK A NEW ABILITY EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={"Burns 2% of max HP per second for 5s. Once per fight.","Automatically deals 10% of max HP when hooking.","Reeling adds no tension for 5s. Once per fight.","Fish swims toward you for 4s. Once per fight."};
@@ -89,11 +107,15 @@ public static class PersonalStatsView
         {
             float x=(i%2)*.5f, top=.84f-(i/2)*.278f;
             var card=Panel(right.transform,"Ability_"+i,x,top-.273f,x+.5f,top,false);
-            var art=card.GetComponent<Image>();art.sprite=Art(AnglerProgression.AbilityAssets[i]);art.color=Color.white;
-            Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.65f,.95f,.87f,Color.white).fontStyle=FontStyle.Bold;
-            Label(card.transform,"LEVEL "+((i+1)*20),16,.31f,.49f,.95f,.66f,Cyan);
-            Label(card.transform,descriptionsAbility[i],18,.31f,.18f,.95f,.50f,Detail);
-            Label(card.transform,data.Unlocked(i)?"UNLOCKED":"LOCKED",16,.31f,.04f,.95f,.19f,data.Unlocked(i)?Cyan:new Color(.6f,.7f,.8f));
+            bool unlocked=data.Unlocked(i);
+            Color titleColor=unlocked?Color.white:new Color(.72f,.72f,.72f);
+            Color detailColor=unlocked?Detail:new Color(.58f,.58f,.58f);
+            Color accentColor=unlocked?Cyan:new Color(.66f,.66f,.66f);
+            var art=card.GetComponent<Image>();art.sprite=Art(AnglerProgression.AbilityAssets[i],!unlocked);art.color=Color.white;
+            Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.67f,.95f,.87f,titleColor).fontStyle=FontStyle.Bold;
+            Label(card.transform,"LEVEL "+((i+1)*20),16,.31f,.52f,.95f,.67f,accentColor);
+            Label(card.transform,descriptionsAbility[i],18,.31f,.27f,.95f,.52f,detailColor);
+            Label(card.transform,unlocked?"UNLOCKED":"LOCKED",16,.31f,.13f,.95f,.27f,accentColor);
         }
         return root;
     }
