@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 // Tournament state is server-owned; this component owns UI and saved local coin escrow.
-public sealed class FishingTournament : MonoBehaviour
+public sealed partial class FishingTournament : MonoBehaviour
 {
     [Serializable] public sealed class Entry
     {
@@ -215,8 +215,8 @@ public sealed class FishingTournament : MonoBehaviour
     {
         selectedIsland=island;Open("wager","ENTRY FEE • "+ReefCatalog.Zones[island].name.ToUpperInvariant());
         body.text="100 points per kg of the target species. Six minutes.\nWinner takes all. Ties: biggest catch, then first to reach the score.\nNo qualifying catches or cancelled match: full refunds.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins";
-        var input=Panel("Wager",modal.transform,new Vector2(0,10),new Vector2(500,65),new Color(.95f,.95f,.9f));modalControls.Add(input);
-        wagerInput=input.AddComponent<InputField>();var text=Label(input.transform,"",26,Vector2.zero,new Vector2(470,60));text.color=Color.black;text.alignment=TextAnchor.MiddleLeft;
+        var input=Panel("Wager",modal.transform,new Vector2(0,10),new Vector2(500,65),new Color(.95f,.95f,.9f));FishingHudTheme.Panel(input,3);modalControls.Add(input);
+        wagerInput=input.AddComponent<InputField>();var text=Label(input.transform,"",26,Vector2.zero,new Vector2(470,60));text.color=Color.white;text.alignment=TextAnchor.MiddleLeft;
         wagerInput.textComponent=text;wagerInput.contentType=InputField.ContentType.IntegerNumber;wagerInput.characterLimit=7;wagerInput.text="100";
         ActionButton("WAGER & INVITE EVERYONE",-110,CreateTournament);
     }
@@ -246,7 +246,7 @@ public sealed class FishingTournament : MonoBehaviour
         Open("lobby","TOURNAMENT LOBBY");
         if(session.IsHost && current?.phase=="inviting")ActionButton("CANCEL & REFUND ENTRIES",-260,()=>{commands.Enqueue(new Command{op="cancel",id=current.id});Close();});
     }
-    private void ShowResults(){Open("results",current.phase=="ended"?"TOURNAMENT ENDED":"TOURNAMENT CANCELLED");RefreshText();}
+    private void ShowResults(){Open("results",current.phase=="ended"?"TOURNAMENT COMPLETE":"TOURNAMENT CANCELLED");BuildResults();RefreshText();}
     private void RefreshText()
     {
         if(current==null || body==null)return;
@@ -262,18 +262,16 @@ public sealed class FishingTournament : MonoBehaviour
         else if(screen=="announcement")body.text="CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Other species do not score.\n\nStarts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-(Time.realtimeSinceStartup-receivedAt)))+" seconds";
         else if(screen=="results")
         {
-            var text=new StringBuilder(string.IsNullOrEmpty(current.winnerName)?current.reason:current.winnerName+" WINS "+current.pool.ToString("N0")+" COINS!");
-            text.Append("\n"+current.speciesName+" • "+current.islandName+"\n\n");int rank=0;
-            foreach(var e in current.entries??new Entry[0])if(e.status=="joined")text.AppendLine((++rank)+". "+e.name+" — "+e.points.ToString("N0")+" points ("+e.catches+" fish)");
-            text.Append("\nBiggest catch: "+(current.biggestKg>0?current.biggestName+" — "+current.biggestKg.ToString("0.00")+" kg":"None"));body.text=text.ToString();
+            RefreshResults();
         }
     }
     private void Open(string page,string heading)
     {
-        foreach(var go in modalControls)Destroy(go);modalControls.Clear();wagerInput=null;
-        screen=page;body.rectTransform.anchoredPosition=new Vector2(0,45);body.rectTransform.sizeDelta=new Vector2(850,450);notice="";noticeText.text="";title.text=heading;body.text="";shade.SetActive(true);modal.SetActive(true);ModalOpen=true;controls.SetMenuOpen(true);
+        ClearResults();
+        foreach(var go in modalControls){go.SetActive(false);Destroy(go);}modalControls.Clear();wagerInput=null;
+        screen=page;LayoutModal(page=="results");body.gameObject.SetActive(page!="results");body.rectTransform.anchoredPosition=new Vector2(0,45);body.rectTransform.sizeDelta=new Vector2(850,450);notice="";noticeText.text="";title.text=heading;body.text="";shade.SetActive(true);modal.SetActive(true);ModalOpen=true;controls.SetMenuOpen(true);
     }
-    private void Close(){if(shade!=null)shade.SetActive(false);if(modal!=null)modal.SetActive(false);screen="";ModalOpen=false;if(controls!=null)controls.SetMenuOpen(ShopWorldHUD.MenuOpen);}
+    private void Close(){ClearResults();if(shade!=null)shade.SetActive(false);if(modal!=null)modal.SetActive(false);screen="";ModalOpen=false;if(controls!=null)controls.SetMenuOpen(ShopWorldHUD.MenuOpen);}
     private void Notice(string text){notice=text;if(toast!=null){toast.text=text;toastUntil=Time.realtimeSinceStartup+7f;}if(noticeText!=null)noticeText.text=text;Debug.Log("[Tournament] "+text);}
     private void BuildUI()
     {
@@ -286,10 +284,12 @@ public sealed class FishingTournament : MonoBehaviour
         shade=Panel("Tournament shade",go.transform,Vector2.zero,Vector2.zero,new Color(0,0,0,.55f));
         var cover=shade.GetComponent<RectTransform>();cover.anchorMin=Vector2.zero;cover.anchorMax=Vector2.one;cover.offsetMin=cover.offsetMax=Vector2.zero;
         modal=Panel("Tournament",shade.transform,Vector2.zero,new Vector2(940,760),new Color(.025f,.09f,.12f,.99f));
-        title=Label(modal.transform,"",30,new Vector2(-20,315),new Vector2(790,75));title.color=new Color(1,.85f,.42f);
+        title=Label(modal.transform,"",30,new Vector2(-20,315),new Vector2(790,75));title.color=Color.white;title.fontStyle=FontStyle.Bold;
         body=Label(modal.transform,"",25,new Vector2(0,45),new Vector2(850,450));body.resizeTextForBestFit=true;body.resizeTextMinSize=17;body.resizeTextMaxSize=25;
-        Button(modal.transform,"×",new Vector2(420,325),new Vector2(65,60),()=>{if(screen=="invitation")Decline();else Close();});
+        closeButton=Button(modal.transform,"CLOSE",new Vector2(420,325),new Vector2(65,60),()=>{if(screen=="invitation")Decline();else Close();});
         noticeText=Label(modal.transform,"",20,new Vector2(0,-325),new Vector2(860,65));noticeText.color=new Color(1,.75f,.4f);
+        LargeShopBackdropTheme.Apply(modal.GetComponent<Image>());
+        headerTrophy=Artwork(modal.transform,"Trophy",Vector2.zero,new Vector2(64,70));
         Close();
     }
     private void ActionButton(string text,float y,UnityEngine.Events.UnityAction action,bool enabled=true)
@@ -309,7 +309,7 @@ public sealed class FishingTournament : MonoBehaviour
     }
     private static Button Button(Transform parent,string label,Vector2 at,Vector2 size,UnityEngine.Events.UnityAction action)
     {
-        var g=Panel(label,parent,at,size,new Color(.06f,.34f,.37f,1));Label(g.transform,label,24,Vector2.zero,size-new Vector2(16,8));var b=g.AddComponent<Button>();b.onClick.AddListener(action);return b;
+        var g=Panel(label,parent,at,size,new Color(.06f,.34f,.37f,1));Label(g.transform,label,24,Vector2.zero,size-new Vector2(16,8));FishingHudTheme.Panel(g,label=="DECLINE" || label.StartsWith("CANCEL")?5:1);var b=g.AddComponent<Button>();b.onClick.AddListener(action);return b;
     }
     private void OnDestroy(){if(modal!=null && modal.activeSelf)Close();}
 }

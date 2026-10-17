@@ -14,7 +14,7 @@ public sealed class FishIndexLivePreview : MonoBehaviour
     private Quaternion tailRest;
     private static int nextStudio;
 
-    public void Show(RawImage image,int species)
+    public void Show(RawImage image,int species,float aspect=2f)
     {
         Clear();
         target=image;
@@ -82,11 +82,12 @@ public sealed class FishIndexLivePreview : MonoBehaviour
             if(renderer is SkinnedMeshRenderer skin)skin.updateWhenOffscreen=true;
         }
         if(!found){Clear();return;}
-        texture=new RenderTexture(768,384,16,RenderTextureFormat.ARGB32){name="FishIndexLive",antiAliasing=1};
+        aspect=Mathf.Clamp(aspect,1f,4f);
+        texture=new RenderTexture(768,Mathf.RoundToInt(768/aspect),16,RenderTextureFormat.ARGB32){name="FishIndexLive",antiAliasing=1};
         texture.Create();
         studio.targetTexture=texture;
-        studio.aspect=2f;
-        studio.orthographicSize=Mathf.Max(bounds.size.x/2f,bounds.size.y)*.67f;
+        studio.aspect=aspect;
+        studio.orthographicSize=Mathf.Max(bounds.size.x/aspect,bounds.size.y)*.67f;
         studio.transform.position=bounds.center+Vector3.back*(bounds.size.z+5f);
         studio.transform.rotation=Quaternion.identity;
         target.texture=texture;
