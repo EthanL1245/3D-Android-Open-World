@@ -22,6 +22,8 @@ public sealed class ShopProgress : MonoBehaviour
             }
             else Migrate();
             bool migrated=Data.EnsureCatchStats();
+            if(string.IsNullOrWhiteSpace(Data.playerName))
+            {Data.playerName=NormalizePlayerName(PlayerPrefs.GetString("MultiplayerGuestName","Angler"));migrated=true;}
             migrated|=Data.EnsureLures();
             migrated|=Data.EnsureGearOwnership();
             if(!Data.infiniteWormsMigrated){Data.baitEquipped=0;Data.infiniteWormsMigrated=true;migrated=true;}
@@ -97,6 +99,24 @@ public sealed class ShopProgress : MonoBehaviour
         string json=JsonUtility.ToJson(Data);
         if(PlayerPrefs.HasKey(SaveKey)) PlayerPrefs.SetString(SaveKey+".backup",PlayerPrefs.GetString(SaveKey));
         PlayerPrefs.SetString(SaveKey,json); PlayerPrefs.Save(); Changed?.Invoke();
+    }
+    public static string NormalizePlayerName(string value)
+    {
+        var name=new System.Text.StringBuilder();
+        foreach(char c in value??"")
+            if(c>='a' && c<='z' || c>='A' && c<='Z' || c>='0' && c<='9' || c==' ' || c=='_' || c=='-')name.Append(c);
+        string clean=name.ToString().Trim();
+        return clean.Length==0?"Angler":clean.Substring(0,Math.Min(20,clean.Length));
+    }
+    public bool SetPlayerName(string value)
+    {
+        if(ReadOnly || Data==null)return false;
+        string name=NormalizePlayerName(value);
+        if(Data.playerName==name)return true;
+        string previous=Data.playerName;
+        Data.playerName=name;
+        try{Save();return true;}
+        catch(Exception ex){Data.playerName=previous;Debug.LogError("Could not save player name: "+ex.Message);return false;}
     }
     public bool Commit(bool changed) { if(changed) Save(); return changed; }
     public bool CanTrade => !ReadOnly && ShopDimensionManager.Instance!=null && ShopDimensionManager.Instance.InShop;

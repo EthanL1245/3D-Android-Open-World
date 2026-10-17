@@ -296,3 +296,38 @@ test('HTTP tournament invitations, scoring, snapshots and receipt recovery work 
  assert.equal(reply.tournament.winnerId,guest.id);
  const payout=await post('/v1/tournament-receipt',{ticket:gt,cancelMissing:true});assert.equal(payout.payout,150);assert.equal(payout.ready,true);
 });
+
+test('renaming updates only the authenticated player and persists when older polls omit the name',async t=>{
+ const post=await fixture(t);
+ const host=await post('/v1/open',hello);
+ const guest=await post('/v1/join',{...hello,name:'Guest',code:host.code});
+ let reply=await post('/v1/state',{pose:pose(),name:'  New_Angler-2!  ',id:host.id},guest.token);
+ assert.equal(reply.players.find(p=>p.id===guest.id).name,'New_Angler-2');
+ assert.equal(reply.players.find(p=>p.id===host.id).name,'Tester');
+ reply=await post('/v1/state',{pose:pose()},guest.token);
+ assert.equal(reply.players.find(p=>p.id===guest.id).name,'New_Angler-2');
+ reply=await post('/v1/state',{pose:pose(),name:'x'.repeat(30)},guest.token);
+ assert.equal(reply.players.find(p=>p.id===guest.id).name,'x'.repeat(20));
+ reply=await post('/v1/state',{pose:pose(),name:' <>! '},guest.token);
+ assert.equal(reply.players.find(p=>p.id===guest.id).name,'Angler');
+});
+
+test('rename during a tournament preserves scores and uses the new name in final results',async t=>{
+ let now=1000;const post=await fixture(t,{clock:()=>now,timeout:1000000,tournamentRandom:()=>0});
+ const state={...pose(),islandMask:31,castSequence:10};
+ const host=await post('/v1/open',{...hello,pose:state});
+ const guest=await post('/v1/join',{...hello,name:'Before',code:host.code,pose:state});
+ const id='a'.repeat(32),ht='b'.repeat(32),gt='c'.repeat(32);
+ await post('/v1/tournament',{pose:state,tournament:{op:'create',id,ticket:ht,island:0,wager:75,balance:100}},host.token);
+ let reply=await post('/v1/tournament',{pose:state,tournament:{op:'join',id,ticket:gt,balance:100}},guest.token);
+ now=6000;await post('/v1/state',{pose:state},host.token);
+ reply=await post('/v1/tournament',{pose:{...state,castSequence:11},tournament:{op:'catch',id,island:0,species:reply.tournament.species,cast:11,kg:2}},guest.token);
+ reply=await post('/v1/state',{pose:{...state,castSequence:11},name:'After'},guest.token);
+ const entry=reply.tournament.entries.find(e=>e.id===guest.id);
+ assert.equal(entry.name,'After');assert.equal(entry.points,200);assert.equal(entry.catches,1);
+ now=366000;reply=await post('/v1/state',{pose:state},host.token);
+ assert.equal(reply.tournament.winnerName,'After');assert.equal(reply.tournament.biggestName,'After');
+ reply=await post('/v1/state',{pose:state,name:'Next match'},guest.token);
+ assert.equal(reply.tournament.winnerName,'After');assert.equal(reply.tournament.biggestName,'After');
+ assert.equal((await post('/v1/tournament-receipt',{ticket:gt,cancelMissing:true})).payout,150);
+});

@@ -232,6 +232,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     public void Receive(FishingMultiplayer.Pose peer)
     {
         World = peer.world;
+        if(label!=null && peer is FishingMultiplayer.Peer namedPeer)
+        {
+            var nameText=label.GetComponent<TextMesh>();
+            if(nameText!=null && nameText.text!=namedPeer.name)nameText.text=namedPeer.name;
+        }
         // Local third person already renders the original fishing line and lure.
         if(localSource==null)
         {

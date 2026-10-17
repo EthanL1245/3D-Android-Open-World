@@ -5,6 +5,7 @@ import { randomBytes, randomInt } from 'node:crypto';
 
 export const PROTOCOL = 'fishing-walk-v1';
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const playerName = value => value.replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0,20) || 'Angler';
 export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerPath = null, tournamentRandom } = {}) {
   const tournaments=createTournaments({clock,ledgerPath,random:tournamentRandom});
   const rooms = new Map(), sessions = new Map(), limits = new Map();
@@ -66,7 +67,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
   }
   function add(room, data) {
     const p = { id: randomBytes(8).toString('hex'), token: randomBytes(32).toString('hex'),
-      name: typeof data.name === 'string' ? data.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0,20) || 'Angler' : 'Angler',
+      name: typeof data.name === 'string' ? playerName(data.name) : 'Angler',
       pose: pose(data.pose), seen: clock(), room };
     room.players.set(p.id, p); sessions.set(p.token, p);
     acceptBoatRide(p,null);
@@ -102,6 +103,15 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
     if (path !== '/v1/state' && path !== '/v1/tournament') fail(404, 'Not found.');
     const previous=p.pose;
     p.pose = pose(data.pose); p.seen = clock();
+    if(typeof data.name==='string') {
+      p.name=playerName(data.name);
+      // Keep active tournament entries tied to the same identity and score.
+      const tournament=p.room.tournament;
+      if(tournament && ['inviting','countdown','running'].includes(tournament.phase)) {
+        const entry=tournament.entries.find(e=>e.id===p.id);
+        if(entry)entry.name=p.name;
+      }
+    }
     acceptBoatRide(p,previous); pruneBoatRiders(p.room);
     if(path==='/v1/tournament')tournaments.action(p,data.tournament);
     return { ok:true, code:p.room.code, hostId:p.room.host, players:snapshot(p.room),tournament:tournaments.view(p.room) };

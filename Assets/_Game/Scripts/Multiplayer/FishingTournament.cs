@@ -280,7 +280,7 @@ public sealed partial class FishingTournament : MonoBehaviour
         var scaler=go.GetComponent<CanvasScaler>();scaler.uiScaleMode=CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
         hud=Label(go.transform,"",22,new Vector2(0,390),new Vector2(850,75));hud.color=new Color(1,.88f,.5f);
         toast=Label(go.transform,"",20,new Vector2(0,-400),new Vector2(1000,65));toast.color=new Color(1,.85f,.42f);
-        interact=Button(go.transform,"TOURNAMENT STAND",new Vector2(0,-205),new Vector2(320,65),OpenStand);
+        interact=Button(go.transform,"TOURNAMENT STAND",new Vector2(0,-300),new Vector2(360,85),OpenStand);
         shade=Panel("Tournament shade",go.transform,Vector2.zero,Vector2.zero,new Color(0,0,0,.55f));
         var cover=shade.GetComponent<RectTransform>();cover.anchorMin=Vector2.zero;cover.anchorMax=Vector2.one;cover.offsetMin=cover.offsetMax=Vector2.zero;
         modal=Panel("Tournament",shade.transform,Vector2.zero,new Vector2(940,760),new Color(.025f,.09f,.12f,.99f));

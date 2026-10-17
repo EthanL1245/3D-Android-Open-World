@@ -32,7 +32,14 @@ public sealed class FishingMultiplayer : MonoBehaviour
     public string Status { get; private set; } = "Offline — your game stays local.";
     public int PlayerCount { get; private set; }
     public bool IsHost { get; private set; }
-    public string PlayerName { get; set; } = "Angler";
+    public string PlayerName
+    {
+        get
+        {
+            if(equipment==null)equipment=GetComponent<ShopProgress>();
+            return ShopProgress.NormalizePlayerName(equipment?.Data?.playerName ?? PlayerPrefs.GetString("MultiplayerGuestName","Angler"));
+        }
+    }
     public string LocalId => id;
     internal string SessionToken => token;
     private FishingBoatMultiplayer boats;
@@ -57,7 +64,6 @@ public sealed class FishingMultiplayer : MonoBehaviour
         player=GetComponent<FirstPersonController>();
         boats=GetComponent<FishingBoatMultiplayer>();
         if(boats==null)boats=gameObject.AddComponent<FishingBoatMultiplayer>();
-        PlayerName=PlayerPrefs.GetString("MultiplayerGuestName","Angler");
     }
     public void OpenServer() { Begin(true,""); }
     public void JoinServer(string code) { Begin(false,code==null?"":code.Trim().ToUpperInvariant()); }
@@ -70,7 +76,6 @@ public sealed class FishingMultiplayer : MonoBehaviour
         {Status="Return to the fishing islands before opening or joining.";return;}
         previousBackground=Application.runInBackground;Application.runInBackground=true;backgroundOverride=true;
         Busy=true;
-        PlayerPrefs.SetString("MultiplayerGuestName",PlayerName ?? "Angler");
         Status=host?"Opening server…":"Joining server…";
         loop=StartCoroutine(ConnectAndPoll(host,code));
     }
@@ -126,7 +131,7 @@ public sealed class FishingMultiplayer : MonoBehaviour
         {
             yield return new WaitForSecondsRealtime(.1f);
             answer=null;
-            yield return Post("/v1/state",new Message{pose=LocalPose()},token,r=>answer=r);
+            yield return Post("/v1/state",new Message{name=PlayerName,pose=LocalPose()},token,r=>answer=r);
             if(answer==null || !answer.ok)
             {
                 failures++;

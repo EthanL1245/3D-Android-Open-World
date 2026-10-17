@@ -16,6 +16,7 @@ using System.Collections.Generic;
 [Serializable] public sealed class ShopLedger
 {
     public int version = 1, coins;
+    public string playerName;
     public List<TournamentWager> tournamentWagers = new List<TournamentWager>();
     public bool brinebreakDiscovered;
     public bool bluewaterDiscovered;

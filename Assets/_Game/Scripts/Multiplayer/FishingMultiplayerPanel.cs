@@ -6,14 +6,14 @@ public sealed class FishingMultiplayerPanel : MonoBehaviour
     private FishingMultiplayer session;
     private FirstPersonController player;
     private Text status;
-    private InputField guestName,code;
+    private InputField code;
     private Button open,join,leave,copy;
     private bool blocked;
     private Font font;
     public static void Build(RectTransform parent,FirstPersonController player)
     {
         var go=new GameObject("MultiplayerPanel",typeof(RectTransform),typeof(LayoutElement));
-        go.transform.SetParent(parent,false);go.GetComponent<LayoutElement>().preferredHeight=650;
+        go.transform.SetParent(parent,false);go.GetComponent<LayoutElement>().preferredHeight=570;
         var panel=go.AddComponent<FishingMultiplayerPanel>();panel.player=player;panel.session=FishingMultiplayer.For(player);panel.Create();
     }
     private void Create()
@@ -22,14 +22,12 @@ public sealed class FishingMultiplayerPanel : MonoBehaviour
         Label("PLAY TOGETHER",0,55,32);
         Label("Open a room and share its code. Friends join with the same game version.\nPlayer movement is shared; catches, boats and saves stay local.",60,80,23);
         status=Label("",145,65,25);
-        guestName=Field("Your name",220);guestName.characterLimit=20;
-        guestName.text=session!=null?session.PlayerName:"Angler";
-        code=Field("Enter 4-character room code",300);code.characterLimit=4;code.contentType=InputField.ContentType.Alphanumeric;
-        open=Action("OPEN SERVER",390,0,.49f,()=>{session.PlayerName=guestName.text;session.OpenServer();});
-        join=Action("JOIN SERVER",390,.51f,1,()=>{session.PlayerName=guestName.text;session.JoinServer(code.text);});
-        copy=Action("COPY ROOM CODE",480,0,.49f,()=>GUIUtility.systemCopyBuffer=session.Code);
-        leave=Action("LEAVE SERVER",480,.51f,1,()=>session.LeaveServer());
-        Label("Close this menu to walk around. Use the same island to meet up.\nLeaving as host closes the room for everyone.",570,75,23);
+        code=Field("Enter 4-character room code",220);code.characterLimit=4;code.contentType=InputField.ContentType.Alphanumeric;
+        open=Action("OPEN SERVER",310,0,.49f,()=>session.OpenServer());
+        join=Action("JOIN SERVER",310,.51f,1,()=>session.JoinServer(code.text));
+        copy=Action("COPY ROOM CODE",400,0,.49f,()=>GUIUtility.systemCopyBuffer=session.Code);
+        leave=Action("LEAVE SERVER",400,.51f,1,()=>session.LeaveServer());
+        Label("Close this menu to walk around. Use the same island to meet up.\nLeaving as host closes the room for everyone.",490,75,23);
     }
     private void Update()
     {
@@ -38,8 +36,8 @@ public sealed class FishingMultiplayerPanel : MonoBehaviour
         open.interactable=join.interactable=!session.Busy && !session.Connected;
         leave.interactable=session.Connected || session.Busy;
         copy.interactable=session.Connected;
-        guestName.interactable=code.interactable=!session.Connected && !session.Busy;
-        bool typing=guestName.isFocused || code.isFocused;
+        code.interactable=!session.Connected && !session.Busy;
+        bool typing=code.isFocused;
         if(typing!=blocked){blocked=typing;if(player!=null)player.SetUIBlocked(typing);}
     }
     private void OnDisable()

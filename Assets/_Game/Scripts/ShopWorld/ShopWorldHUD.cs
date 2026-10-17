@@ -33,6 +33,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private GameObject root, modal, nearbyButton;
     private GameObject storeHeader, storeBody;
     private Button menuClose, perspectiveToggle;
+    private GameObject profileNameRow;
+    private InputField profileNameInput;
     private RectTransform list;
     private ScrollRect scroll;
     private Text heading, wallet, feedback, nearLabel;
@@ -88,7 +90,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(root==null || travel.Traveling) return;
         if(MenuOpen && shopSession!=null && destination!=shopSession && !(shopSession=="market" && destination=="sell-confirm"))return;
         if(MenuOpen && page==destination && !dirty)return;
-        if(destination!=page) message="";
+        if(destination!=page){SaveProfileName();message="";}
         if(!MenuOpen)
         {
             shopSession=destination=="gear" || destination=="market"?destination:null;
@@ -101,6 +103,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     public void Close()
     {
         if(travel!=null && travel.Traveling) return;
+        SaveProfileName();
         MenuOpen=false;shopSession=null;bagPicker=null;habitatPicker=null;message="";
         if(previews!=null)previews.Suspend();
         if(modal!=null) modal.SetActive(false);
@@ -149,6 +152,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         Anchor(storeBody.GetComponent<RectTransform>(),0,0,1,1,0,60,0,-258);
         storeHeader.SetActive(false);storeBody.SetActive(false);
         heading=Label(modal.transform,"MENU / TRAVEL",36,gold); Anchor(heading.rectTransform,0,1,1,1,24,-62,-150,-12);
+        BuildProfileName();
         wallet=Label(modal.transform,"",22,Color.white); Anchor(wallet.rectTransform,0,1,1,1,24,-92,-24,-62);
         Button close=ButtonAt(modal.transform,"CLOSE",Close); menuClose=close; Rect(close.GetComponent<RectTransform>(),Vector2.one,Vector2.one,Vector2.one,new Vector2(-18,-16),new Vector2(160,64));
         perspectiveToggle=ButtonAt(modal.transform,"",()=>
@@ -177,6 +181,34 @@ public sealed class ShopWorldHUD : MonoBehaviour
         feedback=Label(modal.transform,"",18,gold); Anchor(feedback.rectTransform,0,0,1,0,24,10,-24,60);
         modal.SetActive(false); nearbyButton.SetActive(false);
     }
+    private void BuildProfileName()
+    {
+        profileNameRow=new GameObject("Profile name",typeof(RectTransform));
+        profileNameRow.transform.SetParent(modal.transform,false);
+        Anchor(profileNameRow.GetComponent<RectTransform>(),.42f,1,1,1,0,-62,-270,-12);
+        var caption=Label(profileNameRow.transform,"Name:",27,Color.white);
+        Anchor(caption.rectTransform,0,0,0,1,0,0,85,0);
+        var field=Panel("Saved player name",profileNameRow.transform,Color.white);
+        Anchor(field.GetComponent<RectTransform>(),0,0,1,1,90,0,0,0);
+        FishingHudTheme.Panel(field,3);
+        profileNameInput=field.AddComponent<InputField>();
+        profileNameInput.targetGraphic=field.GetComponent<Image>();
+        profileNameInput.characterLimit=20;profileNameInput.lineType=InputField.LineType.SingleLine;
+        var text=Label(field.transform,"",26,Color.white);text.supportRichText=false;text.alignment=TextAnchor.MiddleLeft;
+        text.resizeTextForBestFit=false;Anchor(text.rectTransform,0,0,1,1,14,4,-14,-4);
+        profileNameInput.textComponent=text;
+        profileNameInput.SetTextWithoutNotify(ShopProgress.NormalizePlayerName(progress.Data.playerName));
+        profileNameInput.onEndEdit.AddListener(_=>SaveProfileName());
+    }
+    private void OnApplicationPause(bool paused){if(paused)SaveProfileName();}
+    private void OnApplicationQuit(){SaveProfileName();}
+    private void SaveProfileName()
+    {
+        if(profileNameInput==null || profileNameRow==null || !profileNameRow.activeInHierarchy)return;
+        if(!progress.SetPlayerName(profileNameInput.text))
+        {message="Could not save your name. Please try again.";dirty=true;}
+        profileNameInput.SetTextWithoutNotify(ShopProgress.NormalizePlayerName(progress.Data.playerName));
+    }
     private void Refresh(bool top)
     {
         dirty=false;
@@ -199,7 +231,13 @@ public sealed class ShopWorldHUD : MonoBehaviour
         bool independent=index || page=="bait" || habitatAddId!=null;
         SetStorePresentation(shopSession=="gear");
         perspectiveToggle.gameObject.SetActive(page=="travel");
-        if(page=="travel") Anchor(heading.rectTransform,0,1,1,1,24,-62,-270,-12);
+        profileNameRow.SetActive(page=="travel");
+        if(page=="travel")
+        {
+            Anchor(heading.rectTransform,0,1,.42f,1,24,-62,-18,-12);
+            if(!profileNameInput.isFocused)profileNameInput.SetTextWithoutNotify(ShopProgress.NormalizePlayerName(progress.Data.playerName));
+            profileNameInput.interactable=!progress.ReadOnly;
+        }
         bool fishIndex=page=="reef-fish";
         heading.gameObject.SetActive(!fishIndex);wallet.gameObject.SetActive(!fishIndex);
         feedback.gameObject.SetActive(!fishIndex);scroll.gameObject.SetActive(!fishIndex);
