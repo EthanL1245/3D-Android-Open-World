@@ -121,7 +121,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         // Palm Pond and active player reeling use FishingSystem's normal movement.
         // Preserve our previous-position baseline so releasing REEL cannot produce a
         // fake giant planner step from an old position.
-        if ((bool)PondCastField.GetValue(fishing) || reeling)
+        if ((bool)PondCastField.GetValue(fishing) || reeling || fishing.IsSirenCalling)
         {
             ResetRouteOnly();
             previousBobberPosition = bobber.transform.position;

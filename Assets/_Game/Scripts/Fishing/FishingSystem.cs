@@ -197,6 +197,10 @@ public class FishingSystem : MonoBehaviour
 
     private ShopProgress shopProgress;
     private bool shopMode;
+    public AnglerProgression Progression => shopProgress != null ? shopProgress.Data?.angler : null;
+    private float ProgressReel => Progression != null ? Progression.Multiplier(2) : 1f;
+    public bool IsSirenCalling => dragDamage != null && dragDamage.SirenSeconds > 0f;
+    public float ProgressDifficulty => GetEffectiveFightDifficulty(FishCatalog.Get(hookedSpeciesId), hookedWeightKg);
     private float rodPower=1f, reelPower=1f, lineGuard=1f;
     private float baseCastRange, basePreferredRange, baseLineRange;
     private int activeBait;
@@ -1077,7 +1081,7 @@ public class FishingSystem : MonoBehaviour
             stateTimer-=Time.deltaTime;if(stateTimer<=0)BeginBite();return;
         }
         if(!reeling)return;
-        float step=Mathf.Min(lureLength-lureRetrieved,2.4f*reelPower*Time.deltaTime);
+        float step=Mathf.Min(lureLength-lureRetrieved,2.4f*reelPower*ProgressReel*Time.deltaTime);
         if(step<=0){FailFishing("Lure retrieved. Cast again.");return;}
         lureRetrieved+=step;
         castPoint=Vector3.Lerp(lureStart,lureEnd,lureRetrieved/lureLength);
@@ -1116,6 +1120,7 @@ public class FishingSystem : MonoBehaviour
             // One multiplier on the original species' weight, before temperament/HP
             // and the existing depth-quality pass. It may exceed the normal zone cap.
             if(!pondCast) hookedWeightKg*=castHotspotMultiplier;
+            hookedWeightKg *= Progression != null ? Progression.Multiplier(5) : 1f;
 
             fishUnconscious = false;
             fishOnShore = false;
@@ -1263,6 +1268,7 @@ public class FishingSystem : MonoBehaviour
                 hookedWeightKg
             );
 
+        float tensionBefore = fightTension;
         fightTime += Time.deltaTime;
 
         if (IsSkillStunned)
@@ -1373,6 +1379,7 @@ public class FishingSystem : MonoBehaviour
                         naturalResistance *
                         0.34f
                     ) *
+                    (dragDamage != null && dragDamage.ImmortalitySeconds > 0f ? 0f : 1f) *
                     FishingDragRules.ReelingTensionMultiplier(CurrentDrag) * 1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
@@ -1473,6 +1480,9 @@ public class FishingSystem : MonoBehaviour
             UpdateUnconsciousFishVisual();
         }
 
+        // +100% control halves positive tension gain; resting recovery is unchanged.
+        if(fightTension > tensionBefore && Progression != null)
+            fightTension = tensionBefore + (fightTension - tensionBefore) / Progression.Multiplier(3);
         fightTension =
             Mathf.Clamp01(
                 fightTension
@@ -1600,6 +1610,10 @@ public class FishingSystem : MonoBehaviour
             inventory.Fish[newIndex];
         if(!pondCast)GetComponent<FishingTournament>()?.ReportCatch(record,CastBiome,CastSequence);
 
+        int oldLevel = Progression != null ? Progression.level : 1;
+        int earnedXp = shopProgress != null ? shopProgress.AwardFishingXp(fishMaxHealth, ProgressDifficulty) : 0;
+        string xpCaption = earnedXp > 0 ? "  +" + earnedXp + " XP" : "";
+        if(Progression != null && Progression.level > oldLevel) xpCaption += "  LEVEL " + Progression.level + "!";
         ResetLine();
 
         state = FishingState.Idle;
@@ -1608,8 +1622,8 @@ public class FishingSystem : MonoBehaviour
         hud.ShowCatch(
             record,
             shoreCatch
-                ? "LANDED ON SHORE!"
-                : "CAUGHT!",
+                ? "LANDED ON SHORE!" + xpCaption
+                : "CAUGHT!" + xpCaption,
             personalBest
         );
 
@@ -2249,7 +2263,7 @@ public class FishingSystem : MonoBehaviour
 
                 float reelPullSpeed =
                     radialOutwardSpeed +
-                    inwardGain * reelPower;
+                    inwardGain * reelPower * ProgressReel;
 
                 velocity +=
                     toPlayer *
@@ -2257,6 +2271,11 @@ public class FishingSystem : MonoBehaviour
             }
         }
 
+        if (IsSirenCalling)
+        {
+            // Use the same water/shore collision path below as ordinary fish motion.
+            velocity = -away * (2f + (reeling ? .72f * reelPower * ProgressReel : 0f));
+        }
         if (velocity.sqrMagnitude <
             0.001f)
         {
@@ -2272,7 +2291,7 @@ public class FishingSystem : MonoBehaviour
             Time.deltaTime;
 
         bool requireAway =
-            !reeling;
+            !reeling && !IsSirenCalling;
 
         if (TryMoveBobberInValidWater(
                 current,
@@ -2551,7 +2570,7 @@ public class FishingSystem : MonoBehaviour
             current +
             direction *
             (
-                3.70f * reelPower *
+                3.70f * reelPower * ProgressReel *
                 Time.deltaTime
             );
 
@@ -2635,7 +2654,7 @@ public class FishingSystem : MonoBehaviour
             Vector3 current = bobber.transform.position;
             Vector3 toPlayer = transform.position - current;
             toPlayer.y = 0f;
-            float step = Mathf.Min(0.72f * reelPower * Time.deltaTime, Mathf.Max(0f, toPlayer.magnitude - CatchDistance));
+            float step = Mathf.Min(0.72f * reelPower * ProgressReel * Time.deltaTime, Mathf.Max(0f, toPlayer.magnitude - CatchDistance));
             if (TryMoveBobberInValidWater(current, toPlayer.normalized, -toPlayer.normalized, step, false, out Vector3 next))
                 bobber.transform.position = next;
         }

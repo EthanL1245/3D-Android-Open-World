@@ -8,6 +8,41 @@ public class FishingHUD : MonoBehaviour
 
     private GameObject root;
     private GameObject hotbarObject,dragPanel,skillPanel;
+    private GameObject abilityBar;
+    private readonly Button[] abilityButtons=new Button[4];
+    private readonly Text[] abilityLabels=new Text[4];
+    private void UpdateAbilityButtons(bool fighting,bool live)
+    {
+        if(abilityBar==null && fighting)
+        {
+            abilityBar=new GameObject("FightSpecialAbilities",typeof(RectTransform));abilityBar.transform.SetParent(root.transform,false);
+            PersonalStatsView.Place(abilityBar.GetComponent<RectTransform>(),.30f,.19f,.70f,.31f);
+            int slot=0;
+            for(int i=0;i<4;i++)
+            {
+                if(i==1)continue;
+                int id=i;
+                var go=new GameObject("Use_"+AnglerProgression.AbilityAssets[i],typeof(RectTransform),typeof(Image),typeof(Button));go.transform.SetParent(abilityBar.transform,false);
+                PersonalStatsView.Place(go.GetComponent<RectTransform>(),slot/3f,0,(slot+1)/3f,1,4);slot++;
+                go.GetComponent<Image>().sprite=PersonalStatsView.Art(AnglerProgression.AbilityAssets[i]);
+                abilityButtons[i]=go.GetComponent<Button>();abilityButtons[i].onClick.AddListener(()=>dragOwner.UseAbility(id));
+                abilityLabels[i]=PersonalStatsView.Label(go.transform,"",20,.31f,.12f,.95f,.86f,Color.white,TextAnchor.MiddleCenter);
+            }
+        }
+        if(abilityBar==null)return;
+        abilityBar.SetActive(fighting && live);
+        if(!fighting || !live)return;
+        if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();
+        for(int i=0;i<4;i++)
+        {
+            if(abilityButtons[i]==null)continue;
+            bool unlocked=system!=null && system.Progression!=null && system.Progression.Unlocked(i);
+            abilityButtons[i].gameObject.SetActive(unlocked);
+            abilityButtons[i].interactable=dragOwner!=null && dragOwner.CanUseAbility(i);
+            float remaining=dragOwner==null?0f:i==2?dragOwner.ImmortalitySeconds:i==3?dragOwner.SirenSeconds:0f;
+            abilityLabels[i].text=AnglerProgression.AbilityNames[i]+"\n"+(remaining>0f?remaining.ToString("0.0")+"s":dragOwner!=null && dragOwner.AbilityUsed(i)?"USED":"TAP TO USE");
+        }
+    }
     private RectTransform skillFill,dragRect,joystickRect;
     private Text skillLabel,dragTitle;
     private Slider dragSlider;
@@ -188,6 +223,7 @@ public class FishingHUD : MonoBehaviour
     public void SetDragFightUI(bool fighting,bool live,int mode,float charge,float cooldown=0f)
     {
         if(root==null)return;
+        UpdateAbilityButtons(fighting,live);
         if(fighting && dragPanel==null)BuildDragUI();
         if(hotbarObject!=null)hotbarObject.SetActive(!fighting);
         if(dragPanel==null)return;

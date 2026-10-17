@@ -22,6 +22,8 @@ public sealed class ShopProgress : MonoBehaviour
             }
             else Migrate();
             bool migrated=Data.EnsureCatchStats();
+            if(Data.angler==null){Data.angler=new AnglerProgression();migrated=true;}
+            migrated|=Data.angler.Normalize();
             if(string.IsNullOrWhiteSpace(Data.playerName))
             {Data.playerName=NormalizePlayerName(PlayerPrefs.GetString("MultiplayerGuestName","Angler"));migrated=true;}
             migrated|=Data.EnsureLures();
@@ -91,6 +93,15 @@ public sealed class ShopProgress : MonoBehaviour
         ShopCatalog.SetActiveLureVariant(Data.lureEquipped);
         Notice=refunded>0 ? $"Moved {rescued} fish to your bag and refunded {refunded*AquariumSystem.TankPrice} coins for old aquariums." : "Welcome to Tideglass Quay. Sell catches to fund your first upgrades.";
         Save();
+    }
+    public int AwardFishingXp(int health, float difficulty)
+    {
+        if(ReadOnly || Data==null)return 0;
+        if(Data.angler==null)Data.angler=new AnglerProgression();
+        int xp=AnglerProgression.CatchXp(health,difficulty);
+        Data.angler.AddXp(xp,count=>UnityEngine.Random.Range(0,count));
+        Save();
+        return xp;
     }
     public void Save()
     {

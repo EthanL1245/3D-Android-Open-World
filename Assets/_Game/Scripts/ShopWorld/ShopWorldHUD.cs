@@ -36,6 +36,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private GameObject profileNameRow;
     private InputField profileNameInput;
     private RectTransform list;
+    private GameObject personalStatsView;
     private ScrollRect scroll;
     private Text heading, wallet, feedback, nearLabel;
     private string page="travel", message="";
@@ -213,6 +214,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
     {
         dirty=false;
         if(fishIndexView!=null)fishIndexView.gameObject.SetActive(false);
+        if(personalStatsView!=null){personalStatsView.SetActive(false);Destroy(personalStatsView);}
         float position=scroll.verticalNormalizedPosition;
         for(int i=list.childCount-1;i>=0;i--) { list.GetChild(i).gameObject.SetActive(false); Destroy(list.GetChild(i).gameObject); }
         wallet.text=$"{progress.Data.coins:N0} COINS   /   {progress.Data.bag.Count}/{ShopLedger.BagLimit} FISH IN BAG   /   LOCATION: {(travel.InHome?"HOME":travel.InShop?"TIDEGLASS QUAY":ReefCatalog.Zones[IslandExpansionWorld.FishingBiome(player.transform.position)].name.ToUpperInvariant())}";
@@ -223,12 +225,13 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(index)heading.text=page=="islands"?"ISLAND / BIOME INDEX":ReefCatalog.Zones[indexBiome].name.ToUpperInvariant()+" • FISH INDEX";
         if(page=="bait")heading.text="BAIT / LURES";
         if(page=="multiplayer")heading.text="MULTIPLAYER";
+        if(page=="stats")heading.text="PERSONAL STATS";
         if(habitatAddId!=null)
         {
             var habitat=ShopCatalog.Habitat(habitatAddId);
             heading.text=habitat!=null?"ADD FISH • "+habitat.name.ToUpperInvariant():"ADD FISH";
         }
-        bool independent=index || page=="bait" || habitatAddId!=null;
+        bool independent=index || page=="bait" || page=="stats" || habitatAddId!=null;
         SetStorePresentation(shopSession=="gear");
         perspectiveToggle.gameObject.SetActive(page=="travel");
         profileNameRow.SetActive(page=="travel");
@@ -243,7 +246,14 @@ public sealed class ShopWorldHUD : MonoBehaviour
         feedback.gameObject.SetActive(!fishIndex);scroll.gameObject.SetActive(!fishIndex);
         scroll.verticalScrollbar.gameObject.SetActive(!fishIndex);
         foreach(var tab in navigationTabs)tab.SetActive(shopSession==null && !independent);
-        if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
+        if(page=="stats")
+        {
+            wallet.gameObject.SetActive(false);feedback.gameObject.SetActive(false);
+            scroll.gameObject.SetActive(false);scroll.verticalScrollbar.gameObject.SetActive(false);
+            personalStatsView=PersonalStatsView.Build(modal.transform,progress.Data.angler);
+            FishingHudTheme.Panel(menuClose.gameObject);
+        }
+        else if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
         else if(page=="gear") EquipmentPage(true); else if(page=="market") MarketPage(); else if(page=="sell-confirm") SellConfirmation();
         else if(page=="bait") BaitPage(false);
         else if(page=="multiplayer") FishingMultiplayerPanel.Build(list,player);
@@ -263,7 +273,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         modal.GetComponent<Image>().color=themed?Color.clear:ink;
         var r=modal.GetComponent<RectTransform>();
         bool index=page=="islands" || page=="reef-fish";
-        bool sharedFrame=themed || index;
+        bool sharedFrame=themed || index || page=="stats";
         // Identical size and true screen center for both themed menus.
         r.anchorMin=sharedFrame?new Vector2(.025f,.0275f):new Vector2(.045f,.045f);
         r.anchorMax=sharedFrame?new Vector2(.975f,.9725f):new Vector2(.955f,.955f);

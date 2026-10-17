@@ -134,6 +134,13 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     {
         ClearList(list);
 
+        Button stats=ButtonAt(list,"PERSONAL STATS  •  LEVELS & ABILITIES",()=>hud.Open("stats"));
+        stats.gameObject.AddComponent<LayoutElement>().preferredHeight=100f;
+        FishingHudTheme.Panel(stats.gameObject);
+        PersonalStatsView.AddMenuIcon(stats);
+        Text statsText=stats.GetComponentInChildren<Text>();
+        Anchor(statsText.rectTransform,.16f,0f,.98f,1f,0,6,0,-6);
+
         Button multiplayer=ButtonAt(list,"MULTIPLAYER  •  OPEN / JOIN SERVER",()=>hud.Open("multiplayer"));
         multiplayer.gameObject.AddComponent<LayoutElement>().preferredHeight=100f;
         SetButtonAvailable(multiplayer,!IsFishingBusy());

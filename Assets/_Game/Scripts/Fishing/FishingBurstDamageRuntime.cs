@@ -72,6 +72,27 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private float skillCooldown;
     private const float SkillCooldownSeconds = 2f;
     private bool skillQueued;
+    private readonly bool[] abilityUsed = new bool[4];
+    private float burnSeconds, burnTick;
+    public float ImmortalitySeconds { get; private set; }
+    public float SirenSeconds { get; private set; }
+    public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 1 && inFight && IsFighting() &&
+        authoritativeHp > 0 && !abilityUsed[id] && fishing.Progression != null && fishing.Progression.Unlocked(id) &&
+        !ShopWorldHUD.MenuOpen && hud != null && hud.CombatInputVisible;
+    public bool AbilityUsed(int id) => id >= 0 && id < 4 && abilityUsed[id];
+    public void UseAbility(int id)
+    {
+        if(!CanUseAbility(id))return;
+        abilityUsed[id]=true;
+        if(id==0){burnSeconds=5f;burnTick=0f;}
+        if(id==2)ImmortalitySeconds=5f;
+        if(id==3)SirenSeconds=4f;
+    }
+    private int BoostDamage(int damage, bool critical=false)
+    {
+        var stats=fishing.Progression;
+        return stats==null?damage:Mathf.RoundToInt((damage+stats.Value(0)*(critical?2:1))*stats.Multiplier(1));
+    }
     public int SelectedDrag {get;private set;}=FishingDragRules.Medium;
 
     public void SelectDrag(int mode)
@@ -98,6 +119,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         SelectedDrag=FishingDragRules.Medium;
         passiveSeconds=damageRemainder=skillCharge=skillCooldown=0f;
         skillQueued=false;
+        burnSeconds=burnTick=ImmortalitySeconds=SirenSeconds=0f;
+        Array.Clear(abilityUsed,0,abilityUsed.Length);
     }
 
     public static int NormalMinimumForTier(int tier)
@@ -193,6 +216,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             authoritativeHp = maxHp;
             ResetDrag();
             accumulatedReelSeconds = 0f;
+            if(fishing.Progression != null && fishing.Progression.Unlocked(1))
+            {
+                abilityUsed[1]=true;
+                DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*.10f)),maxHp,false);
+            }
             // Do not wait for a pointer-up here. The action button deliberately stays
             // held when HOOK changes to REEL (and when a lure auto-hooks), so the
             // existing press should immediately become reel hold time.
@@ -215,13 +243,23 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             return;
         }
 
+        ImmortalitySeconds=Mathf.Max(0f,ImmortalitySeconds-Time.deltaTime);
+        SirenSeconds=Mathf.Max(0f,SirenSeconds-Time.deltaTime);
+        if(burnSeconds>0f)
+        {
+            float elapsed=Mathf.Min(burnSeconds,Time.deltaTime);
+            burnSeconds=Mathf.Max(0f,burnSeconds-elapsed);
+            burnTick+=elapsed;
+            while(burnTick>=.5f-.00001f && authoritativeHp>0)
+            {burnTick-=.5f;DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*.01f)),maxHp,false);}
+        }
         if(skillQueued)
         {
             skillQueued=false;
             skillCharge=0f;
             skillCooldown=SkillCooldownSeconds;
             fishing.PlaySkillFeedback();
-            DealDamage(FishingDragRules.SkillDamage(RollNormalDamage()),maxHp,true);
+            DealDamage(Mathf.RoundToInt(FishingDragRules.SkillDamage(RollNormalDamage()) * (fishing.Progression != null ? fishing.Progression.Multiplier(4) : 1f)),maxHp,true);
             if (authoritativeHp > 0) fishing.ApplySkillStun();
         }
         else if (skillCooldown <= 0f)
@@ -265,7 +303,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private int RollNormalDamage()
     {
         int tier=progress!=null && progress.Data!=null?progress.Data.rodEquipped:0;
-        return RollBurstForTier(tier,UnityEngine.Random.value,1f,out _);
+        return BoostDamage(RollBurstForTier(tier,UnityEngine.Random.value,1f,out _));
     }
 
     private void DealBurst(int maxHp)
@@ -274,7 +312,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         bool critical;
         int rolledDamage = RollBurstForTier(tier, UnityEngine.Random.value, UnityEngine.Random.value, out critical);
         // Carry half points so odd Low-drag rolls deal exactly half over time.
-        float scaled=rolledDamage*FishingDragRules.DamageMultiplier(SelectedDrag)+damageRemainder;
+        float scaled=BoostDamage(rolledDamage,critical)*FishingDragRules.DamageMultiplier(SelectedDrag)+damageRemainder;
         int damage=Mathf.FloorToInt(scaled);
         damageRemainder=scaled-damage;
         DealDamage(damage,maxHp,critical);
