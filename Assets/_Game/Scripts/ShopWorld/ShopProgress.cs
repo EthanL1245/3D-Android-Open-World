@@ -9,6 +9,8 @@ public sealed class ShopProgress : MonoBehaviour
     public const string SaveKey = "OpenWorld.ShopWorld.v1";
     public ShopLedger Data { get; private set; }
     public event Action Changed;
+    // Amount, previous level/XP, and saved new level/XP for catch-XP HUD animation.
+    public event Action<int, int, double, int, double> FishingXpAwarded;
     public string Notice { get; private set; }
     public bool ReadOnly { get; private set; }
     private void Awake()
@@ -45,6 +47,12 @@ public sealed class ShopProgress : MonoBehaviour
         ReefCatalog.BrinebreakDiscovered=Data!=null && Data.brinebreakDiscovered;
         ReefCatalog.BluewaterDiscovered=Data!=null && Data.bluewaterDiscovered;
         ReefCatalog.SnapperDiscovered=Data!=null && Data.snapperDiscovered;
+    }
+    private void Start()
+    {
+        // The popup is attached automatically to existing scenes and saves.
+        if(GetComponent<FishingExperienceToast>()==null)
+            gameObject.AddComponent<FishingExperienceToast>();
     }
     private static ShopLedger Read(string json)
     {
@@ -98,9 +106,15 @@ public sealed class ShopProgress : MonoBehaviour
     {
         if(ReadOnly || Data==null)return 0;
         if(Data.angler==null)Data.angler=new AnglerProgression();
+        int beforeLevel=Data.angler.level;
+        double beforeXp=Data.angler.experience;
         int xp=AnglerProgression.CatchXp(health,difficulty);
         Data.angler.AddXp(xp,count=>UnityEngine.Random.Range(0,count));
         Save();
+        // Notify only after the reward has been saved. A toast uses these two
+        // snapshots instead of changing XP itself or interfering with a catch.
+        if(Data.angler.level!=beforeLevel || Math.Abs(Data.angler.experience-beforeXp)>.001d)
+            FishingXpAwarded?.Invoke(xp,beforeLevel,beforeXp,Data.angler.level,Data.angler.experience);
         return xp;
     }
     public void Save()
