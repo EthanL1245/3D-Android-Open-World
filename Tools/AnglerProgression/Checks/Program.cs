@@ -17,6 +17,28 @@ class Program
   Check(p.level==601 && p.experience==0,"Maximum level and overflow");
   foreach(int stat in p.stats)Check(stat==100,"Every stat capped without wasted rolls");
   for(int l=1;l<601;l++)Check(AnglerProgression.RequiredXp(l+1)>AnglerProgression.RequiredXp(l),"Increasing XP curve");
+  // Preserve the original 1.5% exponential curve and apply a fixed
+  // additional +150 XP requirement for each five-level bracket.
+  for(int l=1;l<=600;l++)
+  {
+    double original=Math.Ceiling(250d*Math.Pow(1.015d,Math.Max(0,Math.Min(AnglerProgression.MaxLevel-1,l-1))));
+    Check(AnglerProgression.RequiredXp(l)==original+150d*(l/5),"Correct five-level XP bonus at level "+l);
+  }
+  foreach(int start in new[]{5,10,15,20,25,100,600})
+  {
+    double oldIncrease=Math.Ceiling(250d*Math.Pow(1.015d,start-1))-
+      Math.Ceiling(250d*Math.Pow(1.015d,start-2));
+    Check(AnglerProgression.RequiredXp(start)-AnglerProgression.RequiredXp(start-1)==oldIncrease+150,
+      "Exactly +150 XP at bracket boundary "+start);
+  }
+  // Existing save XP is unchanged and new thresholds apply at the next level-up.
+  var profile=new AnglerProgression{level=5,experience=120,abilityChoicesMigrated=true};
+  profile.Normalize();
+  Check(profile.level==5 && profile.experience==120,"Existing save XP preserved");
+  int remaining=(int)AnglerProgression.RequiredXp(5)-120;
+  Check(profile.AddXp(remaining-1,n=>0)==0 && profile.level==5,"Bracket threshold not bypassed");
+  Check(profile.AddXp(1,n=>0)==1 && profile.level==6 && profile.experience==0,
+    "Bracket threshold met exactly");
   Check(AnglerProgression.CatchXp(400,.5f)>AnglerProgression.CatchXp(100,.5f),"HP affects XP");
   Check(AnglerProgression.CatchXp(100,1)>AnglerProgression.CatchXp(100,.2f),"Difficulty affects XP");
   // New profiles choose where to spend one upgrade point per 20 levels.
