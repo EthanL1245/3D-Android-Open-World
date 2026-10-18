@@ -1260,6 +1260,10 @@ public class FishingSystem : MonoBehaviour
     private void UpdateFight(bool reeling)
     {
         if(dragDamage==null)dragDamage=GetComponent<FishingBurstDamageRuntime>();
+        // Activate protection before any reeling/fish resistance is calculated when
+        // the hooked fish begins this frame at the equipped line limit.
+        if (dragDamage != null && GetCurrentLineDistance() >= maximumLineDistance)
+            dragDamage.TryTriggerLineImmortality();
         FishSpeciesDefinition species =
             FishCatalog.Get(
                 hookedSpeciesId
@@ -1494,8 +1498,19 @@ public class FishingSystem : MonoBehaviour
         float lineDistance =
             GetCurrentLineDistance();
 
+        // A fish can cross the limit during UpdateFightBobber this same frame.
+        // Activate before the distance snap and undo that frame's tension gain.
+        if (lineDistance >= maximumLineDistance && dragDamage != null)
+            dragDamage.TryTriggerLineImmortality();
+        bool lineProtected = dragDamage != null && dragDamage.LineImmortalityActive;
+        if (lineProtected)
+        {
+            fightTension = Mathf.Min(fightTension, tensionBefore);
+            lineBreakTimer = 0f;
+        }
+
         if (lineDistance >=
-            maximumLineDistance)
+            maximumLineDistance && !lineProtected)
         {
             fightTension = 1f;
 
@@ -1513,7 +1528,7 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
-        if (!fishUnconscious && !IsSkillStunned &&
+        if (!lineProtected && !fishUnconscious && !IsSkillStunned &&
             fightTension >= 0.985f)
         {
             lineBreakTimer +=
@@ -1557,7 +1572,7 @@ public class FishingSystem : MonoBehaviour
             );
         }
 
-        if (lineBreakTimer >= 0.55f)
+        if (!lineProtected && lineBreakTimer >= 0.55f)
         {
             SnapLine(
                 "SNAP! Too much tension."
@@ -2920,9 +2935,12 @@ public class FishingSystem : MonoBehaviour
         float lineDistance = GetCurrentLineDistance();
         bobberIndicatorText.text = lineDistance.ToString("0.0") + " m";
         bool nearLineLimit = hasFish && lineDistance >= maximumLineDistance - 10f;
-        bobberIndicatorText.color = nearLineLimit
-            ? Color.Lerp(Color.white, Color.red, FishingEscapeVignette.WarningPulse)
-            : Color.white;
+        bool lineProtected = hasFish && dragDamage != null && dragDamage.LineImmortalityActive;
+        bobberIndicatorText.color = lineProtected
+            ? Color.Lerp(new Color(.65f, .29f, 1f), new Color(.88f, .64f, 1f), FishingEscapeVignette.ImmortalityPulse)
+            : nearLineLimit
+                ? Color.Lerp(Color.white, Color.red, FishingEscapeVignette.WarningPulse)
+                : Color.white;
         bobberIndicatorText.rectTransform.anchoredPosition =
             new Vector2(showStatus ? 72f : 0f, 0f);
     }
