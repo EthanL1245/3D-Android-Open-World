@@ -9,12 +9,38 @@ public sealed class AnglerProgression
     public double experience;
     // Raw damage, percent damage, reel speed, tension control, skill, charm.
     public int[] stats = new int[6];
+    // One discretionary Special Ability upgrade is earned at every 20 levels.
+    // The version marker preserves abilities unlocked by the previous automatic system.
+    public int[] abilityRanks = new int[4];
+    public bool abilityChoicesMigrated;
     public static readonly string[] Names = { "Raw Damage", "Percent Damage", "Reeling Speed", "Tension Control", "Skill", "Charm" };
     public static readonly string[] AbilityNames = { "BURNING FISH", "HOOKSET POWER", "LINE IMMORTALITY", "SIREN'S CALL" };
     public static readonly string[] AbilityAssets = { "BurningFish", "HooksetPower", "LineImmortality", "SirensCall" };
     public int Value(int stat) => stats != null && stat >= 0 && stat < stats.Length ? Math.Max(0, Math.Min(100, stats[stat])) : 0;
     public float Multiplier(int stat) => 1f + Value(stat) * .01f;
-    public bool Unlocked(int ability) => ability >= 0 && ability < 4 && level >= (ability + 1) * 20;
+    public int AbilityRank(int ability) => abilityRanks != null && ability >= 0 && ability < 4 && ability < abilityRanks.Length
+        ? Math.Max(0, abilityRanks[ability]) : 0;
+    public bool Unlocked(int ability) => AbilityRank(ability) > 0;
+    public int AvailableAbilityPoints
+    {
+        get
+        {
+            int spent=0;
+            if(abilityRanks!=null)for(int i=0;i<Math.Min(4,abilityRanks.Length);i++)spent+=Math.Max(0,abilityRanks[i]);
+            return Math.Max(0,Math.Min(MaxLevel/20,level/20)-spent);
+        }
+    }
+    public bool UpgradeAbility(int ability)
+    {
+        Normalize();
+        if(ability<0 || ability>=4 || AvailableAbilityPoints<=0)return false;
+        abilityRanks[ability]++;
+        return true;
+    }
+    public float BurningDamagePerHalfSecond => .01f + .0025f * Math.Max(0,AbilityRank(0)-1);
+    public float HooksetDamageFraction => .10f + .02f * Math.Max(0,AbilityRank(1)-1);
+    public float ImmortalityDuration => 5f + Math.Max(0,AbilityRank(2)-1);
+    public float SirenDuration => 4f + Math.Max(0,AbilityRank(3)-1);
     public static double RequiredXp(int currentLevel) => Math.Ceiling(250d * Math.Pow(1.015d, Math.Max(0, Math.Min(MaxLevel - 1, currentLevel - 1))));
     public static int CatchXp(int maximumHealth, float difficulty)
         => Math.Max(1, (int)Math.Round(4d * Math.Sqrt(Math.Max(1, maximumHealth)) * (1d + 2d * Math.Max(0d, Math.Min(2d, difficulty)))));
@@ -26,6 +52,34 @@ public sealed class AnglerProgression
         if (stats == null || stats.Length != 6) { var old = stats; stats = new int[6]; if (old != null) Array.Copy(old, stats, Math.Min(6, old.Length)); changed = true; }
         for (int i = 0; i < 6; i++) { int value = Value(i); if (value != stats[i]) { stats[i] = value; changed = true; } }
         if (double.IsNaN(experience) || double.IsInfinity(experience) || experience < 0) { experience = 0; changed = true; }
+        if (abilityRanks == null || abilityRanks.Length != 4)
+        {
+            int[] old=abilityRanks;
+            abilityRanks=new int[4];
+            if(old!=null)Array.Copy(old,abilityRanks,Math.Min(old.Length,4));
+            changed=true;
+        }
+        if (!abilityChoicesMigrated)
+        {
+            // Existing players already owned one of the four abilities at
+            // levels 20, 40, 60 and 80. Keep those as rank-one investments.
+            for(int i=0;i<4;i++)if(level>=(i+1)*20 && abilityRanks[i]==0)abilityRanks[i]=1;
+            abilityChoicesMigrated=true;
+            changed=true;
+        }
+        int spent=0, earned=Math.Min(MaxLevel/20,level/20);
+        for(int i=0;i<4;i++)
+        {
+            int safe=Math.Max(0,Math.Min(MaxLevel/20,abilityRanks[i]));
+            if(safe!=abilityRanks[i]){abilityRanks[i]=safe;changed=true;}
+            spent+=safe;
+        }
+        // Guard against malformed saves claiming more upgrades than levels earned.
+        for(int i=3;i>=0 && spent>earned;i--)
+        {
+            int take=Math.Min(abilityRanks[i],spent-earned);
+            abilityRanks[i]-=take;spent-=take;changed=true;
+        }
         return changed;
     }
 
