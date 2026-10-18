@@ -151,7 +151,11 @@ public sealed class FishingRemoteLine : MonoBehaviour
             return;
         }
         if(ocean==null)ocean=FindFirstObjectByType<OceanWater>();
-        Camera camera=Camera.main;
+        // Use the observing angler's real gameplay camera for the hearing
+        // boundary, including when Camera.main points at a UI/preview camera.
+        var localFishing=FindFirstObjectByType<FishingSystem>();
+        Camera camera=localFishing!=null?localFishing.PresentationCamera:null;
+        if(camera==null)camera=Camera.main;
         while(pendingZaps.Count>0)
         {
             int zapIndex=pendingZaps.Dequeue();
