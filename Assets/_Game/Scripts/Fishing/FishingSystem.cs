@@ -64,6 +64,7 @@ public class FishingSystem : MonoBehaviour
     private RawImage bobberStatusIcon;
     private Texture2D[] fishStatusTextures;
     private Texture2D stunnedStatusTexture;
+    private Texture2D sirensCallStatusTexture;
     private float skillStunUntil;
     public bool IsSkillStunned => state == FishingState.Fighting && !fishUnconscious && Time.time < skillStunUntil;
 
@@ -747,7 +748,7 @@ public class FishingSystem : MonoBehaviour
     private FishingLoopAudio reelAudio;
     private FishingLoopAudio linePullAudio, calmLinePullAudio, irritatedLinePullAudio, angryLinePullAudio;
     private AudioClip waterLandingSound;
-    private AudioClip castingSound, lineSnapSound, skillSound;
+    private AudioClip castingSound, lineSnapSound, skillSound, sirensCallSound;
     private AudioClip[] decentCatchSounds, largeCatchSounds;
     private bool fishPulledLineThisFrame;
     private int linePullSoundStatus = -1;
@@ -764,6 +765,7 @@ public class FishingSystem : MonoBehaviour
         biteSplashSound = Resources.Load<AudioClip>("Fishing/Audio/BiteSplash");
         castingSound = Resources.Load<AudioClip>("Fishing/Audio/RodCast");
         skillSound = Resources.Load<AudioClip>("Fishing/Audio/SkillYank");
+        sirensCallSound = Resources.Load<AudioClip>("Fishing/Audio/SirensCall");
         lineSnapSound = Resources.Load<AudioClip>("Fishing/Audio/LineSnap");
         decentCatchSounds = new[]
         {
@@ -874,6 +876,12 @@ public class FishingSystem : MonoBehaviour
     {
         PlayFishingSound(skillSound);
         if (hud != null) hud.PlaySkillFlash();
+    }
+
+    public void PlaySirensCallSound()
+    {
+        // Trigger only on a successful Siren's Call activation (once per fight).
+        PlayFishingSound(sirensCallSound);
     }
 
     private void PlayCatchSound(float weightKg)
@@ -2304,8 +2312,13 @@ public class FishingSystem : MonoBehaviour
 
         if (IsSirenCalling)
         {
-            // Use the same water/shore collision path below as ordinary fish motion.
-            velocity = -away * (2f + (reeling ? .72f * reelPower * ProgressReel : 0f));
+            // Siren's Call overrides escape + reel velocity with a FIXED 2 m/s
+            // straight toward the angler for its timed duration. Keep the
+            // existing valid-water and shoreline collision movement below.
+            Vector3 toPlayer = transform.position - current;
+            toPlayer.y = 0f;
+            velocity = toPlayer.sqrMagnitude > .0001f
+                ? toPlayer.normalized * 2f : Vector3.zero;
         }
         if (velocity.sqrMagnitude <
             0.001f)
@@ -2794,6 +2807,7 @@ public class FishingSystem : MonoBehaviour
         if (fishStatusTextures == null)
         {
             stunnedStatusTexture = Resources.Load<Texture2D>("Fishing/StatusIcons/Stunned");
+            sirensCallStatusTexture = Resources.Load<Texture2D>("Fishing/StatusIcons/SirensCall");
             fishStatusTextures = new[]
             {
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Calm"),
@@ -2926,8 +2940,11 @@ public class FishingSystem : MonoBehaviour
         bool showStatus = hasFish;
         bobberStatusIcon.gameObject.SetActive(showStatus);
         if (showStatus)
-            bobberStatusIcon.texture = IsSkillStunned && stunnedStatusTexture != null
-                ? stunnedStatusTexture : fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
+            bobberStatusIcon.texture = !fishUnconscious && IsSirenCalling && sirensCallStatusTexture != null
+                ? sirensCallStatusTexture
+                : IsSkillStunned && stunnedStatusTexture != null
+                    ? stunnedStatusTexture
+                    : fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
 
         if (fragileOutline != null)
         {
