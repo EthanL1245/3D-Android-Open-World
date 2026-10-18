@@ -37,7 +37,11 @@ public sealed class AnglerProgression
         abilityRanks[ability]++;
         return true;
     }
-    public float BurningDamagePerHalfSecond => .01f + .0025f * Math.Max(0,AbilityRank(0)-1);
+    // Burning Fish spreads a total of 5% max HP across five seconds at rank 1.
+    // Each additional rank adds 0.5 percentage points to that TOTAL, and a
+    // separate 2,000-damage hard cap is enforced when activated.
+    public float BurningTotalFraction => .05f + .005f * Math.Max(0,AbilityRank(0)-1);
+    public float BurningDamagePerHalfSecond => BurningTotalFraction / 10f;
     public float HooksetDamageFraction => .10f + .02f * Math.Max(0,AbilityRank(1)-1);
     public float ImmortalityDuration => 5f + Math.Max(0,AbilityRank(2)-1);
     public float SirenDuration => 4f + Math.Max(0,AbilityRank(3)-1);
