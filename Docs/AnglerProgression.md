@@ -19,17 +19,23 @@ Progression is stored in `ShopLedger.angler`, alongside inventory and the saved 
 
 ## Abilities
 
-| Level | Ability | Initial balance |
-| --- | --- | --- |
-| 20 | Burning Fish | Button; 2% max HP per second for 5 seconds, in ten half-second ticks |
-| 40 | Hookset Power | Automatic; 10% max HP when the fight starts |
-| 60 | Line Immortality | Button; 5 seconds without the reeling-specific tension increase |
-| 80 | Siren's Call | Button; fish swims toward the player for 4 seconds, using existing water collision checks |
+At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one discretionary Special Ability upgrade point**. In **Personal Stats**, eligible ability cards pulse with a synchronized white border, white tone and lettering. Tap a card to open the enlarged, full-color preview and spend a point on **UNLOCK ABILITY** or **UPGRADE TO RANK N**; tap anywhere else to close. Unspent points accumulate in the saved `ShopLedger.angler` profile. The top level band says **Next special ability upgrade:**, or shows how many points are ready. The ordinary Fishing Attributes stat increase continues automatically at *every* level.
 
-Active abilities are usable once per fish. Timers pause while combat is covered, and reset when the fight ends. Hookset occurs after cast-quality health adjustment. All ability damage uses the existing authoritative damage owner and knockout presentation. Line Immortality does not remove passive drag/mood tension or prevent a line-distance break. No new abilities are invented for levels 100/120; those two visual slots remain empty.
+| Special Ability | Rank 1 effect | Each additional rank |
+| --- | --- | --- |
+| Burning Fish | Button; 2% max HP per second for 5 seconds (ten half-second ticks) | +0.5% max HP per second |
+| Hookset Power | Automatic; 10% max HP when the fight starts | +2% max HP initial damage |
+| Line Immortality | Button; 5 seconds without the reeling-specific tension increase | +1 second |
+| Siren's Call | Button; fish swims toward the player for 4 seconds, retaining existing water collision checks | +1 second |
+
+A chosen rank 1 unlocks its ability in combat; extra ranks strengthen it. **Legacy saves are migrated without losing previous automatic unlocks:** those at levels 20/40/60/80 are assigned rank 1 in the corresponding abilities; any later unused milestone points remain available for new selections. The migration marker prevents granting the old unlocks twice.
+
+Active abilities are usable once per fish. Timers pause while combat is covered, and reset when the fight ends. Hookset occurs after cast-quality health adjustment. All ability damage uses the existing authoritative damage owner and knockout presentation. Line Immortality does not remove passive drag/mood tension or prevent a line-distance break. The two future ability art slots stay empty.
+
+The caught-fish XP bar and the attribute-level-up notification each hold **2.25 seconds** before using the original 0.38-second slide-out animation.
 
 ## Validation
 
-`Tools/AnglerProgression/Checks` compiles the actual progression model and combat owner with lightweight Unity stubs. Checks cover XP thresholds and overflow, all stat caps, migration, unlock boundaries, bonus damage, Hookset once-only behavior, burn damage/KO at coarse and 60 FPS steps, active timers, menu pause and reset between fish. Run with .NET 8: `dotnet run --project Tools/AnglerProgression/Checks/Checks.csproj`.
+`Tools/AnglerProgression/Checks` compiles the actual progression model and combat owner with lightweight Unity stubs. Checks cover XP thresholds and overflow, all stat caps, legacy migration, selectable upgrade milestone boundaries, bonus damage, Hookset once-only behavior, burn damage/KO at coarse and 60 FPS steps, active timers, menu pause and reset between fish. Run with .NET 8: `dotnet run --project Tools/AnglerProgression/Checks/Checks.csproj`.
 
 C# syntax was checked for Fishing and ShopWorld scripts. Unity is not available in the implementation environment; Play Mode/Android verification remains necessary for layout, touch interactions, save/relaunch, fish movement, and the full Unity build. No terrain, scene objects, or manually authored scenery was edited.
