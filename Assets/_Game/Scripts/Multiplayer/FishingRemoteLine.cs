@@ -26,6 +26,8 @@ public sealed class FishingRemoteLine : MonoBehaviour
     private RectTransform distanceRect;
     private Text distanceLabel;
     private static Sprite greenDistanceSprite;
+    private bool castImpactInitialized;
+    private int lastCastImpactSequence;
 
     public void Receive(FishingMultiplayer.Pose pose)
     {
@@ -33,6 +35,7 @@ public sealed class FishingRemoteLine : MonoBehaviour
         receivedAt=Time.realtimeSinceStartup;
         reeling=pose.reeling;
         fishHooked=pose.hasFish && next!=0;
+        ReceiveCastImpact(pose);
         ReceiveLightning(pose,fishHooked);
         Vector3 end=new Vector3(pose.lineX,pose.lineY,pose.lineZ);
         if(next!=kind || pose.castSequence!=sequence || !positionReady || (end-position).sqrMagnitude>400f)
@@ -40,6 +43,27 @@ public sealed class FishingRemoteLine : MonoBehaviour
         if(next!=kind || (next==1 && variant!=pose.lureVariant))ClearTackle();
         kind=next;variant=pose.lureVariant;sequence=pose.castSequence;target=end;
         if(kind==0)Hide();
+    }
+
+    private void ReceiveCastImpact(FishingMultiplayer.Pose pose)
+    {
+        // A cast's successful landing may outlive the "Casting" network state,
+        // so consume a separate monotonic landing ID with the exact water point.
+        // Late joiners may see an impact only while it is still fresh.
+        bool changed=!castImpactInitialized || pose.castImpactSequence!=lastCastImpactSequence;
+        castImpactInitialized=true;
+        lastCastImpactSequence=pose.castImpactSequence;
+        if(!changed || pose.castImpactSequence<=0 || pose.world!=0 ||
+            pose.castImpactAge<0f || pose.castImpactAge>1.4f)
+            return;
+        if(ocean==null)ocean=FindFirstObjectByType<OceanWater>();
+        if(ocean==null)return;
+        Vector3 point=new Vector3(pose.castImpactX,pose.castImpactY,pose.castImpactZ);
+        Camera camera=FindFirstObjectByType<FishingSystem>()?.PresentationCamera;
+        if(camera==null)camera=Camera.main;
+        // Match the casting angler's authored 18-frame splash and 1m ripple.
+        FishingCastSplashAnimation.Spawn(point,ocean,camera);
+        FishingCastRippleEffect.Spawn(point,ocean);
     }
 
     private void ReceiveLightning(FishingMultiplayer.Pose pose, bool validFight)
@@ -171,7 +195,16 @@ public sealed class FishingRemoteLine : MonoBehaviour
         Camera camera=localFishing!=null?localFishing.PresentationCamera:null;
         if(camera==null)camera=Camera.main;
         if(camera==null){HideDistance();return;}
-        Vector3 screen=FishingThirdPersonView.WorldToScreenPoint(camera,position+Vector3.up*.52f);
+        // Anchor directly above the OTHER player's line endpoint at water level.
+        Vector3 screen=FishingThirdPersonView.WorldToScreenPoint(camera,position+Vector3.up*.10f);
+        // The observing angler's distance to the fish controls visibility and
+        // uniformly shrinks both the backdrop and its numbers as they move away.
+        float viewerDistance=Vector3.Distance(camera.transform.position,position);
+        if(viewerDistance>=60f)
+        {
+            HideDistance();
+            return;
+        }
         Rect viewPixels=camera.pixelRect;
         if(screen.z<=0f || !viewPixels.Contains(new Vector2(screen.x,screen.y)))
         {
@@ -187,10 +220,15 @@ public sealed class FishingRemoteLine : MonoBehaviour
         Vector3 origin=tip!=null?tip.position:transform.position+Vector3.up*1.3f;
         float metres=Vector3.Distance(origin,position);
         distanceLabel.text=metres.ToString("0.0")+" m";
-        Vector2 location=localPoint+new Vector2(104f,72f);
+        float scale=Mathf.Lerp(1f,.42f,Mathf.Clamp01(viewerDistance/60f));
+        distanceRect.localScale=Vector3.one*scale;
+        // Centre the green box directly above the point of contact with water.
+        float height=distanceRect.rect.height*scale;
+        Vector2 location=localPoint+new Vector2(0f,height*.5f+7f);
         Rect bounds=canvasRect.rect;
-        location.x=Mathf.Clamp(location.x,bounds.xMin+75f,bounds.xMax-75f);
-        location.y=Mathf.Clamp(location.y,bounds.yMin+30f,bounds.yMax-30f);
+        float halfWidth=distanceRect.rect.width*scale*.5f;
+        location.x=Mathf.Clamp(location.x,bounds.xMin+halfWidth,bounds.xMax-halfWidth);
+        location.y=Mathf.Clamp(location.y,bounds.yMin+height*.5f,bounds.yMax-height*.5f);
         distanceRect.anchoredPosition=location;
         distanceRoot.SetActive(true);
     }
