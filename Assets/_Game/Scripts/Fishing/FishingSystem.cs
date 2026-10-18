@@ -19,7 +19,9 @@ public class FishingSystem : MonoBehaviour
         Calm,
         Irritated,
         Angry,
-        Fragile
+        Fragile,
+        // Actual timed combat temperament: Irritated mechanics, inward swimming.
+        SirensCall = 5
     }
 
     [Header("References")]
@@ -64,7 +66,6 @@ public class FishingSystem : MonoBehaviour
     private RawImage bobberStatusIcon;
     private Texture2D[] fishStatusTextures;
     private Texture2D stunnedStatusTexture;
-    private Texture2D sirensCallStatusTexture;
     private float skillStunUntil;
     public bool IsSkillStunned => state == FishingState.Fighting && !fishUnconscious && Time.time < skillStunUntil;
 
@@ -211,6 +212,11 @@ public class FishingSystem : MonoBehaviour
     public AnglerProgression Progression => shopProgress != null ? shopProgress.Data?.angler : null;
     private float ProgressReel => Progression != null ? Progression.Multiplier(2) : 1f;
     public bool IsSirenCalling => dragDamage != null && dragDamage.SirenSeconds > 0f;
+    // Siren's Call is a genuine temporary fish temperament, not an image
+    // painted over whichever random status happens to be underneath.
+    // The underlying temperament is preserved until Siren's Call expires.
+    private FishTemperament ActiveTemperament => state == FishingState.Fighting &&
+        !fishUnconscious && IsSirenCalling ? FishTemperament.SirensCall : hookedTemperament;
     public float ProgressDifficulty => GetEffectiveFightDifficulty(FishCatalog.Get(hookedSpeciesId), hookedWeightKg);
     private float rodPower=1f, reelPower=1f, lineGuard=1f;
     private float baseCastRange, basePreferredRange, baseLineRange;
@@ -824,12 +830,14 @@ public class FishingSystem : MonoBehaviour
             StopLinePullSound();
             return;
         }
-        int status = (int)hookedTemperament;
+        FishTemperament temperament = ActiveTemperament;
+        int status = (int)temperament;
         bool statusChanged = linePullSoundStatus != status;
         if (statusChanged) StopLinePullSound();
-        FishingLoopAudio active = hookedTemperament == FishTemperament.Irritated
-            ? irritatedLinePullAudio : hookedTemperament == FishTemperament.Angry
-            ? angryLinePullAudio : (hookedTemperament == FishTemperament.Calm || hookedTemperament == FishTemperament.Fragile)
+        // SirensCall shares the Irritated sound profile exactly.
+        FishingLoopAudio active = (temperament == FishTemperament.Irritated || temperament == FishTemperament.SirensCall)
+            ? irritatedLinePullAudio : temperament == FishTemperament.Angry
+            ? angryLinePullAudio : (temperament == FishTemperament.Calm || temperament == FishTemperament.Fragile)
             ? calmLinePullAudio : linePullAudio;
         if (active != null)
         {
@@ -1317,10 +1325,11 @@ public class FishingSystem : MonoBehaviour
                     Time.deltaTime
                 );
 
-            temperamentTimer -=
-                Time.deltaTime;
+            // Freeze the ordinary temperament countdown while Siren's Call is
+            // the active status; resume the previous status when its timer ends.
+            if (!IsSirenCalling) temperamentTimer -= Time.deltaTime;
 
-            if (temperamentTimer <= 0f)
+            if (temperamentTimer <= 0f && !IsSirenCalling)
             {
                 hookedTemperament =
                     RollDifferentTemperament(
@@ -1342,7 +1351,7 @@ public class FishingSystem : MonoBehaviour
             // an unconditional timer snap. Low clears this hazard immediately.
             float previousFragileTime = fragileBreakTimer;
             fragileBreakTimer=FishingDragRules.FragileTimer(fragileBreakTimer,
-                hookedTemperament==FishTemperament.Fragile,CurrentDrag,Time.deltaTime);
+                ActiveTemperament==FishTemperament.Fragile,CurrentDrag,Time.deltaTime);
             float fragileTensionGain = FishingDragRules.FragileTensionGain(previousFragileTime, fragileBreakTimer);
 
             surgeTimer -=
@@ -1411,10 +1420,10 @@ public class FishingSystem : MonoBehaviour
                     FishingDragRules.ReelingTensionMultiplier(CurrentDrag) * 1.12f * (fightBiome==1?1.15f:fightBiome==2?1.25f:1f) * temperamentTension / (rodPower * lineGuard);
 
                 float moodHealthFactor =
-                    hookedTemperament ==
+                    ActiveTemperament ==
                         FishTemperament.Calm
                         ? 1.12f
-                        : hookedTemperament ==
+                        : ActiveTemperament ==
                             FishTemperament.Angry
                             ? 0.78f
                             : 0.96f;
@@ -2042,7 +2051,7 @@ public class FishingSystem : MonoBehaviour
 
     private float GetTemperamentTensionMultiplier()
     {
-        switch (hookedTemperament)
+        switch (ActiveTemperament)
         {
             case FishTemperament.Calm:
                 return 0.55f;
@@ -2057,7 +2066,7 @@ public class FishingSystem : MonoBehaviour
 
     private float GetTemperamentResistanceMultiplier()
     {
-        switch (hookedTemperament)
+        switch (ActiveTemperament)
         {
             case FishTemperament.Calm:
                 return 0.82f;
@@ -2075,8 +2084,10 @@ public class FishingSystem : MonoBehaviour
         if (fishUnconscious)
             return "UNCONSCIOUS";
 
-        switch (hookedTemperament)
+        switch (ActiveTemperament)
         {
+            case FishTemperament.SirensCall:
+                return "SIREN'S CALL";
             case FishTemperament.Fragile:
                 return "FRAGILE • LOW DRAG";
             case FishTemperament.Calm:
@@ -2103,7 +2114,7 @@ public class FishingSystem : MonoBehaviour
                 );
         }
 
-        switch (hookedTemperament)
+        switch (ActiveTemperament)
         {
             case FishTemperament.Fragile:
                 return new Color(.55f,.16f,.78f,.96f);
@@ -2215,7 +2226,7 @@ public class FishingSystem : MonoBehaviour
 
         float moodSwimMultiplier;
 
-        switch (hookedTemperament)
+        switch (ActiveTemperament)
         {
             case FishTemperament.Calm:
                 moodSwimMultiplier = FishingTuning.GreenToYellowSpeed;
@@ -2252,7 +2263,7 @@ public class FishingSystem : MonoBehaviour
 
         // Purple status has a fixed fraction of base speed, independent of drag,
         // surges or the initial escape burst.
-        if(hookedTemperament==FishTemperament.Fragile)
+        if(ActiveTemperament==FishTemperament.Fragile)
             outwardSpeed=FishingTuning.YellowSpeed(hookedSpeciesId,effectiveDifficulty)*.2f;
         Vector3 velocity =
             outwardDirection *
@@ -2273,7 +2284,7 @@ public class FishingSystem : MonoBehaviour
 
                 float inwardGain;
 
-                switch (hookedTemperament)
+                switch (ActiveTemperament)
                 {
                     case FishTemperament.Calm:
                         inwardGain = 1.05f;
@@ -2807,14 +2818,14 @@ public class FishingSystem : MonoBehaviour
         if (fishStatusTextures == null)
         {
             stunnedStatusTexture = Resources.Load<Texture2D>("Fishing/StatusIcons/Stunned");
-            sirensCallStatusTexture = Resources.Load<Texture2D>("Fishing/StatusIcons/SirensCall");
             fishStatusTextures = new[]
             {
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Calm"),
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Irritated"),
                 Resources.Load<Texture2D>("Fishing/StatusIcons/Angry"),
                 Resources.Load<Texture2D>("Fishing/StatusIcons/LookingForCover"),
-                Resources.Load<Texture2D>("Fishing/StatusIcons/Fainted")
+                Resources.Load<Texture2D>("Fishing/StatusIcons/Fainted"),
+                Resources.Load<Texture2D>("Fishing/StatusIcons/SirensCall")
             };
         }
 
@@ -2940,11 +2951,9 @@ public class FishingSystem : MonoBehaviour
         bool showStatus = hasFish;
         bobberStatusIcon.gameObject.SetActive(showStatus);
         if (showStatus)
-            bobberStatusIcon.texture = !fishUnconscious && IsSirenCalling && sirensCallStatusTexture != null
-                ? sirensCallStatusTexture
-                : IsSkillStunned && stunnedStatusTexture != null
-                    ? stunnedStatusTexture
-                    : fishStatusTextures[fishUnconscious ? 4 : (int)hookedTemperament];
+            bobberStatusIcon.texture = IsSkillStunned && stunnedStatusTexture != null
+                ? stunnedStatusTexture
+                : fishStatusTextures[fishUnconscious ? 4 : (int)ActiveTemperament];
 
         if (fragileOutline != null)
         {
