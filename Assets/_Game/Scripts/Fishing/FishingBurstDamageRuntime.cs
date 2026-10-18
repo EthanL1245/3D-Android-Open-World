@@ -85,8 +85,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         if(!CanUseAbility(id))return;
         abilityUsed[id]=true;
         if(id==0){burnSeconds=5f;burnTick=0f;}
-        if(id==2)ImmortalitySeconds=5f;
-        if(id==3)SirenSeconds=4f;
+        if(id==2)ImmortalitySeconds=fishing.Progression.ImmortalityDuration;
+        if(id==3)SirenSeconds=fishing.Progression.SirenDuration;
     }
     private int BoostDamage(int damage, bool critical=false)
     {
@@ -219,7 +219,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             if(fishing.Progression != null && fishing.Progression.Unlocked(1))
             {
                 abilityUsed[1]=true;
-                DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*.10f)),maxHp,false);
+                DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*fishing.Progression.HooksetDamageFraction)),maxHp,false);
             }
             // Do not wait for a pointer-up here. The action button deliberately stays
             // held when HOOK changes to REEL (and when a lure auto-hooks), so the
@@ -251,7 +251,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             burnSeconds=Mathf.Max(0f,burnSeconds-elapsed);
             burnTick+=elapsed;
             while(burnTick>=.5f-.00001f && authoritativeHp>0)
-            {burnTick-=.5f;DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*.01f)),maxHp,false);}
+            {burnTick-=.5f;DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*fishing.Progression.BurningDamagePerHalfSecond)),maxHp,false);}
         }
         if(skillQueued)
         {
