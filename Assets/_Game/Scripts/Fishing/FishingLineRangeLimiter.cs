@@ -18,6 +18,7 @@ public sealed class FishingLineRangeLimiter : MonoBehaviour
     private FieldInfo fishingLineField;
     private FieldInfo activeBaitField;
     private MethodInfo failFishingMethod;
+    private MethodInfo snapLineMethod;
     private bool retracting;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -43,10 +44,12 @@ public sealed class FishingLineRangeLimiter : MonoBehaviour
         fishingLineField = type.GetField("fishingLine", flags);
         activeBaitField = type.GetField("activeBait", flags);
         failFishingMethod = type.GetMethod("FailFishing", flags);
+        snapLineMethod = type.GetMethod("SnapLine", flags);
 
         if (stateField == null || rodEquippedField == null ||
             maximumLineDistanceField == null || fishingLineField == null ||
-            activeBaitField == null || failFishingMethod == null)
+            activeBaitField == null || failFishingMethod == null ||
+            snapLineMethod == null)
         {
             Debug.LogError("FishingLineRangeLimiter could not bind to FishingSystem and was disabled.");
             enabled = false;
@@ -93,7 +96,14 @@ public sealed class FishingLineRangeLimiter : MonoBehaviour
 
         try
         {
-            failFishingMethod.Invoke(fishing, new object[] { message });
+            if (state == "Fighting")
+                // Use the exact same snap pathway (including LineSnap audio)
+                // as sustained high tension and FishingSystem's own max-distance check.
+                snapLineMethod.Invoke(fishing,
+                    new object[] { "SNAP! Maximum line distance reached." });
+            else
+                // Free lure/bait retrieval is not a line break and remains silent.
+                failFishingMethod.Invoke(fishing, new object[] { message });
         }
         finally
         {
