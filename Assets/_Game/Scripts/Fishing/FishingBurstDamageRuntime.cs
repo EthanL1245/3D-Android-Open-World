@@ -195,6 +195,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             Debug.LogError("FishingBurstDamageRuntime could not bind the fishing damage/presentation fields. Legacy damage was left untouched.");
             enabled = false;
         }
+        // This component is often installed by OpenWorldCoreFixBootstrap after
+        // scene-load callbacks have already run. Install the accompanying flame
+        // presentation on the actual FishingSystem now, not only at scene load.
+        if (enabled && fishing != null && fishing.GetComponent<FishingBurnVisuals>() == null)
+            fishing.gameObject.AddComponent<FishingBurnVisuals>();
     }
 
     private void Update()
@@ -286,17 +291,18 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             skillCharge=0f;
             skillCooldown=SkillCooldownSeconds;
             fishing.PlaySkillFeedback();
-            DealDamage(Mathf.RoundToInt(FishingDragRules.SkillDamage(RollNormalDamage()) * (fishing.Progression != null ? fishing.Progression.Multiplier(4) : 1f)),maxHp,true);
-            if (authoritativeHp > 0)
+            // Activate the fire on the actual successful charged Skill strike.
+            // Previously we started it only AFTER the Skill hit and only when
+            // the fish survived. On smaller fish the charged hit finished the
+            // fight first, making Burning Fish appear to do nothing.
+            if (fishing.Progression != null && fishing.Progression.Unlocked(0) &&
+                !abilityUsed[0])
             {
-                if (fishing.Progression != null && fishing.Progression.Unlocked(0) &&
-                    !abilityUsed[0])
-                {
-                    abilityUsed[0]=true;
-                    StartBurn();
-                }
-                fishing.ApplySkillStun();
+                abilityUsed[0] = true;
+                StartBurn();
             }
+            DealDamage(Mathf.RoundToInt(FishingDragRules.SkillDamage(RollNormalDamage()) * (fishing.Progression != null ? fishing.Progression.Multiplier(4) : 1f)),maxHp,true);
+            if (authoritativeHp > 0) fishing.ApplySkillStun();
         }
         else if (skillCooldown <= 0f)
             skillCharge=FishingDragRules.Charge(skillCharge,SelectedDrag,chargeSeconds);
