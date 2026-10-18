@@ -94,7 +94,7 @@ public static class PersonalStatsView
         var icon=Panel(button.transform,"PersonalStatsShield",.02f,.12f,.14f,.88f,false).GetComponent<Image>();
         icon.sprite=Art("LevelShield");icon.color=Color.white;icon.preserveAspect=true;
     }
-    public static GameObject Build(Transform parent,AnglerProgression data)
+    public static GameObject Build(Transform parent,AnglerProgression data,ShopProgress progress=null)
     {
         if(data==null)data=new AnglerProgression();
         var root=Panel(parent,"PersonalStatsContent",.012f,.025f,.988f,1f,false);
@@ -108,7 +108,11 @@ public static class PersonalStatsView
         bool max=data.level>=AnglerProgression.MaxLevel;
         Label(band.transform,max?"MAX LEVEL":$"{data.experience:N0} / {AnglerProgression.RequiredXp(data.level):N0} XP",22,.15f,.30f,.61f,.59f,Cyan);
         Meter(band.transform,max?1f:(float)(data.experience/AnglerProgression.RequiredXp(data.level)),.15f,.12f,.61f,.29f);
-        string next=data.level<80?"Next special ability\nLEVEL "+((data.level/20+1)*20):"ALL CURRENT ABILITIES UNLOCKED";
+        int upgradePoints=data.AvailableAbilityPoints;
+        string next="Next special ability upgrade:\n"+
+            (upgradePoints>0 ? upgradePoints+" UPGRADE"+(upgradePoints==1?"":"S")+" AVAILABLE"
+            :data.level>=AnglerProgression.MaxLevel ? "MAX LEVEL"
+            :"LEVEL "+((data.level/20+1)*20));
         Label(band.transform,next,26,.66f,.18f,.97f,.85f,Detail);
         var left=Panel(root.transform,"FishingAttributes",0,0,.505f,.805f);
         Label(left.transform,"FISHING ATTRIBUTES",29,.03f,.89f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
@@ -127,8 +131,13 @@ public static class PersonalStatsView
         }
         var right=Panel(root.transform,"SpecialAbilities",.51f,0,1,.805f);
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
-        Label(right.transform,"UNLOCK A NEW ABILITY EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
-        string[] descriptionsAbility={"Burns 2% of max HP per second for 5s. Once per fight.","Automatically deals 10% of max HP when hooking.","Reeling adds no tension for 5s. Once per fight.","Fish swims toward you for 4s. Once per fight."};
+        Label(right.transform,"ONE ABILITY UPGRADE POINT EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
+        string[] descriptionsAbility={
+            "Burns "+(data.BurningDamagePerHalfSecond*200f).ToString("0.#")+"% of max HP per second for 5s. Once per fight.",
+            "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
+            "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
+            "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
+        };
         // A full-page touch target closes the larger full-color preview.
         // It belongs to the stats content so closing/rebuilding this page
         // automatically removes the overlay. Its bounds reach the CLOSE header.
@@ -160,8 +169,30 @@ public static class PersonalStatsView
         var enlargedLevel=Label(enlarged.transform,"",24,.31f,.53f,.96f,.68f,Cyan);
         var enlargedDescription=Label(enlarged.transform,"",25,.31f,.25f,.96f,.53f,Detail);
         var enlargedStatus=Label(enlarged.transform,"",23,.31f,.11f,.96f,.26f,Cyan);
-        var dismissHint=Label(preview.transform,"TAP ANYWHERE TO CLOSE",19,
-            .15f,.20f,.85f,.28f,Color.white,TextAnchor.MiddleCenter);
+        var enlargedGlow=enlarged.AddComponent<SpecialAbilityUpgradePulse>();
+        enlargedGlow.Initialize(enlargedArtwork,enlargedTitle,enlargedLevel,enlargedDescription,enlargedStatus);
+        enlargedGlow.enabled=false;
+
+        // An independent button consumes taps only when the player chooses to
+        // spend an earned point. Every other tap still closes the enlarged card.
+        var upgradeControl=Panel(preview.transform,"ApplySpecialAbilityUpgrade",
+            .32f,.135f,.68f,.23f,false);
+        FishingHudTheme.Panel(upgradeControl,1);
+        var upgradeImage=upgradeControl.GetComponent<Image>();
+        upgradeImage.raycastTarget=true;
+        var upgradeButton=upgradeControl.AddComponent<Button>();
+        upgradeButton.targetGraphic=upgradeImage;
+        var upgradeLabel=Label(upgradeControl.transform,"UPGRADE ABILITY",24,
+            .02f,.07f,.98f,.93f,Color.white,TextAnchor.MiddleCenter);
+        upgradeLabel.fontStyle=FontStyle.Bold;
+        int viewingAbility=-1;
+        upgradeButton.onClick.AddListener(()=>
+        {
+            if(progress==null || viewingAbility<0 || !progress.UpgradeFishingAbility(viewingAbility))return;
+            preview.SetActive(false);
+        });
+        var dismissHint=Label(preview.transform,"TAP ANYWHERE ELSE TO CLOSE",19,
+            .15f,.065f,.85f,.135f,Color.white,TextAnchor.MiddleCenter);
         dismissHint.fontStyle=FontStyle.Bold;
         preview.SetActive(false);
 
@@ -196,18 +227,32 @@ public static class PersonalStatsView
                 enlargedArtwork.sprite=Art(AnglerProgression.AbilityAssets[ability],false,true);
                 enlargedArtwork.color=Color.white;
                 enlargedTitle.text=AnglerProgression.AbilityNames[ability];
-                enlargedLevel.text="LEVEL "+((ability+1)*20);
+                viewingAbility=ability;
+                int rank=data.AbilityRank(ability);
+                bool active=rank>0;
+                bool canUpgrade=data.AvailableAbilityPoints>0 && progress!=null && !progress.ReadOnly;
+                enlargedLevel.text=active?"ABILITY RANK "+rank:"NOT YET UNLOCKED";
                 enlargedDescription.text=descriptionsAbility[ability];
-                bool active=data.Unlocked(ability);
-                enlargedStatus.text=active?"UNLOCKED":"LOCKED • UNLOCK AT LEVEL "+((ability+1)*20);
+                enlargedStatus.text=active?"UNLOCKED • RANK "+rank:"LOCKED • CHOOSE TO UNLOCK";
                 enlargedStatus.color=active?Cyan:new Color(1f,.85f,.47f);
+                upgradeControl.SetActive(canUpgrade);
+                upgradeLabel.text=active?"UPGRADE TO RANK "+(rank+1):"UNLOCK ABILITY";
+                enlargedGlow.enabled=canUpgrade;
                 preview.transform.SetAsLastSibling();
                 preview.SetActive(true);
             });
-            Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.67f,.95f,.87f,titleColor).fontStyle=FontStyle.Bold;
-            Label(card.transform,"LEVEL "+((i+1)*20),16,.31f,.52f,.95f,.67f,accentColor);
-            Label(card.transform,descriptionsAbility[i],18,.31f,.27f,.95f,.52f,detailColor);
-            Label(card.transform,unlocked?"UNLOCKED":"LOCKED",16,.31f,.13f,.95f,.27f,accentColor);
+            var cardTitle=Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.67f,.95f,.87f,titleColor);
+            cardTitle.fontStyle=FontStyle.Bold;
+            var cardRank=Label(card.transform,unlocked?"RANK "+data.AbilityRank(i):"NOT UNLOCKED",
+                16,.31f,.52f,.95f,.67f,accentColor);
+            var cardDescription=Label(card.transform,descriptionsAbility[i],18,.31f,.27f,.95f,.52f,detailColor);
+            var cardStatus=Label(card.transform,upgradePoints>0?"UPGRADE AVAILABLE":unlocked?"UNLOCKED":"LOCKED",
+                16,.31f,.13f,.95f,.27f,accentColor);
+            if(upgradePoints>0 && progress!=null && !progress.ReadOnly)
+            {
+                var pulse=card.AddComponent<SpecialAbilityUpgradePulse>();
+                pulse.Initialize(art,cardTitle,cardRank,cardDescription,cardStatus);
+            }
         }
         return root;
     }
