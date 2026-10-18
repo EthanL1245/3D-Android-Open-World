@@ -240,7 +240,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         // Local third person already renders the original fishing line and lure.
         if(localSource==null)
         {
-            if(remoteLine==null && peer.lineKind!=0)remoteLine=gameObject.AddComponent<FishingRemoteLine>();
+            // Water impacts can arrive even if the entire brief line state was
+            // missed between snapshots (e.g. quick lure retrieval).
+            if(remoteLine==null && (peer.lineKind!=0 || peer.castImpactSequence>0))
+                remoteLine=gameObject.AddComponent<FishingRemoteLine>();
             if(remoteLine!=null)remoteLine.Receive(peer);
         }
         bool changedBoat=rideOwner!=peer.rideOwner || rideKey!=peer.rideKey || rideSeat!=peer.rideSeat;
