@@ -100,6 +100,13 @@ public class FishingSystem : MonoBehaviour
     public bool IsRodEquipped => rodEquipped && !shopMode && isActiveAndEnabled;
     public int CastSequence { get; private set; }
     private float networkCastStarted;
+    // Observer-only successful water-impact event. Keep its ID across casts:
+    // cast releases that hit land must never produce multiplayer splashes.
+    public int NetworkCastImpactSequence { get; private set; }
+    public Vector3 NetworkCastImpactPoint { get; private set; }
+    private float networkCastImpactTime = -1f;
+    public float NetworkCastImpactAge => networkCastImpactTime < 0f ? -1f :
+        Mathf.Min(60f, Mathf.Max(0f, Time.time - networkCastImpactTime));
     public bool NetworkHasFish => IsRodEquipped && state == FishingState.Fighting;
     public bool NetworkLureInWater => IsRodEquipped && state == FishingState.Waiting && activeBait == ShopCatalog.StarterLure;
     public bool NetworkIsReeling => (NetworkHasFish || NetworkLureInWater) && !(ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) &&
@@ -1036,6 +1043,12 @@ public class FishingSystem : MonoBehaviour
         FishingCastSplashAnimation.Spawn(castPoint, oceanWater, playerCamera);
         // A separate, horizontal ripple expands out to a one-metre radius.
         FishingCastRippleEffect.Spawn(castPoint, oceanWater);
+        // Publish only after successful water validation, using the identical
+        // position as both locally rendered effects. The server simply relays it.
+        NetworkCastImpactPoint = castPoint;
+        NetworkCastImpactSequence = NetworkCastImpactSequence == int.MaxValue
+            ? 1 : NetworkCastImpactSequence + 1;
+        networkCastImpactTime = Time.time;
 
         state = FishingState.Waiting;
         stateTimer =
