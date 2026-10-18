@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -73,13 +74,24 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private const float SkillCooldownSeconds = 2f;
     private bool skillQueued;
     private readonly bool[] abilityUsed = new bool[4];
-    private float burnSeconds, burnTick;
-    private int burnTotalDamage, burnAppliedDamage, burnTicksApplied;
+    private float burnSeconds;
+    private int burnTotalDamage;
+    private sealed class LightningSequence
+    {
+        public float age;
+        public int total, applied, nextZap;
+    }
+    private readonly List<LightningSequence> lightningSequences = new List<LightningSequence>();
+    private readonly Queue<int> lightningZaps = new Queue<int>();
     public float BurningSeconds => burnSeconds;
+    public bool TryTakeLightningZap(out int index)
+    {
+        index = lightningZaps.Count > 0 ? lightningZaps.Dequeue() : -1;
+        return index >= 0;
+    }
     public float ImmortalitySeconds { get; private set; }
     public float SirenSeconds { get; private set; }
-    // Lightning Strike now activates automatically with the first charged Skill
-    // use of the fight, like Hookset's automatic initial hit.
+    // Lightning Strike activates on EVERY charged Skill use once unlocked.
     public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 0 && id != 1 && inFight && IsFighting() &&
         authoritativeHp > 0 && !abilityUsed[id] && fishing.Progression != null && fishing.Progression.Unlocked(id) &&
         !ShopWorldHUD.MenuOpen && hud != null && hud.CombatInputVisible;
@@ -94,13 +106,39 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private void StartBurn()
     {
         int maximumHp=Mathf.Max(1,(int)MaxHpField.GetValue(fishing));
-        // 5% of max HP across ten half-second ticks, capped at 2,000
-        // regardless of species or upgrades.
         burnTotalDamage=Mathf.Min(2000,Mathf.Max(1,
             Mathf.RoundToInt(maximumHp*fishing.Progression.BurningTotalFraction)));
-        burnAppliedDamage=burnTicksApplied=0;
+        var sequence = new LightningSequence { total = burnTotalDamage };
+        lightningSequences.Add(sequence);
         burnSeconds=5f;
-        burnTick=0f;
+        ApplyLightningZap(sequence, maximumHp);
+    }
+
+    private void ApplyLightningZap(LightningSequence sequence, int maxHp)
+    {
+        int index = sequence.nextZap++;
+        // Cumulative rounding keeps all four integer hits at the exact total:
+        // 50%, then three equal shares of the remaining half.
+        int expected = index == 3 ? sequence.total :
+            Mathf.RoundToInt(sequence.total * (.5f + index / 6f));
+        int amount = expected - sequence.applied;
+        sequence.applied = expected;
+        lightningZaps.Enqueue(index);
+        if (amount > 0) DealDamage(amount, maxHp, false);
+    }
+
+    private void UpdateLightning(float elapsed, int maxHp)
+    {
+        burnSeconds=0f;
+        for(int i=lightningSequences.Count-1;i>=0;i--)
+        {
+            var sequence=lightningSequences[i];
+            sequence.age+=elapsed;
+            while(sequence.nextZap<4 && sequence.age+.00001f>=sequence.nextZap*(5f/3f) && authoritativeHp>0)
+                ApplyLightningZap(sequence,maxHp);
+            if(sequence.nextZap>=4 || authoritativeHp<=0) lightningSequences.RemoveAt(i);
+            else burnSeconds=Mathf.Max(burnSeconds,Mathf.Max(0f,5f-sequence.age));
+        }
     }
 
     private int BoostDamage(int damage, bool critical=false)
@@ -134,8 +172,10 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         SelectedDrag=FishingDragRules.Medium;
         passiveSeconds=damageRemainder=skillCharge=skillCooldown=0f;
         skillQueued=false;
-        burnSeconds=burnTick=ImmortalitySeconds=SirenSeconds=0f;
-        burnTotalDamage=burnAppliedDamage=burnTicksApplied=0;
+        burnSeconds=ImmortalitySeconds=SirenSeconds=0f;
+        burnTotalDamage=0;
+        lightningSequences.Clear();
+        lightningZaps.Clear();
         Array.Clear(abilityUsed,0,abilityUsed.Length);
     }
 
@@ -259,7 +299,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         if (authoritativeHp <= 0)
         {
             // Stop emitting electric ripples immediately if the fish is knocked out.
-            burnSeconds=0f;burnTick=0f;
+            burnSeconds=0f;lightningSequences.Clear();
             EnterUnconsciousPresentation();
             skillCharge=0f;skillQueued=false;
             if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f,skillCooldown);
@@ -268,23 +308,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
 
         ImmortalitySeconds=Mathf.Max(0f,ImmortalitySeconds-Time.deltaTime);
         SirenSeconds=Mathf.Max(0f,SirenSeconds-Time.deltaTime);
-        if(burnSeconds>0f)
-        {
-            float elapsed=Mathf.Min(burnSeconds,Time.deltaTime);
-            burnSeconds=Mathf.Max(0f,burnSeconds-elapsed);
-            burnTick+=elapsed;
-            while(burnTick>=.5f-.00001f && burnTicksApplied<10 && authoritativeHp>0)
-            {
-                burnTick-=.5f;
-                burnTicksApplied++;
-                // Cumulative rounding distributes small and large totals evenly
-                // and ensures the full capped damage is paid at exactly 5s.
-                int expected=Mathf.RoundToInt(burnTotalDamage*burnTicksApplied/10f);
-                int damage=expected-burnAppliedDamage;
-                burnAppliedDamage=expected;
-                if(damage>0)DealDamage(damage,maxHp,false);
-            }
-        }
+        UpdateLightning(Time.deltaTime,maxHp);
         if(skillQueued)
         {
             skillQueued=false;
@@ -295,8 +319,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             // Previously we started it only AFTER the Skill hit and only when
             // the fish survived. On smaller fish the charged hit finished the
             // fight first, making Lightning Strike appear to do nothing.
-            if (fishing.Progression != null && fishing.Progression.Unlocked(0) &&
-                !abilityUsed[0])
+            if (fishing.Progression != null && fishing.Progression.Unlocked(0))
             {
                 abilityUsed[0] = true;
                 StartBurn();

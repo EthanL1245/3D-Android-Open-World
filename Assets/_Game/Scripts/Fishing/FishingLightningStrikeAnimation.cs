@@ -20,6 +20,15 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
     private MaterialPropertyBlock properties;
     private int frame;
     private float frameElapsed;
+    private float strikeScale = 1f;
+    private AudioSource zapAudio;
+    private static readonly AudioClip[] zapClips = new AudioClip[4];
+    public bool Finished => frame >= FrameCount && (zapAudio == null || !zapAudio.isPlaying);
+    public void SetPaused(bool paused)
+    {
+        if (zapAudio == null) return;
+        if (paused) zapAudio.Pause(); else zapAudio.UnPause();
+    }
 
     public static FishingLightningStrikeAnimation Create(Transform owner)
     {
@@ -84,32 +93,47 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
         return true;
     }
 
-    public void Restart()
+    public void Restart(int zapIndex)
     {
+        strikeScale = zapIndex == 0 ? 1.5f : 1.25f;
+        if (zapClips[zapIndex] == null)
+            zapClips[zapIndex] = Resources.Load<AudioClip>("Fishing/Audio/LightningZap" + (zapIndex + 1));
+        if (zapAudio == null) zapAudio = gameObject.AddComponent<AudioSource>();
+        zapAudio.playOnAwake = false;
+        zapAudio.loop = false;
+        zapAudio.volume = 1f;
+        zapAudio.spatialBlend = 1f;
+        zapAudio.dopplerLevel = 0f;
+        zapAudio.rolloffMode = AudioRolloffMode.Logarithmic;
+        zapAudio.minDistance = 12f;
+        zapAudio.maxDistance = 120f;
+        zapAudio.clip = zapClips[zapIndex];
         frame = 0;
         frameElapsed = 0f;
         gameObject.SetActive(true);
+        if (zapAudio.clip != null) zapAudio.Play();
     }
 
     // The combat visual owner calls this only while its damage timer advances.
     // Menu pauses therefore pause both the sequence and the source of new rings.
-    public void Tick(Vector3 point, OceanWater water, Camera view, float secondsRemaining)
+    public void Tick(Vector3 point, OceanWater water, Camera view)
     {
-        properties.SetTexture(MainTexId, frames[frame]);
-        properties.SetFloat(AlphaId, Mathf.Clamp01(secondsRemaining / .2f));
+        display.enabled = frame < FrameCount;
+        if (frame < FrameCount) properties.SetTexture(MainTexId, frames[frame]);
+        properties.SetFloat(AlphaId, 1f);
         display.SetPropertyBlock(properties);
         // At most one step per rendered frame, so all nine images appear in order.
         frameElapsed += Time.deltaTime;
         if (frameElapsed >= FrameSeconds)
         {
             frameElapsed = Mathf.Min(frameElapsed - FrameSeconds, FrameSeconds);
-            frame = (frame + 1) % FrameCount;
+            frame = Mathf.Min(frame + 1, FrameCount);
         }
         if (PondWater.TrySurface(point, out float pondHeight)) point.y = pondHeight;
         else if (water != null) point.y = water.GetSurfaceHeight(point);
         point.y += .05f;
         transform.position = point;
-        transform.localScale = Vector3.one * CanvasSizeMetres;
+        transform.localScale = Vector3.one * (CanvasSizeMetres * strikeScale);
         if (view == null) view = Camera.main;
         if (view == null) return;
         Vector3 direction = view.transform.position - point;
