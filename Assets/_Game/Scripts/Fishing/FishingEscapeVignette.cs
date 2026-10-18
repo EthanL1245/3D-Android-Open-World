@@ -13,6 +13,8 @@ public sealed class FishingEscapeVignette : MonoBehaviour
 {
     // Shared phase keeps the distance text in sync with the screen edges.
     public static float WarningPulse => 0.5f + 0.5f * Mathf.Sin(Time.time * 11f);
+    // Single slow phase shared by the screen edges, the distance label and panel glow.
+    public static float ImmortalityPulse => 0.5f + 0.5f * Mathf.Sin(Time.time * 3f);
 
     private FishingSystem fishing;
     private FieldInfo stateField;
@@ -26,6 +28,8 @@ public sealed class FishingEscapeVignette : MonoBehaviour
     private RawImage overlay;
     private Texture2D vignetteTexture;
     private Image lineWarningBorder;
+    private Image immortalityGlow;
+    private FishingBurstDamageRuntime immortality;
     private Texture2D lineWarningBorderTexture;
     private Sprite lineWarningBorderSprite;
     private float visibleRisk;
@@ -44,6 +48,7 @@ public sealed class FishingEscapeVignette : MonoBehaviour
     private void Awake()
     {
         fishing = GetComponent<FishingSystem>();
+        immortality = GetComponent<FishingBurstDamageRuntime>();
         const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
         System.Type type = typeof(FishingSystem);
         stateField = type.GetField("state", flags);
@@ -73,12 +78,25 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         string state = stateField.GetValue(fishing)?.ToString() ?? string.Empty;
         bool fighting = state == "Fighting" && !(bool)unconsciousField.GetValue(fishing);
 
+        if (immortality == null) immortality = GetComponent<FishingBurstDamageRuntime>();
         UpdateTensionVignette(fighting);
         UpdateLineDistanceWarning(fighting);
     }
 
     private void UpdateTensionVignette(bool fighting)
     {
+        // Purple invulnerability takes priority over the normal red snap warning.
+        if (fighting && immortality != null && immortality.LineImmortalityActive)
+        {
+            visibleRisk = 0f;
+            if (overlay != null)
+            {
+                overlay.gameObject.SetActive(true);
+                overlay.transform.SetAsLastSibling();
+                overlay.color = new Color(.58f, .12f, .97f, .29f + .22f * ImmortalityPulse);
+            }
+            return;
+        }
         float targetRisk = 0f;
 
         if (fighting)
@@ -116,6 +134,23 @@ public sealed class FishingEscapeVignette : MonoBehaviour
 
     private void UpdateLineDistanceWarning(bool fighting)
     {
+        if (fighting && immortality != null && immortality.LineImmortalityActive)
+        {
+            visibleLineRisk = 1f;
+            float pulse = ImmortalityPulse;
+            if (lineWarningBorder != null)
+            {
+                lineWarningBorder.gameObject.SetActive(true);
+                lineWarningBorder.color = new Color(.73f, .36f, 1f, .72f + .28f * pulse);
+            }
+            if (immortalityGlow != null)
+            {
+                immortalityGlow.gameObject.SetActive(true);
+                immortalityGlow.color = new Color(.59f, .14f, 1f, .16f + .40f * pulse);
+            }
+            return;
+        }
+        if (immortalityGlow != null) immortalityGlow.gameObject.SetActive(false);
         float targetRisk = 0f;
 
         if (fighting &&
@@ -260,6 +295,24 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         lineWarningBorder.raycastTarget = false;
         lineWarningBorder.color = Color.white;
         go.SetActive(false);
+
+        // A larger, softer ring sits underneath the existing crisp warning border.
+        // Both are driven by exactly the same slow pulse as the purple vignette.
+        var glowObject = new GameObject("LineImmortalityPurpleGlow",
+            typeof(RectTransform), typeof(Image));
+        glowObject.transform.SetParent(panel, false);
+        glowObject.transform.SetAsFirstSibling();
+        var glowRect = glowObject.GetComponent<RectTransform>();
+        glowRect.anchorMin = Vector2.zero;
+        glowRect.anchorMax = Vector2.one;
+        glowRect.pivot = new Vector2(.5f, .5f);
+        glowRect.offsetMin = new Vector2(-25f, -25f);
+        glowRect.offsetMax = new Vector2(25f, 25f);
+        immortalityGlow = glowObject.GetComponent<Image>();
+        immortalityGlow.sprite = lineWarningBorderSprite;
+        immortalityGlow.type = Image.Type.Sliced;
+        immortalityGlow.raycastTarget = false;
+        glowObject.SetActive(false);
     }
 
     private static Transform FindDeepChild(Transform root, string name)
