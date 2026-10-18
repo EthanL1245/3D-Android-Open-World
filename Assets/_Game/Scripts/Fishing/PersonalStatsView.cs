@@ -133,7 +133,7 @@ public static class PersonalStatsView
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"ONE ABILITY UPGRADE POINT EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={
-            "Burns "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of max HP over 5s (max 2,000 damage). Once per fight.",
+            "First charged Skill ignites the fish for "+(data.BurningTotalFraction*100f).ToString("0.#")+"% max HP over 5s (max 2,000 damage). Once per fight.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
             "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
