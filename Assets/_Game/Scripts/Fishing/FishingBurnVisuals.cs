@@ -7,9 +7,17 @@ using UnityEngine.UI;
 /// flame frames in a horizontal atlas, cycling quickly and unpredictably around
 /// both status icons while tinting the active fishing line red. No gameplay damage.
 /// </summary>
+[DefaultExecutionOrder(5000)]
 [DisallowMultipleComponent]
 public sealed class FishingBurnVisuals : MonoBehaviour
 {
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void Install()
+    {
+        foreach (FishingSystem fishing in FindObjectsByType<FishingSystem>(FindObjectsSortMode.None))
+            if (fishing != null && fishing.GetComponent<FishingBurnVisuals>() == null)
+                fishing.gameObject.AddComponent<FishingBurnVisuals>();
+    }
     private const float FrameInterval = .095f;
     private static Texture2D atlas;
     private static bool atlasLoaded;
