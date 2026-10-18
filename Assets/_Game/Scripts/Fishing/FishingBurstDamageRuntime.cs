@@ -78,7 +78,9 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     public float BurningSeconds => burnSeconds;
     public float ImmortalitySeconds { get; private set; }
     public float SirenSeconds { get; private set; }
-    public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 1 && inFight && IsFighting() &&
+    // Burning Fish now activates automatically with the first charged Skill
+    // use of the fight, like Hookset's automatic initial hit.
+    public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 0 && id != 1 && inFight && IsFighting() &&
         authoritativeHp > 0 && !abilityUsed[id] && fishing.Progression != null && fishing.Progression.Unlocked(id) &&
         !ShopWorldHUD.MenuOpen && hud != null && hud.CombatInputVisible;
     public bool AbilityUsed(int id) => id >= 0 && id < 4 && abilityUsed[id];
@@ -86,19 +88,21 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     {
         if(!CanUseAbility(id))return;
         abilityUsed[id]=true;
-        if(id==0)
-        {
-            int maximumHp=Mathf.Max(1,(int)MaxHpField.GetValue(fishing));
-            // Rank 1: 5% of maximum HP TOTAL, never more than 2,000 HP.
-            // Each of ten half-second ticks receives its share of that total.
-            burnTotalDamage=Mathf.Min(2000,Mathf.Max(1,
-                Mathf.RoundToInt(maximumHp*fishing.Progression.BurningTotalFraction)));
-            burnAppliedDamage=burnTicksApplied=0;
-            burnSeconds=5f;burnTick=0f;
-        }
         if(id==2)ImmortalitySeconds=fishing.Progression.ImmortalityDuration;
         if(id==3)SirenSeconds=fishing.Progression.SirenDuration;
     }
+    private void StartBurn()
+    {
+        int maximumHp=Mathf.Max(1,(int)MaxHpField.GetValue(fishing));
+        // 5% of max HP across ten half-second ticks, capped at 2,000
+        // regardless of species or upgrades.
+        burnTotalDamage=Mathf.Min(2000,Mathf.Max(1,
+            Mathf.RoundToInt(maximumHp*fishing.Progression.BurningTotalFraction)));
+        burnAppliedDamage=burnTicksApplied=0;
+        burnSeconds=5f;
+        burnTick=0f;
+    }
+
     private int BoostDamage(int damage, bool critical=false)
     {
         var stats=fishing.Progression;
@@ -281,7 +285,16 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             skillCooldown=SkillCooldownSeconds;
             fishing.PlaySkillFeedback();
             DealDamage(Mathf.RoundToInt(FishingDragRules.SkillDamage(RollNormalDamage()) * (fishing.Progression != null ? fishing.Progression.Multiplier(4) : 1f)),maxHp,true);
-            if (authoritativeHp > 0) fishing.ApplySkillStun();
+            if (authoritativeHp > 0)
+            {
+                if (fishing.Progression != null && fishing.Progression.Unlocked(0) &&
+                    !abilityUsed[0])
+                {
+                    abilityUsed[0]=true;
+                    StartBurn();
+                }
+                fishing.ApplySkillStun();
+            }
         }
         else if (skillCooldown <= 0f)
             skillCharge=FishingDragRules.Charge(skillCharge,SelectedDrag,chargeSeconds);
