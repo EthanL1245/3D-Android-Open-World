@@ -137,16 +137,16 @@ public sealed class FishingEscapeVignette : MonoBehaviour
         if (fighting && immortality != null && immortality.LineImmortalityActive)
         {
             visibleLineRisk = 1f;
-            float pulse = ImmortalityPulse;
+            float immortalityPulse = ImmortalityPulse;
             if (lineWarningBorder != null)
             {
                 lineWarningBorder.gameObject.SetActive(true);
-                lineWarningBorder.color = new Color(.73f, .36f, 1f, .72f + .28f * pulse);
+                lineWarningBorder.color = new Color(.73f, .36f, 1f, .72f + .28f * immortalityPulse);
             }
             if (immortalityGlow != null)
             {
                 immortalityGlow.gameObject.SetActive(true);
-                immortalityGlow.color = new Color(.59f, .14f, 1f, .16f + .40f * pulse);
+                immortalityGlow.color = new Color(.59f, .14f, 1f, .16f + .40f * immortalityPulse);
             }
             return;
         }
