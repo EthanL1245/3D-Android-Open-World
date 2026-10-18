@@ -129,6 +129,39 @@ public static class PersonalStatsView
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"UNLOCK A NEW ABILITY EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={"Burns 2% of max HP per second for 5s. Once per fight.","Automatically deals 10% of max HP when hooking.","Reeling adds no tension for 5s. Once per fight.","Fish swims toward you for 4s. Once per fight."};
+        // A full-page touch target closes the larger full-color preview.
+        // It belongs to the stats content so closing/rebuilding this page
+        // automatically removes the overlay. Its bounds reach the CLOSE header.
+        var preview=new GameObject("SpecialAbilityDetailPreview",
+            typeof(RectTransform),typeof(Image),typeof(Button));
+        preview.transform.SetParent(root.transform,false);
+        var previewRect=preview.GetComponent<RectTransform>();
+        Place(previewRect,0f,0f,1f,1f,0f);
+        previewRect.offsetMin=new Vector2(-30f,-30f);
+        previewRect.offsetMax=new Vector2(30f,138f);
+        var previewShade=preview.GetComponent<Image>();
+        previewShade.color=new Color(.005f,.02f,.055f,.78f);
+        previewShade.raycastTarget=true;
+        var dismiss=preview.GetComponent<Button>();
+        dismiss.targetGraphic=previewShade;
+        dismiss.transition=Selectable.Transition.None;
+        dismiss.onClick.AddListener(()=>preview.SetActive(false));
+
+        var enlarged=Panel(preview.transform,"FullColorSpecialAbilityCard",
+            .13f,.32f,.87f,.68f,false);
+        var enlargedArtwork=enlarged.GetComponent<Image>();
+        enlargedArtwork.raycastTarget=false;
+        enlargedArtwork.preserveAspect=false;
+        var enlargedTitle=Label(enlarged.transform,"",36,.31f,.68f,.96f,.89f,Color.white);
+        enlargedTitle.fontStyle=FontStyle.Bold;
+        var enlargedLevel=Label(enlarged.transform,"",24,.31f,.53f,.96f,.68f,Cyan);
+        var enlargedDescription=Label(enlarged.transform,"",25,.31f,.25f,.96f,.53f,Detail);
+        var enlargedStatus=Label(enlarged.transform,"",23,.31f,.11f,.96f,.26f,Cyan);
+        var dismissHint=Label(preview.transform,"TAP ANYWHERE TO CLOSE",19,
+            .15f,.20f,.85f,.28f,Color.white,TextAnchor.MiddleCenter);
+        dismissHint.fontStyle=FontStyle.Bold;
+        preview.SetActive(false);
+
         // Uniform visible card sizes (including the PNG border), inset equally
         // from both sides, with tighter horizontal and vertical card spacing.
         // The lower third remains blank for future special abilities.
@@ -149,6 +182,25 @@ public static class PersonalStatsView
             var art=card.GetComponent<Image>();
             art.sprite=Art(AnglerProgression.AbilityAssets[i],!unlocked,true);
             art.color=Color.white;art.preserveAspect=false;
+            art.raycastTarget=true;
+            var cardButton=card.AddComponent<Button>();
+            cardButton.targetGraphic=art;
+            cardButton.transition=Selectable.Transition.None;
+            int ability=i; // Capture the intended card, even after the loop.
+            cardButton.onClick.AddListener(()=>
+            {
+                // Always show the original, fully colored card, even if locked.
+                enlargedArtwork.sprite=Art(AnglerProgression.AbilityAssets[ability],false,true);
+                enlargedArtwork.color=Color.white;
+                enlargedTitle.text=AnglerProgression.AbilityNames[ability];
+                enlargedLevel.text="LEVEL "+((ability+1)*20);
+                enlargedDescription.text=descriptionsAbility[ability];
+                bool active=data.Unlocked(ability);
+                enlargedStatus.text=active?"UNLOCKED":"LOCKED • UNLOCK AT LEVEL "+((ability+1)*20);
+                enlargedStatus.color=active?Cyan:new Color(1f,.85f,.47f);
+                preview.transform.SetAsLastSibling();
+                preview.SetActive(true);
+            });
             Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.67f,.95f,.87f,titleColor).fontStyle=FontStyle.Bold;
             Label(card.transform,"LEVEL "+((i+1)*20),16,.31f,.52f,.95f,.67f,accentColor);
             Label(card.transform,descriptionsAbility[i],18,.31f,.27f,.95f,.52f,detailColor);
