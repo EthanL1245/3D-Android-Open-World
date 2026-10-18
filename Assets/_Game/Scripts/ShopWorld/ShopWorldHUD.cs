@@ -226,6 +226,18 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(page=="bait")heading.text="BAIT / LURES";
         if(page=="multiplayer")heading.text="MULTIPLAYER";
         if(page=="stats")heading.text="PERSONAL STATS";
+        // Only the gold Personal Stats heading has a crisp, thin black border.
+        // Keep the shared heading unchanged on every other shop/menu page.
+        Outline statsHeadingOutline=heading.GetComponent<Outline>();
+        if(page=="stats" && statsHeadingOutline==null)
+            statsHeadingOutline=heading.gameObject.AddComponent<Outline>();
+        if(statsHeadingOutline!=null)
+        {
+            statsHeadingOutline.effectColor=new Color(0f,0f,0f,.92f);
+            statsHeadingOutline.effectDistance=new Vector2(1f,-1f);
+            statsHeadingOutline.useGraphicAlpha=true;
+            statsHeadingOutline.enabled=page=="stats";
+        }
         if(habitatAddId!=null)
         {
             var habitat=ShopCatalog.Habitat(habitatAddId);
