@@ -133,7 +133,7 @@ public static class PersonalStatsView
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"ONE ABILITY UPGRADE POINT EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={
-            "Burns "+(data.BurningDamagePerHalfSecond*200f).ToString("0.#")+"% of max HP per second for 5s. Once per fight.",
+            "Burns "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of max HP over 5s (max 2,000 damage). Once per fight.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
             "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
@@ -164,14 +164,14 @@ public static class PersonalStatsView
         var enlargedArtwork=enlarged.GetComponent<Image>();
         enlargedArtwork.raycastTarget=false;
         enlargedArtwork.preserveAspect=true;
-        var enlargedTitle=Label(enlarged.transform,"",36,.31f,.68f,.96f,.89f,Color.white);
+        // Mirror the small card's EXACT normalized text rectangles. Larger fonts
+        // scale with this preview, but the original artwork stays full-color and
+        // does not flash: only the four small selectable cards pulse.
+        var enlargedTitle=Label(enlarged.transform,"",36,.31f,.67f,.95f,.87f,Color.white);
         enlargedTitle.fontStyle=FontStyle.Bold;
-        var enlargedLevel=Label(enlarged.transform,"",24,.31f,.53f,.96f,.68f,Cyan);
-        var enlargedDescription=Label(enlarged.transform,"",25,.31f,.25f,.96f,.53f,Detail);
-        var enlargedStatus=Label(enlarged.transform,"",23,.31f,.11f,.96f,.26f,Cyan);
-        var enlargedGlow=enlarged.AddComponent<SpecialAbilityUpgradePulse>();
-        enlargedGlow.Initialize(enlargedArtwork,enlargedTitle,enlargedLevel,enlargedDescription,enlargedStatus);
-        enlargedGlow.enabled=false;
+        var enlargedLevel=Label(enlarged.transform,"",26,.31f,.52f,.95f,.67f,Cyan);
+        var enlargedDescription=Label(enlarged.transform,"",29,.31f,.27f,.95f,.52f,Detail);
+        var enlargedStatus=Label(enlarged.transform,"",26,.31f,.13f,.95f,.27f,Cyan);
 
         // An independent button consumes taps only when the player chooses to
         // spend an earned point. Every other tap still closes the enlarged card.
@@ -200,7 +200,8 @@ public static class PersonalStatsView
         // from both sides, with tighter horizontal and vertical card spacing.
         // The lower third remains blank for future special abilities.
         const float sidePad=.025f, cardGapX=.022f, cardGapY=.029f;
-        const float cardsTop=.81f, cardsBottom=.32f;
+        // Increase height only; retain the previous card widths and side gaps.
+        const float cardsTop=.81f, cardsBottom=.17f;
         float cardWidth=(1f-sidePad*2f-cardGapX)/2f;
         float cardHeight=(cardsTop-cardsBottom-cardGapY)/2f;
         for(int i=0;i<4;i++)
@@ -237,7 +238,7 @@ public static class PersonalStatsView
                 enlargedStatus.color=active?Cyan:new Color(1f,.85f,.47f);
                 upgradeControl.SetActive(canUpgrade);
                 upgradeLabel.text=active?"UPGRADE TO RANK "+(rank+1):"UNLOCK ABILITY";
-                enlargedGlow.enabled=canUpgrade;
+                // The enlarged preview deliberately has no upgrade pulse.
                 preview.transform.SetAsLastSibling();
                 preview.SetActive(true);
             });
