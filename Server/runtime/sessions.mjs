@@ -60,8 +60,9 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
     const visibleLine=value.rodEquipped===true && value.swimming!==true && value.world===0 ? lineKind : 0;
     return { islandMask:(value.islandMask??1)|1, lineKind:visibleLine,lureVariant:visibleLine?lureVariant:0,
       lineX:visibleLine?value.lineX:0,lineY:visibleLine?value.lineY:0,lineZ:visibleLine?value.lineZ:0,
-      lightningSerial:visibleLine && value.hasFish===true?(value.lightningSerial??0):0,
-      lightningZap:visibleLine && value.hasFish===true?(value.lightningZap??0):0,
+      // Keep the counter across casts/fights so observers see the first zap too.
+      lightningSerial:value.world===0?(value.lightningSerial??0):0,
+      lightningZap:value.world===0?(value.lightningZap??0):0,
       ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       sprinting: value.sprinting === true && value.swimming !== true,
