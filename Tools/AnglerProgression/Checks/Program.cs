@@ -19,13 +19,27 @@ class Program
   for(int l=1;l<601;l++)Check(AnglerProgression.RequiredXp(l+1)>AnglerProgression.RequiredXp(l),"Increasing XP curve");
   Check(AnglerProgression.CatchXp(400,.5f)>AnglerProgression.CatchXp(100,.5f),"HP affects XP");
   Check(AnglerProgression.CatchXp(100,1)>AnglerProgression.CatchXp(100,.2f),"Difficulty affects XP");
-  for(int i=0;i<4;i++){p.level=(i+1)*20-1;Check(!p.Unlocked(i),"Locked milestone");p.level++;Check(p.Unlocked(i),"Unlocked milestone");}
+  // New profiles choose where to spend one upgrade point per 20 levels.
+  p=new AnglerProgression();p.Normalize();
+  p.level=19;Check(p.AvailableAbilityPoints==0,"No early Special Ability upgrades");
+  p.level=20;Check(p.AvailableAbilityPoints==1 && !p.Unlocked(0),"Level 20 earns unspent choice");
+  Check(p.UpgradeAbility(2) && p.Unlocked(2) && p.AbilityRank(2)==1 && p.AvailableAbilityPoints==0,"Choose any ability at 20");
+  Check(!p.UpgradeAbility(1),"Cannot spend nonexistent upgrade");
+  p.level=40;Check(p.UpgradeAbility(2) && p.AbilityRank(2)==2 && p.ImmortalityDuration==6f,"Ranks strengthen abilities");
+  Check(p.AvailableAbilityPoints==0,"Second upgrade spends second point");
+  // A pre-upgrade-era save owns the same four abilities it had already unlocked.
+  var legacy=new AnglerProgression{level=80};Check(legacy.Normalize(),"Old ability save migration");
+  for(int i=0;i<4;i++)Check(legacy.Unlocked(i) && legacy.AbilityRank(i)==1,"Legacy unlock retained");
+  Check(legacy.AvailableAbilityPoints==0 && !legacy.Normalize(),"Legacy migration only once");
+  legacy.level=100;Check(legacy.AvailableAbilityPoints==1,"Further milestones give a new choice");
+  Check(legacy.UpgradeAbility(0) && legacy.BurningDamagePerHalfSecond>.01f,"Repeat upgrade strengthens fire");
   p=new AnglerProgression{level=0,stats=null,experience=double.NaN};p.Normalize();Check(p.level==1 && p.stats.Length==6 && p.experience==0,"Old save migration");
   var f=new FishingSystem();var hud=new FishingHUD();var owner=new FishingBurstDamageRuntime();
   Set(owner,"fishing",f);Set(owner,"hud",hud);Set(owner,"progress",new ShopProgress());
   void Tick(float dt){Time.deltaTime=dt;typeof(FishingBurstDamageRuntime).GetMethod("Update",F).Invoke(owner,null);}
   Tick(0);Check(!owner.CanUseAbility(0),"Locked ability rejected");
   f.Progression.level=80;
+  f.Progression.Normalize(); // Exercise the old save's four granted abilities.
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==900,"Hookset once after max HP known");Tick(0);Check(Get<int>(f,"fishHealthPoints")==900,"No repeated hookset");
   owner.UseAbility(0);Check(!owner.CanUseAbility(0),"Once per fight");
@@ -44,6 +58,6 @@ class Program
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);owner.UseAbility(0);
   for(int i=0;i<301;i++)Tick(1f/60f);
   Check(Get<int>(f,"fishHealthPoints")==800,"Burn completes all ten ticks at 60 FPS");
-  Console.WriteLine("PASS: progression, caps, migration, XP curve, unlocks, authoritative damage, burn KO, timing, menu pause and fight reset.");
+  Console.WriteLine("PASS: progression, caps, save migration, chosen ability ranks, XP curve, unlocks, authoritative damage, burn KO, timing, menu pause and fight reset.");
  }
 }
