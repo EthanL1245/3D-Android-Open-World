@@ -204,7 +204,7 @@ public sealed class FishingRemoteLine : MonoBehaviour
         // The observing angler's distance to the fish controls visibility and
         // uniformly shrinks both the backdrop and its numbers as they move away.
         float viewerDistance=Vector3.Distance(camera.transform.position,position);
-        if(viewerDistance>=60f)
+        if(viewerDistance>=80f)
         {
             HideDistance();
             return;
@@ -224,7 +224,7 @@ public sealed class FishingRemoteLine : MonoBehaviour
         Vector3 origin=tip!=null?tip.position:transform.position+Vector3.up*1.3f;
         float metres=Vector3.Distance(origin,position);
         distanceLabel.text=metres.ToString("0.0")+" m";
-        float scale=Mathf.Lerp(1f,.42f,Mathf.Clamp01(viewerDistance/60f));
+        float scale=Mathf.Lerp(1f,.42f,Mathf.Clamp01(viewerDistance/80f));
         distanceRect.localScale=Vector3.one*scale;
         // Centre the green box directly above the point of contact with water.
         float height=distanceRect.rect.height*scale;
