@@ -32,7 +32,7 @@ class Program
   for(int i=0;i<4;i++)Check(legacy.Unlocked(i) && legacy.AbilityRank(i)==1,"Legacy unlock retained");
   Check(legacy.AvailableAbilityPoints==0 && !legacy.Normalize(),"Legacy migration only once");
   legacy.level=100;Check(legacy.AvailableAbilityPoints==1,"Further milestones give a new choice");
-  Check(legacy.UpgradeAbility(0) && legacy.BurningDamagePerHalfSecond>.01f,"Repeat upgrade strengthens fire");
+  Check(legacy.UpgradeAbility(0) && legacy.BurningTotalFraction>.05f,"Repeat upgrade strengthens fire");
   p=new AnglerProgression{level=0,stats=null,experience=double.NaN};p.Normalize();Check(p.level==1 && p.stats.Length==6 && p.experience==0,"Old save migration");
   var f=new FishingSystem();var hud=new FishingHUD();var owner=new FishingBurstDamageRuntime();
   Set(owner,"fishing",f);Set(owner,"hud",hud);Set(owner,"progress",new ShopProgress());
@@ -43,9 +43,9 @@ class Program
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==900,"Hookset once after max HP known");Tick(0);Check(Get<int>(f,"fishHealthPoints")==900,"No repeated hookset");
   owner.UseAbility(0);Check(!owner.CanUseAbility(0),"Once per fight");
-  Tick(1);Check(Get<int>(f,"fishHealthPoints")==880,"Burn ticks in authoritative HP");
-  ShopWorldHUD.MenuOpen=true;Tick(5);Check(Get<int>(f,"fishHealthPoints")==880,"Menu pauses burn");ShopWorldHUD.MenuOpen=false;
-  Tick(4);Check(Get<int>(f,"fishHealthPoints")==800,"Burn total 10 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==800,"Burn ends");
+  Tick(1);Check(Get<int>(f,"fishHealthPoints")==890,"Burn ticks in authoritative HP");
+  ShopWorldHUD.MenuOpen=true;Tick(5);Check(Get<int>(f,"fishHealthPoints")==890,"Menu pauses burn");ShopWorldHUD.MenuOpen=false;
+  Tick(4);Check(Get<int>(f,"fishHealthPoints")==850,"Burn total 5 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==850,"Burn ends");
   owner.UseAbility(2);owner.UseAbility(3);Check(owner.ImmortalitySeconds==5 && owner.SirenSeconds==4,"Timed abilities activate");
   Tick(2);Check(owner.ImmortalitySeconds==3 && owner.SirenSeconds==2,"Timed abilities count down");
   Set(f,"state","Idle");Tick(0);Check(owner.ImmortalitySeconds==0 && owner.SirenSeconds==0,"Cancel clears timers");
@@ -57,7 +57,7 @@ class Program
   Check(!owner.CanUseAbility(2),"No ability on unconscious fish");
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);owner.UseAbility(0);
   for(int i=0;i<301;i++)Tick(1f/60f);
-  Check(Get<int>(f,"fishHealthPoints")==800,"Burn completes all ten ticks at 60 FPS");
+  Check(Get<int>(f,"fishHealthPoints")==850,"Burn completes all ten ticks at 60 FPS");
   Console.WriteLine("PASS: progression, caps, save migration, chosen ability ranks, XP curve, unlocks, authoritative damage, burn KO, timing, menu pause and fight reset.");
  }
 }
