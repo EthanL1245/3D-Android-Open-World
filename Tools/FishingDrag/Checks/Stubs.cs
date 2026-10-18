@@ -1,12 +1,12 @@
 using System;
 namespace UnityEngine {
  public class Object {public static T FindFirstObjectByType<T>() where T:class=>null;}
- public class MonoBehaviour:Object {public bool enabled=true;public T GetComponent<T>() where T:class=>null;}
+ public class MonoBehaviour:Object {public bool enabled=true;public GameObject gameObject=new GameObject();public T GetComponent<T>() where T:class=>null;}
  public class DefaultExecutionOrder:Attribute {public DefaultExecutionOrder(int n){}}
  public struct Vector2 {public float x,y;public Vector2(float a,float b){x=a;y=b;}public float magnitude=>MathF.Sqrt(x*x+y*y);}
  public struct Vector3 {public float x,y,z;public Vector3(float a,float b,float c){x=a;y=b;z=c;}}
  public class Transform {public Vector3 position;}
- public class GameObject {public Transform transform=new Transform();}
+ public class GameObject {public Transform transform=new Transform();public T GetComponent<T>() where T:class=>null;public T AddComponent<T>() where T:new()=>new T();}
  public class Camera {public Vector3 WorldToScreenPoint(Vector3 p)=>p;}
  public static class Screen {public static int width=1920,height=1080;}
  public static class Time {public static float deltaTime;}
@@ -19,6 +19,7 @@ namespace UnityEngine {
  }
 }
 public class FishingSystem:UnityEngine.MonoBehaviour {
+ public AnglerProgression Progression=new AnglerProgression();
  private string state="Fighting";private int fishHealthPoints=1000,fishMaxHealth=1000,pendingDamage;
  private float fishHealth=1,damageFraction,damageDisplayTimer;private bool fishUnconscious;
  private UnityEngine.GameObject bobber;private UnityEngine.Camera playerCamera;
@@ -28,10 +29,12 @@ public class FishingSystem:UnityEngine.MonoBehaviour {
 }
 public class FishingHUD {public class Input {public bool IsHeld;}public Input ActionInput=new Input();public bool CombatInputVisible=true,FishingUiVisible=true;public int Damage;public float Charge;public bool Fighting,Live;
  public void ShowDamage(int n,UnityEngine.Vector3 p){Damage+=n;}
- public void SetDragFightUI(bool fighting,bool live,int mode,float charge){Fighting=fighting;Live=live;Charge=charge;}}
+ public void SetDragFightUI(bool fighting,bool live,int mode,float charge,float cooldown=0f){Fighting=fighting;Live=live;Charge=charge;}}
 public class ShopProgress {public class Ledger {public int rodEquipped;}public Ledger Data=new Ledger();}
 public class Level2FishingRodRuntime:UnityEngine.MonoBehaviour {}
 public static class ShopCatalog {public const int MaxRodTier=4;}
 public static class ShopWorldHUD {public static bool MenuOpen;}
 public static class FishingDamagePresentation {public static void MarkCriticalHit(){}public static void ClearPendingCritical(){}}
 
+
+public class FishingBurnVisuals:UnityEngine.MonoBehaviour {}
