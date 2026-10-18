@@ -45,7 +45,12 @@ public sealed class AnglerProgression
     public float HooksetDamageFraction => .10f + .02f * Math.Max(0,AbilityRank(1)-1);
     public float ImmortalityDuration => 5f + Math.Max(0,AbilityRank(2)-1);
     public float SirenDuration => 4f + Math.Max(0,AbilityRank(3)-1);
-    public static double RequiredXp(int currentLevel) => Math.Ceiling(250d * Math.Pow(1.015d, Math.Max(0, Math.Min(MaxLevel - 1, currentLevel - 1))));
+    // Preserve the existing exponential XP curve, then add a flat +150 XP
+    // for each completed five-level bracket: 1-4 +0, 5-9 +150,
+    // 10-14 +300, 15-19 +450, 20-24 +600, and so on.
+    public static double RequiredXp(int currentLevel) =>
+        Math.Ceiling(250d * Math.Pow(1.015d, Math.Max(0, Math.Min(MaxLevel - 1, currentLevel - 1)))) +
+        150d * (Math.Max(0, currentLevel) / 5);
     public static int CatchXp(int maximumHealth, float difficulty)
         => Math.Max(1, (int)Math.Round(4d * Math.Sqrt(Math.Max(1, maximumHealth)) * (1d + 2d * Math.Max(0d, Math.Min(2d, difficulty)))));
 
