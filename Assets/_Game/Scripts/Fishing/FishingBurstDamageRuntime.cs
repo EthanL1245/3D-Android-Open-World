@@ -83,6 +83,12 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     }
     private readonly List<LightningSequence> lightningSequences = new List<LightningSequence>();
     private readonly Queue<int> lightningZaps = new Queue<int>();
+    // Monotonic observer event ID; independent of the queue consumed by local FX.
+    // Keep it across fights so multiplayer never replays old zaps on the next fish.
+    private int networkLightningSerial;
+    private int networkLightningZap;
+    public int NetworkLightningSerial => networkLightningSerial;
+    public int NetworkLightningZap => networkLightningZap;
     public float BurningSeconds => burnSeconds;
     public bool TryTakeLightningZap(out int index)
     {
@@ -135,6 +141,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         int amount = expected - sequence.applied;
         sequence.applied = expected;
         lightningZaps.Enqueue(index);
+        networkLightningSerial = networkLightningSerial == int.MaxValue ? 1 : networkLightningSerial + 1;
+        networkLightningZap = index;
         if (amount > 0) DealDamage(amount, maxHp, false, true);
     }
 
