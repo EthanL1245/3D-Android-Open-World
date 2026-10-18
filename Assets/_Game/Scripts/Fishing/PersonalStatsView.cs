@@ -156,22 +156,11 @@ public static class PersonalStatsView
         dismiss.transition=Selectable.Transition.None;
         dismiss.onClick.AddListener(()=>preview.SetActive(false));
 
-        // Taller and slightly narrower than before: the full-color card looks
-        // proportionate instead of being stretched horizontally across the modal.
-        // Unity also preserves each source image's original aspect ratio.
-        var enlarged=Panel(preview.transform,"FullColorSpecialAbilityCard",
-            .19f,.28f,.81f,.72f,false);
-        var enlargedArtwork=enlarged.GetComponent<Image>();
-        enlargedArtwork.raycastTarget=false;
-        enlargedArtwork.preserveAspect=true;
-        // Mirror the small card's EXACT normalized text rectangles. Larger fonts
-        // scale with this preview, but the original artwork stays full-color and
-        // does not flash: only the four small selectable cards pulse.
-        var enlargedTitle=Label(enlarged.transform,"",36,.31f,.67f,.95f,.87f,Color.white);
-        enlargedTitle.fontStyle=FontStyle.Bold;
-        var enlargedLevel=Label(enlarged.transform,"",26,.31f,.52f,.95f,.67f,Cyan);
-        var enlargedDescription=Label(enlarged.transform,"",29,.31f,.27f,.95f,.52f,Detail);
-        var enlargedStatus=Label(enlarged.transform,"",26,.31f,.13f,.95f,.27f,Cyan);
+        // Show a scaled COPY of the actual small card. This preserves its exact
+        // text anchors, text, card proportions, and source artwork, instead of
+        // rebuilding a second layout that can diverge from the small cards.
+        // Only the card art/tints are restored to full color; no white pulse.
+        GameObject previewCard=null;
 
         // An independent button consumes taps only when the player chooses to
         // spend an earned point. Every other tap still closes the enlarged card.
@@ -224,21 +213,58 @@ public static class PersonalStatsView
             int ability=i; // Capture the intended card, even after the loop.
             cardButton.onClick.AddListener(()=>
             {
-                // Always show the original, fully colored card, even if locked.
-                enlargedArtwork.sprite=Art(AnglerProgression.AbilityAssets[ability],false,true);
-                enlargedArtwork.color=Color.white;
-                enlargedTitle.text=AnglerProgression.AbilityNames[ability];
                 viewingAbility=ability;
                 int rank=data.AbilityRank(ability);
                 bool active=rank>0;
                 bool canUpgrade=data.AvailableAbilityPoints>0 && progress!=null && !progress.ReadOnly;
-                enlargedLevel.text=active?"ABILITY RANK "+rank:"NOT YET UNLOCKED";
-                enlargedDescription.text=descriptionsAbility[ability];
-                enlargedStatus.text=active?"UNLOCKED • RANK "+rank:"LOCKED • CHOOSE TO UNLOCK";
-                enlargedStatus.color=active?Cyan:new Color(1f,.85f,.47f);
+
+                if(previewCard!=null)
+                {
+                    previewCard.SetActive(false);
+                    Object.Destroy(previewCard);
+                }
+                // Clone this exact card, including all four existing text labels.
+                // A uniform local scale makes text and background grow together.
+                previewCard=Object.Instantiate(card,preview.transform,false);
+                previewCard.name="FullColorEnlargedAbility_"+ability;
+                var pulseCopy=previewCard.GetComponent<SpecialAbilityUpgradePulse>();
+                if(pulseCopy!=null)pulseCopy.enabled=false;
+                // The pulse's translucent overlay can be copied at any point in
+                // its animation; hide both cloned overlays unconditionally.
+                Transform flashBorder=previewCard.transform.Find("UpgradeFlashingWhiteBorder");
+                if(flashBorder!=null)flashBorder.gameObject.SetActive(false);
+                Transform whiteTone=previewCard.transform.Find("UpgradeWhiteTone");
+                if(whiteTone!=null)whiteTone.gameObject.SetActive(false);
+                var enlargedImage=previewCard.GetComponent<Image>();
+                enlargedImage.sprite=Art(AnglerProgression.AbilityAssets[ability],false,true);
+                enlargedImage.color=Color.white;
+                enlargedImage.preserveAspect=false; // Same image scaling as the small card.
+                foreach(Graphic g in previewCard.GetComponentsInChildren<Graphic>(true))
+                    g.raycastTarget=false;
+                var copyButton=previewCard.GetComponent<Button>();
+                if(copyButton!=null)copyButton.enabled=false;
+                Text[] copyLabels=previewCard.GetComponentsInChildren<Text>(true);
+                if(copyLabels.Length>=4)
+                {
+                    copyLabels[0].color=Color.white;
+                    copyLabels[1].color=Cyan;
+                    copyLabels[2].color=Detail;
+                    copyLabels[3].color=Cyan;
+                }
+                var originalRect=card.GetComponent<RectTransform>();
+                var enlargedRect=previewCard.GetComponent<RectTransform>();
+                enlargedRect.anchorMin=enlargedRect.anchorMax=new Vector2(.5f,.54f);
+                enlargedRect.pivot=new Vector2(.5f,.5f);
+                enlargedRect.sizeDelta=originalRect.rect.size;
+                enlargedRect.anchoredPosition=Vector2.zero;
+                var overlayRect=preview.GetComponent<RectTransform>();
+                float scale=Mathf.Min(2.35f,
+                    Mathf.Min(overlayRect.rect.width*.75f/Mathf.Max(1f,originalRect.rect.width),
+                    overlayRect.rect.height*.48f/Mathf.Max(1f,originalRect.rect.height)));
+                enlargedRect.localScale=Vector3.one*Mathf.Max(1f,scale);
+                previewCard.transform.SetSiblingIndex(0);
                 upgradeControl.SetActive(canUpgrade);
                 upgradeLabel.text=active?"UPGRADE TO RANK "+(rank+1):"UNLOCK ABILITY";
-                // The enlarged preview deliberately has no upgrade pulse.
                 preview.transform.SetAsLastSibling();
                 preview.SetActive(true);
             });
