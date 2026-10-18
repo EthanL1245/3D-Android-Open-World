@@ -20,10 +20,12 @@ public class FishingHUD : MonoBehaviour
             int slot=0;
             for(int i=0;i<4;i++)
             {
-                if(i==1)continue;
+                // Burning Fish activates through the charged Skill yank;
+                // Hookset activates automatically on hooking.
+                if(i==0 || i==1)continue;
                 int id=i;
                 var go=new GameObject("Use_"+AnglerProgression.AbilityAssets[i],typeof(RectTransform),typeof(Image),typeof(Button));go.transform.SetParent(abilityBar.transform,false);
-                PersonalStatsView.Place(go.GetComponent<RectTransform>(),slot/3f,0,(slot+1)/3f,1,4);slot++;
+                PersonalStatsView.Place(go.GetComponent<RectTransform>(),slot/2f,0,(slot+1)/2f,1,4);slot++;
                 go.GetComponent<Image>().sprite=PersonalStatsView.Art(AnglerProgression.AbilityAssets[i]);
                 abilityButtons[i]=go.GetComponent<Button>();abilityButtons[i].onClick.AddListener(()=>dragOwner.UseAbility(id));
                 abilityLabels[i]=PersonalStatsView.Label(go.transform,"",20,.31f,.12f,.95f,.86f,Color.white,TextAnchor.MiddleCenter);
