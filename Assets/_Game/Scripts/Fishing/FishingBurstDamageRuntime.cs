@@ -110,21 +110,21 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             Mathf.RoundToInt(maximumHp*fishing.Progression.BurningTotalFraction)));
         var sequence = new LightningSequence { total = burnTotalDamage };
         lightningSequences.Add(sequence);
-        burnSeconds=5f;
+        burnSeconds=4f;
         ApplyLightningZap(sequence, maximumHp);
     }
 
     private void ApplyLightningZap(LightningSequence sequence, int maxHp)
     {
         int index = sequence.nextZap++;
-        // Cumulative rounding keeps all four integer hits at the exact total:
-        // 50%, then three equal shares of the remaining half.
-        int expected = index == 3 ? sequence.total :
-            Mathf.RoundToInt(sequence.total * (.5f + index / 6f));
+        // Cumulative rounding keeps all eight integer hits at the exact total:
+        // 50%, then seven equal shares of the remaining half.
+        int expected = index == 7 ? sequence.total :
+            Mathf.RoundToInt(sequence.total * (.5f + index / 14f));
         int amount = expected - sequence.applied;
         sequence.applied = expected;
         lightningZaps.Enqueue(index);
-        if (amount > 0) DealDamage(amount, maxHp, false);
+        if (amount > 0) DealDamage(amount, maxHp, false, true);
     }
 
     private void UpdateLightning(float elapsed, int maxHp)
@@ -134,10 +134,10 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         {
             var sequence=lightningSequences[i];
             sequence.age+=elapsed;
-            while(sequence.nextZap<4 && sequence.age+.00001f>=sequence.nextZap*(5f/3f) && authoritativeHp>0)
+            while(sequence.nextZap<8 && sequence.age+.00001f>=sequence.nextZap*(4f/7f) && authoritativeHp>0)
                 ApplyLightningZap(sequence,maxHp);
-            if(sequence.nextZap>=4 || authoritativeHp<=0) lightningSequences.RemoveAt(i);
-            else burnSeconds=Mathf.Max(burnSeconds,Mathf.Max(0f,5f-sequence.age));
+            if(sequence.nextZap>=8 || authoritativeHp<=0) lightningSequences.RemoveAt(i);
+            else burnSeconds=Mathf.Max(burnSeconds,Mathf.Max(0f,4f-sequence.age));
         }
     }
 
@@ -383,7 +383,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         DealDamage(damage,maxHp,critical);
     }
 
-    private void DealDamage(int rolledDamage,int maxHp,bool critical)
+    private void DealDamage(int rolledDamage,int maxHp,bool critical,bool lightning=false)
     {
         int appliedDamage = Mathf.Min(authoritativeHp, rolledDamage);
         if (appliedDamage <= 0) return;
@@ -404,7 +404,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             // Show the rolled attack value, not the remaining-HP-capped value. A
             // finishing critical keeps its rolled attack number even if the fish had
             // less health remaining; only the health bar clamps at zero.
-            hud.ShowDamage(rolledDamage, screenPoint);
+            hud.ShowDamage(rolledDamage, screenPoint, lightning);
         }
     }
 

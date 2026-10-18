@@ -13,6 +13,27 @@ using UnityEngine.UI;
 public sealed class FishingDamagePresentation : MonoBehaviour
 {
     private static bool criticalQueued;
+    private static readonly HashSet<Text> lightningLabels = new HashSet<Text>();
+    private static Font electricFont;
+
+    public static void ConfigureDamageLabel(Text label, bool lightning)
+    {
+        // Tag the actual pooled label, not a shared "next hit" flag: a skill
+        // critical and its initial zap can create separate popups in one frame.
+        if (lightning) lightningLabels.Add(label); else lightningLabels.Remove(label);
+        if (electricFont == null) electricFont = Resources.Load<Font>("Fishing/Bungee-Regular");
+        label.font = lightning && electricFont != null ? electricFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        label.fontStyle = lightning ? FontStyle.Italic : FontStyle.Normal;
+        if (lightning)
+        {
+            label.color = new Color(1f,.95f,.02f,1f);
+            label.fontSize = 34;
+            label.resizeTextForBestFit = false;
+            label.rectTransform.sizeDelta = new Vector2(220f,76f);
+        }
+        EnsureOutline(label);
+    }
+
 
     private FishingHUD hud;
     private FieldInfo damageLabelsField;
@@ -64,14 +85,19 @@ public sealed class FishingDamagePresentation : MonoBehaviour
             bool newPopup=active && (!wasActive || life[i]>oldLife+0.15f || oldText!=label.text);
             if(newPopup)
             {
-                bool critical=criticalQueued;
+                bool lightning=lightningLabels.Contains(label);
+                bool critical=!lightning && criticalQueued;
                 if(critical)criticalQueued=false;
 
                 // Keep criticals numeric-only. The gameplay number itself is already
                 // exactly doubled by FishingBurstDamageRuntime. A modest size/tint
                 // change is enough to distinguish it without covering the screen.
                 label.resizeTextForBestFit=false;
-                if(critical)
+                if(lightning)
+                {
+                    ConfigureDamageLabel(label,true);
+                }
+                else if(critical)
                 {
                     label.fontSize=38;
                     label.rectTransform.sizeDelta=new Vector2(205f,72f);
@@ -91,12 +117,17 @@ public sealed class FishingDamagePresentation : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        foreach (Text label in previousText.Keys) lightningLabels.Remove(label);
+    }
+
     private static void EnsureOutline(Text label)
     {
         Outline outline=label.GetComponent<Outline>();
         if(outline==null)outline=label.gameObject.AddComponent<Outline>();
         outline.effectColor=new Color(0f,0f,0f,0.94f);
-        outline.effectDistance=new Vector2(1.6f,-1.6f);
+        outline.effectDistance=lightningLabels.Contains(label)?new Vector2(2.2f,-2.2f):new Vector2(1.6f,-1.6f);
         outline.useGraphicAlpha=true;
     }
 }

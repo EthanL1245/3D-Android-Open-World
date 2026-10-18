@@ -28,7 +28,7 @@ public class FishingSystem:UnityEngine.MonoBehaviour {
  public int Presentations;private void EnsureUnconsciousFishVisual(){Presentations++;}
 }
 public class FishingHUD {public class Input {public bool IsHeld;}public Input ActionInput=new Input();public bool CombatInputVisible=true,FishingUiVisible=true;public int Damage;public float Charge;public bool Fighting,Live;
- public void ShowDamage(int n,UnityEngine.Vector3 p){Damage+=n;}
+ public void ShowDamage(int n,UnityEngine.Vector3 p,bool lightning=false){Damage+=n;}
  public void SetDragFightUI(bool fighting,bool live,int mode,float charge,float cooldown=0f){Fighting=fighting;Live=live;Charge=charge;}}
 public class ShopProgress {public class Ledger {public int rodEquipped;}public Ledger Data=new Ledger();}
 public class Level2FishingRodRuntime:UnityEngine.MonoBehaviour {}

@@ -165,7 +165,7 @@ public class FishingHUD : MonoBehaviour
             if(callback!=null)b.onClick.AddListener(()=>callback());
         }
     }
-    public void ShowDamage(int amount,Vector3 screenPoint)
+    public void ShowDamage(int amount,Vector3 screenPoint,bool lightning=false)
     {
         int i=nextDamage++%damageLabels.Length;
         if(damageLabels[i]==null)
@@ -178,6 +178,7 @@ public class FishingHUD : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(root.GetComponent<RectTransform>(),screenPoint,canvas.renderMode==RenderMode.ScreenSpaceOverlay?null:canvas.worldCamera,out var local);
         damageLabels[i].rectTransform.anchoredPosition=local+new Vector2(Random.Range(-35f,35f),25);
         damageLabels[i].text="−"+amount;damageLabels[i].color=new Color(1,.85f,.35f,1);damageLabels[i].gameObject.SetActive(true);damageLife[i]=.9f;
+        FishingDamagePresentation.ConfigureDamageLabel(damageLabels[i],lightning);
     }
     private void UpdateDamage()
     {

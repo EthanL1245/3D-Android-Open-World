@@ -133,7 +133,7 @@ public static class PersonalStatsView
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"ONE ABILITY UPGRADE POINT EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={
-            "After using a skill, zaps the fish over 5 seconds, dealing "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of its maximum health as damage, up to 2,000 damage.",
+            "After every skill use, zaps the fish 8 times over 4 seconds, dealing "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of its maximum health as damage, up to 2,000 damage. The first zap deals half; the remaining seven share the rest.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
             "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
@@ -273,6 +273,7 @@ public static class PersonalStatsView
             var cardRank=Label(card.transform,unlocked?"RANK "+data.AbilityRank(i):"NOT UNLOCKED",
                 16,.08f,.59f,.92f,.72f,accentColor);
             var cardDescription=Label(card.transform,descriptionsAbility[i],18,.08f,.23f,.92f,.59f,detailColor);
+            cardDescription.resizeTextMinSize=8;
             var cardStatus=Label(card.transform,upgradePoints>0?"UPGRADE AVAILABLE":unlocked?"UNLOCKED":"LOCKED",
                 16,.08f,.08f,.92f,.23f,accentColor);
             if(upgradePoints>0 && progress!=null && !progress.ReadOnly)

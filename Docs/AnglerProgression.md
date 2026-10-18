@@ -23,7 +23,7 @@ At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one di
 
 | Special Ability | Rank 1 effect | Each additional rank |
 | --- | --- | --- |
-| Lightning Strike | Passive effect on the **every charged Skill yank** during each fight; 5% max HP **total over 5 seconds**, capped at **2,000 total damage** (four zaps: 50% immediately, the remaining 50% split across 1.67s, 3.33s and 5s) | +0.5 percentage points to total damage before the cap |
+| Lightning Strike | Passive effect on the **every charged Skill yank** during each fight; 5% max HP **total over 4 seconds**, capped at **2,000 total damage** (eight zaps: 50% immediately, the remaining 50% evenly split across seven later zaps by 4s) | +0.5 percentage points to total damage before the cap |
 | Hookset Power | Automatic; 10% max HP when the fight starts | +2% max HP initial damage |
 | Line Immortality | Button; 5 seconds without the reeling-specific tension increase | +1 second |
 | Siren's Call | Button; fish swims toward the player for 4 seconds, retaining existing water collision checks | +1 second |
@@ -32,7 +32,7 @@ A chosen rank 1 unlocks its ability in combat; extra ranks strengthen it. **Lega
 
 The manually activated abilities are usable once per fish; Lightning Strike triggers on every skill use. Timers pause while combat is covered, and reset when the fight ends. Hookset occurs after cast-quality health adjustment. All ability damage uses the existing authoritative damage owner and knockout presentation. Line Immortality does not remove passive drag/mood tension or prevent a line-distance break. The two future ability art slots stay empty.
 
-When any charged Skill yank triggers Lightning Strike, the supplied electric ripple appears on the water at the current line endpoint every 0.35 seconds during the five-second damage window (about 15 rings). Each ring expands to a 10 m radius and fades to zero alpha over 1.6 seconds; the final rings finish fading naturally. The shared hotspot shader conforms the subdivided ring mesh to ocean waves. Texture UVs trim the supplied image's transparent canvas and undo its baked-in foreshortening before projecting it onto water. No flame icon overlays or red line tint remain. Existing ability ranks, resource keys, and component references are preserved.
+Every unlocked charged Skill starts eight zaps across four seconds. Exactly one wave-conforming electric ripple spawns when the second numbered animation frame of each zap is displayed. Each ring keeps a random surface rotation, expands to a 10 m radius, and fades independently. No background ripple emitter runs between zaps.
 
 All four supplied backdrops replace the previous art. Transparent margins are trimmed at runtime, each background fills the existing equal-sized card rectangle, and the text now uses the space freed by removing the old corner icons. The enlarged preview remains a uniformly scaled clone in the same fixed position for every ability.
 
@@ -46,8 +46,10 @@ The caught-fish XP bar and the attribute-level-up notification each hold **2.25 
 
 C# syntax was checked for Fishing and ShopWorld scripts. Unity is not available in the implementation environment; Play Mode/Android verification remains necessary for layout, touch interactions, save/relaunch, fish movement, and the full Unity build. No terrain, scene objects, or manually authored scenery was edited.
 
-### Above-water Lightning Strike animation and sound
+### Eight-zap Lightning Strike
 
-Each unlocked skill use starts an independent four-zap sequence at 0, 5/3, 10/3 and 5 seconds. Half of the total damage is immediate; the remaining half is divided between the later three zaps using cumulative rounding so the exact total (capped at 2,000 per activation) is paid. Overlapping activations do not erase previous pending damage. Combat events trigger both the visible zap and its matching sound, including the final event at the end of the timer.
+Each unlocked skill use starts an independent eight-zap sequence at intervals of 4/7 seconds, beginning immediately and ending at 4 seconds. Half the ability damage is immediate; the other half is evenly shared by seven zaps with cumulative integer rounding. The 2,000 cap applies per activation. Repeated and overlapping skills retain their own complete sequences.
 
-Each zap plays all nine numbered PNGs once, in order, on an upright quad facing the player at the fish line endpoint. The first zap uses a 9 m canvas (+50%); later zaps use 7.5 m (+25%). All frames retain a common waterline anchor. The four supplied MP3s map to zaps 1–4. Each uses a spatial AudioSource at full volume through 12 m, logarithmic attenuation beyond 12 m, and no Doppler pitch shift. Visuals and sounds pause with combat menus; disable cleans up active strikes. Expanding water ripples retain their independent cadence and fixed random yaw.
+Each zap plays the nine frames once. First strike canvas: 9 m. Later strikes: 8.25 m (10% larger than the previous 7.5 m). Sound clips 1–4 map to the first four zaps; zaps 5–8 reuse clip 4. Spatial audio stays full volume within 12 m and attenuates logarithmically farther away. Each animation requests one ripple only when it actually displays frame 2.
+
+Lightning damage labels use bright yellow, a black outline, and the bundled Bungee display font with an italic slant. Label-specific styling keeps simultaneous skill criticals separate, and pooled labels restore their ordinary font when reused. Font source: https://github.com/google/fonts/tree/main/ofl/bungee ; its supplied OFL license is included alongside the font.

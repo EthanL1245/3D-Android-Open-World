@@ -20,6 +20,11 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
     private MaterialPropertyBlock properties;
     private int frame;
     private float frameElapsed;
+    private bool ripplePending, rippleEmitted;
+    public bool TakeRippleCue()
+    {
+        bool cue=ripplePending; ripplePending=false; return cue;
+    }
     private float strikeScale = 1f;
     private AudioSource zapAudio;
     private static readonly AudioClip[] zapClips = new AudioClip[4];
@@ -95,9 +100,11 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
 
     public void Restart(int zapIndex)
     {
-        strikeScale = zapIndex == 0 ? 1.5f : 1.25f;
-        if (zapClips[zapIndex] == null)
-            zapClips[zapIndex] = Resources.Load<AudioClip>("Fishing/Audio/LightningZap" + (zapIndex + 1));
+        strikeScale = zapIndex == 0 ? 1.5f : 1.375f;
+        ripplePending=rippleEmitted=false;
+        int soundIndex = Mathf.Min(zapIndex, 3);
+        if (zapClips[soundIndex] == null)
+            zapClips[soundIndex] = Resources.Load<AudioClip>("Fishing/Audio/LightningZap" + (soundIndex + 1));
         if (zapAudio == null) zapAudio = gameObject.AddComponent<AudioSource>();
         zapAudio.playOnAwake = false;
         zapAudio.loop = false;
@@ -107,7 +114,7 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
         zapAudio.rolloffMode = AudioRolloffMode.Logarithmic;
         zapAudio.minDistance = 12f;
         zapAudio.maxDistance = 120f;
-        zapAudio.clip = zapClips[zapIndex];
+        zapAudio.clip = zapClips[soundIndex];
         frame = 0;
         frameElapsed = 0f;
         gameObject.SetActive(true);
@@ -118,6 +125,8 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
     // Menu pauses therefore pause both the sequence and the source of new rings.
     public void Tick(Vector3 point, OceanWater water, Camera view)
     {
+        // Emit only on the update that actually displays numbered frame 2.
+        if (frame == 1 && !rippleEmitted) { ripplePending=true; rippleEmitted=true; }
         display.enabled = frame < FrameCount;
         if (frame < FrameCount) properties.SetTexture(MainTexId, frames[frame]);
         properties.SetFloat(AlphaId, 1f);

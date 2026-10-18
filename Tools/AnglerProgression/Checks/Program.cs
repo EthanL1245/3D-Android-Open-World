@@ -44,16 +44,16 @@ class Program
   Check(Get<int>(f,"fishHealthPoints")==900,"Hookset once after max HP known");Tick(0);Check(Get<int>(f,"fishHealthPoints")==900,"No repeated hookset");
   Set(owner,"skillQueued",true);Tick(0);
   int afterSkill=Get<int>(f,"fishHealthPoints");
-  Check(owner.BurningSeconds==5f && Get<bool[]>(owner,"abilityUsed")[0],"Charged Skill automatically starts Burning Fish");
+  Check(owner.BurningSeconds==4f && Get<bool[]>(owner,"abilityUsed")[0],"Charged Skill automatically starts Burning Fish");
   Check(!owner.CanUseAbility(0),"Burning Fish is not a manual button");
   Check(owner.TryTakeLightningZap(out int zap) && zap==0,"First zap event is immediate");
-  Tick(1);Check(Get<int>(f,"fishHealthPoints")==afterSkill,"Burn ticks in authoritative HP");
+  Tick(.25f);Check(Get<int>(f,"fishHealthPoints")==afterSkill,"Burn ticks in authoritative HP");
   ShopWorldHUD.MenuOpen=true;Tick(5);Check(Get<int>(f,"fishHealthPoints")==afterSkill,"Menu pauses burn");ShopWorldHUD.MenuOpen=false;
-  Tick(4);Check(Get<int>(f,"fishHealthPoints")==afterSkill-25,"Burn total 5 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==afterSkill-25,"Burn ends");
-  for(int i=1;i<4;i++)Check(owner.TryTakeLightningZap(out zap) && zap==i,"Exactly ordered later zaps");
-  Check(!owner.TryTakeLightningZap(out zap),"No fifth zap");
+  Tick(3.75f);Check(Get<int>(f,"fishHealthPoints")==afterSkill-25,"Burn total 5 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==afterSkill-25,"Burn ends");
+  for(int i=1;i<8;i++)Check(owner.TryTakeLightningZap(out zap) && zap==i,"Exactly ordered later zaps");
+  Check(!owner.TryTakeLightningZap(out zap),"No ninth zap");
   Set(owner,"skillQueued",true);Tick(0);
-  Check(owner.TryTakeLightningZap(out zap) && zap==0 && owner.BurningSeconds==5f,"Same fight skill retriggers lightning");
+  Check(owner.TryTakeLightningZap(out zap) && zap==0 && owner.BurningSeconds==4f,"Same fight skill retriggers lightning");
   owner.UseAbility(2);owner.UseAbility(3);Check(owner.ImmortalitySeconds==5 && owner.SirenSeconds==4,"Timed abilities activate");
   Tick(2);Check(owner.ImmortalitySeconds==3 && owner.SirenSeconds==2,"Timed abilities count down");
   Set(f,"state","Idle");Tick(0);Check(owner.ImmortalitySeconds==0 && owner.SirenSeconds==0,"Cancel clears timers");
@@ -66,8 +66,8 @@ class Program
   Check(!owner.CanUseAbility(2),"No ability on unconscious fish");
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
   typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
-  for(int i=0;i<301;i++)Tick(1f/60f);
-  Check(Get<int>(f,"fishHealthPoints")==850,"Lightning completes four zaps at 60 FPS");
+  for(int i=0;i<241;i++)Tick(1f/60f);
+  Check(Get<int>(f,"fishHealthPoints")==850,"Lightning completes eight zaps at 60 FPS");
   Set(f,"fishMaxHealth",100000);
   typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
   Check(Get<int>(owner,"burnTotalDamage")==2000,"Burn never exceeds 2000 total damage");
@@ -75,9 +75,8 @@ class Program
   Set(owner,"authoritativeHp",100000);
   typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
   Check(Get<int>(owner,"authoritativeHp")==99000,"Capped initial zap = 1000");
-  Tick(5f/3f);Check(Get<int>(owner,"authoritativeHp")==98667,"Capped second zap = 333");
-  Tick(5f/3f);Check(Get<int>(owner,"authoritativeHp")==98333,"Capped third zap = 334 after rounding");
-  Tick(5f/3f);Check(Get<int>(owner,"authoritativeHp")==98000,"Capped fourth zap = 333");
+  int[] expectedHp={98857,98714,98571,98429,98286,98143,98000};
+  foreach(int expected in expectedHp){Tick(4f/7f);Check(Get<int>(owner,"authoritativeHp")==expected,"Seven later zaps evenly share the other 1000");}
   // Two overlapping activations retain their complete independent damage budgets.
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
   Set(owner,"authoritativeHp",100000);
@@ -85,11 +84,11 @@ class Program
   Check(Get<int>(owner,"authoritativeHp")==99000,"First zap pays half of capped total immediately");
   Tick(1);
   typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
-  Check(Get<int>(owner,"authoritativeHp")==98000,"Overlapping first zap pays its own half");
-  Tick(4);Tick(1);
+  Check(Get<int>(owner,"authoritativeHp")==97857,"Overlapping first zap pays its own half");
+  Tick(3);Tick(1);
   Check(Get<int>(owner,"authoritativeHp")==96000,"Both activations pay full capped total");
   int events=0;while(owner.TryTakeLightningZap(out zap))events++;
-  Check(events==8,"Two activations have exactly eight zap events");
-  Console.WriteLine("PASS: progression, caps, save migration, chosen ability ranks, XP curve, unlocks, authoritative damage, four-zap damage split, repeated skills, overlap, cap, KO, menu pause and fight reset.");
+  Check(events==16,"Two activations have exactly sixteen zap events");
+  Console.WriteLine("PASS: progression, caps, save migration, chosen ability ranks, XP curve, unlocks, authoritative damage, eight-zap damage split, repeated skills, overlap, cap, KO, menu pause and fight reset.");
  }
 }
