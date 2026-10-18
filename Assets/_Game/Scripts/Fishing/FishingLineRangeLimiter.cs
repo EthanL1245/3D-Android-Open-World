@@ -75,6 +75,16 @@ public sealed class FishingLineRangeLimiter : MonoBehaviour
         if (actualLength <= maximum + 0.001f)
             return;
 
+        // Allow the hooked fish to exceed the equipped line length while the
+        // once-per-fight passive is active. Other fishing states stay unchanged.
+        if (state == "Fighting")
+        {
+            var immortality = fishing.GetComponent<FishingBurstDamageRuntime>();
+            if (immortality != null &&
+                (immortality.LineImmortalityActive || immortality.TryTriggerLineImmortality()))
+                return;
+        }
+
         retracting = true;
         bool lure = (int)activeBaitField.GetValue(fishing) == ShopCatalog.StarterLure;
         string message = lure
