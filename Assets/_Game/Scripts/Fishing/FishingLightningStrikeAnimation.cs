@@ -27,6 +27,10 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
     }
     private float strikeScale = 1f;
     private AudioSource zapAudio;
+    // Only replicated zaps are inaudible beyond 60 m. The local angler keeps
+    // the original sound settings and falloff unchanged.
+    private bool remoteAudio;
+    private const float RemoteHearingRadius = 60f;
     private static readonly AudioClip[] zapClips = new AudioClip[4];
     public bool Finished => frame >= FrameCount && (zapAudio == null || !zapAudio.isPlaying);
     public void SetPaused(bool paused)
@@ -98,8 +102,9 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
         return true;
     }
 
-    public void Restart(int zapIndex)
+    public void Restart(int zapIndex, bool isRemote = false)
     {
+        remoteAudio = isRemote;
         strikeScale = (zapIndex == 0 ? 1.5f : 1.375f) * 1.3f;
         ripplePending=rippleEmitted=false;
         int soundIndex = Mathf.Min(zapIndex, 3);
@@ -113,7 +118,8 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
         zapAudio.dopplerLevel = 0f;
         zapAudio.rolloffMode = AudioRolloffMode.Logarithmic;
         zapAudio.minDistance = 12f;
-        zapAudio.maxDistance = 120f;
+        zapAudio.maxDistance = remoteAudio ? RemoteHearingRadius : 120f;
+        zapAudio.mute = remoteAudio; // Stay silent until Tick establishes listener distance.
         zapAudio.clip = zapClips[soundIndex];
         frame = 0;
         frameElapsed = 0f;
@@ -144,6 +150,11 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
         transform.position = point;
         transform.localScale = Vector3.one * (CanvasSizeMetres * strikeScale);
         if (view == null) view = Camera.main;
+        // Unity's logarithmic AudioSource.maxDistance only clamps attenuation;
+        // it does not silence audio. Mute replicated strikes at / beyond 60 m.
+        if (zapAudio != null && remoteAudio)
+            zapAudio.mute = view == null || (view.transform.position - point).sqrMagnitude >=
+                RemoteHearingRadius * RemoteHearingRadius;
         if (view == null) return;
         Vector3 direction = view.transform.position - point;
         direction.y = 0f;
