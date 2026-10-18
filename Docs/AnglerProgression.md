@@ -13,7 +13,7 @@ Progression is stored in `ShopLedger.angler`, alongside inventory and the saved 
 - Skill: +1% charged-yank damage per point, on top of the improved base damage.
 - Charm: +1% fish weight per point. Multiplies the existing hotspot bonus and preserves depth-quality rules. Larger weights feed the existing health/difficulty calculation.
 - Six 100-point caps are fully reached at level 601. This is the maximum level.
-- Required XP: `ceil(250 * 1.015^(level - 1))`. The first level-up typically takes a few starter fish.
+- Required XP to advance from the current level: `ceil(250 * 1.015^(level - 1)) + 150 * floor(level / 5)`. This preserves the previous exponential curve and adds +0 XP at levels 1–4, +150 at 5–9, +300 at 10–14, +450 at 15–19, +600 at 20–24, and an additional +150 at every subsequent five-level bracket. Existing levels, earned XP and caught-fish XP rewards are unchanged; the current bar and catch toast use the new threshold.
 - Catch XP: `round(4 * sqrt(maximum fight HP) * (1 + 2 * effective difficulty))`, minimum 1. Uses actual fight HP after depth-quality adjustment and effective species/size difficulty, not damage dealt or remaining HP.
 - Only a successful inventory catch grants XP. Missed bites, escaped fish, cancelled casts, full-bag releases, sales and transfers do not grant XP. Overflow carries into subsequent levels. Catch feedback shows earned XP and the new level.
 
