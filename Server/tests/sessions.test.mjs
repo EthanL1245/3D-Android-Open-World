@@ -366,3 +366,46 @@ test('lightning zaps replicate as validated cosmetic events and keep sequence th
     assert.equal((await post('/v1/state',{pose:{...line,...extra}},guest.token)).status,400);
   }
 });
+
+test('successful cast splash and ripple events replicate independently of fishing line state',async t=>{
+  let now=1000;
+  const post=await fixture(t,{clock:()=>now,timeout:1000000});
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,name:'Caster',code:host.code});
+  const landing={...pose(5),rodEquipped:true,castSequence:7,castImpactSequence:3,
+    castImpactAge:.18,castImpactX:25.24,castImpactY:0.42,castImpactZ:-6.38};
+  let reply=await post('/v1/state',{pose:landing},guest.token);
+  assert.equal(reply.ok,true);
+  let remote=reply.players.find(p=>p.id===guest.id);
+  for(const key of ['castImpactSequence','castImpactAge','castImpactX','castImpactY','castImpactZ'])
+    assert.equal(remote[key],landing[key]);
+  assert.equal(remote.lineKind,0); // Water impact remains visible without a line-state packet.
+  // Repeated snapshots retain the same event ID. Clients deduplicate it.
+  remote=(await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+  assert.equal(remote.castImpactSequence,3);
+  reply=await post('/v1/state',{pose:{...landing,castImpactSequence:4,castImpactAge:.06}},guest.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).castImpactSequence,4);
+  // Older impacts are carried as baselines but not replayed by observers.
+  reply=await post('/v1/state',{pose:{...landing,castImpactAge:60}},guest.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).castImpactAge,60);
+  now=2200;
+  reply=await post('/v1/state',{pose:pose()},host.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).castImpactAge,-1);
+  // No splashes in interior/shopping worlds.
+  reply=await post('/v1/state',{pose:{...landing,world:1}},guest.token);
+  remote=reply.players.find(p=>p.id===guest.id);
+  assert.equal(remote.castImpactSequence,0);
+  assert.equal(remote.castImpactAge,-1);
+  // Invalid IDs/ages/coordinates must not be broadcast.
+  const invalid=[
+    {castImpactSequence:-1},{castImpactSequence:1.2},{castImpactSequence:2147483648},
+    {castImpactAge:61},{castImpactAge:-2},{castImpactAge:'0'},
+    {castImpactX:NaN},{castImpactY:'sea'},{castImpactZ:100001}
+  ];
+  for(const wrong of invalid){
+    const trial={...landing,...wrong};
+    assert.equal((await post('/v1/state',{pose:trial},guest.token)).status,400);
+  }
+  assert.equal((await post('/v1/state',{pose:{...pose(),castImpactAge:.15}},guest.token)).status,400);
+  assert.equal((await post('/v1/state',{pose:{...pose(),castImpactSequence:2,castImpactAge:.1}},guest.token)).status,400);
+});
