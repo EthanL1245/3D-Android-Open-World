@@ -2087,7 +2087,7 @@ public class FishingSystem : MonoBehaviour
         switch (ActiveTemperament)
         {
             case FishTemperament.SirensCall:
-                return "SIREN'S CALL";
+                return "CONTROLLED";
             case FishTemperament.Fragile:
                 return "FRAGILE • LOW DRAG";
             case FishTemperament.Calm:

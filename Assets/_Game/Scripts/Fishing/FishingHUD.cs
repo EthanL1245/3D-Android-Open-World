@@ -15,8 +15,13 @@ public class FishingHUD : MonoBehaviour
     {
         if(abilityBar==null && fighting)
         {
-            abilityBar=new GameObject("FightSpecialAbilities",typeof(RectTransform));abilityBar.transform.SetParent(root.transform,false);
-            PersonalStatsView.Place(abilityBar.GetComponent<RectTransform>(),.30f,.19f,.70f,.31f);
+            abilityBar=new GameObject("FightSpecialAbilities",typeof(RectTransform));abilityBar.transform.SetParent(skillPanel.transform,false);
+            // Follow the skill panel: same left edge, half its width, small gap above.
+            var abilityRect=abilityBar.GetComponent<RectTransform>();
+            abilityRect.anchorMin=new Vector2(0f,1f);
+            abilityRect.anchorMax=new Vector2(.5f,1f);
+            abilityRect.pivot=new Vector2(0f,0f);
+            abilityRect.anchoredPosition=new Vector2(0f,12f);
             for(int i=0;i<4;i++)
             {
                 // Lightning Strike, Hookset and Line Immortality are passive.
@@ -24,13 +29,16 @@ public class FishingHUD : MonoBehaviour
                 if(i!=3)continue;
                 int id=i;
                 var go=new GameObject("Use_"+AnglerProgression.AbilityAssets[i],typeof(RectTransform),typeof(Image),typeof(Button));go.transform.SetParent(abilityBar.transform,false);
-                PersonalStatsView.Place(go.GetComponent<RectTransform>(),.25f,0,.75f,1,4);
+                PersonalStatsView.Place(go.GetComponent<RectTransform>(),0,0,1,1);
                 go.GetComponent<Image>().sprite=PersonalStatsView.Art(AnglerProgression.AbilityAssets[i]);
                 abilityButtons[i]=go.GetComponent<Button>();abilityButtons[i].onClick.AddListener(()=>dragOwner.UseAbility(id));
                 abilityLabels[i]=PersonalStatsView.Label(go.transform,"",20,.31f,.12f,.95f,.86f,Color.white,TextAnchor.MiddleCenter);
             }
         }
         if(abilityBar==null)return;
+        // Preserve the former 12%-of-HUD height minus its two 4-unit insets.
+        abilityBar.GetComponent<RectTransform>().sizeDelta=
+            new Vector2(0f,Mathf.Max(1f,root.GetComponent<RectTransform>().rect.height*.12f-8f));
         abilityBar.SetActive(fighting && live);
         if(!fighting || !live)return;
         if(dragOwner==null && system!=null)dragOwner=system.GetComponent<FishingBurstDamageRuntime>();
@@ -226,8 +234,8 @@ public class FishingHUD : MonoBehaviour
     public void SetDragFightUI(bool fighting,bool live,int mode,float charge,float cooldown=0f)
     {
         if(root==null)return;
-        UpdateAbilityButtons(fighting,live);
         if(fighting && dragPanel==null)BuildDragUI();
+        UpdateAbilityButtons(fighting,live);
         if(hotbarObject!=null)hotbarObject.SetActive(!fighting);
         if(dragPanel==null)return;
         dragPanel.SetActive(fighting);
@@ -1097,9 +1105,10 @@ public class FishingHUD : MonoBehaviour
         renderedStatus = currentStatus; renderedDrag = displayDrag;
         string state = currentStatus.Split(new[] { " - " }, System.StringSplitOptions.None)[0];
         string key = state.Contains("STUNNED") ? "Stunned" : state.Contains("UNCONSCIOUS") ? "Fainted" :
+            state.Contains("CONTROLLED") || state.Contains("SIREN'S CALL") ? "SirensCall" :
             state.Contains("FRAGILE") ? "LookingForCover" : state.Contains("ANGRY") ? "Angry" :
             state.Contains("IRRITATED") ? "Irritated" : "Calm";
-        string title = key == "LookingForCover" ? "Fragile" : key == "Fainted" ? "Subdued" : key;
+        string title = key == "SirensCall" ? "Controlled" : key == "LookingForCover" ? "Fragile" : key == "Fainted" ? "Subdued" : key;
         string[] dragNames = { "Low", "Medium", "High" };
         fightStatusText.text = title + " • " + dragNames[displayDrag] + " Drag";
         int split = currentStatus.IndexOf(" - ", System.StringComparison.Ordinal);
