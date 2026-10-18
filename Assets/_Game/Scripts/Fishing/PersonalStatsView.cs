@@ -147,11 +147,14 @@ public static class PersonalStatsView
         dismiss.transition=Selectable.Transition.None;
         dismiss.onClick.AddListener(()=>preview.SetActive(false));
 
+        // Taller and slightly narrower than before: the full-color card looks
+        // proportionate instead of being stretched horizontally across the modal.
+        // Unity also preserves each source image's original aspect ratio.
         var enlarged=Panel(preview.transform,"FullColorSpecialAbilityCard",
-            .13f,.32f,.87f,.68f,false);
+            .19f,.28f,.81f,.72f,false);
         var enlargedArtwork=enlarged.GetComponent<Image>();
         enlargedArtwork.raycastTarget=false;
-        enlargedArtwork.preserveAspect=false;
+        enlargedArtwork.preserveAspect=true;
         var enlargedTitle=Label(enlarged.transform,"",36,.31f,.68f,.96f,.89f,Color.white);
         enlargedTitle.fontStyle=FontStyle.Bold;
         var enlargedLevel=Label(enlarged.transform,"",24,.31f,.53f,.96f,.68f,Cyan);
