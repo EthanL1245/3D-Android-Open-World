@@ -76,6 +76,7 @@ public class FishingHUD : MonoBehaviour
     private Text statusText;
     private Text fightStatusText, fightHintText;
     private RawImage fightStatusIcon;
+    public RawImage CombatFishStatusIcon => fightStatusIcon;
     private readonly Dictionary<string, Texture2D> hudStatusTextures = new Dictionary<string, Texture2D>();
     private string currentStatus = "";
     private int displayDrag = 1;
