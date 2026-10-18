@@ -52,9 +52,16 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
       if(value[key]!==undefined&&(typeof value[key]!=='number'||!Number.isFinite(value[key])||Math.abs(value[key])>100000))
         fail(400,'Invalid fishing line position.');
     if(lineKind && !['lineX','lineY','lineZ'].every(key=>typeof value[key]==='number'))fail(400,'Missing fishing line position.');
+    // Presentation-only events. Never accept damage, health or arbitrary effect coordinates.
+    if(value.lightningSerial!==undefined && (!Number.isInteger(value.lightningSerial)||value.lightningSerial<0||value.lightningSerial>2147483647))
+      fail(400,'Invalid lightning event sequence.');
+    if(value.lightningZap!==undefined && (!Number.isInteger(value.lightningZap)||value.lightningZap<0||value.lightningZap>7))
+      fail(400,'Invalid lightning zap index.');
     const visibleLine=value.rodEquipped===true && value.swimming!==true && value.world===0 ? lineKind : 0;
     return { islandMask:(value.islandMask??1)|1, lineKind:visibleLine,lureVariant:visibleLine?lureVariant:0,
       lineX:visibleLine?value.lineX:0,lineY:visibleLine?value.lineY:0,lineZ:visibleLine?value.lineZ:0,
+      lightningSerial:visibleLine && value.hasFish===true?(value.lightningSerial??0):0,
+      lightningZap:visibleLine && value.hasFish===true?(value.lightningZap??0):0,
       ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       sprinting: value.sprinting === true && value.swimming !== true,
