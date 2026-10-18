@@ -90,9 +90,21 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         return index >= 0;
     }
     public float ImmortalitySeconds { get; private set; }
+    public bool LineImmortalityActive => inFight && IsFighting() && authoritativeHp > 0 && ImmortalitySeconds > 0f;
+    // Passive, once per fight. FishingSystem calls this as soon as line length reaches its limit.
+    public bool TryTriggerLineImmortality()
+    {
+        if (!enabled || !inFight || !IsFighting() || authoritativeHp <= 0 ||
+            abilityUsed[2] || fishing == null || fishing.Progression == null ||
+            !fishing.Progression.Unlocked(2))
+            return false;
+        abilityUsed[2] = true;
+        ImmortalitySeconds = fishing.Progression.ImmortalityDuration;
+        return true;
+    }
     public float SirenSeconds { get; private set; }
     // Lightning Strike activates on EVERY charged Skill use once unlocked.
-    public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 0 && id != 1 && inFight && IsFighting() &&
+    public bool CanUseAbility(int id) => id >= 0 && id < 4 && id == 3 && inFight && IsFighting() &&
         authoritativeHp > 0 && !abilityUsed[id] && fishing.Progression != null && fishing.Progression.Unlocked(id) &&
         !ShopWorldHUD.MenuOpen && hud != null && hud.CombatInputVisible;
     public bool AbilityUsed(int id) => id >= 0 && id < 4 && abilityUsed[id];
@@ -100,7 +112,6 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     {
         if(!CanUseAbility(id))return;
         abilityUsed[id]=true;
-        if(id==2)ImmortalitySeconds=fishing.Progression.ImmortalityDuration;
         if(id==3)SirenSeconds=fishing.Progression.SirenDuration;
     }
     private void StartBurn()
@@ -300,6 +311,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         {
             // Stop emitting electric ripples immediately if the fish is knocked out.
             burnSeconds=0f;lightningSequences.Clear();
+            ImmortalitySeconds=0f;
             EnterUnconsciousPresentation();
             skillCharge=0f;skillQueued=false;
             if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f,skillCooldown);
