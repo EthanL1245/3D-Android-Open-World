@@ -20,7 +20,7 @@ public sealed class FishingExperienceToast : MonoBehaviour
     private const float LevelNoticeTopOffset = 140f;
     public static bool IsShowingXp { get; private set; }
     private const float SlideSeconds = .38f;
-    private const float HoldSeconds = 1.25f;
+    private const float HoldSeconds = 2.25f;
 
     private static readonly Color Cyan = new Color(.02f, .94f, 1f, 1f);
     private static readonly Color Gold = new Color(1f, .84f, .38f, 1f);
@@ -184,7 +184,7 @@ public sealed class FishingExperienceToast : MonoBehaviour
             {
                 if (reward.level == (i + 1) * 20)
                 {
-                    noticeDetail.text = "UNLOCKED: " + AnglerProgression.AbilityNames[i];
+                    noticeDetail.text = "SPECIAL ABILITY UPGRADE READY • PERSONAL STATS";
                     break;
                 }
             }
