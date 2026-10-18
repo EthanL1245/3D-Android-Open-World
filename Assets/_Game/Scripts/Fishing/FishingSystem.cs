@@ -155,7 +155,7 @@ public class FishingSystem : MonoBehaviour
     private FishingStatusOutline fragileOutline;
     private bool FragileWarningActive => isActiveAndEnabled && rodEquipped && !shopMode &&
         !(ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen) && state == FishingState.Fighting && !fishUnconscious && !IsSkillStunned &&
-        hookedTemperament == FishTemperament.Fragile && CurrentDrag != FishingDragRules.Low;
+        ActiveTemperament == FishTemperament.Fragile && CurrentDrag != FishingDragRules.Low;
     private bool FragileWarningFlashing => FragileWarningActive && fragileBreakTimer >= FishingDragRules.FragileWarningSeconds;
     private bool FragileFlashOn => ((int)(Time.unscaledTime * 16f) & 1) != 0;
     private float initialEscapeBurstTimer;
