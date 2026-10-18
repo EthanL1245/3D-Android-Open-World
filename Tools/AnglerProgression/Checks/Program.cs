@@ -42,22 +42,30 @@ class Program
   f.Progression.Normalize(); // Exercise the old save's four granted abilities.
   Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
   Check(Get<int>(f,"fishHealthPoints")==900,"Hookset once after max HP known");Tick(0);Check(Get<int>(f,"fishHealthPoints")==900,"No repeated hookset");
-  owner.UseAbility(0);Check(!owner.CanUseAbility(0),"Once per fight");
-  Tick(1);Check(Get<int>(f,"fishHealthPoints")==890,"Burn ticks in authoritative HP");
-  ShopWorldHUD.MenuOpen=true;Tick(5);Check(Get<int>(f,"fishHealthPoints")==890,"Menu pauses burn");ShopWorldHUD.MenuOpen=false;
-  Tick(4);Check(Get<int>(f,"fishHealthPoints")==850,"Burn total 5 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==850,"Burn ends");
+  Set(owner,"skillQueued",true);Tick(0);
+  int afterSkill=Get<int>(f,"fishHealthPoints");
+  Check(owner.BurningSeconds==5f && Get<bool[]>(owner,"abilityUsed")[0],"Charged Skill automatically starts Burning Fish");
+  Check(!owner.CanUseAbility(0),"Burning Fish is not a manual button");
+  Tick(1);Check(Get<int>(f,"fishHealthPoints")==afterSkill-10,"Burn ticks in authoritative HP");
+  ShopWorldHUD.MenuOpen=true;Tick(5);Check(Get<int>(f,"fishHealthPoints")==afterSkill-10,"Menu pauses burn");ShopWorldHUD.MenuOpen=false;
+  Tick(4);Check(Get<int>(f,"fishHealthPoints")==afterSkill-50,"Burn total 5 percent");Tick(1);Check(Get<int>(f,"fishHealthPoints")==afterSkill-50,"Burn ends");
   owner.UseAbility(2);owner.UseAbility(3);Check(owner.ImmortalitySeconds==5 && owner.SirenSeconds==4,"Timed abilities activate");
   Tick(2);Check(owner.ImmortalitySeconds==3 && owner.SirenSeconds==2,"Timed abilities count down");
   Set(f,"state","Idle");Tick(0);Check(owner.ImmortalitySeconds==0 && owner.SirenSeconds==0,"Cancel clears timers");
-  Set(f,"state","Fighting");Tick(0);Check(owner.CanUseAbility(0),"Fresh fight resets consumption");
+  Set(f,"state","Fighting");Tick(0);Check(!Get<bool[]>(owner,"abilityUsed")[0],"Fresh fight resets automatic burn");
   f.Progression.stats[0]=10;f.Progression.stats[1]=100;hud.ActionInput.IsHeld=true;
   int hp=Get<int>(f,"fishHealthPoints");Tick(.35f);Check(hp-Get<int>(f,"fishHealthPoints")==26,"Raw then percent burst damage");
-  hud.ActionInput.IsHeld=false;Set(owner,"authoritativeHp",5);owner.UseAbility(0);Tick(.5f);
+  hud.ActionInput.IsHeld=false;Set(owner,"authoritativeHp",5);
+  typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);Tick(.5f);
   Check(Get<int>(f,"fishHealthPoints")==0 && Get<bool>(f,"fishUnconscious") && f.Presentations>0,"Burn KO presentation");
   Check(!owner.CanUseAbility(2),"No ability on unconscious fish");
-  Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);owner.UseAbility(0);
+  Set(f,"state","Idle");Tick(0);Set(f,"state","Fighting");Tick(0);
+  typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
   for(int i=0;i<301;i++)Tick(1f/60f);
   Check(Get<int>(f,"fishHealthPoints")==850,"Burn completes all ten ticks at 60 FPS");
+  Set(f,"fishMaxHealth",100000);
+  typeof(FishingBurstDamageRuntime).GetMethod("StartBurn",F).Invoke(owner,null);
+  Check(Get<int>(owner,"burnTotalDamage")==2000,"Burn never exceeds 2000 total damage");
   Console.WriteLine("PASS: progression, caps, save migration, chosen ability ranks, XP curve, unlocks, authoritative damage, burn KO, timing, menu pause and fight reset.");
  }
 }
