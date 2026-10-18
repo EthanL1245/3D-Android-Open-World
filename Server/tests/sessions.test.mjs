@@ -331,3 +331,38 @@ test('rename during a tournament preserves scores and uses the new name in final
  assert.equal(reply.tournament.winnerName,'After');assert.equal(reply.tournament.biggestName,'After');
  assert.equal((await post('/v1/tournament-receipt',{ticket:gt,cancelMissing:true})).payout,150);
 });
+
+test('lightning zaps replicate as validated cosmetic events and keep sequence through casts',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:host.code,name:'Zap Angler'});
+  const line={...pose(),rodEquipped:true,lineKind:3,hasFish:true,
+    lineX:23.5,lineY:0,lineZ:-8.25,lightningSerial:1,lightningZap:0};
+  assert.equal((await post('/v1/state',{pose:line},guest.token)).ok,true);
+  let player=(await post('/v1/state',{pose:pose()},host.token)).players.find(p=>p.id===guest.id);
+  assert.equal(player.lightningSerial,1);
+  assert.equal(player.lightningZap,0);
+  assert.equal(player.lineX,23.5);
+  // Every numbered zap is a new event, including later zaps reusing audio 4.
+  for(let index=1;index<8;index++){
+    const reply=await post('/v1/state',{pose:{...line,lightningSerial:index+1,lightningZap:index}},guest.token);
+    const peer=reply.players.find(p=>p.id===guest.id);
+    assert.equal(peer.lightningSerial,index+1);
+    assert.equal(peer.lightningZap,index);
+  }
+  // Keep the serial while the rod is stowed or there is no hooked fish,
+  // so the observer knows a subsequent lightning event is new, not a replay.
+  let reply=await post('/v1/state',{pose:{...pose(),lightningSerial:8,lightningZap:7}},guest.token);
+  player=reply.players.find(p=>p.id===guest.id);
+  assert.equal(player.lineKind,0);
+  assert.equal(player.lightningSerial,8);
+  assert.equal(player.lightningZap,7);
+  reply=await post('/v1/state',{pose:{...line,lightningSerial:9,lightningZap:0}},guest.token);
+  player=reply.players.find(p=>p.id===guest.id);
+  assert.equal(player.lightningSerial,9);
+  assert.equal(player.lightningZap,0);
+  for(const extra of [{lightningSerial:-1},{lightningSerial:1.4},{lightningSerial:2147483648},
+    {lightningZap:-1},{lightningZap:8},{lightningZap:2.5},{lightningZap:'3'}]){
+    assert.equal((await post('/v1/state',{pose:{...line,...extra}},guest.token)).status,400);
+  }
+});
