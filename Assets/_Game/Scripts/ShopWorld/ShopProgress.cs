@@ -123,6 +123,15 @@ public sealed class ShopProgress : MonoBehaviour
             FishingLevelAwarded?.Invoke(award[0],award[1],award[2]);
         return xp;
     }
+    public bool UpgradeFishingAbility(int ability)
+    {
+        if(ReadOnly || Data==null || Data.angler==null)return false;
+        // Spend one level-earned point, not coins. Persist with the same save
+        // mechanism as the existing XP and attribute upgrades.
+        if(!Data.angler.UpgradeAbility(ability))return false;
+        Save();
+        return true;
+    }
     public void Save()
     {
         if(ReadOnly) return;
