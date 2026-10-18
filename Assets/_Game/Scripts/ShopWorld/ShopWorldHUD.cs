@@ -265,7 +265,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
         {
             wallet.gameObject.SetActive(false);feedback.gameObject.SetActive(false);
             scroll.gameObject.SetActive(false);scroll.verticalScrollbar.gameObject.SetActive(false);
-            personalStatsView=PersonalStatsView.Build(modal.transform,progress.Data.angler);
+            personalStatsView=PersonalStatsView.Build(modal.transform,progress.Data.angler,progress);
             FishingHudTheme.Panel(menuClose.gameObject);
         }
         else if(page=="travel") TravelPage(); else if(page=="bag") BagPage(); else if(page=="equipment") EquipmentPage(false);
