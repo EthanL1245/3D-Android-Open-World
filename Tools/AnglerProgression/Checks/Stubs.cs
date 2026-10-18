@@ -25,6 +25,7 @@ public class FishingSystem:UnityEngine.MonoBehaviour {
  private float fishHealth=1,damageFraction,damageDisplayTimer;private bool fishUnconscious;
  private UnityEngine.GameObject bobber;private UnityEngine.Camera playerCamera;
  public int SkillFeedbacks;public void PlaySkillFeedback(){SkillFeedbacks++;}
+ public int SirenSoundPlays;public void PlaySirensCallSound(){SirenSoundPlays++;}
  public int Stuns;public void ApplySkillStun(){Stuns++;}
  public int Presentations;private void EnsureUnconsciousFishVisual(){Presentations++;}
 }
