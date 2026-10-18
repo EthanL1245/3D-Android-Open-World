@@ -14,7 +14,7 @@ public sealed class AnglerProgression
     public int[] abilityRanks = new int[4];
     public bool abilityChoicesMigrated;
     public static readonly string[] Names = { "Raw Damage", "Percent Damage", "Reeling Speed", "Tension Control", "Skill", "Charm" };
-    public static readonly string[] AbilityNames = { "BURNING FISH", "HOOKSET POWER", "LINE IMMORTALITY", "SIREN'S CALL" };
+    public static readonly string[] AbilityNames = { "LIGHTNING STRIKE", "HOOKSET POWER", "LINE IMMORTALITY", "SIREN'S CALL" };
     public static readonly string[] AbilityAssets = { "BurningFish", "HooksetPower", "LineImmortality", "SirensCall" };
     public int Value(int stat) => stats != null && stat >= 0 && stat < stats.Length ? Math.Max(0, Math.Min(100, stats[stat])) : 0;
     public float Multiplier(int stat) => 1f + Value(stat) * .01f;
@@ -37,7 +37,7 @@ public sealed class AnglerProgression
         abilityRanks[ability]++;
         return true;
     }
-    // Burning Fish spreads a total of 5% max HP across five seconds at rank 1.
+    // Lightning Strike spreads a total of 5% max HP across five seconds at rank 1.
     // Each additional rank adds 0.5 percentage points to that TOTAL, and a
     // separate 2,000-damage hard cap is enforced when activated.
     public float BurningTotalFraction => .05f + .005f * Math.Max(0,AbilityRank(0)-1);

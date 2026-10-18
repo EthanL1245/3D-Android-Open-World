@@ -23,7 +23,7 @@ At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one di
 
 | Special Ability | Rank 1 effect | Each additional rank |
 | --- | --- | --- |
-| Burning Fish | Passive effect on the **first charged Skill yank** during each fight; 5% max HP **total over 5 seconds**, capped at **2,000 total damage** (ten half-second ticks) | +0.5 percentage points to total damage before the cap |
+| Lightning Strike | Passive effect on the **first charged Skill yank** during each fight; 5% max HP **total over 5 seconds**, capped at **2,000 total damage** (ten half-second ticks) | +0.5 percentage points to total damage before the cap |
 | Hookset Power | Automatic; 10% max HP when the fight starts | +2% max HP initial damage |
 | Line Immortality | Button; 5 seconds without the reeling-specific tension increase | +1 second |
 | Siren's Call | Button; fish swims toward the player for 4 seconds, retaining existing water collision checks | +1 second |
@@ -32,7 +32,9 @@ A chosen rank 1 unlocks its ability in combat; extra ranks strengthen it. **Lega
 
 Active abilities are usable once per fish. Timers pause while combat is covered, and reset when the fight ends. Hookset occurs after cast-quality health adjustment. All ability damage uses the existing authoritative damage owner and knockout presentation. Line Immortality does not remove passive drag/mood tension or prevent a line-distance break. The two future ability art slots stay empty.
 
-When the first charged Skill yank triggers Burning Fish, the rendered fishing line turns red for the effect's five-second duration, and the bobber/fight-panel fish status icons gain a randomized, rapid, looping animation of the six supplied fire frames. The normal line color and icons return as soon as the effect ends or the fight is cancelled. The visual installer is also attached explicitly when the fighting-damage runtime is created, avoiding missed animations when the scene bootstrap initializes the two components in a different order. The six frames are packaged in a compact `Resources/Fishing/StatusIcons/BurningFlamesAtlas.txt` PNG atlas (base64-encoded for TextAsset loading), so no scene changes or manual imports are needed.
+When the first charged Skill yank triggers Lightning Strike, the supplied electric ripple appears on the water at the current line endpoint every 0.35 seconds during the five-second damage window (about 15 rings). Each ring expands to a 10 m radius and fades to zero alpha over 1.6 seconds; the final rings finish fading naturally. The shared hotspot shader conforms the subdivided ring mesh to ocean waves. Texture UVs trim the supplied image's transparent canvas and undo its baked-in foreshortening before projecting it onto water. No flame icon overlays or red line tint remain. Existing ability ranks, resource keys, and component references are preserved.
+
+All four supplied backdrops replace the previous art. Transparent margins are trimmed at runtime, each background fills the existing equal-sized card rectangle, and the text now uses the space freed by removing the old corner icons. The enlarged preview remains a uniformly scaled clone in the same fixed position for every ability.
 
 Ability cards with an available upgrade retain their white flashing border/tint. The enlarged full-color preview intentionally **does not** flash. Rather than reconstructing its text, it clones and uniformly scales the selected small card itself (identical art geometry, labels, and text positions), recoloring the clone without the flashing overlay. The four small cards retain their current dimensions.
 

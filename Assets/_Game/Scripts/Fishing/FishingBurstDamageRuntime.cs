@@ -78,7 +78,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     public float BurningSeconds => burnSeconds;
     public float ImmortalitySeconds { get; private set; }
     public float SirenSeconds { get; private set; }
-    // Burning Fish now activates automatically with the first charged Skill
+    // Lightning Strike now activates automatically with the first charged Skill
     // use of the fight, like Hookset's automatic initial hit.
     public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 0 && id != 1 && inFight && IsFighting() &&
         authoritativeHp > 0 && !abilityUsed[id] && fishing.Progression != null && fishing.Progression.Unlocked(id) &&
@@ -258,7 +258,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         skillCooldown = Mathf.Max(0f, skillCooldown - Time.deltaTime);
         if (authoritativeHp <= 0)
         {
-            // Stop the red line / flames immediately if the fish is knocked out.
+            // Stop emitting electric ripples immediately if the fish is knocked out.
             burnSeconds=0f;burnTick=0f;
             EnterUnconsciousPresentation();
             skillCharge=0f;skillQueued=false;
@@ -291,10 +291,10 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             skillCharge=0f;
             skillCooldown=SkillCooldownSeconds;
             fishing.PlaySkillFeedback();
-            // Activate the fire on the actual successful charged Skill strike.
+            // Activate Lightning Strike on the actual successful charged Skill strike.
             // Previously we started it only AFTER the Skill hit and only when
             // the fish survived. On smaller fish the charged hit finished the
-            // fight first, making Burning Fish appear to do nothing.
+            // fight first, making Lightning Strike appear to do nothing.
             if (fishing.Progression != null && fishing.Progression.Unlocked(0) &&
                 !abilityUsed[0])
             {

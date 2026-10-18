@@ -20,7 +20,7 @@ public class FishingHUD : MonoBehaviour
             int slot=0;
             for(int i=0;i<4;i++)
             {
-                // Burning Fish activates through the charged Skill yank;
+                // Lightning Strike activates through the charged Skill yank;
                 // Hookset activates automatically on hooking.
                 if(i==0 || i==1)continue;
                 int id=i;

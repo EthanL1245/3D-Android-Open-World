@@ -133,7 +133,7 @@ public static class PersonalStatsView
         Label(right.transform,"SPECIAL ABILITIES",29,.03f,.90f,.97f,.99f,Color.white).fontStyle=FontStyle.Bold;
         Label(right.transform,"ONE ABILITY UPGRADE POINT EVERY 20 LEVELS",16,.03f,.85f,.97f,.91f,Detail);
         string[] descriptionsAbility={
-            "First charged Skill ignites the fish for "+(data.BurningTotalFraction*100f).ToString("0.#")+"% max HP over 5s (max 2,000 damage). Once per fight.",
+            "After using a skill, zaps the fish over 5 seconds, dealing "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of its maximum health as damage, up to 2,000 damage.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
             "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
@@ -268,13 +268,13 @@ public static class PersonalStatsView
                 preview.transform.SetAsLastSibling();
                 preview.SetActive(true);
             });
-            var cardTitle=Label(card.transform,AnglerProgression.AbilityNames[i],22,.31f,.67f,.95f,.87f,titleColor);
+            var cardTitle=Label(card.transform,AnglerProgression.AbilityNames[i],22,.08f,.72f,.92f,.92f,titleColor);
             cardTitle.fontStyle=FontStyle.Bold;
             var cardRank=Label(card.transform,unlocked?"RANK "+data.AbilityRank(i):"NOT UNLOCKED",
-                16,.31f,.52f,.95f,.67f,accentColor);
-            var cardDescription=Label(card.transform,descriptionsAbility[i],18,.31f,.27f,.95f,.52f,detailColor);
+                16,.08f,.59f,.92f,.72f,accentColor);
+            var cardDescription=Label(card.transform,descriptionsAbility[i],18,.08f,.23f,.92f,.59f,detailColor);
             var cardStatus=Label(card.transform,upgradePoints>0?"UPGRADE AVAILABLE":unlocked?"UNLOCKED":"LOCKED",
-                16,.31f,.13f,.95f,.27f,accentColor);
+                16,.08f,.08f,.92f,.23f,accentColor);
             if(upgradePoints>0 && progress!=null && !progress.ReadOnly)
             {
                 var pulse=card.AddComponent<SpecialAbilityUpgradePulse>();
