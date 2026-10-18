@@ -135,7 +135,7 @@ public static class PersonalStatsView
         string[] descriptionsAbility={
             "After every skill use, zaps the fish 8 times over 4 seconds, dealing "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of its maximum health as damage, up to 2,000 damage. The first zap deals half; the remaining seven share the rest.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
-            "Automatically activates once per fight at maximum line length. For "+data.ImmortalityDuration.ToString("0.#")+"s, the line can exceed its limit and reeling cannot raise tension or snap the line.",
+            "Automatically triggers upon line reaching the maximum length. Exceed the limit and reel without tension gain or line breaks for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
         };
         // A full-page touch target closes the larger full-color preview.
@@ -210,6 +210,19 @@ public static class PersonalStatsView
             var cardButton=card.AddComponent<Button>();
             cardButton.targetGraphic=art;
             cardButton.transition=Selectable.Transition.None;
+
+            // One rounded, semi-transparent navy-glass textbox behind all four
+            // labels. Use the same nine-slice surface as Fishing Attributes so
+            // the ability art remains visible while the text stays readable.
+            // The enlarged preview clones this entire small card, preserving
+            // the exact textbox proportions and position at every scale.
+            var textBackdrop=Panel(card.transform,"AbilityTextBackdrop",
+                .035f,.035f,.965f,.965f,false);
+            FishingHudTheme.Panel(textBackdrop);
+            var textGlass=textBackdrop.GetComponent<Image>();
+            textGlass.color=new Color(.65f,.80f,1f,.62f);
+            textGlass.raycastTarget=false;
+
             int ability=i; // Capture the intended card, even after the loop.
             cardButton.onClick.AddListener(()=>
             {
