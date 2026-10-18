@@ -16,6 +16,9 @@ public sealed class FishingMultiplayer : MonoBehaviour
         public int lineKind,lureVariant,islandMask=1;
         // Compact replicated FX event; never used to decide damage or fish HP.
         public int lightningSerial,lightningZap;
+        // Persisted last successful water landing, independent of transient line state.
+        public int castImpactSequence;
+        public float castImpactAge=-1f,castImpactX,castImpactY,castImpactZ;
         public float lineX,lineY,lineZ;
         public string rideOwner="",rideKey="";
         public int rideSeat=-1,rideRevision;
@@ -101,6 +104,15 @@ public sealed class FishingMultiplayer : MonoBehaviour
             castSequence=fishing!=null ? fishing.CastSequence : 0,
             castAge=fishing!=null ? fishing.NetworkCastAge : -1f,
             castDuration=fishing!=null ? fishing.NetworkCastDuration : .72f};
+        if(fishing!=null && pose.world==0 && fishing.NetworkCastImpactSequence>0)
+        {
+            Vector3 landing=fishing.NetworkCastImpactPoint;
+            pose.castImpactSequence=fishing.NetworkCastImpactSequence;
+            pose.castImpactAge=fishing.NetworkCastImpactAge;
+            pose.castImpactX=Mathf.Round(landing.x*100f)/100f;
+            pose.castImpactY=Mathf.Round(landing.y*100f)/100f;
+            pose.castImpactZ=Mathf.Round(landing.z*100f)/100f;
+        }
         var lightning=fishing!=null ? fishing.GetComponent<FishingBurstDamageRuntime>() : null;
         if(lightning!=null && pose.world==0)
         {
