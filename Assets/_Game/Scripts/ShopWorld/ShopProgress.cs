@@ -11,6 +11,8 @@ public sealed class ShopProgress : MonoBehaviour
     public event Action Changed;
     // Amount, previous level/XP, and saved new level/XP for catch-XP HUD animation.
     public event Action<int, int, double, int, double> FishingXpAwarded;
+    // New level, rolled permanent stat index (-1 if capped), and resulting stat value.
+    public event Action<int, int, int> FishingLevelAwarded;
     public string Notice { get; private set; }
     public bool ReadOnly { get; private set; }
     private void Awake()
@@ -109,12 +111,16 @@ public sealed class ShopProgress : MonoBehaviour
         int beforeLevel=Data.angler.level;
         double beforeXp=Data.angler.experience;
         int xp=AnglerProgression.CatchXp(health,difficulty);
-        Data.angler.AddXp(xp,count=>UnityEngine.Random.Range(0,count));
+        var levels=new List<int[]>();
+        Data.angler.AddXp(xp,count=>UnityEngine.Random.Range(0,count),
+            (level,stat,value)=>levels.Add(new[]{level,stat,value}));
         Save();
-        // Notify only after the reward has been saved. A toast uses these two
-        // snapshots instead of changing XP itself or interfering with a catch.
+        // Notify only after the reward has been saved. Each per-level award
+        // retains its exact randomly chosen attribute, even across multi-level catches.
         if(Data.angler.level!=beforeLevel || Math.Abs(Data.angler.experience-beforeXp)>.001d)
             FishingXpAwarded?.Invoke(xp,beforeLevel,beforeXp,Data.angler.level,Data.angler.experience);
+        foreach(int[] award in levels)
+            FishingLevelAwarded?.Invoke(award[0],award[1],award[2]);
         return xp;
     }
     public void Save()
