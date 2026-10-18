@@ -54,8 +54,13 @@ class Program
   Check(!owner.TryTakeLightningZap(out zap),"No ninth zap");
   Set(owner,"skillQueued",true);Tick(0);
   Check(owner.TryTakeLightningZap(out zap) && zap==0 && owner.BurningSeconds==4f,"Same fight skill retriggers lightning");
-  owner.UseAbility(2);owner.UseAbility(3);Check(owner.ImmortalitySeconds==5 && owner.SirenSeconds==4,"Timed abilities activate");
+  owner.UseAbility(2);Check(owner.ImmortalitySeconds==0 && !owner.CanUseAbility(2),"Line immortality cannot be clicked");
+  Check(owner.TryTriggerLineImmortality() && owner.LineImmortalityActive && owner.ImmortalitySeconds==5,
+      "First line-limit hit automatically triggers five seconds of immunity");
+  Check(!owner.TryTriggerLineImmortality(),"Line immortality cannot retrigger in the same fight");
+  owner.UseAbility(3);Check(owner.SirenSeconds==4,"Siren's Call remains manual");
   Tick(2);Check(owner.ImmortalitySeconds==3 && owner.SirenSeconds==2,"Timed abilities count down");
+  Tick(3);Check(!owner.LineImmortalityActive && !owner.TryTriggerLineImmortality(),"Immortality ends and cannot retrigger after expiry");
   Set(f,"state","Idle");Tick(0);Check(owner.ImmortalitySeconds==0 && owner.SirenSeconds==0,"Cancel clears timers");
   Set(f,"state","Fighting");Tick(0);Check(!Get<bool[]>(owner,"abilityUsed")[0],"Fresh fight resets automatic burn");
   f.Progression.stats[0]=10;f.Progression.stats[1]=100;hud.ActionInput.IsHeld=true;
