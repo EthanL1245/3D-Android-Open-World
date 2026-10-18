@@ -67,6 +67,10 @@ public sealed class FishingBurnVisuals : MonoBehaviour
 
     private void LateUpdate()
     {
+        // FishingBurstDamageRuntime can be added later by the scene bootstrap.
+        // Do not permanently stop animating just because it was absent in Awake.
+        if (fishing == null) fishing = GetComponent<FishingSystem>();
+        if (damage == null) damage = GetComponent<FishingBurstDamageRuntime>();
         if (fishing == null || damage == null) return;
         if (hud == null) hud = GetComponent<FishingHUD>();
         if (hud == null) hud = FindFirstObjectByType<FishingHUD>();
