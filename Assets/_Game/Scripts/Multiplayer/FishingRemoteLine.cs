@@ -44,23 +44,24 @@ public sealed class FishingRemoteLine : MonoBehaviour
 
     private void ReceiveLightning(FishingMultiplayer.Pose pose, bool validFight)
     {
-        // A new observer or newly hooked fish starts at the current event ID.
-        // Do not play zaps from a previous fight when a player joins late.
-        if (!validFight || ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen)
-        {
-            lightningInitialized=false;
-            pendingZaps.Clear();
-            return;
-        }
+        // Baseline across all fishing states, not just fights. That lets the
+        // very first zap of a new fight be seen, without replaying historic hits
+        // when the spectator joins midway through an existing fight.
         if (!lightningInitialized || pose.lightningSerial < lastLightningSerial)
         {
             lightningInitialized=true;
             lastLightningSerial=pose.lightningSerial;
+            pendingZaps.Clear();
             return;
         }
         int delta=pose.lightningSerial-lastLightningSerial;
-        if (delta<=0) return;
         lastLightningSerial=pose.lightningSerial;
+        if (!validFight || ShopWorldHUD.MenuOpen || FishingTournament.ModalOpen)
+        {
+            pendingZaps.Clear();
+            return;
+        }
+        if(delta<=0)return;
         // A delayed poll can include multiple hits. Reconstruct indices from
         // the newest one; bound catch-up so network stalls cannot flood FX.
         int count=delta>4?1:delta;
