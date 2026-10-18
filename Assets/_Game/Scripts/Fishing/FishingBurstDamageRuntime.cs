@@ -118,7 +118,11 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     {
         if(!CanUseAbility(id))return;
         abilityUsed[id]=true;
-        if(id==3)SirenSeconds=fishing.Progression.SirenDuration;
+        if(id==3)
+        {
+            SirenSeconds=fishing.Progression.SirenDuration;
+            fishing.PlaySirensCallSound();
+        }
     }
     private void StartBurn()
     {
