@@ -253,6 +253,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         skillCooldown = Mathf.Max(0f, skillCooldown - Time.deltaTime);
         if (authoritativeHp <= 0)
         {
+            // Stop the red line / flames immediately if the fish is knocked out.
+            burnSeconds=0f;burnTick=0f;
             EnterUnconsciousPresentation();
             skillCharge=0f;skillQueued=false;
             if(hud!=null)hud.SetDragFightUI(true,false,SelectedDrag,0f,skillCooldown);
