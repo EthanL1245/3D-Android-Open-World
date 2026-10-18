@@ -23,7 +23,7 @@ At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one di
 
 | Special Ability | Rank 1 effect | Each additional rank |
 | --- | --- | --- |
-| Burning Fish | Button; 2% max HP per second for 5 seconds (ten half-second ticks) | +0.5% max HP per second |
+| Burning Fish | Button; 5% max HP **total over 5 seconds**, capped at **2,000 total damage** (ten half-second ticks) | +0.5 percentage points to total damage before the cap |
 | Hookset Power | Automatic; 10% max HP when the fight starts | +2% max HP initial damage |
 | Line Immortality | Button; 5 seconds without the reeling-specific tension increase | +1 second |
 | Siren's Call | Button; fish swims toward the player for 4 seconds, retaining existing water collision checks | +1 second |
@@ -31,6 +31,10 @@ At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one di
 A chosen rank 1 unlocks its ability in combat; extra ranks strengthen it. **Legacy saves are migrated without losing previous automatic unlocks:** those at levels 20/40/60/80 are assigned rank 1 in the corresponding abilities; any later unused milestone points remain available for new selections. The migration marker prevents granting the old unlocks twice.
 
 Active abilities are usable once per fish. Timers pause while combat is covered, and reset when the fight ends. Hookset occurs after cast-quality health adjustment. All ability damage uses the existing authoritative damage owner and knockout presentation. Line Immortality does not remove passive drag/mood tension or prevent a line-distance break. The two future ability art slots stay empty.
+
+Burning Fish turns the rendered fishing line red for its active five-second duration and surrounds the bobber/fight-panel fish status icons with a randomized, rapid, looping animation of the six supplied fire frames. The normal line color and icons return as soon as the effect ends or the fight is cancelled. The six frames are packaged in a compact `Resources/Fishing/StatusIcons/BurningFlamesAtlas.txt` PNG atlas (base64-encoded for TextAsset loading), so no scene changes or manual imports are needed.
+
+Ability cards with an available upgrade retain their white flashing border/tint. The enlarged full-color preview intentionally **does not** flash, uses the exact same normalized text positions as the small cards, and the four small cards are taller (widths and horizontal spacing unchanged).
 
 The caught-fish XP bar and the attribute-level-up notification each hold **2.25 seconds** before using the original 0.38-second slide-out animation.
 
