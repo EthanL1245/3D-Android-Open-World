@@ -17,15 +17,14 @@ public class FishingHUD : MonoBehaviour
         {
             abilityBar=new GameObject("FightSpecialAbilities",typeof(RectTransform));abilityBar.transform.SetParent(root.transform,false);
             PersonalStatsView.Place(abilityBar.GetComponent<RectTransform>(),.30f,.19f,.70f,.31f);
-            int slot=0;
             for(int i=0;i<4;i++)
             {
-                // Lightning Strike activates through the charged Skill yank;
-                // Hookset activates automatically on hooking.
-                if(i==0 || i==1)continue;
+                // Lightning Strike, Hookset and Line Immortality are passive.
+                // Siren's Call remains the only manually activated special ability.
+                if(i!=3)continue;
                 int id=i;
                 var go=new GameObject("Use_"+AnglerProgression.AbilityAssets[i],typeof(RectTransform),typeof(Image),typeof(Button));go.transform.SetParent(abilityBar.transform,false);
-                PersonalStatsView.Place(go.GetComponent<RectTransform>(),slot/2f,0,(slot+1)/2f,1,4);slot++;
+                PersonalStatsView.Place(go.GetComponent<RectTransform>(),.25f,0,.75f,1,4);
                 go.GetComponent<Image>().sprite=PersonalStatsView.Art(AnglerProgression.AbilityAssets[i]);
                 abilityButtons[i]=go.GetComponent<Button>();abilityButtons[i].onClick.AddListener(()=>dragOwner.UseAbility(id));
                 abilityLabels[i]=PersonalStatsView.Label(go.transform,"",20,.31f,.12f,.95f,.86f,Color.white,TextAnchor.MiddleCenter);
@@ -41,7 +40,7 @@ public class FishingHUD : MonoBehaviour
             bool unlocked=system!=null && system.Progression!=null && system.Progression.Unlocked(i);
             abilityButtons[i].gameObject.SetActive(unlocked);
             abilityButtons[i].interactable=dragOwner!=null && dragOwner.CanUseAbility(i);
-            float remaining=dragOwner==null?0f:i==2?dragOwner.ImmortalitySeconds:i==3?dragOwner.SirenSeconds:0f;
+            float remaining=dragOwner==null?0f:i==3?dragOwner.SirenSeconds:0f;
             abilityLabels[i].text=AnglerProgression.AbilityNames[i]+"\n"+(remaining>0f?remaining.ToString("0.0")+"s":dragOwner!=null && dragOwner.AbilityUsed(i)?"USED":"TAP TO USE");
         }
     }
