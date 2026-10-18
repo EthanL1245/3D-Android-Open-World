@@ -135,7 +135,7 @@ public static class PersonalStatsView
         string[] descriptionsAbility={
             "After every skill use, zaps the fish 8 times over 4 seconds, dealing "+(data.BurningTotalFraction*100f).ToString("0.#")+"% of its maximum health as damage, up to 2,000 damage. The first zap deals half; the remaining seven share the rest.",
             "Automatically deals "+(data.HooksetDamageFraction*100f).ToString("0.#")+"% of max HP when hooking.",
-            "Reeling adds no tension for "+data.ImmortalityDuration.ToString("0.#")+"s. Once per fight.",
+            "Automatically activates once per fight at maximum line length. For "+data.ImmortalityDuration.ToString("0.#")+"s, the line can exceed its limit and reeling cannot raise tension or snap the line.",
             "Fish swims toward you for "+data.SirenDuration.ToString("0.#")+"s. Once per fight."
         };
         // A full-page touch target closes the larger full-color preview.
