@@ -58,7 +58,8 @@ class Program
   Check(owner.TryTriggerLineImmortality() && owner.LineImmortalityActive && owner.ImmortalitySeconds==5,
       "First line-limit hit automatically triggers five seconds of immunity");
   Check(!owner.TryTriggerLineImmortality(),"Line immortality cannot retrigger in the same fight");
-  owner.UseAbility(3);Check(owner.SirenSeconds==4,"Siren's Call remains manual");
+  owner.UseAbility(3);Check(owner.SirenSeconds==4 && f.SirenSoundPlays==1,"Siren's Call lasts four seconds and sounds on click");
+  owner.UseAbility(3);Check(f.SirenSoundPlays==1,"Siren activation audio plays only once per fight");
   Tick(2);Check(owner.ImmortalitySeconds==3 && owner.SirenSeconds==2,"Timed abilities count down");
   Tick(3);Check(!owner.LineImmortalityActive && !owner.TryTriggerLineImmortality(),"Immortality ends and cannot retrigger after expiry");
   Set(f,"state","Idle");Tick(0);Check(owner.ImmortalitySeconds==0 && owner.SirenSeconds==0,"Cancel clears timers");
