@@ -159,7 +159,7 @@ public sealed class FishingRemoteLine : MonoBehaviour
             var zap=FishingLightningStrikeAnimation.Create(transform);
             if(zap==null)continue;
             zap.transform.position=position;
-            zap.Restart(zapIndex); // Reuses the exact numbered frames and positional zap audio.
+            zap.Restart(zapIndex, true); // Remote-only 60 m hearing limit; visuals remain unchanged.
             activeZaps.Add(zap);
         }
         for(int i=activeZaps.Count-1;i>=0;i--)
