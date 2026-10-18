@@ -74,6 +74,8 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     private bool skillQueued;
     private readonly bool[] abilityUsed = new bool[4];
     private float burnSeconds, burnTick;
+    private int burnTotalDamage, burnAppliedDamage, burnTicksApplied;
+    public float BurningSeconds => burnSeconds;
     public float ImmortalitySeconds { get; private set; }
     public float SirenSeconds { get; private set; }
     public bool CanUseAbility(int id) => id >= 0 && id < 4 && id != 1 && inFight && IsFighting() &&
@@ -84,7 +86,16 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
     {
         if(!CanUseAbility(id))return;
         abilityUsed[id]=true;
-        if(id==0){burnSeconds=5f;burnTick=0f;}
+        if(id==0)
+        {
+            int maximumHp=Mathf.Max(1,(int)MaxHpField.GetValue(fishing));
+            // Rank 1: 5% of maximum HP TOTAL, never more than 2,000 HP.
+            // Each of ten half-second ticks receives its share of that total.
+            burnTotalDamage=Mathf.Min(2000,Mathf.Max(1,
+                Mathf.RoundToInt(maximumHp*fishing.Progression.BurningTotalFraction)));
+            burnAppliedDamage=burnTicksApplied=0;
+            burnSeconds=5f;burnTick=0f;
+        }
         if(id==2)ImmortalitySeconds=fishing.Progression.ImmortalityDuration;
         if(id==3)SirenSeconds=fishing.Progression.SirenDuration;
     }
@@ -120,6 +131,7 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
         passiveSeconds=damageRemainder=skillCharge=skillCooldown=0f;
         skillQueued=false;
         burnSeconds=burnTick=ImmortalitySeconds=SirenSeconds=0f;
+        burnTotalDamage=burnAppliedDamage=burnTicksApplied=0;
         Array.Clear(abilityUsed,0,abilityUsed.Length);
     }
 
@@ -250,8 +262,17 @@ public sealed class FishingBurstDamageRuntime : MonoBehaviour
             float elapsed=Mathf.Min(burnSeconds,Time.deltaTime);
             burnSeconds=Mathf.Max(0f,burnSeconds-elapsed);
             burnTick+=elapsed;
-            while(burnTick>=.5f-.00001f && authoritativeHp>0)
-            {burnTick-=.5f;DealDamage(Mathf.Max(1,Mathf.RoundToInt(maxHp*fishing.Progression.BurningDamagePerHalfSecond)),maxHp,false);}
+            while(burnTick>=.5f-.00001f && burnTicksApplied<10 && authoritativeHp>0)
+            {
+                burnTick-=.5f;
+                burnTicksApplied++;
+                // Cumulative rounding distributes small and large totals evenly
+                // and ensures the full capped damage is paid at exactly 5s.
+                int expected=Mathf.RoundToInt(burnTotalDamage*burnTicksApplied/10f);
+                int damage=expected-burnAppliedDamage;
+                burnAppliedDamage=expected;
+                if(damage>0)DealDamage(damage,maxHp,false);
+            }
         }
         if(skillQueued)
         {
