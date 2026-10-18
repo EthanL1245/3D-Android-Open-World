@@ -53,6 +53,7 @@ public class FishingSystem : MonoBehaviour
     private FishingRodView rodView;
     private LineRenderer fishingLine;
     public LineRenderer PresentationLine => fishingLine;
+    public RawImage PresentationFishStatusIcon => bobberStatusIcon;
     public FishingRodView PresentationRod => rodView;
     private GameObject bobber;
 
