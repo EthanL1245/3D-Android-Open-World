@@ -14,6 +14,7 @@ public sealed class FishingBurnVisuals : MonoBehaviour
     private FishingSystem fishing;
     private FishingBurstDamageRuntime damage;
     private FishingHUD hud;
+    private FishingLightningStrikeAnimation lightning;
     private bool striking;
     private float untilNextRipple;
 
@@ -36,11 +37,23 @@ public sealed class FishingBurnVisuals : MonoBehaviour
             if (ripples[i] == null) ripples.RemoveAt(i);
 
         bool active = damage.BurningSeconds > .0001f;
-        if (!active) { striking = false; return; }
+        if (!active)
+        {
+            striking = false;
+            if (lightning != null) lightning.gameObject.SetActive(false);
+            return;
+        }
         if (!striking)
         {
             striking = true;
             untilNextRipple = 0f;
+        }
+        if (lightning == null) lightning = FishingLightningStrikeAnimation.Create(transform);
+        if (lightning != null)
+        {
+            if (!lightning.gameObject.activeSelf) lightning.Restart();
+            lightning.Tick(fishing.NetworkLineEnd, fishing.PresentationWater,
+                fishing.PresentationCamera, damage.BurningSeconds);
         }
         untilNextRipple -= Time.deltaTime;
         if (untilNextRipple <= 0f)
@@ -56,6 +69,7 @@ public sealed class FishingBurnVisuals : MonoBehaviour
     private void OnDisable()
     {
         striking = false;
+        if (lightning != null) lightning.gameObject.SetActive(false);
         foreach (GameObject ripple in ripples)
             if (ripple != null) Destroy(ripple);
         ripples.Clear();

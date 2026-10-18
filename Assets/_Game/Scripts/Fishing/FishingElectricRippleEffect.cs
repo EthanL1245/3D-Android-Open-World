@@ -29,6 +29,7 @@ public sealed class FishingElectricRippleEffect : MonoBehaviour
     private MaterialPropertyBlock properties;
     private bool overPond;
     private float age;
+    private float surfaceRotation;
 
     /// <summary>Emit at the current fish line endpoint during Lightning Strike.</summary>
     public static GameObject Spawn(Vector3 point, OceanWater water)
@@ -38,6 +39,7 @@ public sealed class FishingElectricRippleEffect : MonoBehaviour
         var gameObject = new GameObject("Lightning Strike Water Ripple");
         var ripple = gameObject.AddComponent<FishingElectricRippleEffect>();
         ripple.ocean = water;
+        ripple.surfaceRotation = Random.Range(0f, 360f);
         ripple.impactPosition = point;
         ripple.overPond = PondWater.TrySurface(point, out _);
         ripple.properties = new MaterialPropertyBlock();
@@ -197,7 +199,7 @@ public sealed class FishingElectricRippleEffect : MonoBehaviour
         Vector3 surface = impactPosition;
         surface.y = ocean.GetSurfaceHeight(impactPosition) + SurfaceOffset;
         transform.position = surface;
-        transform.rotation = Quaternion.identity;
+        transform.rotation = Quaternion.Euler(0f, surfaceRotation, 0f);
         float diameter = radius * 2f;
         transform.localScale = new Vector3(diameter, 1f, diameter);
 

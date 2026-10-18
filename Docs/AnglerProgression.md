@@ -45,3 +45,7 @@ The caught-fish XP bar and the attribute-level-up notification each hold **2.25 
 `Tools/AnglerProgression/Checks` compiles the actual progression model and combat owner with lightweight Unity stubs. Checks cover XP thresholds and overflow, all stat caps, legacy migration, selectable upgrade milestone boundaries, bonus damage, Hookset once-only behavior, burn damage/KO at coarse and 60 FPS steps, active timers, menu pause and reset between fish. Run with .NET 8: `dotnet run --project Tools/AnglerProgression/Checks/Checks.csproj`.
 
 C# syntax was checked for Fishing and ShopWorld scripts. Unity is not available in the implementation environment; Play Mode/Android verification remains necessary for layout, touch interactions, save/relaunch, fish movement, and the full Unity build. No terrain, scene objects, or manually authored scenery was edited.
+
+### Above-water Lightning Strike animation
+
+The nine supplied Lightning 1–9 PNGs play in numeric order at approximately 13 frames per second and loop during the five-second effect. One upright transparent quad faces the player at the current fish line endpoint, anchored to the water. All frames share the original canvas and a common waterline anchor, avoiding per-frame crop shifts. The six-metre canvas fades out during the final 0.2 seconds and hides on effect end or component disable. Textures import at 512 pixels without mipmaps and share one material/mesh. Each electric water ring chooses a random yaw once at spawn and keeps that angle while expanding.

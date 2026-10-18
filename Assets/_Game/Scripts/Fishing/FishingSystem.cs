@@ -54,6 +54,7 @@ public class FishingSystem : MonoBehaviour
     private LineRenderer fishingLine;
     public LineRenderer PresentationLine => fishingLine;
     public OceanWater PresentationWater => oceanWater;
+    public Camera PresentationCamera => playerCamera;
     public RawImage PresentationFishStatusIcon => bobberStatusIcon;
     public FishingRodView PresentationRod => rodView;
     private GameObject bobber;
