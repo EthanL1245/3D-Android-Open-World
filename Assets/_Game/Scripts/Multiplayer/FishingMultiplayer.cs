@@ -14,6 +14,8 @@ public sealed class FishingMultiplayer : MonoBehaviour
     [Serializable] public class Pose {
         public BoatPose boat;
         public int lineKind,lureVariant,islandMask=1;
+        // Compact replicated FX event; never used to decide damage or fish HP.
+        public int lightningSerial,lightningZap;
         public float lineX,lineY,lineZ;
         public string rideOwner="",rideKey="";
         public int rideSeat=-1,rideRevision;
@@ -99,6 +101,12 @@ public sealed class FishingMultiplayer : MonoBehaviour
             castSequence=fishing!=null ? fishing.CastSequence : 0,
             castAge=fishing!=null ? fishing.NetworkCastAge : -1f,
             castDuration=fishing!=null ? fishing.NetworkCastDuration : .72f};
+        var lightning=fishing!=null ? fishing.GetComponent<FishingBurstDamageRuntime>() : null;
+        if(lightning!=null && pose.world==0)
+        {
+            pose.lightningSerial=lightning.NetworkLightningSerial;
+            pose.lightningZap=lightning.NetworkLightningZap;
+        }
         if(fishing!=null && !pose.swimming && pose.world==0)
         {
             pose.lineKind=fishing.NetworkLineKind;
