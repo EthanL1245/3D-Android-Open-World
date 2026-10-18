@@ -26,7 +26,7 @@ At **every 20 levels** (20, 40, 60, 80, 100, ... 600), the player earns **one di
 | Lightning Strike | Passive effect on the **every charged Skill yank** during each fight; 5% max HP **total over 4 seconds**, capped at **2,000 total damage** (eight zaps: 50% immediately, the remaining 50% evenly split across seven later zaps by 4s) | +0.5 percentage points to total damage before the cap |
 | Hookset Power | Automatic; 10% max HP when the fight starts | +2% max HP initial damage |
 | Line Immortality | Passive; triggers once per fight at the equipped line's maximum distance. For 5 seconds, permits exceeding line length and prevents all positive tension gain and tension breaks, including when reeling. The screen edges, distance label and top status box pulse purple while active | +1 second |
-| Siren's Call | Button; fish swims toward the player for 4 seconds, retaining existing water collision checks | +1 second |
+| Siren's Call | Manual button; the hooked fish swims directly toward the player at a fixed 2 m/s for 4 seconds (including during reeling), with the Siren status icon and activation sound. Existing water collision checks remain | +1 second |
 
 A chosen rank 1 unlocks its ability in combat; extra ranks strengthen it. **Legacy saves are migrated without losing previous automatic unlocks:** those at levels 20/40/60/80 are assigned rank 1 in the corresponding abilities; any later unused milestone points remain available for new selections. The migration marker prevents granting the old unlocks twice.
 
