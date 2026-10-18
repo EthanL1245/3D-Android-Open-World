@@ -100,7 +100,7 @@ public sealed class FishingLightningStrikeAnimation : MonoBehaviour
 
     public void Restart(int zapIndex)
     {
-        strikeScale = zapIndex == 0 ? 1.5f : 1.375f;
+        strikeScale = (zapIndex == 0 ? 1.5f : 1.375f) * 1.3f;
         ripplePending=rippleEmitted=false;
         int soundIndex = Mathf.Min(zapIndex, 3);
         if (zapClips[soundIndex] == null)
