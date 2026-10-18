@@ -29,7 +29,9 @@ public sealed class AnglerProgression
         return changed;
     }
 
-    public int AddXp(int amount, Func<int, int> choose)
+    // Optional per-level callback: new level, increased stat index, new stat value.
+    // A stat index of -1 means all permanent attributes were already capped.
+    public int AddXp(int amount, Func<int, int> choose, Action<int, int, int> onLevelUp = null)
     {
         Normalize();
         if (amount <= 0 || level >= MaxLevel) return 0;
@@ -40,12 +42,21 @@ public sealed class AnglerProgression
             experience -= RequiredXp(level);
             int available = 0;
             for (int i = 0; i < 6; i++) if (stats[i] < 100) available++;
+            int increasedStat = -1;
             if (available > 0)
             {
                 int pick = Math.Max(0, Math.Min(available - 1, choose(available)));
-                for (int i = 0; i < 6; i++) if (stats[i] < 100 && pick-- == 0) { stats[i]++; break; }
+                for (int i = 0; i < 6; i++)
+                    if (stats[i] < 100 && pick-- == 0)
+                    {
+                        stats[i]++;
+                        increasedStat = i;
+                        break;
+                    }
             }
             level++; gained++;
+            if (onLevelUp != null)
+                onLevelUp(level, increasedStat, increasedStat >= 0 ? stats[increasedStat] : 0);
         }
         if (level == MaxLevel) experience = 0;
         return gained;
