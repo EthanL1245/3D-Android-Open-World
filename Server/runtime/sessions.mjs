@@ -13,6 +13,8 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
   const snapshot = room => [...room.players.values()].map(p => ({ id: p.id, name: p.name, ...p.pose,
     boat:clock()-p.seen>3000?null:p.pose.boat,
     lineKind:clock()-p.seen>1000?0:p.pose.lineKind,
+    // Stale players retain their last event ID, but never replay the effect.
+    castImpactAge:clock()-p.seen>1000?-1:p.pose.castImpactAge,
     boatInputX:clock()-p.seen>1000?0:p.pose.boatInputX,
     boatInputY:clock()-p.seen>1000?0:p.pose.boatInputY }));
   function remove(p) {
@@ -57,12 +59,28 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
       fail(400,'Invalid lightning event sequence.');
     if(value.lightningZap!==undefined && (!Number.isInteger(value.lightningZap)||value.lightningZap<0||value.lightningZap>7))
       fail(400,'Invalid lightning zap index.');
+    // Water-impact events are cosmetic. Validate their location, age and ID
+    // before allowing them into other players' snapshots.
+    const impactSequence=value.castImpactSequence??0, impactAge=value.castImpactAge??-1;
+    if(!Number.isInteger(impactSequence)||impactSequence<0||impactSequence>2147483647)
+      fail(400,'Invalid cast impact sequence.');
+    if(typeof impactAge!=='number'||!Number.isFinite(impactAge)||impactAge< -1||impactAge>60)
+      fail(400,'Invalid cast impact age.');
+    if(impactSequence && ['castImpactX','castImpactY','castImpactZ'].some(
+      key=>typeof value[key]!=='number'||!Number.isFinite(value[key])||Math.abs(value[key])>100000))
+      fail(400,'Invalid cast impact position.');
+    if(!impactSequence && impactAge>=0)fail(400,'Invalid cast impact event.');
     const visibleLine=value.rodEquipped===true && value.swimming!==true && value.world===0 ? lineKind : 0;
     return { islandMask:(value.islandMask??1)|1, lineKind:visibleLine,lureVariant:visibleLine?lureVariant:0,
       lineX:visibleLine?value.lineX:0,lineY:visibleLine?value.lineY:0,lineZ:visibleLine?value.lineZ:0,
       // Keep the counter across casts/fights so observers see the first zap too.
       lightningSerial:value.world===0?(value.lightningSerial??0):0,
       lightningZap:value.world===0?(value.lightningZap??0):0,
+      castImpactSequence:value.world===0?impactSequence:0,
+      castImpactAge:value.world===0?impactAge:-1,
+      castImpactX:value.world===0&&impactSequence?value.castImpactX:0,
+      castImpactY:value.world===0&&impactSequence?value.castImpactY:0,
+      castImpactZ:value.world===0&&impactSequence?value.castImpactZ:0,
       ...boatPose(value), x: value.x, y: value.y, z: value.z, yaw: ((value.yaw % 360) + 360) % 360,
       world: value.world, swimming: value.swimming === true,
       sprinting: value.sprinting === true && value.swimming !== true,
