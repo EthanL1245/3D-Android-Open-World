@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// A non-interactive, top-right XP toast under MENU / TRAVEL. It animates the
+/// A non-interactive, top-right XP toast that temporarily replaces MENU / TRAVEL. It animates the
 /// actual saved catch-XP award through every crossed level threshold, including
 /// any XP left over after leveling up. No separate progression is maintained.
 /// </summary>
@@ -14,8 +14,11 @@ public sealed class FishingExperienceToast : MonoBehaviour
     private const float Width = 690f;
     private const float Height = 138f;
     private const float RightMargin = 36f;
-    // MENU / TRAVEL is 92 units high and 32 units below the screen top.
-    private const float TopOffset = 140f;
+    // Align XP to the original MENU / TRAVEL button. The second, independent
+    // level-up card occupies the XP toast's previous top-right position.
+    private const float TopOffset = 32f;
+    private const float LevelNoticeTopOffset = 140f;
+    public static bool IsShowingXp { get; private set; }
     private const float SlideSeconds = .38f;
     private const float HoldSeconds = 1.25f;
 
@@ -29,8 +32,20 @@ public sealed class FishingExperienceToast : MonoBehaviour
     }
 
     private enum Phase { Hidden, Entering, Filling, Holding, Exiting }
+    private enum NoticePhase { Hidden, Entering, Holding, Exiting }
+
+    private struct LevelReward
+    {
+        public int level, stat, value;
+    }
 
     private readonly Queue<Award> waiting = new Queue<Award>();
+    private readonly Dictionary<int, LevelReward> earnedLevels = new Dictionary<int, LevelReward>();
+    private readonly Queue<LevelReward> pendingNotices = new Queue<LevelReward>();
+    private RectTransform levelNotice;
+    private Text noticeHeading, noticeStat, noticeDetail;
+    private NoticePhase noticePhase = NoticePhase.Hidden;
+    private float noticeElapsed;
     private ShopProgress progress;
     private RectTransform popup;
     private RectTransform meterFill;
@@ -46,12 +61,32 @@ public sealed class FishingExperienceToast : MonoBehaviour
     private void Awake()
     {
         progress = GetComponent<ShopProgress>();
-        if (progress != null) progress.FishingXpAwarded += OnFishingXpAwarded;
+        if (progress != null)
+        {
+            progress.FishingXpAwarded += OnFishingXpAwarded;
+            progress.FishingLevelAwarded += OnFishingLevelAwarded;
+        }
     }
 
     private void OnDestroy()
     {
-        if (progress != null) progress.FishingXpAwarded -= OnFishingXpAwarded;
+        if (progress != null)
+        {
+            progress.FishingXpAwarded -= OnFishingXpAwarded;
+            progress.FishingLevelAwarded -= OnFishingLevelAwarded;
+        }
+        IsShowingXp = false;
+    }
+
+    private void OnDisable()
+    {
+        IsShowingXp = false;
+    }
+
+    private void OnFishingLevelAwarded(int level, int stat, int value)
+    {
+        // Keep the stat linked to its actual level, not to a later catch's total.
+        earnedLevels[level] = new LevelReward { level = level, stat = stat, value = value };
     }
 
     private void OnFishingXpAwarded(int amount, int startLevel, double startXp, int endLevel, double endXp)
@@ -111,10 +146,14 @@ public sealed class FishingExperienceToast : MonoBehaviour
                     phase = Phase.Hidden;
                     popup.gameObject.SetActive(false);
                     if (waiting.Count > 0) NextAward();
+                    else IsShowingXp = false;
                 }
                 break;
         }
 
+        // This card uses the exact slide-in/hold/slide-out timing and easing
+        // of the XP bar, but can finish independently without delaying XP.
+        UpdateLevelNotice(dt);
         if (badge != null)
         {
             badgePulse = Mathf.MoveTowards(badgePulse, 0f, dt * 2.5f);
@@ -122,9 +161,85 @@ public sealed class FishingExperienceToast : MonoBehaviour
         }
     }
 
+    private void UpdateLevelNotice(float dt)
+    {
+        if (levelNotice == null) return;
+        if (noticePhase == NoticePhase.Hidden && pendingNotices.Count > 0)
+        {
+            LevelReward reward = pendingNotices.Dequeue();
+            noticeHeading.text = "LEVEL " + reward.level + "  •  ATTRIBUTE INCREASED";
+            if (reward.stat >= 0 && reward.stat < AnglerProgression.Names.Length)
+            {
+                bool raw = reward.stat == 0;
+                noticeStat.text = AnglerProgression.Names[reward.stat].ToUpperInvariant()
+                    + "  +1" + (raw ? "" : "%");
+                noticeDetail.text = "TOTAL BONUS: +" + reward.value + (raw ? "" : "%");
+            }
+            else
+            {
+                noticeStat.text = "ALL FISHING ATTRIBUTES MAXED";
+                noticeDetail.text = "ALL PERMANENT BONUSES ARE AT THEIR LIMIT";
+            }
+            for (int i = 0; i < AnglerProgression.AbilityNames.Length; i++)
+            {
+                if (reward.level == (i + 1) * 20)
+                {
+                    noticeDetail.text = "UNLOCKED: " + AnglerProgression.AbilityNames[i];
+                    break;
+                }
+            }
+            levelNotice.gameObject.SetActive(true);
+            levelNotice.SetAsLastSibling();
+            noticePhase = NoticePhase.Entering;
+            noticeElapsed = 0f;
+            SetNoticeSlide(0f);
+        }
+
+        if (noticePhase == NoticePhase.Hidden) return;
+        noticeElapsed += dt;
+        switch (noticePhase)
+        {
+            case NoticePhase.Entering:
+                SetNoticeSlide(Mathf.SmoothStep(0f, 1f,
+                    Mathf.Clamp01(noticeElapsed / SlideSeconds)));
+                if (noticeElapsed >= SlideSeconds)
+                {
+                    noticePhase = NoticePhase.Holding;
+                    noticeElapsed = 0f;
+                }
+                break;
+            case NoticePhase.Holding:
+                if (noticeElapsed >= HoldSeconds)
+                {
+                    noticePhase = NoticePhase.Exiting;
+                    noticeElapsed = 0f;
+                }
+                break;
+            case NoticePhase.Exiting:
+                SetNoticeSlide(1f - Mathf.SmoothStep(0f, 1f,
+                    Mathf.Clamp01(noticeElapsed / SlideSeconds)));
+                if (noticeElapsed >= SlideSeconds)
+                {
+                    noticePhase = NoticePhase.Hidden;
+                    levelNotice.gameObject.SetActive(false);
+                }
+                break;
+        }
+    }
+
+    private void SetNoticeSlide(float visible)
+    {
+        if (levelNotice == null) return;
+        float outside = levelNotice.rect.width + 45f;
+        levelNotice.anchoredPosition = new Vector2(
+            Mathf.Lerp(outside, -RightMargin, visible), -LevelNoticeTopOffset);
+    }
+
+
     private void NextAward()
     {
         current = waiting.Dequeue();
+        IsShowingXp = true;
         popup.gameObject.SetActive(true);
         popup.SetAsLastSibling(); // Above the normal HUD, below any subsequently opened modal.
         drawnLevel = -1;
@@ -162,7 +277,19 @@ public sealed class FishingExperienceToast : MonoBehaviour
         bool max = level >= AnglerProgression.MaxLevel;
         if (drawnLevel != level)
         {
-            if (drawnLevel >= 0 && level > drawnLevel) badgePulse = 1f;
+            if (drawnLevel >= 0 && level > drawnLevel)
+            {
+                badgePulse = 1f;
+                for (int reached = drawnLevel + 1; reached <= level; reached++)
+                {
+                    LevelReward reward;
+                    if (earnedLevels.TryGetValue(reached, out reward))
+                    {
+                        pendingNotices.Enqueue(reward);
+                        earnedLevels.Remove(reached);
+                    }
+                }
+            }
             drawnLevel = level;
             levelInBadge.text = "LV\n" + level;
             levelTitle.text = max ? "MAX LEVEL" : "LEVEL " + level;
@@ -233,6 +360,27 @@ public sealed class FishingExperienceToast : MonoBehaviour
         fillImage.color = Cyan;
         fillImage.raycastTarget = false;
         meterFill = filled.GetComponent<RectTransform>();
+
+        // Independent notification at the XP bar's former screen location.
+        GameObject notice = new GameObject("FishingStatLevelUpPopup",
+            typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        notice.transform.SetParent(root, false);
+        levelNotice = notice.GetComponent<RectTransform>();
+        levelNotice.anchorMin = levelNotice.anchorMax = levelNotice.pivot = Vector2.one;
+        levelNotice.sizeDelta = new Vector2(popup.sizeDelta.x, 104f);
+        FishingHudTheme.Panel(notice);
+        notice.GetComponent<Image>().raycastTarget = false;
+        CanvasGroup noticeGroup = notice.GetComponent<CanvasGroup>();
+        noticeGroup.interactable = false;
+        noticeGroup.blocksRaycasts = false;
+        noticeHeading = TextAt(notice.transform, "LevelUpHeading", "", 23,
+            .045f, .63f, .96f, .94f, Gold, TextAnchor.MiddleLeft, true);
+        noticeStat = TextAt(notice.transform, "ImprovedAttribute", "", 27,
+            .045f, .32f, .96f, .67f, Color.white, TextAnchor.MiddleLeft, true);
+        noticeDetail = TextAt(notice.transform, "AttributeBonusOrSpecialUnlock", "", 18,
+            .045f, .07f, .96f, .35f, Cyan, TextAnchor.MiddleLeft, true);
+        notice.SetActive(false);
+        SetNoticeSlide(0f);
 
         popup.gameObject.SetActive(false);
         SetSlide(0f);
