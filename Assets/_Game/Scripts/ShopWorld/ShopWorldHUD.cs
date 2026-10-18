@@ -74,7 +74,10 @@ public sealed class ShopWorldHUD : MonoBehaviour
         if(root==null) return;
         if(Keyboard.current!=null && Keyboard.current.escapeKey.wasPressedThisFrame)
         { if(MenuOpen) Close(); else Open("travel"); }
-        menuShortcut.SetActive(!MenuOpen);indexShortcut.SetActive(!MenuOpen);baitShortcut.SetActive(!MenuOpen);RefreshBaitShortcut();
+        // The animated catch-XP bar temporarily replaces MENU / TRAVEL only.
+        // Keep the other shortcuts working and restore the menu button afterward.
+        menuShortcut.SetActive(!MenuOpen && !FishingExperienceToast.IsShowingXp);
+        indexShortcut.SetActive(!MenuOpen);baitShortcut.SetActive(!MenuOpen);RefreshBaitShortcut();
         bool independentPage=page=="bait" || page.StartsWith(HabitatAddPrefix,StringComparison.Ordinal);
         if(shopSession==null && !independentPage && Keyboard.current!=null && Keyboard.current.tabKey.wasPressedThisFrame) Open("bag");
         string nearest=travel.Nearest();
