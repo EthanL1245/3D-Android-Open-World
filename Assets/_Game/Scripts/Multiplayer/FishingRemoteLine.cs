@@ -72,9 +72,20 @@ public sealed class FishingRemoteLine : MonoBehaviour
     // Called after the avatar pose and rod flex, so the line starts at the bent tip.
     public void Present(Transform tip)
     {
-        if(kind==0 || tip==null || Time.realtimeSinceStartup-receivedAt>1f)
+        // The remote fish marker is independent of the other player's rod prefab
+        // and line shader. It must still work if their rod tip cannot be resolved.
+        if(kind==0 || Time.realtimeSinceStartup-receivedAt>1f)
         {
             Hide();
+            PresentLightning();
+            return;
+        }
+        position=Vector3.Lerp(position,target,1f-Mathf.Exp(-18f*Time.unscaledDeltaTime));
+        PresentDistance(tip);
+        if(tip==null)
+        {
+            if(line!=null)line.enabled=false;
+            if(tackle!=null)tackle.SetActive(false);
             PresentLightning();
             return;
         }
@@ -89,7 +100,6 @@ public sealed class FishingRemoteLine : MonoBehaviour
             line.useWorldSpace=true;line.positionCount=2;line.startWidth=.008f;line.endWidth=.004f;
             line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;
         }
-        position=Vector3.Lerp(position,target,1f-Mathf.Exp(-18f*Time.unscaledDeltaTime));
         if(tackle==null && kind==1)CreateTackle();
         if(tackle!=null)
         {
@@ -106,7 +116,6 @@ public sealed class FishingRemoteLine : MonoBehaviour
             if(tie!=null)tackle.transform.position+=position-tie.position;
         }
         line.enabled=true;line.SetPosition(0,tip.position);line.SetPosition(1,position);
-        PresentDistance(tip);
         PresentLightning();
     }
 
@@ -156,10 +165,15 @@ public sealed class FishingRemoteLine : MonoBehaviour
         }
         if(distanceRoot==null)BuildDistance();
         if(distanceRoot==null || distanceCanvas==null){return;}
-        Camera camera=Camera.main;
+        // Camera.main may refer to a menu/preview camera (or be untagged).
+        // Use the same gameplay camera as the local fishing distance indicator.
+        var localFishing=FindFirstObjectByType<FishingSystem>();
+        Camera camera=localFishing!=null?localFishing.PresentationCamera:null;
+        if(camera==null)camera=Camera.main;
         if(camera==null){HideDistance();return;}
         Vector3 screen=FishingThirdPersonView.WorldToScreenPoint(camera,position+Vector3.up*.52f);
-        if(screen.z<=0f || screen.x<0f || screen.x>Screen.width || screen.y<0f || screen.y>Screen.height)
+        Rect viewPixels=camera.pixelRect;
+        if(screen.z<=0f || !viewPixels.Contains(new Vector2(screen.x,screen.y)))
         {
             HideDistance();
             return;
@@ -168,7 +182,10 @@ public sealed class FishingRemoteLine : MonoBehaviour
         Camera uiCamera=distanceCanvas.renderMode==RenderMode.ScreenSpaceOverlay?null:distanceCanvas.worldCamera;
         if(canvasRect==null || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
             canvasRect,screen,uiCamera,out Vector2 localPoint)){HideDistance();return;}
-        float metres=Vector3.Distance(tip.position,position);
+        // Use the real rod tip when present, otherwise the remote player's
+        // world position. This is still their own line distance, not ours.
+        Vector3 origin=tip!=null?tip.position:transform.position+Vector3.up*1.3f;
+        float metres=Vector3.Distance(origin,position);
         distanceLabel.text=metres.ToString("0.0")+" m";
         Vector2 location=localPoint+new Vector2(104f,72f);
         Rect bounds=canvasRect.rect;
@@ -180,8 +197,10 @@ public sealed class FishingRemoteLine : MonoBehaviour
 
     private void BuildDistance()
     {
+        // Fish HUD is created at runtime on the gameplay canvas. Prefer the
+        // canvas containing that HUD instead of an arbitrary scene canvas.
         var hud=FindFirstObjectByType<FishingHUD>();
-        Canvas canvas=hud!=null?hud.GetComponent<Canvas>():null;
+        Canvas canvas=hud!=null?hud.GetComponentInParent<Canvas>():null;
         if(canvas==null)return;
         distanceCanvas=canvas;
         distanceRoot=new GameObject("Remote Fish Distance - Green",typeof(RectTransform),typeof(Image));
