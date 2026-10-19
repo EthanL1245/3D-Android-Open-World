@@ -95,8 +95,8 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
                 continue;
             }
             var source = gameObject.AddComponent<AudioSource>();
-            source.clip = clip;
             source.playOnAwake = false;
+            source.clip = clip;
             source.loop = true;
             source.spatialBlend = 1f;
             source.spatialize = false;
