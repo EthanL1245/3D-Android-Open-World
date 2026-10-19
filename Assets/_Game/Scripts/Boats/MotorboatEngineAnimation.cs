@@ -153,7 +153,7 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
         float target = weight * 0.48f;
         source.volume = Mathf.Lerp(source.volume, target, blend);
         source.pitch = Mathf.Lerp(source.pitch, pitch, blend);
-        // Do not decode/voice silent loops on Android or for distant boats.
+        // Stop inaudible layers to reduce concurrent audio voices on Android.
         if(target > 0.005f && !source.isPlaying) source.Play();
         else if(target <= 0.005f && source.volume < 0.005f && source.isPlaying)
         {
