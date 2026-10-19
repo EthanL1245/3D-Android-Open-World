@@ -18,9 +18,9 @@ public static class BoatClearance
         float draft=raft?AuthoredRaftDraft:data.Draft;
         float halfX=size.x*.5f+(raft ? 0.18f : 0.6f);
         float halfZ=size.z*.5f+(raft ? 0.35f : 0.6f);
-        // Motorboat may navigate water 0.6 m shallower before pre-braking.
+        // Motorboat may navigate water 1.1 m shallower before pre-braking.
         // Keep placement clearance and other boats' navigation margins intact.
-        float requiredDepth=draft+(data.ID=="sailboat" ? .05f : .65f);
+        float requiredDepth=draft+(data.ID=="sailboat" ? -.45f : .65f);
         foreach(var terrain in Terrain.activeTerrains)
         {
             if(terrain==null || terrain.terrainData==null)continue;
