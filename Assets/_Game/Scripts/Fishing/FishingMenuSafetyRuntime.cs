@@ -219,9 +219,13 @@ public sealed class FishingMenuSafetyRuntime : MonoBehaviour
         SetButton(rodSlotButton,!busy);
         SetButton(boatSlotButton,!busy);
 
-        // BOARD / DRIVE BOAT / MARINA SHOP remains visible when contextually
-        // present, but is visibly greyed and non-interactable while fishing.
+        // Hide the entire shared boat prompt during a fight, including its
+        // background and label. BoatSystem resumes its proximity/menu visibility
+        // checks when fishing ends, restoring the prompt only where appropriate.
         SetButton(boatInteractButton,!busy && !safeIndexOpen);
+        if(boatInteractButton!=null && fishing!=null &&
+            string.Equals(fishingStateField?.GetValue(fishing)?.ToString(),"Fighting",StringComparison.Ordinal))
+            boatInteractButton.gameObject.SetActive(false);
 
         // BoatSystem also accepts keyboard shortcuts (2/E). Disable only its UI /
         // interaction driver while fishing so those shortcuts cannot cancel a fight;
