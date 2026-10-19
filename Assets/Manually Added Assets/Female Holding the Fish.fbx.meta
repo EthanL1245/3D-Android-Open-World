@@ -3,7 +3,7 @@ guid: 516514f2f1ce432599e83ec2fe279305
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: []
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
