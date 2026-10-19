@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Keeps the imported FBX motor animation intact and layers three spatial engine
-// recordings by measured boat speed. Replicas derive speed from networked poses.
+// Keeps the imported FBX motor animation intact; engine audio follows helm state,
+// forward input and measured speed. Replicas use networked input and poses.
 [DisallowMultipleComponent]
 public sealed class MotorboatEngineAnimation : MonoBehaviour
 {
@@ -17,7 +17,8 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
     private static readonly string[] ClipNames = {
         "Boats/MotorboatAudio/slow",
         "Boats/MotorboatAudio/moderate_speed",
-        "Boats/MotorboatAudio/fast"
+        "Boats/MotorboatAudio/fast",
+        "Boats/MotorboatAudio/idle"
     };
 
     private BoatController boat;
@@ -26,7 +27,10 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
     private bool measured;
     private bool clipsChecked;
     private float audioSpeed;
-    private readonly AudioSource[] engineSources = new AudioSource[3];
+    private readonly AudioSource[] engineSources = new AudioSource[4];
+    private AudioSource ignitionSource;
+    private AudioClip startClip, stopClip;
+    private bool hadDriver, engineRunning;
 
     private void Awake()
     {
@@ -38,11 +42,14 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
     {
         measured = false;
         audioSpeed = 0f;
+        hadDriver = engineRunning = false;
         if(MotorAnimator != null) MotorAnimator.speed = 0f;
     }
 
     private void OnDisable()
     {
+        hadDriver = engineRunning = false;
+        if(ignitionSource != null) ignitionSource.Stop();
         for(int i = 0; i < engineSources.Length; i++)
         {
             var source = engineSources[i];
@@ -94,20 +101,37 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
                 Debug.LogWarning("Motorboat engine audio clip missing from Resources: " + ClipNames[i], this);
                 continue;
             }
-            var source = gameObject.AddComponent<AudioSource>();
-            source.playOnAwake = false;
+            var source = CreateSource();
             source.clip = clip;
             source.loop = true;
-            source.spatialBlend = 1f;
-            source.spatialize = false;
-            source.dopplerLevel = 0f;
-            source.rolloffMode = AudioRolloffMode.Logarithmic;
-            source.minDistance = 12f;
-            source.maxDistance = 110f;
-            source.priority = 160;
             source.volume = 0f;
             engineSources[i] = source;
         }
+        startClip = Resources.Load<AudioClip>("Boats/MotorboatAudio/start");
+        stopClip = Resources.Load<AudioClip>("Boats/MotorboatAudio/stop");
+        ignitionSource = CreateSource();
+        ignitionSource.volume = 0.48f;
+    }
+
+    private AudioSource CreateSource()
+    {
+        var source = gameObject.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.spatialBlend = 1f;
+        source.spatialize = false;
+        source.dopplerLevel = 0f;
+        source.rolloffMode = AudioRolloffMode.Logarithmic;
+        source.minDistance = 12f;
+        source.maxDistance = 110f;
+        source.priority = 160;
+        return source;
+    }
+
+    private void PlayIgnition(AudioClip clip)
+    {
+        ignitionSource.Stop();
+        ignitionSource.clip = clip;
+        if(clip != null) ignitionSource.Play();
     }
 
     private static float SmoothRange(float a, float b, float value)
@@ -128,22 +152,42 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
         float speedBlend = 1f - Mathf.Exp(-SpeedResponse * dt);
         audioSpeed = Mathf.Lerp(audioSpeed, Mathf.Clamp(measuredSpeed, 0f, EngineTopSpeed), speedBlend);
 
-        float throttle = boat.Driver != null && boat.Driver.Controls != null
-            ? boat.Driver.Controls.BoatInput.magnitude : boat.NetworkFrontInput.magnitude;
-        // A small immediate rev response precedes the three-second speed ramp.
-        float audibleSpeed = Mathf.Min(EngineTopSpeed, audioSpeed + 1.4f * Mathf.Clamp01(throttle));
-        float lowToMid = SmoothRange(2f, 13f, audibleSpeed);
-        float midToHigh = SmoothRange(15f, EngineTopSpeed, audibleSpeed);
-        float idleWeight = Mathf.Cos(lowToMid * CrossfadeRadians);
-        float moderateWeight = Mathf.Sin(lowToMid * CrossfadeRadians) * Mathf.Cos(midToHigh * CrossfadeRadians);
-        float fastWeight = Mathf.Sin(midToHigh * CrossfadeRadians);
-        float pitchBoost = 0.045f * Mathf.Clamp01(throttle);
+        bool hasDriver = boat.Driver != null || boat.NetworkHasDriver;
+        if(hasDriver && !hadDriver)
+        {
+            engineRunning = true;
+            PlayIgnition(startClip);
+        }
+        // Leaving the helm lets the engine coast down before one shutdown sound.
+        // Retaking the helm cancels that pending shutdown.
+        if(engineRunning && !hasDriver && measuredSpeed <= 5f)
+        {
+            engineRunning = false;
+            PlayIgnition(stopClip);
+        }
+        hadDriver = hasDriver;
+
+        Vector2 input = boat.Driver != null
+            ? (boat.Driver.Controls != null ? boat.Driver.Controls.BoatInput : Vector2.zero)
+            : boat.NetworkFrontInput;
+        bool idle = hasDriver && (input.y <= 0.05f || audioSpeed < 1f);
+        // Only a narrow 1 m/s window around each boundary mixes adjacent loops.
+        // No throttle-based speed offset, and no pitch shifting of the recordings.
+        float lowToMid = SmoothRange(7.5f, 8.5f, audioSpeed);
+        float midToHigh = SmoothRange(20.5f, 21.5f, audioSpeed);
+        float driveGain = engineRunning && !idle ? 1f : 0f;
+        float idleGain = engineRunning && idle ? 1f : 0f;
+        // Let the short start recording lead into the loops without a loud pileup.
+        if(ignitionSource.isPlaying && ignitionSource.clip == startClip)
+        {
+            driveGain *= 0.3f;
+            idleGain *= 0.3f;
+        }
         float blend = 1f - Mathf.Exp(-VolumeResponse * dt);
-        // No per-frame array allocations or audio processing; only AudioSource
-        // volume and pitch updates, with at most two audible layers at once.
-        ApplyLayer(0, idleWeight, Mathf.Lerp(0.95f, 1.09f, lowToMid) + pitchBoost, blend);
-        ApplyLayer(1, moderateWeight, Mathf.Lerp(0.94f, 1.10f, midToHigh) + pitchBoost, blend);
-        ApplyLayer(2, fastWeight, Mathf.Lerp(0.96f, 1.13f, midToHigh) + pitchBoost, blend);
+        ApplyLayer(0, driveGain * Mathf.Cos(lowToMid * CrossfadeRadians), 1f, blend);
+        ApplyLayer(1, driveGain * Mathf.Sin(lowToMid * CrossfadeRadians) * Mathf.Cos(midToHigh * CrossfadeRadians), 1f, blend);
+        ApplyLayer(2, driveGain * Mathf.Sin(midToHigh * CrossfadeRadians), 1f, blend);
+        ApplyLayer(3, idleGain, 1f, blend);
     }
 
     private void ApplyLayer(int index, float weight, float pitch, float blend)
