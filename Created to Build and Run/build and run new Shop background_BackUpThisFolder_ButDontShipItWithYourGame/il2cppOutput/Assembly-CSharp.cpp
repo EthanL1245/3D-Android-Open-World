@@ -202,6 +202,7 @@ struct MethodInfo_t;
 struct MobileActionButton_t6890F358F2484A7E3E8B86F96D695B9D63AE94C9;
 struct MobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E;
 struct MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71;
+struct MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6;
 struct Mouse_t9A9CC4636FA9CDBAD7FB7A02DB0D6395EDCC338F;
 struct MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242;
 struct NotSupportedException_t1429765983D409BD2986508963C98D214E4EBF4A;
@@ -218,6 +219,7 @@ struct Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF;
 struct Rigidbody_t268697F5A994213ED97393309870968BC1C7393C;
 struct RowboatPaddleAnimator_tDE571126E481D87224D29EE48F894D851CD5C9A5;
 struct RowboatStrokeData_t02A42FA19A2237AB14486B8FE1EEA14E18B862ED;
+struct RuntimeAnimatorController_t6F7C753402B42EC23C163099CF935C5E0D7A7254;
 struct SafeSerializationManager_tCBB85B95DFD1634237140CD892E82D06ECB3F5E6;
 struct ScriptableObject_tB3BFDB921A1B1795B38A5417D3B97A89A140436A;
 struct ScrollRect_t17D2F2939CA8953110180DF53164CFC3DC88D70E;
@@ -1229,6 +1231,10 @@ struct ShadowCastingMode_tF30806698B37CF120A1A506BD7549EAF308E7C6D
 {
 	int32_t ___value__;
 };
+struct Space_tF043E93E06B702DD05199C28C6F779049B38A969 
+{
+	int32_t ___value__;
+};
 struct TextAlignment_t0280CA8FF36D0B0FDCDB321B0E06F7B08BA62524 
 {
 	int32_t ___value__;
@@ -1846,6 +1852,9 @@ struct PrimitiveValue_t1CC37566F40746757D5E3F87474A05909D85C2D4_marshaled_com
 		};
 	};
 };
+struct RuntimeAnimatorController_t6F7C753402B42EC23C163099CF935C5E0D7A7254  : public Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C
+{
+};
 struct ScriptableObject_tB3BFDB921A1B1795B38A5417D3B97A89A140436A  : public Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C
 {
 };
@@ -2408,6 +2417,17 @@ struct MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920  : publi
 	Font_tC95270EA3198038970422D78B74A7F2E218A96B6* ___labelFont;
 	Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* ___depthMaterial;
 	bool ___fitted;
+};
+struct MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
+{
+	Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* ___MotorAnimator;
+	Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___FallbackPropeller;
+	float ___MovingThreshold;
+	float ___FallbackSpinDegreesPerSecond;
+	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___boat;
+	Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* ___body;
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___lastPosition;
+	bool ___measured;
 };
 struct MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
 {
@@ -3751,10 +3771,18 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool String_op_Inequality_m8C940F3CFC42866709
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Rigidbody_get_position_m4ECB79BDBBF8FD1EA572EDB792D3330DDED24691 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_RotateTowards_m884BB56D5A071EF6008F9354D5FF1C9A1913AF92_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_current, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_target, float ___2_maxRadiansDelta, float ___3_maxMagnitudeDelta, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Rigidbody_get_linearVelocity_m367F5415641E5FB968440A91BAE2FCB8CAEA2C8C (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_vector, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_planeNormal, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline (float ___0_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline (float ___0_value, float ___1_min, float ___2_max, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_axis, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_lhs, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rhs, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_vector, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_planeNormal, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_ClampMagnitude_mF83675F19744F58E97CF24D8359A810634DC031F_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_vector, float ___1_maxLength, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_torque, int32_t ___1_mode, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline (const RuntimeMethod* method) ;
@@ -3765,8 +3793,6 @@ inline OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* Component_GetCompon
 {
 	return ((  OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponentInParent_TisRuntimeObject_m6746D6BB99912B1B509746C993906492F86CD119_gshared)(__this, method);
 }
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Rigidbody_get_linearVelocity_m367F5415641E5FB968440A91BAE2FCB8CAEA2C8C (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Min_m747CA71A9483CDB394B13BD0AD048EE17E48FFE4_inline (float ___0_a, float ___1_b, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381 (const RuntimeMethod* method) ;
@@ -3774,21 +3800,18 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasClearOpenWaterAhead_m5
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Rigidbody_set_linearVelocity_m29AE03D5FC079EAD4202FCF72E2AEBDC19363985 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_value, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_ApplyWaveRocking_m34CAE4FB3D09BF6C9E4512279DBC097CCC36AEB3 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_right, float* ___2_highestWaveAtHull, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline (float ___0_value, float ___1_min, float ___2_max, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_force, int32_t ___1_mode, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_UnaryNegation_m5450829F333BD2A88AF9A592C4EE331661225915_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector2_get_magnitude_m5C59B4056420AEFDB291AD0914A3F675330A75CE_inline (Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7* __this, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline (float ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_get_RowingSpeed_mB6F582631B0401E0E1066D73B04C56A33E307822 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline (const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline (float ___0_x, float ___1_y, float ___2_z, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Transform_get_rotation_m32AF40CA0D50C797DA639A696F8EAEC7524C179C (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_SignedAngle_m76C77F9D7BAF5969FA5B7500ED2D5FF9F9FA4153_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_to, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_axis, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_axis, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_lhs, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rhs, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatClearance_ApproachingShallowWater_m54CC71F6D5D2A24484451936A35041CAB053C9DE (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___2_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___3_water, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline (float ___0_a, float ___1_b, float ___2_t, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float Rigidbody_get_linearDamping_m9A75A439BEDC39A14ADDDBEA9BF3BE08805DA7F2 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline (float ___0_current, float ___1_target, float ___2_maxDelta, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum_mBA323B518D2331E2E0652EB413022346DA02C22C (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_plannedDirection, float ___2_propulsion, float ___3_targetSpeed, float ___4_headingError, bool ___5_shallowAhead, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MonoBehaviour__ctor_m592DB0105CA0BC97AA1C5F4AD27B12D68A3B7C1E (MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void ScriptableObject__ctor_mD037FDB0B487295EA47F79A4DB1BF1846C9087FF (ScriptableObject_tB3BFDB921A1B1795B38A5417D3B97A89A140436A* __this, const RuntimeMethod* method) ;
@@ -4201,7 +4224,6 @@ inline MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* Component_Get
 	return ((  MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponentsInChildren_TisRuntimeObject_m1F5B6FC0689B07D4FAAC0C605D9B2933A9B32543_gshared)(__this, method);
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* Mesh_get_triangles_m33E39B4A383CC613C760FA7E297AC417A433F24B (Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* __this, const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_CeilToInt_mF2BF9F4261B3431DC20E10A46CFEEED103C48963_inline (float ___0_f, const RuntimeMethod* method) ;
 inline Enumerator_t04AEAB89B233363D9DD3E3B4983988CB227509C9 List_1_GetEnumerator_mB3308638D2F473E3C77E7EFC751B40A342D3F76C (List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* __this, const RuntimeMethod* method)
 {
@@ -4323,6 +4345,12 @@ inline BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* Component_GetCo
 {
 	return ((  BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponent_TisRuntimeObject_m7181F81CAEC2CF53F5D2BC79B7425C16E1F80D33_gshared)(__this, method);
 }
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Animator_set_speed_m933F4D6770122BC9D8A7FF82DE1CD33D514379FC (Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* __this, float ___0_value, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865 (const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Rigidbody_get_isKinematic_mC20906CA5A89983DE06EAC6E3AFC5BC012F90CA1 (Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Behaviour_get_enabled_mAAC9F15E9EBF552217A5AE2681589CC0BFA300C1 (Behaviour_t01970CFBBA658497AE30F311C447DB0440BAB7FA* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeAnimatorController_t6F7C753402B42EC23C163099CF935C5E0D7A7254* Animator_get_runtimeAnimatorController_mE10F46F893A630D1AE846EF66DC2769E3ECE5AB8 (Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Transform_Rotate_m683E67853797040312868B69E963D0E97F433EEB (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_axis, float ___1_angle, int32_t ___2_relativeTo, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_BuildGraph_mFD78D5025FED942D804489B73E3019991CB01583 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_BuildPortableFallback_m18294B1C7DB56BC36F74C00FDF44E74518410C4C (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Animator_set_applyRootMotion_mA0953B6AEE43D4AF0837365E7BFF60FCC74B0F98 (Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* __this, bool ___0_value, const RuntimeMethod* method) ;
@@ -4361,8 +4389,6 @@ inline double PlayableExtensions_GetTime_TisAnimationClipPlayable_t54CEA0DD315B1
 {
 	return ((  double (*) (AnimationClipPlayable_t54CEA0DD315B1674C2BD49E681005C4271D73969, const RuntimeMethod*))PlayableExtensions_GetTime_TisAnimationClipPlayable_t54CEA0DD315B1674C2BD49E681005C4271D73969_mAFFD230EF372B0B1CD070D67245FC48305DBD304_gshared)(___0_playable, method);
 }
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865 (const RuntimeMethod* method) ;
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline (float ___0_current, float ___1_target, float ___2_maxDelta, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Repeat_m6F1560A163481BB311D685294E1B463C3E4EB3BA_inline (float ___0_t, float ___1_length, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_ApplyPortablePose_m9409DDE87FDA0D976124BA523CF20E4D4494DF56 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_pivot, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rest, float ___2_side, float ___3_center, float ___4_stroke, float ___5_dip, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* Transform_get_parent_m65354E28A4C94EC00EBCF03532F7B0718380791E (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* __this, const RuntimeMethod* method) ;
@@ -4528,11 +4554,11 @@ inline void List_1__ctor_m63E116C363912FA6D6F1367A59289101F150C4BE (List_1_tB05D
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Normalize_m1DE89849FE2019B6AA0031306896F3B800849399_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_value, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Internal_RotateTowards_mAEFE707F84BEAC3FD2B3A11A639F7E0E6A9F664D (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_current, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_target, float ___2_maxRadiansDelta, float ___3_maxMagnitudeDelta, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_m9B5EBE36643126708DB3F444C59C11FA30803DBB_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_rhs, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Internal_AngleAxis_m1A896524F98EF69748915ED902CC9DCEF16245D4 (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_axis, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Internal_LookRotation_m489E6A5E916949FFE91C0B11A60C6016D996C1E0 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_upwards, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Internal_FromEulerRad_mD0C4C0EFE1D70EC0EA4A92B11F1A4D5B0A134E49 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_euler, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Angle_m77FA4FE195D5A09AFA28304707DD4EA837874F34_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_to, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Sign_m42EE1F0BC041AF14F89DED7F762BE996E2C50D8A_inline (float ___0_f, const RuntimeMethod* method) ;
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Internal_AngleAxis_m1A896524F98EF69748915ED902CC9DCEF16245D4 (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_axis, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Internal_Inverse_m0ABC2C5E4F26053F9F6B8260065D08E264F62566 (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974* ___0_rotation, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Bounds_get_min_m465AC9BBE1DE5D8E8AD95AC19B9899068FEEBB13_inline (Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3* __this, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Bounds_get_max_m6446F2AB97C1E57CA89467B9DE52D4EB61F1CB09_inline (Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3* __this, const RuntimeMethod* method) ;
@@ -4563,7 +4589,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Bounds_SetMinMax_m42AF5C7723
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51832
+// Method Definition Index: 51835
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatClearance_ApproachingShallowWater_m54CC71F6D5D2A24484451936A35041CAB053C9DE (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___2_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___3_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5124,7 +5150,7 @@ IL_025b:
 		return L_107;
 	}
 }
-// Method Definition Index: 51833
+// Method Definition Index: 51836
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatClearance_Valid_m73C2D9474AE30904BCEF280DC538CF68C1613423 (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___2_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___3_water, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___4_ignored, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___5_player, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5844,7 +5870,7 @@ IL_035e:
 		return L_144;
 	}
 }
-// Method Definition Index: 51834
+// Method Definition Index: 51837
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatClearance__cctor_m3515A06C83EC258EE554AE403E865D4230BAA07D (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5870,7 +5896,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatClearance__cctor_m3515A06C83EC258EE5
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51835
+// Method Definition Index: 51838
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -5879,7 +5905,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD
 		return L_0;
 	}
 }
-// Method Definition Index: 51836
+// Method Definition Index: 51839
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -5890,7 +5916,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3
 		return;
 	}
 }
-// Method Definition Index: 51837
+// Method Definition Index: 51840
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5932,12 +5958,54 @@ IL_0026:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51838
+// Method Definition Index: 51841
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral3AE9C4DE4254E7C5522CE8975058967E15BF8FDB);
+		s_Il2CppMethodInitialized = true;
+	}
+	int32_t G_B3_0 = 0;
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:13>
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_1;
+		L_1 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_0, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (!L_1)
+		{
+			goto IL_0025;
+		}
+	}
+	{
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_2 = __this->___Data;
+		NullCheck(L_2);
+		String_t* L_3 = L_2->___ID;
+		bool L_4;
+		L_4 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_3, _stringLiteral3AE9C4DE4254E7C5522CE8975058967E15BF8FDB, NULL);
+		G_B3_0 = ((int32_t)(L_4));
+		goto IL_0026;
+	}
+
+IL_0025:
+	{
+		G_B3_0 = 0;
+	}
+
+IL_0026:
+	{
+		return (bool)G_B3_0;
+	}
+}
+// Method Definition Index: 51842
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_FrontPaddling_mE156B72EC590E9EF15A1F70C328E9DC5F2E853B0 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:17>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:19>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0;
 		L_0 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		bool L_1;
@@ -5965,13 +6033,13 @@ IL_0022:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51839
+// Method Definition Index: 51843
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_RearPaddling_mD2F61A44923201677DE5CFE7D29387155F88A771 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B4_0 = 0;
 	int32_t G_B6_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:18>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:20>
 		bool L_0;
 		L_0 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (!L_0)
@@ -6018,7 +6086,7 @@ IL_002d:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51840
+// Method Definition Index: 51844
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_ActivePaddlers_mD3ED53E6FCB2063D30A17FBA187409D934017806 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -6027,7 +6095,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_ActivePaddlers_mD3
 	int32_t G_B6_0 = 0;
 	int32_t G_B6_1 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:19>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:21>
 		bool L_0;
 		L_0 = BoatController_get_FrontPaddling_mE156B72EC590E9EF15A1F70C328E9DC5F2E853B0(__this, NULL);
 		if (L_0)
@@ -6073,13 +6141,13 @@ IL_0018:
 		return ((int32_t)il2cpp_codegen_add(G_B6_1, G_B6_0));
 	}
 }
-// Method Definition Index: 51841
+// Method Definition Index: 51845
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ClearNetworkInput_m9CCB2C954D89EE692B2DC5DED6725E2F427527DA (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 V_0;
 	memset((&V_0), 0, sizeof(V_0));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:20>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:22>
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_0;
 		L_0 = Vector2_get_zero_m32506C40EC2EE7D5D4410BF40D3EE683A3D5F32C_inline(NULL);
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_1 = L_0;
@@ -6087,13 +6155,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ClearNetworkInput_m9CCB2C
 		__this->___NetworkRearInput = L_1;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_2 = V_0;
 		__this->___NetworkFrontInput = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:20>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:22>
 		__this->___NetworkHasDriver = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:20>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:22>
 		return;
 	}
 }
-// Method Definition Index: 51842
+// Method Definition Index: 51846
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_get_RowingSpeed_mB6F582631B0401E0E1066D73B04C56A33E307822 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6108,7 +6176,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_get_RowingSpeed_mB6F5826
 	float G_B4_1 = 0.0f;
 	float G_B6_0 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:21>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:23>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -6163,7 +6231,7 @@ IL_0039:
 		return G_B6_0;
 	}
 }
-// Method Definition Index: 51843
+// Method Definition Index: 51847
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasInput_m00E3F9EC50D5855FA845AB75E6AD573303A320BD (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6176,7 +6244,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasInput_m00E3F9EC50D5855
 	memset((&V_0), 0, sizeof(V_0));
 	int32_t G_B4_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:22>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:24>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_p;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -6224,7 +6292,7 @@ IL_0034:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 51844
+// Method Definition Index: 51848
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* BoatController_SeatFor_m43A0B970694FF9D6D1C8658F03C438926EA06069 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6235,7 +6303,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99
 	}
 	Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* G_B3_0 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:23>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:25>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_p;
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_1;
 		L_1 = BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline(__this, NULL);
@@ -6264,7 +6332,7 @@ IL_001c:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 51845
+// Method Definition Index: 51849
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_CanUseSeat_m5415794920AE9D0822B2438593E0ED2DB22E686F (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6279,9 +6347,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_CanUseSeat_m5415794920AE9
 	int32_t G_B16_0 = 0;
 	int32_t G_B18_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:24>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:25>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:26>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:27>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:28>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_p;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -6449,37 +6517,37 @@ IL_00b5:
 		return (bool)G_B18_0;
 	}
 }
-// Method Definition Index: 51846
+// Method Definition Index: 51850
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:27>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:29>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = __this->___U3CDriverU3Ek__BackingField;
 		return L_0;
 	}
 }
-// Method Definition Index: 51847
+// Method Definition Index: 51851
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:27>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:29>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_value;
 		__this->___U3CDriverU3Ek__BackingField = L_0;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___U3CDriverU3Ek__BackingField), (void*)L_0);
 		return;
 	}
 }
-// Method Definition Index: 51848
+// Method Definition Index: 51852
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_PassengerCount_m260331D525EB77C0C2070D93D05971BED6F737A5 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:29>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:31>
 		int32_t L_0 = __this->___localPassengerCount;
 		int32_t L_1 = __this->___NetworkOtherPassengers;
 		return ((int32_t)il2cpp_codegen_add(L_0, L_1));
 	}
 }
-// Method Definition Index: 51849
+// Method Definition Index: 51853
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A447293364E5FE241D97086B3B0C05F4D702 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_ocean, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6502,36 +6570,36 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A44729336
 	Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* V_8 = NULL;
 	bool V_9 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:57>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:62>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = ___0_data;
 		__this->___Data = L_0;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___Data), (void*)L_0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:57>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:62>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_1 = ___1_ocean;
 		__this->___water = L_1;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___water), (void*)L_1);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:57>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:62>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_2;
 		L_2 = Component_GetComponent_TisRigidbody_t268697F5A994213ED97393309870968BC1C7393C_m4B5CAD64B52D153BEA96432633CA9A45FA523DD8(__this, Component_GetComponent_TisRigidbody_t268697F5A994213ED97393309870968BC1C7393C_m4B5CAD64B52D153BEA96432633CA9A45FA523DD8_RuntimeMethod_var);
 		__this->___body = L_2;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___body), (void*)L_2);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:58>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:63>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_3 = __this->___body;
 		NullCheck(L_3);
 		Rigidbody_set_mass_mC7F886DEDB57C742A16F8B6B779F69AFE164CA4B(L_3, (300.0f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:58>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:63>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_4 = __this->___body;
 		NullCheck(L_4);
 		Rigidbody_set_useGravity_m1B1B22E093F9DC92D7BEEBBE6B02642B3B6C4389(L_4, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:58>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:63>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_5 = __this->___body;
 		NullCheck(L_5);
 		Rigidbody_set_linearDamping_m42BB8ADA5D26250A11256502D08BDC2DAB980242(L_5, (0.649999976f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:58>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:63>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_6 = __this->___body;
 		NullCheck(L_6);
 		Rigidbody_set_angularDamping_m2763171B779080FC724173D87C34015ABED51671(L_6, (3.0f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:60>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:65>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_7 = __this->___body;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_8 = L_7;
 		NullCheck(L_8);
@@ -6539,15 +6607,15 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A44729336
 		L_9 = Rigidbody_get_constraints_mAD5C536F3329399A4F32C05C3BC52821737C9AE1(L_8, NULL);
 		NullCheck(L_8);
 		Rigidbody_set_constraints_mE81BF0DAEB980E320538231E092CA4663885A9A3(L_8, ((int32_t)((int32_t)L_9&((int32_t)-81))), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:61>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:66>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_10 = __this->___body;
 		NullCheck(L_10);
 		Rigidbody_set_interpolation_mC7D39114A7AC6ED0AB2B40FECA4E2ED3C1D7603C(L_10, 1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:62>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:67>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_11 = __this->___body;
 		NullCheck(L_11);
 		Rigidbody_set_collisionDetectionMode_m70A22E9878027BF6D3D7E851A43A8E32B8E02343(L_11, 2, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:66>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:71>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_12 = __this->___water;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_13;
@@ -6560,17 +6628,17 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A44729336
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:68>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:73>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_15 = __this->___water;
 		NullCheck(L_15);
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_16;
 		L_16 = Component_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m64EB86DDB49F92CFAAF6003C9EAC7D7D8B0F35DB(L_15, Component_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m64EB86DDB49F92CFAAF6003C9EAC7D7D8B0F35DB_RuntimeMethod_var);
 		V_1 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:69>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:74>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_17;
 		L_17 = Component_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m64EB86DDB49F92CFAAF6003C9EAC7D7D8B0F35DB(__this, Component_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m64EB86DDB49F92CFAAF6003C9EAC7D7D8B0F35DB_RuntimeMethod_var);
 		V_2 = L_17;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:70>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:75>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_18 = V_1;
 		V_3 = L_18;
 		V_4 = 0;
@@ -6579,14 +6647,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A44729336
 
 IL_00b6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:70>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:75>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_19 = V_3;
 		int32_t L_20 = V_4;
 		NullCheck(L_19);
 		int32_t L_21 = L_20;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_22 = (L_19)->GetAt(static_cast<il2cpp_array_size_t>(L_21));
 		V_5 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:71>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:76>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_23 = V_2;
 		V_6 = L_23;
 		V_7 = 0;
@@ -6595,14 +6663,14 @@ IL_00b6:
 
 IL_00c5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:71>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:76>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_24 = V_6;
 		int32_t L_25 = V_7;
 		NullCheck(L_24);
 		int32_t L_26 = L_25;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_27 = (L_24)->GetAt(static_cast<il2cpp_array_size_t>(L_26));
 		V_8 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:72>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:77>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_28 = V_5;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_29 = V_8;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -6616,7 +6684,7 @@ IL_00c5:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:73>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:78>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_32 = V_5;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_33 = V_8;
 		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
@@ -6631,7 +6699,7 @@ IL_00e6:
 
 IL_00ec:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:71>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:76>
 		int32_t L_35 = V_7;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_36 = V_6;
 		NullCheck(L_36);
@@ -6647,7 +6715,7 @@ IL_00ec:
 
 IL_00fa:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:70>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:75>
 		int32_t L_38 = V_4;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_39 = V_3;
 		NullCheck(L_39);
@@ -6661,17 +6729,17 @@ IL_00fa:
 
 IL_0102:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:76>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:81>
 		__this->___buoyancyStarted = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:77>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:82>
 		__this->___wasPropelling = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:78>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:83>
 		__this->___lastDrivenForwardSpeed = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:79>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:84>
 		return;
 	}
 }
-// Method Definition Index: 51850
+// Method Definition Index: 51854
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_Board_mB2C07D1CF10EA2BA97B356C034FD21229D821AE8 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6685,7 +6753,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_Board_mB2C07D1CF10EA2BA97
 	int32_t G_B5_0 = 0;
 	int32_t G_B7_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:83>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:88>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -6751,45 +6819,45 @@ IL_0044:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:83>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:88>
 		V_1 = (bool)0;
 		goto IL_005e;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:84>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:89>
 		int32_t L_10 = __this->___localPassengerCount;
 		__this->___localPassengerCount = ((int32_t)il2cpp_codegen_add(L_10, 1));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:85>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:90>
 		V_1 = (bool)1;
 		goto IL_005e;
 	}
 
 IL_005e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:86>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:91>
 		bool L_11 = V_1;
 		return L_11;
 	}
 }
-// Method Definition Index: 51851
+// Method Definition Index: 51855
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Leave_m0B2B8C3BD2B1E4E69A79FCD3394E3E24423EE1E2 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:90>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:95>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_passenger;
 		BoatController_ReleaseHelm_m931837C01FCADEA0A2637EE9C7D2E73F9B987AEF(__this, L_0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:91>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:96>
 		int32_t L_1 = __this->___localPassengerCount;
 		int32_t L_2;
 		L_2 = Mathf_Max_m7FA442918DE37E3A00106D1F2E789D65829792B8_inline(0, ((int32_t)il2cpp_codegen_subtract(L_1, 1)), NULL);
 		__this->___localPassengerCount = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:92>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:97>
 		return;
 	}
 }
-// Method Definition Index: 51852
+// Method Definition Index: 51856
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_TakeHelm_mE4A43380865253E6C0F4834EFD0BB7EAEDC71A11 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6811,7 +6879,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_TakeHelm_mE4A43380865253E
 	int32_t G_B8_0 = 0;
 	int32_t G_B21_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:96>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:101>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_passenger;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -6848,14 +6916,14 @@ IL_0019:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:96>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:101>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_0024:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:97>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:102>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_6;
 		L_6 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_7 = ___0_passenger;
@@ -6893,14 +6961,14 @@ IL_0041:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:97>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:102>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:98>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:103>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_13 = __this->___Shared;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_14;
@@ -6913,7 +6981,7 @@ IL_004c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:100>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:105>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_16 = __this->___Shared;
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_17 = ___0_passenger;
 		NullCheck(L_16);
@@ -6927,14 +6995,14 @@ IL_004c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:100>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:105>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_0079:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:101>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:106>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_20 = __this->___Shared;
 		NullCheck(L_20);
 		int32_t L_21;
@@ -6947,34 +7015,34 @@ IL_0079:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:101>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:106>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_23 = ___0_passenger;
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, L_23, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:101>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:106>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_009a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:107>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_24 = ___0_passenger;
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_24, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:107>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_25 = ___0_passenger;
 		NullCheck(L_25);
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_26;
 		L_26 = Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0(L_25, Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0_RuntimeMethod_var);
 		__this->___driverView = L_26;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)L_26);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:107>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_00b2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:104>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:109>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_27;
 		L_27 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -6988,7 +7056,7 @@ IL_00b2:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:111>
 		bool L_30;
 		L_30 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (!L_30)
@@ -7031,46 +7099,46 @@ IL_00ea:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:111>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_00f4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:107>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:112>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_36 = ___0_passenger;
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, L_36, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:108>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:113>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_0100:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:110>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:115>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_37 = ___0_passenger;
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_37, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:111>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:116>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_38 = ___0_passenger;
 		NullCheck(L_38);
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_39;
 		L_39 = Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0(L_38, Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0_RuntimeMethod_var);
 		__this->___driverView = L_39;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)L_39);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:112>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:117>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_0118:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:113>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
 		bool L_40 = V_1;
 		return L_40;
 	}
 }
-// Method Definition Index: 51853
+// Method Definition Index: 51857
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCADEA0A2637EE9C7D2E73F9B987AEF (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7089,7 +7157,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCA
 	Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* G_B9_0 = NULL;
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* G_B9_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:122>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0;
 		L_0 = BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_1 = ___0_passenger;
@@ -7104,13 +7172,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCA
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:122>
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
 	}
 
 IL_0019:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:123>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_4;
 		L_4 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_5 = ___0_passenger;
@@ -7125,13 +7193,13 @@ IL_0019:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:123>
 		goto IL_00a0;
 	}
 
 IL_002b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_8 = __this->___Shared;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_9;
@@ -7144,24 +7212,24 @@ IL_002b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
 		__this->___driverView = (Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)(Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
 		goto IL_00a0;
 	}
 
 IL_004d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:121>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:126>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_11;
 		L_11 = BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline(__this, NULL);
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_11, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:121>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:126>
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:122>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:127>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_12;
 		L_12 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -7196,7 +7264,7 @@ IL_007f:
 		NullCheck(G_B9_1);
 		G_B9_1->___driverView = G_B9_0;
 		Il2CppCodeGenWriteBarrier((void**)(&G_B9_1->___driverView), (void*)G_B9_0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:128>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_16;
 		L_16 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -7210,7 +7278,7 @@ IL_007f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:128>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_19;
 		L_19 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		NullCheck(L_19);
@@ -7219,11 +7287,11 @@ IL_007f:
 
 IL_00a0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:129>
 		return;
 	}
 }
-// Method Definition Index: 51854
+// Method Definition Index: 51858
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_FloatingHeight_mC8F74CCCD1CB09A529001E49658D0F5E48E71513 (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_ocean, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___3_rotation, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7246,14 +7314,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_FloatingHeight_mC8F74CCC
 	bool V_9 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_0 = ___1_ocean;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1 = ___2_position;
 		NullCheck(L_0);
 		float L_2;
 		L_2 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_0, L_1, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:132>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:137>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_3 = ___0_data;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -7288,7 +7356,7 @@ IL_0025:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:132>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:137>
 		float L_9 = V_0;
 		V_4 = L_9;
 		goto IL_00e1;
@@ -7296,7 +7364,7 @@ IL_0025:
 
 IL_0031:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:133>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:138>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_10 = ___0_data;
 		NullCheck(L_10);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_11 = (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)(&L_10->___HullSize);
@@ -7304,7 +7372,7 @@ IL_0031:
 		float L_13;
 		L_13 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_12, (0.419999987f))), NULL);
 		V_1 = L_13;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:134>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:139>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_14 = ___0_data;
 		NullCheck(L_14);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_15 = (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)(&L_14->___HullSize);
@@ -7312,21 +7380,21 @@ IL_0031:
 		float L_17;
 		L_17 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_16, (0.419999987f))), NULL);
 		V_2 = L_17;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:140>
 		V_5 = (-1);
 		goto IL_00c8;
 	}
 
 IL_006e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
 		V_6 = (-1);
 		goto IL_00b4;
 	}
 
 IL_0073:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:138>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:143>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_18 = ___3_rotation;
 		int32_t L_19 = V_5;
 		float L_20 = V_2;
@@ -7338,7 +7406,7 @@ IL_0073:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
 		L_24 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_18, L_23, NULL);
 		V_7 = L_24;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:139>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:144>
 		float L_25 = V_0;
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = ___1_ocean;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = ___2_position;
@@ -7353,14 +7421,14 @@ IL_0073:
 		float L_33;
 		L_33 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_25, ((float)il2cpp_codegen_subtract(L_30, L_32)), NULL);
 		V_0 = L_33;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
 		int32_t L_34 = V_6;
 		V_6 = ((int32_t)il2cpp_codegen_add(L_34, 1));
 	}
 
 IL_00b4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
 		int32_t L_35 = V_6;
 		V_8 = (bool)((((int32_t)((((int32_t)L_35) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_36 = V_8;
@@ -7370,14 +7438,14 @@ IL_00b4:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:140>
 		int32_t L_37 = V_5;
 		V_5 = ((int32_t)il2cpp_codegen_add(L_37, 1));
 	}
 
 IL_00c8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:140>
 		int32_t L_38 = V_5;
 		V_9 = (bool)((((int32_t)((((int32_t)L_38) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_39 = V_9;
@@ -7387,7 +7455,7 @@ IL_00c8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:146>
 		float L_40 = V_0;
 		V_4 = ((float)il2cpp_codegen_add(L_40, (0.360000014f)));
 		goto IL_00e1;
@@ -7395,12 +7463,12 @@ IL_00c8:
 
 IL_00e1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:142>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:147>
 		float L_41 = V_4;
 		return L_41;
 	}
 }
-// Method Definition Index: 51855
+// Method Definition Index: 51859
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_ApplyWaveRocking_m34CAE4FB3D09BF6C9E4512279DBC097CCC36AEB3 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_right, float* ___2_highestWaveAtHull, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7435,31 +7503,41 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_ApplyWaveRocking_m34CAE4
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_17;
 	memset((&V_17), 0, sizeof(V_17));
 	bool V_18 = false;
-	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_19;
-	memset((&V_19), 0, sizeof(V_19));
-	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_20;
-	memset((&V_20), 0, sizeof(V_20));
-	int32_t V_21 = 0;
-	int32_t V_22 = 0;
-	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_23;
-	memset((&V_23), 0, sizeof(V_23));
-	bool V_24 = false;
-	bool V_25 = false;
+	float V_19 = 0.0f;
+	float V_20 = 0.0f;
+	float V_21 = 0.0f;
+	float V_22 = 0.0f;
+	float V_23 = 0.0f;
+	float V_24 = 0.0f;
+	float V_25 = 0.0f;
 	float V_26 = 0.0f;
+	float V_27 = 0.0f;
+	bool V_28 = false;
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_29;
+	memset((&V_29), 0, sizeof(V_29));
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_30;
+	memset((&V_30), 0, sizeof(V_30));
+	int32_t V_31 = 0;
+	int32_t V_32 = 0;
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_33;
+	memset((&V_33), 0, sizeof(V_33));
+	bool V_34 = false;
+	bool V_35 = false;
+	float V_36 = 0.0f;
 	float G_B3_0 = 0.0f;
 	float G_B6_0 = 0.0f;
 	float G_B11_0 = 0.0f;
 	float G_B13_0 = 0.0f;
 	float G_B15_0 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:148>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		NullCheck(L_0);
 		String_t* L_1 = L_0->___ID;
 		bool L_2;
 		L_2 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_1, _stringLiteral2A536493D93E98DF3CA2B514703EE6BFBCEB2C68, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:149>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
 		bool L_3 = V_0;
 		if (L_3)
 		{
@@ -7485,7 +7563,7 @@ IL_0036:
 IL_003b:
 	{
 		V_1 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:150>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
 		bool L_8 = V_0;
 		if (L_8)
 		{
@@ -7511,23 +7589,23 @@ IL_005b:
 IL_0060:
 	{
 		V_2 = G_B6_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:151>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:156>
 		float L_13 = V_1;
 		float L_14;
 		L_14 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_13, (0.419999987f))), NULL);
 		V_3 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:152>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:157>
 		float L_15 = V_2;
 		float L_16;
 		L_16 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_15, (0.419999987f))), NULL);
 		V_4 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:158>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_17 = __this->___body;
 		NullCheck(L_17);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18;
 		L_18 = Rigidbody_get_position_m4ECB79BDBBF8FD1EA572EDB792D3330DDED24691(L_17, NULL);
 		V_5 = L_18;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:159>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_19 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = ___0_forward;
@@ -7540,7 +7618,7 @@ IL_0060:
 		float L_25;
 		L_25 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_19, L_24, NULL);
 		V_6 = L_25;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:160>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_28 = ___0_forward;
@@ -7553,7 +7631,7 @@ IL_0060:
 		float L_32;
 		L_32 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_26, L_31, NULL);
 		V_7 = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:156>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:161>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_33 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_34 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_35 = ___1_right;
@@ -7566,7 +7644,7 @@ IL_0060:
 		float L_39;
 		L_39 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_33, L_38, NULL);
 		V_8 = L_39;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:157>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:162>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_40 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_41 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_42 = ___1_right;
@@ -7579,17 +7657,17 @@ IL_0060:
 		float L_46;
 		L_46 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_40, L_45, NULL);
 		V_9 = L_46;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:159>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:164>
 		float L_47 = V_6;
 		float L_48 = V_7;
 		float L_49 = V_4;
 		V_10 = ((float)(((float)il2cpp_codegen_subtract(L_47, L_48))/((float)il2cpp_codegen_multiply((2.0f), L_49))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:160>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:165>
 		float L_50 = V_8;
 		float L_51 = V_9;
 		float L_52 = V_3;
 		V_11 = ((float)(((float)il2cpp_codegen_subtract(L_50, L_51))/((float)il2cpp_codegen_multiply((2.0f), L_52))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:161>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:166>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_53;
 		L_53 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_54 = ___0_forward;
@@ -7608,8 +7686,8 @@ IL_0060:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_62;
 		L_62 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_17), NULL);
 		V_12 = L_62;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:162>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:168>
 		bool L_63 = V_0;
 		if (L_63)
 		{
@@ -7670,7 +7748,7 @@ IL_0181:
 IL_0186:
 	{
 		V_13 = G_B15_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:164>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:169>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_68;
 		L_68 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69 = V_12;
@@ -7678,215 +7756,320 @@ IL_0186:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_71;
 		L_71 = Vector3_RotateTowards_m884BB56D5A071EF6008F9354D5FF1C9A1913AF92_inline(L_68, L_69, ((float)il2cpp_codegen_multiply(L_70, (0.0174532924f))), (0.0f), NULL);
 		V_12 = L_71;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:167>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:168>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_72 = __this->___body;
-		NullCheck(L_72);
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_73;
-		L_73 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_72, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_74;
-		L_74 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_75;
-		L_75 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_73, L_74, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_76 = V_12;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_77;
-		L_77 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_75, L_76, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_78;
-		L_78 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_79;
-		L_79 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_77, L_78, NULL);
-		V_14 = L_79;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:169>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_80 = __this->___body;
-		NullCheck(L_80);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_81;
-		L_81 = Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8(L_80, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_82;
-		L_82 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_83;
-		L_83 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_81, L_82, NULL);
-		V_15 = L_83;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:170>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_84 = V_14;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_85;
-		L_85 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_84, (26.0f), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_86 = V_15;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_87;
-		L_87 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_86, (8.0f), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_88;
-		L_88 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_85, L_87, NULL);
-		V_16 = L_88;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_89 = __this->___body;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_90 = V_16;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_91;
-		L_91 = Vector3_ClampMagnitude_mF83675F19744F58E97CF24D8359A810634DC031F_inline(L_90, (8.0f), NULL);
-		NullCheck(L_89);
-		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_89, L_91, 5, NULL);
+		bool L_72;
+		L_72 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
+		V_18 = L_72;
+		bool L_73 = V_18;
+		if (!L_73)
+		{
+			goto IL_02db;
+		}
+	}
+	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:175>
-		float* L_92 = ___2_highestWaveAtHull;
-		*((float*)L_92) = (float)(-std::numeric_limits<float>::infinity());
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_74 = __this->___body;
+		NullCheck(L_74);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_75;
+		L_75 = Rigidbody_get_linearVelocity_m367F5415641E5FB968440A91BAE2FCB8CAEA2C8C(L_74, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_76;
+		L_76 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_77;
+		L_77 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_75, L_76, NULL);
+		V_17 = L_77;
+		float L_78;
+		L_78 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_17), NULL);
+		V_19 = L_78;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:176>
-		bool L_93;
-		L_93 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
-		V_18 = L_93;
-		bool L_94 = V_18;
-		if (!L_94)
-		{
-			goto IL_0326;
-		}
-	}
-	{
+		float L_79 = V_19;
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_80 = __this->___Data;
+		NullCheck(L_80);
+		float L_81 = L_80->___Speed;
+		float L_82;
+		L_82 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.00999999978f), L_81, NULL);
+		float L_83;
+		L_83 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)(L_79/L_82)), NULL);
+		V_20 = L_83;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:177>
+		float L_84 = V_20;
+		V_21 = ((float)il2cpp_codegen_multiply(L_84, (6.0f)));
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:178>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_95 = __this->___body;
-		NullCheck(L_95);
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_96;
-		L_96 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_95, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_97;
-		L_97 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_98;
-		L_98 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_96, L_97, NULL);
-		float L_99 = V_4;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_100;
-		L_100 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_98, L_99, NULL);
-		V_19 = L_100;
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_85 = __this->___body;
+		NullCheck(L_85);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_86;
+		L_86 = Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8(L_85, NULL);
+		float L_87 = L_86.___y;
+		float L_88;
+		L_88 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)(((float)il2cpp_codegen_multiply(L_87, (57.2957802f)))/(32.0f))), (-1.0f), (1.0f), NULL);
+		V_22 = L_88;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:179>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_101 = __this->___body;
-		NullCheck(L_101);
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_102;
-		L_102 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_101, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_103;
-		L_103 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_104;
-		L_104 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_102, L_103, NULL);
-		float L_105 = V_3;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_106;
-		L_106 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_104, L_105, NULL);
-		V_20 = L_106;
+		float L_89 = V_22;
+		float L_90 = V_19;
+		float L_91;
+		L_91 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)(L_90/(5.0f))), NULL);
+		V_23 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((-L_89)), (15.0f))), L_91));
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:180>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_92 = V_12;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_93 = ___0_forward;
+		float L_94;
+		L_94 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_92, L_93, NULL);
+		float L_95;
+		L_95 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_94, (-1.0f), (1.0f), NULL);
+		float L_96;
+		L_96 = asinf(L_95);
+		V_24 = ((float)il2cpp_codegen_multiply(((-L_96)), (57.2957802f)));
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:181>
-		float* L_107 = ___2_highestWaveAtHull;
-		float L_108 = V_6;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_109 = V_19;
-		float L_110 = L_109.___y;
-		float L_111 = V_7;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_112 = V_19;
-		float L_113 = L_112.___y;
-		float L_114;
-		L_114 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(((float)il2cpp_codegen_subtract(L_108, L_110)), ((float)il2cpp_codegen_add(L_111, L_113)), NULL);
-		float L_115 = V_8;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_116 = V_20;
-		float L_117 = L_116.___y;
-		float L_118 = V_9;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_119 = V_20;
-		float L_120 = L_119.___y;
-		float L_121;
-		L_121 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(((float)il2cpp_codegen_subtract(L_115, L_117)), ((float)il2cpp_codegen_add(L_118, L_120)), NULL);
-		float L_122;
-		L_122 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_114, L_121, NULL);
-		*((float*)L_107) = (float)L_122;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_97 = V_12;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_98 = ___1_right;
+		float L_99;
+		L_99 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_97, L_98, NULL);
+		float L_100;
+		L_100 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_99, (-1.0f), (1.0f), NULL);
+		float L_101;
+		L_101 = asinf(L_100);
+		V_25 = ((float)il2cpp_codegen_multiply(((-L_101)), (57.2957802f)));
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:182>
-		V_21 = (-1);
-		goto IL_0317;
-	}
-
-IL_02aa:
-	{
+		float L_102 = V_24;
+		float L_103 = V_21;
+		float L_104;
+		L_104 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_add(L_102, L_103)), (-6.0f), (6.0f), NULL);
+		V_26 = L_104;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:183>
-		V_22 = (-1);
-		goto IL_0303;
-	}
-
-IL_02af:
-	{
+		float L_105 = V_25;
+		float L_106 = V_23;
+		float L_107;
+		L_107 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_add(L_105, L_106)), (-15.0f), (15.0f), NULL);
+		V_27 = L_107;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:184>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:185>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_123 = __this->___body;
-		NullCheck(L_123);
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_124;
-		L_124 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_123, NULL);
-		int32_t L_125 = V_21;
-		float L_126 = V_3;
-		int32_t L_127 = V_22;
-		float L_128 = V_4;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_129;
-		memset((&L_129), 0, sizeof(L_129));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_129), ((float)il2cpp_codegen_multiply(((float)L_125), L_126)), (0.0f), ((float)il2cpp_codegen_multiply(((float)L_127), L_128)), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
-		L_130 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_124, L_129, NULL);
-		V_23 = L_130;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:186>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:187>
-		float* L_131 = ___2_highestWaveAtHull;
-		float* L_132 = ___2_highestWaveAtHull;
-		float L_133 = *((float*)L_132);
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_134 = __this->___water;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_135 = V_5;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136 = V_23;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_137;
-		L_137 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_135, L_136, NULL);
-		NullCheck(L_134);
-		float L_138;
-		L_138 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_134, L_137, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_139 = V_23;
-		float L_140 = L_139.___y;
-		float L_141;
-		L_141 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_133, ((float)il2cpp_codegen_subtract(L_138, L_140)), NULL);
-		*((float*)L_131) = (float)L_141;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:183>
-		int32_t L_142 = V_22;
-		V_22 = ((int32_t)il2cpp_codegen_add(L_142, 2));
+		float L_108 = V_27;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_109 = ___0_forward;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_110;
+		L_110 = Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline(L_108, L_109, NULL);
+		float L_111 = V_26;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_112 = ___1_right;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_113;
+		L_113 = Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline(((-L_111)), L_112, NULL);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_114;
+		L_114 = Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline(L_110, L_113, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_115;
+		L_115 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_116;
+		L_116 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_114, L_115, NULL);
+		V_12 = L_116;
 	}
 
-IL_0303:
+IL_02db:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:183>
-		int32_t L_143 = V_22;
-		V_24 = (bool)((((int32_t)((((int32_t)L_143) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_144 = V_24;
-		if (L_144)
-		{
-			goto IL_02af;
-		}
-	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:182>
-		int32_t L_145 = V_21;
-		V_21 = ((int32_t)il2cpp_codegen_add(L_145, 2));
-	}
-
-IL_0317:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:182>
-		int32_t L_146 = V_21;
-		V_25 = (bool)((((int32_t)((((int32_t)L_146) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_147 = V_25;
-		if (L_147)
-		{
-			goto IL_02aa;
-		}
-	}
-	{
-	}
-
-IL_0326:
-	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:189>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:190>
-		float L_148 = V_6;
-		float L_149 = V_7;
-		float L_150 = V_8;
-		float L_151 = V_9;
-		V_26 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(L_148, L_149)), L_150)), L_151)), (0.25f)));
-		goto IL_033b;
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_117 = __this->___body;
+		NullCheck(L_117);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_118;
+		L_118 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_117, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_119;
+		L_119 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_120;
+		L_120 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_118, L_119, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_121 = V_12;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_122;
+		L_122 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_120, L_121, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_123;
+		L_123 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_124;
+		L_124 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_122, L_123, NULL);
+		V_14 = L_124;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:191>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_125 = __this->___body;
+		NullCheck(L_125);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_126;
+		L_126 = Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8(L_125, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_127;
+		L_127 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_128;
+		L_128 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_126, L_127, NULL);
+		V_15 = L_128;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:192>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_129 = V_14;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
+		L_130 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_129, (26.0f), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_131 = V_15;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_132;
+		L_132 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_131, (8.0f), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_133;
+		L_133 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_130, L_132, NULL);
+		V_16 = L_133;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:193>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_134 = __this->___body;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_135 = V_16;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136;
+		L_136 = Vector3_ClampMagnitude_mF83675F19744F58E97CF24D8359A810634DC031F_inline(L_135, (8.0f), NULL);
+		NullCheck(L_134);
+		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_134, L_136, 5, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:197>
+		float* L_137 = ___2_highestWaveAtHull;
+		*((float*)L_137) = (float)(-std::numeric_limits<float>::infinity());
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:198>
+		bool L_138;
+		L_138 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
+		V_28 = L_138;
+		bool L_139 = V_28;
+		if (!L_139)
+		{
+			goto IL_045e;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:200>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_140 = __this->___body;
+		NullCheck(L_140);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_141;
+		L_141 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_140, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_142;
+		L_142 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_143;
+		L_143 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_141, L_142, NULL);
+		float L_144 = V_4;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_145;
+		L_145 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_143, L_144, NULL);
+		V_29 = L_145;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:201>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_146 = __this->___body;
+		NullCheck(L_146);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_147;
+		L_147 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_146, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_148;
+		L_148 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_149;
+		L_149 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_147, L_148, NULL);
+		float L_150 = V_3;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_151;
+		L_151 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_149, L_150, NULL);
+		V_30 = L_151;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:202>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:203>
+		float* L_152 = ___2_highestWaveAtHull;
+		float L_153 = V_6;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_154 = V_29;
+		float L_155 = L_154.___y;
+		float L_156 = V_7;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_157 = V_29;
+		float L_158 = L_157.___y;
+		float L_159;
+		L_159 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(((float)il2cpp_codegen_subtract(L_153, L_155)), ((float)il2cpp_codegen_add(L_156, L_158)), NULL);
+		float L_160 = V_8;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_161 = V_30;
+		float L_162 = L_161.___y;
+		float L_163 = V_9;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_164 = V_30;
+		float L_165 = L_164.___y;
+		float L_166;
+		L_166 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(((float)il2cpp_codegen_subtract(L_160, L_162)), ((float)il2cpp_codegen_add(L_163, L_165)), NULL);
+		float L_167;
+		L_167 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_159, L_166, NULL);
+		*((float*)L_152) = (float)L_167;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:204>
+		V_31 = (-1);
+		goto IL_044f;
 	}
 
-IL_033b:
+IL_03e2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:191>
-		float L_152 = V_26;
-		return L_152;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:205>
+		V_32 = (-1);
+		goto IL_043b;
+	}
+
+IL_03e7:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:207>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_168 = __this->___body;
+		NullCheck(L_168);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_169;
+		L_169 = Rigidbody_get_rotation_m07882A7024FB3F96BA13EC577A96163BBB621AA1(L_168, NULL);
+		int32_t L_170 = V_31;
+		float L_171 = V_3;
+		int32_t L_172 = V_32;
+		float L_173 = V_4;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_174;
+		memset((&L_174), 0, sizeof(L_174));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_174), ((float)il2cpp_codegen_multiply(((float)L_170), L_171)), (0.0f), ((float)il2cpp_codegen_multiply(((float)L_172), L_173)), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_175;
+		L_175 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_169, L_174, NULL);
+		V_33 = L_175;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:209>
+		float* L_176 = ___2_highestWaveAtHull;
+		float* L_177 = ___2_highestWaveAtHull;
+		float L_178 = *((float*)L_177);
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_179 = __this->___water;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_180 = V_5;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_181 = V_33;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_182;
+		L_182 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_180, L_181, NULL);
+		NullCheck(L_179);
+		float L_183;
+		L_183 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_179, L_182, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_184 = V_33;
+		float L_185 = L_184.___y;
+		float L_186;
+		L_186 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_178, ((float)il2cpp_codegen_subtract(L_183, L_185)), NULL);
+		*((float*)L_176) = (float)L_186;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:205>
+		int32_t L_187 = V_32;
+		V_32 = ((int32_t)il2cpp_codegen_add(L_187, 2));
+	}
+
+IL_043b:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:205>
+		int32_t L_188 = V_32;
+		V_34 = (bool)((((int32_t)((((int32_t)L_188) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_189 = V_34;
+		if (L_189)
+		{
+			goto IL_03e7;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:204>
+		int32_t L_190 = V_31;
+		V_31 = ((int32_t)il2cpp_codegen_add(L_190, 2));
+	}
+
+IL_044f:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:204>
+		int32_t L_191 = V_31;
+		V_35 = (bool)((((int32_t)((((int32_t)L_191) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_192 = V_35;
+		if (L_192)
+		{
+			goto IL_03e2;
+		}
+	}
+	{
+	}
+
+IL_045e:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:212>
+		float L_193 = V_6;
+		float L_194 = V_7;
+		float L_195 = V_8;
+		float L_196 = V_9;
+		V_36 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(L_193, L_194)), L_195)), L_196)), (0.25f)));
+		goto IL_0473;
+	}
+
+IL_0473:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:213>
+		float L_197 = V_36;
+		return L_197;
 	}
 }
-// Method Definition Index: 51856
+// Method Definition Index: 51860
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasClearOpenWaterAhead_m527DF0870309F7C84422287D333AA6FB5A385C94 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7925,7 +8108,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasClearOpenWaterAhead_m5
 	int32_t G_B12_0 = 0;
 	int32_t G_B19_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:197>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:219>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		NullCheck(L_0);
 		String_t* L_1 = L_0->___ID;
@@ -7955,7 +8138,7 @@ IL_0034:
 IL_0039:
 	{
 		V_0 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:198>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:220>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_7 = __this->___Data;
 		NullCheck(L_7);
 		String_t* L_8 = L_7->___ID;
@@ -7985,14 +8168,14 @@ IL_006d:
 IL_0072:
 	{
 		V_1 = G_B6_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:221>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___0_forward;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
 		L_15 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_16;
 		L_16 = Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline(L_14, L_15, NULL);
 		V_2 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:200>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:222>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_17 = __this->___body;
 		NullCheck(L_17);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18;
@@ -8004,7 +8187,7 @@ IL_0072:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22;
 		L_22 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_18, L_21, NULL);
 		V_3 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:223>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_23 = __this->___body;
 		NullCheck(L_23);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
@@ -8017,7 +8200,7 @@ IL_0072:
 		float L_28;
 		L_28 = fabsf(((float)il2cpp_codegen_subtract(L_25, L_27)));
 		V_4 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_28, (0.5f))), (1.60000002f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:202>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:224>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_29 = __this->___body;
 		NullCheck(L_29);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30;
@@ -8028,13 +8211,13 @@ IL_0072:
 		float L_33;
 		L_33 = OceanWater_get_BaseWaterLevel_mAFE0A175DF61B9456516F846040CB90E5CC13CB6(L_32, NULL);
 		(&V_3)->___y = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_add(L_31, L_33)), (0.5f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:203>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:225>
 		float L_34 = V_0;
 		float L_35 = V_4;
 		float L_36 = V_1;
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&V_5), ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_34, (0.5f))), (0.25f))), L_35, ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_36, (0.180000007f))), (0.649999976f))), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:204>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:205>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:226>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:227>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_37 = V_3;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38 = V_5;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_39 = __this->___waveSafetyContacts;
@@ -8043,7 +8226,7 @@ IL_0072:
 		int32_t L_41;
 		L_41 = Physics_OverlapBoxNonAlloc_m1D43D10CD88EF2D5440601D3CD14CA4EB449A295(L_37, L_38, L_39, L_40, ((int32_t)-5), 1, NULL);
 		V_6 = L_41;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:229>
 		int32_t L_42 = V_6;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_43 = __this->___waveSafetyContacts;
 		NullCheck(L_43);
@@ -8055,28 +8238,28 @@ IL_0072:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:229>
 		V_8 = (bool)0;
 		goto IL_01f2;
 	}
 
 IL_0146:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:230>
 		V_9 = 0;
 		goto IL_01de;
 	}
 
 IL_014e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:210>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:232>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_45 = __this->___waveSafetyContacts;
 		int32_t L_46 = V_9;
 		NullCheck(L_45);
 		int32_t L_47 = L_46;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_48 = (L_45)->GetAt(static_cast<il2cpp_array_size_t>(L_47));
 		V_10 = L_48;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:211>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:233>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_49 = V_10;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_50;
@@ -8115,13 +8298,13 @@ IL_0179:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:211>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:233>
 		goto IL_01d8;
 	}
 
 IL_0181:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:212>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_56 = V_10;
 		V_13 = (bool)((!(((RuntimeObject*)(TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)((TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)IsInstClass((RuntimeObject*)L_56, TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05_il2cpp_TypeInfo_var))) <= ((RuntimeObject*)(RuntimeObject*)NULL)))? 1 : 0);
 		bool L_57 = V_13;
@@ -8131,19 +8314,19 @@ IL_0181:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:212>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
 		goto IL_01d8;
 	}
 
 IL_0193:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:213>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_58 = V_10;
 		NullCheck(L_58);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_59;
 		L_59 = Component_GetComponentInParent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_m7B4B0FC04186242284E446A199D79F151FC794D0(L_58, Component_GetComponentInParent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_m7B4B0FC04186242284E446A199D79F151FC794D0_RuntimeMethod_var);
 		V_11 = L_59;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:214>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:236>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_60 = V_11;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_61;
@@ -8180,13 +8363,13 @@ IL_01b6:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:214>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:236>
 		goto IL_01d8;
 	}
 
 IL_01be:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:237>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_66 = V_10;
 		NullCheck(L_66);
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_67;
@@ -8202,27 +8385,27 @@ IL_01be:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:237>
 		goto IL_01d8;
 	}
 
 IL_01d3:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:216>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:238>
 		V_8 = (bool)0;
 		goto IL_01f2;
 	}
 
 IL_01d8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:230>
 		int32_t L_70 = V_9;
 		V_9 = ((int32_t)il2cpp_codegen_add(L_70, 1));
 	}
 
 IL_01de:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:230>
 		int32_t L_71 = V_9;
 		int32_t L_72 = V_6;
 		V_16 = (bool)((((int32_t)L_71) < ((int32_t)L_72))? 1 : 0);
@@ -8233,19 +8416,19 @@ IL_01de:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:218>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:240>
 		V_8 = (bool)1;
 		goto IL_01f2;
 	}
 
 IL_01f2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:219>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:241>
 		bool L_74 = V_8;
 		return L_74;
 	}
 }
-// Method Definition Index: 51857
+// Method Definition Index: 51861
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum_mBA323B518D2331E2E0652EB413022346DA02C22C (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_plannedDirection, float ___2_propulsion, float ___3_targetSpeed, float ___4_headingError, bool ___5_shallowAhead, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -8261,7 +8444,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum
 	float G_B20_0 = 0.0f;
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* G_B20_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:225>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:247>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_0 = __this->___body;
 		NullCheck(L_0);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1;
@@ -8270,8 +8453,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum
 		float L_3;
 		L_3 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_1, L_2, NULL);
 		V_0 = L_3;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:228>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:229>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:251>
 		float L_4 = ___2_propulsion;
 		if ((!(((float)L_4) > ((float)(0.0500000007f)))))
 		{
@@ -8309,7 +8492,7 @@ IL_003e:
 IL_003f:
 	{
 		V_1 = (bool)G_B5_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:230>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:252>
 		bool L_9 = V_1;
 		if (!L_9)
 		{
@@ -8344,8 +8527,8 @@ IL_005b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:232>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:233>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:254>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:255>
 		float L_13 = __this->___lastDrivenForwardSpeed;
 		float L_14 = ___3_targetSpeed;
 		float L_15;
@@ -8353,7 +8536,7 @@ IL_005b:
 		float L_16;
 		L_16 = Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381(NULL);
 		V_3 = ((float)il2cpp_codegen_subtract(L_15, ((float)il2cpp_codegen_multiply((2.5f), L_16))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:256>
 		float L_17 = V_3;
 		if ((!(((float)L_17) > ((float)(0.699999988f)))))
 		{
@@ -8391,7 +8574,7 @@ IL_0090:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:239>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:261>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_23 = __this->___body;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_24 = L_23;
 		NullCheck(L_24);
@@ -8406,7 +8589,7 @@ IL_0090:
 		L_30 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_25, L_29, NULL);
 		NullCheck(L_24);
 		Rigidbody_set_linearVelocity_m29AE03D5FC079EAD4202FCF72E2AEBDC19363985(L_24, L_30, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:240>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:262>
 		float L_31 = V_3;
 		V_0 = L_31;
 	}
@@ -8417,10 +8600,10 @@ IL_00ba:
 
 IL_00bb:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:243>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:265>
 		bool L_32 = V_1;
 		__this->___wasPropelling = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:244>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:266>
 		bool L_33 = V_1;
 		if (L_33)
 		{
@@ -8448,11 +8631,11 @@ IL_00d8:
 	{
 		NullCheck(G_B20_1);
 		G_B20_1->___lastDrivenForwardSpeed = G_B20_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:245>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:267>
 		return;
 	}
 }
-// Method Definition Index: 51858
+// Method Definition Index: 51862
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_FixedUpdate_m22E2D4F3337C97BED1C261154A7444A835D1264B (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8524,6 +8707,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_FixedUpdate_m22E2D4F3337C
 	float V_46 = 0.0f;
 	float V_47 = 0.0f;
 	bool V_48 = false;
+	float V_49 = 0.0f;
+	float V_50 = 0.0f;
+	float V_51 = 0.0f;
+	float V_52 = 0.0f;
+	bool V_53 = false;
 	int32_t G_B6_0 = 0;
 	int32_t G_B8_0 = 0;
 	float G_B15_0 = 0.0f;
@@ -8543,7 +8731,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_FixedUpdate_m22E2D4F3337C
 	int32_t G_B57_0 = 0;
 	int32_t G_B64_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:249>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_0 = __this->___body;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -8617,13 +8805,13 @@ IL_004a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:249>
-		goto IL_06d7;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
+		goto IL_0742;
 	}
 
 IL_0055:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:252>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_11 = __this->___body;
 		NullCheck(L_11);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_12;
@@ -8637,7 +8825,7 @@ IL_0055:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16;
 		L_16 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_14, L_15, NULL);
 		V_0 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:253>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
 		float L_17;
 		L_17 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_0), NULL);
 		V_25 = (bool)((((float)L_17) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -8648,7 +8836,7 @@ IL_0055:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:253>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_19;
 		L_19 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
 		V_0 = L_19;
@@ -8656,21 +8844,21 @@ IL_0055:
 
 IL_008f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:254>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:276>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_0), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:255>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:277>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20;
 		L_20 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22;
 		L_22 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_20, L_21, NULL);
 		V_1 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:257>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:279>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_1;
 		float L_25;
 		L_25 = BoatController_ApplyWaveRocking_m34CAE4FB3D09BF6C9E4512279DBC097CCC36AEB3(__this, L_23, L_24, (&V_2), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:280>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = __this->___water;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_27 = __this->___body;
 		NullCheck(L_27);
@@ -8680,9 +8868,9 @@ IL_008f:
 		float L_29;
 		L_29 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_26, L_28, NULL);
 		V_3 = L_29;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:264>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:265>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:266>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:286>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:287>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:288>
 		bool L_30;
 		L_30 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (L_30)
@@ -8707,7 +8895,7 @@ IL_00d4:
 IL_00e6:
 	{
 		V_4 = G_B15_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:289>
 		float L_34 = V_3;
 		bool L_35;
 		L_35 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
@@ -8734,7 +8922,7 @@ IL_00f8:
 IL_0100:
 	{
 		V_5 = ((float)il2cpp_codegen_add(G_B18_1, G_B18_0));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:268>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:290>
 		bool L_37 = __this->___buoyancyStarted;
 		V_26 = (bool)((((int32_t)L_37) == ((int32_t)0))? 1 : 0);
 		bool L_38 = V_26;
@@ -8744,20 +8932,20 @@ IL_0100:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:270>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:292>
 		float L_39 = V_5;
 		__this->___filteredBuoyancyHeight = L_39;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:293>
 		__this->___buoyancyStarted = (bool)1;
 	}
 
 IL_0123:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:273>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:295>
 		float L_40 = V_5;
 		float L_41 = __this->___filteredBuoyancyHeight;
 		V_6 = ((float)il2cpp_codegen_subtract(L_40, L_41));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:296>
 		float L_42 = V_6;
 		if ((((float)L_42) >= ((float)(0.0f))))
 		{
@@ -8777,8 +8965,8 @@ IL_013e:
 IL_0143:
 	{
 		V_7 = G_B23_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:276>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:297>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:298>
 		float L_43 = __this->___filteredBuoyancyHeight;
 		float L_44 = V_6;
 		float L_45 = V_7;
@@ -8790,7 +8978,7 @@ IL_0143:
 		float L_49;
 		L_49 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_44, ((float)il2cpp_codegen_multiply(((-L_45)), L_46)), ((float)il2cpp_codegen_multiply(L_47, L_48)), NULL);
 		__this->___filteredBuoyancyHeight = ((float)il2cpp_codegen_add(L_43, L_49));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:279>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:301>
 		float L_50 = __this->___filteredBuoyancyHeight;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_51 = __this->___body;
 		NullCheck(L_51);
@@ -8798,9 +8986,9 @@ IL_0143:
 		L_52 = Rigidbody_get_position_m4ECB79BDBBF8FD1EA572EDB792D3330DDED24691(L_51, NULL);
 		float L_53 = L_52.___y;
 		V_8 = ((float)il2cpp_codegen_subtract(L_50, L_53));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:280>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:281>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:282>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:302>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:303>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:304>
 		bool L_54;
 		L_54 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (L_54)
@@ -8833,7 +9021,7 @@ IL_01ac:
 IL_01cb:
 	{
 		V_9 = G_B26_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:283>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:305>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_63 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_64;
 		L_64 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -8844,7 +9032,7 @@ IL_01cb:
 		L_67 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_64, L_66, NULL);
 		NullCheck(L_63);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_63, L_67, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:286>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:308>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_68 = __this->___body;
 		NullCheck(L_68);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69;
@@ -8854,7 +9042,7 @@ IL_01cb:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_71;
 		L_71 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_69, L_70, NULL);
 		V_10 = L_71;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:287>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:309>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_72 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_73 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_74 = V_1;
@@ -8863,7 +9051,7 @@ IL_01cb:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_76;
 		L_76 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_72, L_75, NULL);
 		V_11 = L_76;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:288>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:310>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_77 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_78 = V_11;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_79;
@@ -8872,7 +9060,7 @@ IL_01cb:
 		L_80 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_79, (9.0f), NULL);
 		NullCheck(L_77);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_77, L_80, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:290>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:312>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_81;
 		L_81 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -8905,17 +9093,17 @@ IL_0250:
 IL_0260:
 	{
 		V_12 = G_B29_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:291>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:313>
 		float L_87;
 		L_87 = Vector2_get_magnitude_m5C59B4056420AEFDB291AD0914A3F675330A75CE_inline((&V_12), NULL);
 		float L_88;
 		L_88 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(L_87, NULL);
 		V_13 = L_88;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:294>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:316>
 		bool L_89;
 		L_89 = BoatController_get_RearPaddling_mD2F61A44923201677DE5CFE7D29387155F88A771(__this, NULL);
 		V_14 = L_89;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:295>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:317>
 		bool L_90 = V_14;
 		if (L_90)
 		{
@@ -8936,24 +9124,24 @@ IL_0280:
 IL_0285:
 	{
 		V_15 = G_B32_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:296>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:318>
 		float L_92;
 		L_92 = BoatController_get_RowingSpeed_mB6F582631B0401E0E1066D73B04C56A33E307822(__this, NULL);
 		V_16 = L_92;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:297>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:319>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_93;
 		L_93 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
 		V_17 = L_93;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:298>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:320>
 		V_18 = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:300>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:322>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_94 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_95;
 		L_95 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_96;
 		L_96 = Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline(L_94, L_95, NULL);
 		V_19 = L_96;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:302>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:324>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_97;
 		L_97 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -8994,7 +9182,7 @@ IL_02cc:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:304>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:326>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_102 = __this->___driverView;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_103;
@@ -9029,7 +9217,7 @@ IL_02f3:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:304>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:326>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_107;
 		L_107 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		NullCheck(L_107);
@@ -9041,7 +9229,7 @@ IL_02f3:
 
 IL_030a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:305>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:327>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_109;
 		L_109 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -9099,7 +9287,7 @@ IL_034f:
 IL_035f:
 	{
 		V_28 = G_B47_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:307>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:329>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_121 = V_28;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_122;
 		L_122 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
@@ -9110,7 +9298,7 @@ IL_035f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_125;
 		L_125 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_123, L_124, NULL);
 		V_29 = L_125;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:308>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:330>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_126 = V_28;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_127;
 		L_127 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
@@ -9121,7 +9309,7 @@ IL_035f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
 		L_130 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_128, L_129, NULL);
 		V_30 = L_130;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:309>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:331>
 		float L_131;
 		L_131 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_29), NULL);
 		V_32 = (bool)((((float)L_131) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9132,14 +9320,14 @@ IL_035f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:309>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:331>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_133 = V_0;
 		V_29 = L_133;
 	}
 
 IL_03a8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:310>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:332>
 		float L_134;
 		L_134 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_30), NULL);
 		V_33 = (bool)((((float)L_134) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9150,18 +9338,18 @@ IL_03a8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:310>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:332>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136 = V_1;
 		V_30 = L_136;
 	}
 
 IL_03bf:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:311>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:333>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_29), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:311>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:333>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_30), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:316>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:338>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_137 = V_29;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_138 = V_12;
 		float L_139 = L_138.___y;
@@ -9175,14 +9363,14 @@ IL_03bf:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_145;
 		L_145 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_140, L_144, NULL);
 		V_17 = L_145;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:317>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:339>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_146 = V_17;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_147;
 		L_147 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_148;
 		L_148 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_146, L_147, NULL);
 		V_17 = L_148;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:318>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:340>
 		float L_149;
 		L_149 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_17), NULL);
 		V_34 = (bool)((((float)L_149) > ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9193,9 +9381,9 @@ IL_03bf:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:320>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:342>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_17), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:321>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:343>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_151 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_152 = V_17;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_153;
@@ -9203,25 +9391,25 @@ IL_03bf:
 		float L_154;
 		L_154 = Vector3_SignedAngle_m76C77F9D7BAF5969FA5B7500ED2D5FF9F9FA4153_inline(L_151, L_152, L_153, NULL);
 		V_18 = L_154;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:325>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:347>
 		float L_155 = V_18;
 		float L_156;
 		L_156 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_multiply(L_155, (1.25f))), (-32.0f), (32.0f), NULL);
 		V_35 = L_156;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:326>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:348>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_157 = __this->___body;
 		NullCheck(L_157);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_158;
 		L_158 = Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8(L_157, NULL);
 		float L_159 = L_158.___y;
 		V_36 = ((float)il2cpp_codegen_multiply(L_159, (57.2957802f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:327>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:349>
 		float L_160 = V_35;
 		float L_161 = V_36;
 		float L_162;
 		L_162 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_160, L_161)), (0.0174532924f))), (5.19999981f))), (-3.0f), (3.0f), NULL);
 		V_37 = L_162;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:328>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:350>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_163 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_164;
 		L_164 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9230,12 +9418,12 @@ IL_03bf:
 		L_166 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_164, L_165, NULL);
 		NullCheck(L_163);
 		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_163, L_166, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:330>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:352>
 		float L_167 = V_18;
 		float L_168;
 		L_168 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_167, (-18.0f), (18.0f), NULL);
 		V_38 = L_168;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:331>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:353>
 		float L_169 = V_38;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_170;
 		L_170 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9253,7 +9441,7 @@ IL_04c4:
 
 IL_04c5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:335>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:357>
 		bool L_174 = V_14;
 		if (!L_174)
 		{
@@ -9281,21 +9469,21 @@ IL_04d8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:335>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:357>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_177 = V_0;
 		V_17 = L_177;
 	}
 
 IL_04e1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:336>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:358>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_178 = V_19;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_179;
 		L_179 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_180;
 		L_180 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_178, L_179, NULL);
 		V_20 = L_180;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:337>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:359>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_181 = __this->___body;
 		NullCheck(L_181);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_182;
@@ -9312,7 +9500,7 @@ IL_04e1:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_189;
 		L_189 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_185, L_188, NULL);
 		V_21 = L_189;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:341>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:363>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_190 = __this->___Data;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_191 = V_21;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_192 = V_19;
@@ -9321,7 +9509,7 @@ IL_04e1:
 		bool L_194;
 		L_194 = BoatClearance_ApproachingShallowWater_m54CC71F6D5D2A24484451936A35041CAB053C9DE(L_190, L_191, L_192, L_193, NULL);
 		V_22 = L_194;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:342>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:364>
 		bool L_195 = V_22;
 		V_40 = L_195;
 		bool L_196 = V_40;
@@ -9331,11 +9519,11 @@ IL_04e1:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:344>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:366>
 		__this->___wasPropelling = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:345>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:367>
 		__this->___lastDrivenForwardSpeed = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:346>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:368>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_197 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_198 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_199;
@@ -9344,7 +9532,7 @@ IL_04e1:
 		L_200 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_199, (7.0f), NULL);
 		NullCheck(L_197);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_197, L_200, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:347>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:369>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_201 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_202;
 		L_202 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9357,13 +9545,13 @@ IL_04e1:
 		L_206 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_202, ((float)il2cpp_codegen_multiply(((-L_205)), (5.0f))), NULL);
 		NullCheck(L_201);
 		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_201, L_206, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:348>
-		goto IL_06d7;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:370>
+		goto IL_0742;
 	}
 
 IL_05a4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:351>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:373>
 		float L_207 = V_15;
 		if ((!(((float)L_207) > ((float)(0.0500000007f)))))
 		{
@@ -9388,45 +9576,45 @@ IL_05be:
 		bool L_209 = V_41;
 		if (!L_209)
 		{
-			goto IL_0696;
+			goto IL_0701;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:353>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:375>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_210 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_211 = V_0;
 		float L_212;
 		L_212 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_210, L_211, NULL);
 		V_42 = L_212;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:354>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:376>
 		float L_213 = V_18;
 		float L_214;
 		L_214 = fabsf(L_213);
 		float L_215;
 		L_215 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)il2cpp_codegen_subtract((1.0f), ((float)(L_214/(120.0f))))), NULL);
 		V_43 = L_215;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:355>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:377>
 		float L_216 = V_43;
 		float L_217;
 		L_217 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.219999999f), (1.0f), L_216, NULL);
 		V_44 = L_217;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:359>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:381>
 		bool L_218;
 		L_218 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		V_45 = L_218;
 		bool L_219 = V_45;
 		if (!L_219)
 		{
-			goto IL_064a;
+			goto IL_064d;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:363>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:385>
 		float L_220 = V_16;
 		float L_221 = V_15;
 		float L_222 = V_44;
 		V_46 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_220, L_221)), L_222));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:364>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:386>
 		float L_223 = V_46;
 		float L_224 = V_42;
 		float L_225 = V_42;
@@ -9435,7 +9623,7 @@ IL_05be:
 		float L_227;
 		L_227 = Rigidbody_get_linearDamping_m9A75A439BEDC39A14ADDDBEA9BF3BE08805DA7F2(L_226, NULL);
 		V_47 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_223, L_224)), (2.5f))), ((float)il2cpp_codegen_multiply(L_225, L_227))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:365>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:387>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_228 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_229 = V_0;
 		float L_230 = V_47;
@@ -9443,80 +9631,133 @@ IL_05be:
 		L_231 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_229, L_230, NULL);
 		NullCheck(L_228);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_228, L_231, 5, NULL);
-		goto IL_0695;
+		goto IL_0700;
 	}
 
-IL_064a:
+IL_064d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:367>
-		float L_232 = V_42;
-		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_233 = __this->___Data;
-		NullCheck(L_233);
-		float L_234 = L_233->___Speed;
-		V_48 = (bool)((((float)L_232) < ((float)L_234))? 1 : 0);
-		bool L_235 = V_48;
-		if (!L_235)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:389>
+		bool L_232;
+		L_232 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
+		V_48 = L_232;
+		bool L_233 = V_48;
+		if (!L_233)
 		{
-			goto IL_0695;
+			goto IL_06b5;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:368>
-		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_236 = __this->___body;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_237 = V_0;
-		float L_238 = V_13;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_239;
-		L_239 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_237, L_238, NULL);
-		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_240 = __this->___Data;
-		NullCheck(L_240);
-		float L_241 = L_240->___Speed;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_242;
-		L_242 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_239, L_241, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_243;
-		L_243 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_242, (0.800000012f), NULL);
-		float L_244 = V_44;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_245;
-		L_245 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_243, L_244, NULL);
-		NullCheck(L_236);
-		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_236, L_245, 5, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:394>
+		float L_234 = V_16;
+		float L_235 = V_15;
+		float L_236 = V_44;
+		V_49 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_234, L_235)), L_236));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:395>
+		float L_237 = V_16;
+		float L_238;
+		L_238 = Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381(NULL);
+		V_50 = ((float)il2cpp_codegen_multiply(((float)(L_237/(3.0f))), L_238));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:396>
+		float L_239 = V_42;
+		float L_240 = V_49;
+		float L_241 = V_50;
+		float L_242;
+		L_242 = Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline(L_239, L_240, L_241, NULL);
+		V_51 = L_242;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:397>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:398>
+		float L_243 = V_51;
+		float L_244 = V_42;
+		float L_245;
+		L_245 = Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381(NULL);
+		float L_246 = V_42;
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_247 = __this->___body;
+		NullCheck(L_247);
+		float L_248;
+		L_248 = Rigidbody_get_linearDamping_m9A75A439BEDC39A14ADDDBEA9BF3BE08805DA7F2(L_247, NULL);
+		V_52 = ((float)il2cpp_codegen_add(((float)(((float)il2cpp_codegen_subtract(L_243, L_244))/L_245)), ((float)il2cpp_codegen_multiply(L_246, L_248))));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:399>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_249 = __this->___body;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_250 = V_0;
+		float L_251 = V_52;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_252;
+		L_252 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_250, L_251, NULL);
+		NullCheck(L_249);
+		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_249, L_252, 5, NULL);
+		goto IL_0700;
 	}
 
-IL_0695:
+IL_06b5:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:401>
+		float L_253 = V_42;
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_254 = __this->___Data;
+		NullCheck(L_254);
+		float L_255 = L_254->___Speed;
+		V_53 = (bool)((((float)L_253) < ((float)L_255))? 1 : 0);
+		bool L_256 = V_53;
+		if (!L_256)
+		{
+			goto IL_0700;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:402>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_257 = __this->___body;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_258 = V_0;
+		float L_259 = V_13;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_260;
+		L_260 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_258, L_259, NULL);
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_261 = __this->___Data;
+		NullCheck(L_261);
+		float L_262 = L_261->___Speed;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_263;
+		L_263 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_260, L_262, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_264;
+		L_264 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_263, (0.800000012f), NULL);
+		float L_265 = V_44;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_266;
+		L_266 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_264, L_265, NULL);
+		NullCheck(L_257);
+		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_257, L_266, 5, NULL);
+	}
+
+IL_0700:
 	{
 	}
 
-IL_0696:
+IL_0701:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:374>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:375>
-		float L_246 = V_16;
-		float L_247 = V_15;
-		float L_248 = V_18;
-		float L_249;
-		L_249 = fabsf(L_248);
-		float L_250;
-		L_250 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)il2cpp_codegen_subtract((1.0f), ((float)(L_249/(120.0f))))), NULL);
-		float L_251;
-		L_251 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.219999999f), (1.0f), L_250, NULL);
-		V_23 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_246, L_247)), L_251));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:376>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:377>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_252 = V_0;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_253 = V_17;
-		float L_254 = V_15;
-		float L_255 = V_23;
-		float L_256 = V_18;
-		bool L_257 = V_22;
-		BoatController_PreserveDeepWaterMomentum_mBA323B518D2331E2E0652EB413022346DA02C22C(__this, L_252, L_253, L_254, L_255, L_256, L_257, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:408>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:409>
+		float L_267 = V_16;
+		float L_268 = V_15;
+		float L_269 = V_18;
+		float L_270;
+		L_270 = fabsf(L_269);
+		float L_271;
+		L_271 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)il2cpp_codegen_subtract((1.0f), ((float)(L_270/(120.0f))))), NULL);
+		float L_272;
+		L_272 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.219999999f), (1.0f), L_271, NULL);
+		V_23 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_267, L_268)), L_272));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:410>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:411>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_273 = V_0;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_274 = V_17;
+		float L_275 = V_15;
+		float L_276 = V_23;
+		float L_277 = V_18;
+		bool L_278 = V_22;
+		BoatController_PreserveDeepWaterMomentum_mBA323B518D2331E2E0652EB413022346DA02C22C(__this, L_273, L_274, L_275, L_276, L_277, L_278, NULL);
 	}
 
-IL_06d7:
+IL_0742:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:378>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:412>
 		return;
 	}
 }
-// Method Definition Index: 51859
+// Method Definition Index: 51863
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController__ctor_mBA78C64F2F311CF0258C520D2EF2C8DF0851079F (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9526,7 +9767,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController__ctor_mBA78C64F2F311CF025
 		s_Il2CppMethodInitialized = true;
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:49>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:54>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_0 = (ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)SZArrayNew(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787_il2cpp_TypeInfo_var, (uint32_t)((int32_t)48));
 		__this->___waveSafetyContacts = L_0;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___waveSafetyContacts), (void*)L_0);
@@ -9542,7 +9783,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController__ctor_mBA78C64F2F311CF025
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51860
+// Method Definition Index: 51864
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatData__ctor_mB4997346CA27D6DA76B0FFC03CAD0069B3F1BADA (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* __this, const RuntimeMethod* method) 
 {
 	{
@@ -9569,7 +9810,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatData__ctor_mB4997346CA27D6DA76B0FFC0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51861
+// Method Definition Index: 51865
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* BoatPassenger_get_Controls_m5272D23BCBF9E61BB212279CAB9E39194A748252 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -9578,7 +9819,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D
 		return L_0;
 	}
 }
-// Method Definition Index: 51862
+// Method Definition Index: 51866
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2B266CDF99F926044006099F8313F (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -9589,7 +9830,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2
 		return;
 	}
 }
-// Method Definition Index: 51863
+// Method Definition Index: 51867
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_get_Boat_m33A6D6679104FA5AF25CA92BFBBA498D52FEB1E1 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -9598,7 +9839,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1
 		return L_0;
 	}
 }
-// Method Definition Index: 51864
+// Method Definition Index: 51868
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35DF52D3E18354D2502EB596E8E (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -9609,7 +9850,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35D
 		return;
 	}
 }
-// Method Definition Index: 51865
+// Method Definition Index: 51869
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Driving_m6CE76AA5E39700A1A6EDFDEB3281F6C9ADA35B85 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9680,7 +9921,7 @@ IL_0038:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51866
+// Method Definition Index: 51870
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m0286772F95D8BDD3223A3A49FBC1EA5155DA5919 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -9689,7 +9930,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m028677
 		return L_0;
 	}
 }
-// Method Definition Index: 51867
+// Method Definition Index: 51871
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F036FD57815E9E5AE80BF32664A9A04A4DF (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -9699,7 +9940,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F
 		return;
 	}
 }
-// Method Definition Index: 51868
+// Method Definition Index: 51872
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Awake_m9E51F388E68358171DEBED0A5A348C8204C851DA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9723,7 +9964,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Awake_m9E51F388E68358171DE
 		return;
 	}
 }
-// Method Definition Index: 51869
+// Method Definition Index: 51873
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Update_mAB2EAB2B80F7F27F672C4AEDFC888A2DA1F32A20 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10097,7 +10338,7 @@ IL_01d1:
 		return;
 	}
 }
-// Method Definition Index: 51870
+// Method Definition Index: 51874
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_FindBoatBelow_m58669FAB35220E418C396932A2EDB9454396C5CA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, float ___0_distance, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10308,7 +10549,7 @@ IL_00eb:
 		return L_36;
 	}
 }
-// Method Definition Index: 51871
+// Method Definition Index: 51875
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_IsAboveBoatFootprint_m44284A129460D2D23081A679EB7FE70BB484EDCA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_boat, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10529,7 +10770,7 @@ IL_0118:
 		return L_47;
 	}
 }
-// Method Definition Index: 51872
+// Method Definition Index: 51876
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_BoardFromWater_mFC5FE1EA10156A89768F94A0EFC61C9364348317 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_boat, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10672,7 +10913,7 @@ IL_00c1:
 		return L_27;
 	}
 }
-// Method Definition Index: 51873
+// Method Definition Index: 51877
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_ToggleHelm_m407D4F40D9C8DE2A0586E43F489E8B662296CF5C (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10810,7 +11051,7 @@ IL_008d:
 		return;
 	}
 }
-// Method Definition Index: 51874
+// Method Definition Index: 51878
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_SetPlatformPosition_m04364356BBF5A7B8BCC1CBDCE8A5B3B3AEE0E132 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_position, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10897,7 +11138,7 @@ IL_004f:
 		return;
 	}
 }
-// Method Definition Index: 51875
+// Method Definition Index: 51879
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_SnapToRowingSeat_mDCBD686C63CDA69851B28EC9D890AA1209B79031 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10990,7 +11231,7 @@ IL_006e:
 		return;
 	}
 }
-// Method Definition Index: 51876
+// Method Definition Index: 51880
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Detach_m8373041F9CCB9DC16ECC004CFEA6CFEB22BE9C98 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11032,7 +11273,7 @@ IL_001e:
 		return;
 	}
 }
-// Method Definition Index: 51877
+// Method Definition Index: 51881
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_OnDisable_m09F86315DFCD7D7BA77CD10A8C506F38A0DC8999 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -11042,7 +11283,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_OnDisable_m09F86315DFCD7D7
 		return;
 	}
 }
-// Method Definition Index: 51878
+// Method Definition Index: 51882
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger__ctor_m92ECD3C32BA5237E8C08407535765C03023DF498 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -11059,7 +11300,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger__ctor_m92ECD3C32BA5237E8C0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51879
+// Method Definition Index: 51883
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_get_ActiveBoat_m6691C9D74B0170F6FBB8204FD74770D8E93DDC46 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -11068,7 +11309,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1
 		return L_0;
 	}
 }
-// Method Definition Index: 51880
+// Method Definition Index: 51884
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940F30907732B544F6D58B0F5F3F53 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -11079,7 +11320,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940
 		return;
 	}
 }
-// Method Definition Index: 51881
+// Method Definition Index: 51885
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E017284269C23CF98149FABD1A8C04A (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -11088,7 +11329,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E
 		return L_0;
 	}
 }
-// Method Definition Index: 51882
+// Method Definition Index: 51886
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD437023DA15CF8D90FC3C125A1678A09 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -11098,7 +11339,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD4
 		return;
 	}
 }
-// Method Definition Index: 51883
+// Method Definition Index: 51887
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* BoatSystem_get_Selected_m0334387D8ADE514E37545EB99C43830C639C925D (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11138,7 +11379,7 @@ IL_0022:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 51884
+// Method Definition Index: 51888
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_OnIsland_m12C121B6C69F1F6449C6BCD57ACA88E2AB751AD5 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11203,7 +11444,7 @@ IL_002c:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51885
+// Method Definition Index: 51889
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_NearMarina_m86CADD2D5F371D98B7AC162BC991BB6B4BE591F1 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11258,7 +11499,7 @@ IL_003b:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 51886
+// Method Definition Index: 51890
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Awake_m2C80706B0C19519773151A3468DCCDDF7FDE9F33 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11295,7 +11536,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Awake_m2C80706B0C19519773151A
 		return;
 	}
 }
-// Method Definition Index: 51887
+// Method Definition Index: 51891
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Start_m5919D5F9E8233A37F33072B56B28AA9006969CAD (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -11307,7 +11548,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Start_m5919D5F9E8233A37F33072
 		return;
 	}
 }
-// Method Definition Index: 51888
+// Method Definition Index: 51892
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_MergeBoatCatalog_mEF0E4EA943AEB6CB2DC45DB8EAE2D9B6C44BDBDC (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11717,7 +11958,7 @@ IL_019e:
 		return;
 	}
 }
-// Method Definition Index: 51889
+// Method Definition Index: 51893
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BindSlot_mC2472C296F83E3313115C6D24671EF602BCE1836 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_slot, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11841,7 +12082,7 @@ IL_001d:
 		return;
 	}
 }
-// Method Definition Index: 51890
+// Method Definition Index: 51894
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_TogglePlacement_m8995B38C15557940799FEE91742F33AA0BBD3634 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12227,7 +12468,7 @@ IL_0237:
 		return;
 	}
 }
-// Method Definition Index: 51891
+// Method Definition Index: 51895
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_CancelPlacement_m0E07440793A23FBE51D9E44C5C7046D772A3BE35 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12337,7 +12578,7 @@ IL_0089:
 		return;
 	}
 }
-// Method Definition Index: 51892
+// Method Definition Index: 51896
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Update_mF6738627F6E440C4ADF3347FF42C25A00A2AD3D1 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13645,7 +13886,7 @@ IL_05e4:
 		return;
 	}
 }
-// Method Definition Index: 51893
+// Method Definition Index: 51897
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Place_mA29FED5A5E807303847AE4C1B89C58FDF88E8792 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14003,7 +14244,7 @@ IL_01c4:
 		return;
 	}
 }
-// Method Definition Index: 51894
+// Method Definition Index: 51898
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BeforeTeleport_m95D6145645ECF6C1F70DEA77B15AF148892DE35A (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14064,7 +14305,7 @@ IL_005f:
 		return;
 	}
 }
-// Method Definition Index: 51895
+// Method Definition Index: 51899
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_NearestBoat_mF2E61E341076CFD59A041B4EADA3EB3F19A81D92 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14252,7 +14493,7 @@ IL_00b3:
 		return L_34;
 	}
 }
-// Method Definition Index: 51896
+// Method Definition Index: 51900
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Interact_mBAE756FE2F7D20D0190C5687026D657EAB7587F8 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14400,7 +14641,7 @@ IL_00ad:
 		return;
 	}
 }
-// Method Definition Index: 51897
+// Method Definition Index: 51901
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_CloseShop_mC765A1CED21A46DADC407E37D61F324471397D38 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14466,7 +14707,7 @@ IL_0041:
 		return;
 	}
 }
-// Method Definition Index: 51898
+// Method Definition Index: 51902
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_RefreshShop_m35BE22F7FB68D13EB27FE1A700222A36C32A8671 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14982,7 +15223,7 @@ IL_027a:
 		return;
 	}
 }
-// Method Definition Index: 51899
+// Method Definition Index: 51903
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Notice_m5FA5A0E49D3C86BF321F21D0478F81213EE9FFB3 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, String_t* ___0_text, float ___1_seconds, bool ___2_placementOnly, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15062,7 +15303,7 @@ IL_0048:
 		return;
 	}
 }
-// Method Definition Index: 51900
+// Method Definition Index: 51904
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_ClearNotice_mE9CBA8B2C3800E7506B2DFB5F26435003FF25FCB (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15103,7 +15344,7 @@ IL_0022:
 		return;
 	}
 }
-// Method Definition Index: 51901
+// Method Definition Index: 51905
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BuildUI_m85054E7637EA800FCF0EBBF38D87874FCC4F21C9 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15327,7 +15568,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BuildUI_m85054E7637EA800FCF0E
 		return;
 	}
 }
-// Method Definition Index: 51902
+// Method Definition Index: 51906
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* BoatSystem_Label_m0AD2B3303CBB566FDB2F4DA80AD3FC1CABB6B02F (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, String_t* ___1_text, int32_t ___2_size, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___3_position, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___4_dimensions, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15441,7 +15682,7 @@ IL_00ac:
 		return L_30;
 	}
 }
-// Method Definition Index: 51903
+// Method Definition Index: 51907
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* BoatSystem_MakeButton_mA1E685645522BA55CDAA530DCE74B80EB741709A (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, String_t* ___1_text, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___2_position, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___3_dimensions, UnityAction_t11A1F3B953B365C072A5DCC32677EE1796A962A7* ___4_action, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15567,7 +15808,7 @@ IL_00c1:
 		return L_38;
 	}
 }
-// Method Definition Index: 51904
+// Method Definition Index: 51908
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_OnDestroy_mE45683DC5094AFA61A37ABD78F1D06FB083B7600 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15610,7 +15851,7 @@ IL_0029:
 		return;
 	}
 }
-// Method Definition Index: 51905
+// Method Definition Index: 51909
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem__ctor_m16038DD2B6911A6C917016CE5F89F0BE1A858611 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -15619,7 +15860,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem__ctor_m16038DD2B6911A6C917016
 		return;
 	}
 }
-// Method Definition Index: 51906
+// Method Definition Index: 51910
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_U3Cget_SelectedU3Eb__32_0_m11660E141B02F8790ED96416F8E1840F2904223F (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15674,7 +15915,7 @@ IL_0027:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51907
+// Method Definition Index: 51911
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_0__ctor_m0ED27A5DB3D5E7F9ABF749FD1B336859BE89757E (U3CU3Ec__DisplayClass39_0_t9D55F035DF3033D1F1E22BAC2A59D44DA9D43C57* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -15683,7 +15924,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_0__ctor_m0ED27A5
 		return;
 	}
 }
-// Method Definition Index: 51908
+// Method Definition Index: 51912
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_0_U3CMergeBoatCatalogU3Eb__0_mCC183C464A2C19A7641EDF8B3DD5327F0A2C7CA0 (U3CU3Ec__DisplayClass39_0_t9D55F035DF3033D1F1E22BAC2A59D44DA9D43C57* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15733,7 +15974,7 @@ IL_001d:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51909
+// Method Definition Index: 51913
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_1__ctor_m98216B475E45940FE55383273223A91B34C844BB (U3CU3Ec__DisplayClass39_1_t8A5063602A68D721C1AA6A3944E95964C0790BE9* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -15742,7 +15983,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_1__ctor_m98216B4
 		return;
 	}
 }
-// Method Definition Index: 51910
+// Method Definition Index: 51914
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_1_U3CMergeBoatCatalogU3Eb__1_mA355DEC1FEAE593DE2813B3BB74F6CED26ECD635 (U3CU3Ec__DisplayClass39_1_t8A5063602A68D721C1AA6A3944E95964C0790BE9* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	{
@@ -15766,7 +16007,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_1_U3CMergeBoatCa
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51911
+// Method Definition Index: 51915
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0__ctor_mC9591C86A69541797C7FF021CB855D08E070090D (U3CU3Ec__DisplayClass49_0_t6EB029EA2F0FF5BFF6252319CF2EEEB97936492F* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -15775,7 +16016,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0__ctor_mC9591C8
 		return;
 	}
 }
-// Method Definition Index: 51912
+// Method Definition Index: 51916
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0_U3CRefreshShopU3Eb__0_m84ECBE8D14E9085D35529CF9F1245890B966C50A (U3CU3Ec__DisplayClass49_0_t6EB029EA2F0FF5BFF6252319CF2EEEB97936492F* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15928,7 +16169,7 @@ IL_00bb:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51913
+// Method Definition Index: 51917
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Install_mA2EBAB8F5344A03916D969D80FA761EFFC3D14B4 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16016,7 +16257,7 @@ IL_0037:
 		return;
 	}
 }
-// Method Definition Index: 51914
+// Method Definition Index: 51918
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Start_m5178939F1BD3A67748A1F3982A6EEECA1ED6D8F1 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16037,7 +16278,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Start_m517893
 		return;
 	}
 }
-// Method Definition Index: 51915
+// Method Definition Index: 51919
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_BuildExtension_mE43064B1EB2703975A2297572CB65BE1F5FECCBC (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16972,7 +17213,7 @@ IL_04d1:
 		return;
 	}
 }
-// Method Definition Index: 51916
+// Method Definition Index: 51920
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___1_prefab, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_local, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17066,7 +17307,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3
 		return;
 	}
 }
-// Method Definition Index: 51917
+// Method Definition Index: 51921
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_point, const RuntimeMethod* method) 
 {
 	TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* V_0 = NULL;
@@ -17218,7 +17459,7 @@ IL_00b1:
 		return L_38;
 	}
 }
-// Method Definition Index: 51918
+// Method Definition Index: 51922
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_FindClearSite_mA18D394F649C7ADA0AC2184EC8FDCB6511A68B01 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_marina, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___1_dock, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18355,7 +18596,7 @@ IL_055f:
 		return L_251;
 	}
 }
-// Method Definition Index: 51919
+// Method Definition Index: 51923
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_FitRamp_mE3BEBF38EB0E97595F13B0F9365BD8559AC86212 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18466,7 +18707,7 @@ IL_00b7:
 		return;
 	}
 }
-// Method Definition Index: 51920
+// Method Definition Index: 51924
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterClear_m96431F95B19AD8B96F48A052C0CA91EE6463FCCB (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_point, float ___1_radius, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18841,7 +19082,7 @@ IL_016e:
 		return L_57;
 	}
 }
-// Method Definition Index: 51921
+// Method Definition Index: 51925
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterSegmentClear_m3072096FBD2B0B320691F4C97DB76DE4909A3579 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_to, float ___2_radius, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18981,7 +19222,7 @@ IL_0084:
 		return L_25;
 	}
 }
-// Method Definition Index: 51922
+// Method Definition Index: 51926
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_OnDestroy_m7FC88E1B5FB9683BDE60715F4B34420FDF4255EE (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19097,7 +19338,7 @@ IL_0059:
 		return;
 	}
 }
-// Method Definition Index: 51923
+// Method Definition Index: 51927
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_FindSafeDockEnd_m4E78D49BE4D2EED2AC90D648A66649497D925652 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_marina, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19359,7 +19600,7 @@ IL_012f:
 		return L_50;
 	}
 }
-// Method Definition Index: 51924
+// Method Definition Index: 51928
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_HasCatalogDepth_mC93FB1968D304F52086D670D34AAD2EC1E85FBCE (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_center, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___2_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19753,7 +19994,7 @@ IL_020a:
 		return L_87;
 	}
 }
-// Method Definition Index: 51925
+// Method Definition Index: 51929
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__ctor_m6A19521E78B2F6100316F3A69FA626852F702D80 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19773,7 +20014,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__ctor_m6A1952
 		return;
 	}
 }
-// Method Definition Index: 51926
+// Method Definition Index: 51930
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__cctor_m5528AF843D0719F9DFE070A10DA1EC88C08A2EB6 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19799,7 +20040,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__cctor_m5528A
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51927
+// Method Definition Index: 51931
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Install_m6C0A10155D5B242C95FBA9181B6B0FEC0CB70545 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19869,7 +20110,7 @@ IL_002f:
 		return;
 	}
 }
-// Method Definition Index: 51928
+// Method Definition Index: 51932
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnEnable_m2475D63C2AD78D7E22D2721FA872718C6DBA80CB (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19888,7 +20129,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnEnable_m2475D63
 		return;
 	}
 }
-// Method Definition Index: 51929
+// Method Definition Index: 51933
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDisable_m62E61014060246AC3C44CF5EC2A6AA14F85C3320 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19907,7 +20148,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDisable_m62E610
 		return;
 	}
 }
-// Method Definition Index: 51930
+// Method Definition Index: 51934
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDestroy_m4B2571E4F0019E8ABF97F4CCF2A7145C1C428E8D (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19946,7 +20187,7 @@ IL_0026:
 		return;
 	}
 }
-// Method Definition Index: 51931
+// Method Definition Index: 51935
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Awake_m422253F5CBB4416D73096C2D6FCB5D61AA36111B (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	{
@@ -19956,7 +20197,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Awake_m422253F5CB
 		return;
 	}
 }
-// Method Definition Index: 51932
+// Method Definition Index: 51936
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Repair_m4FB2F64E866989D3567DD2450FAB015DCDCEA617 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20364,7 +20605,7 @@ IL_0277:
 		return;
 	}
 }
-// Method Definition Index: 51933
+// Method Definition Index: 51937
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnFontTextureRebuilt_mAAFA7F7600FC49BE3EB4FE9574598C3E90804F0F (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, Font_tC95270EA3198038970422D78B74A7F2E218A96B6* ___0_rebuilt, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20446,7 +20687,7 @@ IL_0044:
 		return;
 	}
 }
-// Method Definition Index: 51934
+// Method Definition Index: 51938
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* MarinaSignPresentation_FitNextFrame_mA00C81005F4EA679BF6A7C0CFF3FD52BEDDE19A9 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20466,7 +20707,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* MarinaSignPresentation_FitNext
 		return L_1;
 	}
 }
-// Method Definition Index: 51935
+// Method Definition Index: 51939
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_FitToSign_mED15EFB0DD4D8966DEDF647517689F5A24AF165D (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20672,7 +20913,7 @@ IL_015e:
 		return;
 	}
 }
-// Method Definition Index: 51936
+// Method Definition Index: 51940
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_SetWorldScale_m632F17CCFA5BC4A08944DE529BF5F940F3093DAF (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, float ___0_uniformWorldScale, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20771,7 +21012,7 @@ IL_0086:
 		return;
 	}
 }
-// Method Definition Index: 51937
+// Method Definition Index: 51941
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_LateUpdate_mF2CB7B9E37A139FE775F73AA6773E523723741E3 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20848,7 +21089,7 @@ IL_0047:
 		return;
 	}
 }
-// Method Definition Index: 51938
+// Method Definition Index: 51942
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* MarinaSignPresentation_FindDeepChild_m4DC0BBA2A1A23CB173A2F057C46AA4E4FF125A0F (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, String_t* ___1_name, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20957,7 +21198,7 @@ IL_0042:
 		return L_17;
 	}
 }
-// Method Definition Index: 51939
+// Method Definition Index: 51943
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation__ctor_m1A33DE9EC0E3BD148F1B154667F74BBE139749EC (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -20974,7 +21215,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation__ctor_m1A33DE9EC0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51940
+// Method Definition Index: 51944
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13__ctor_m0B63895E8804DA989D6FD716A2644D228D9C7F20 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, int32_t ___0_U3CU3E1__state, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -20985,7 +21226,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13__ctor_m0B63895E8
 		return;
 	}
 }
-// Method Definition Index: 51941
+// Method Definition Index: 51945
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_IDisposable_Dispose_m97C6634C10236DD5EAB16231D5219C0606AD1D92 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -20993,7 +21234,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_IDisposab
 		return;
 	}
 }
-// Method Definition Index: 51942
+// Method Definition Index: 51946
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CFitNextFrameU3Ed__13_MoveNext_m266B95866C07DF328BE0515F4373D1A253766B7B (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -21058,7 +21299,7 @@ IL_0030:
 		return (bool)0;
 	}
 }
-// Method Definition Index: 51943
+// Method Definition Index: 51947
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA62CD934BEA6F63FE99292372E91C21874875593 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -21067,7 +21308,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System
 		return L_0;
 	}
 }
-// Method Definition Index: 51944
+// Method Definition Index: 51948
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_Reset_mEAAC73F2278ED121956EABD5D4601AB875CE4DC8 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -21077,7 +21318,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_Collectio
 		IL2CPP_RAISE_MANAGED_EXCEPTION(L_0, ((RuntimeMethod*)il2cpp_codegen_initialize_runtime_metadata_inline((uintptr_t*)&U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_Reset_mEAAC73F2278ED121956EABD5D4601AB875CE4DC8_RuntimeMethod_var)));
 	}
 }
-// Method Definition Index: 51945
+// Method Definition Index: 51949
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_get_Current_mAA54FAB6CC74D3618F8C6C03A68C2A064C28DBE8 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -21094,7 +21335,438 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51946
+// Method Definition Index: 51950
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_Awake_m16C133F43A75ECE927771B9E3FFD92C8B7154B41 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_mE9CC662025541A2724AA403E16F166F939AAF0AE_RuntimeMethod_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponent_TisRigidbody_t268697F5A994213ED97393309870968BC1C7393C_m4B5CAD64B52D153BEA96432633CA9A45FA523DD8_RuntimeMethod_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:20>
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_0;
+		L_0 = Component_GetComponent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_mE9CC662025541A2724AA403E16F166F939AAF0AE(__this, Component_GetComponent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_mE9CC662025541A2724AA403E16F166F939AAF0AE_RuntimeMethod_var);
+		__this->___boat = L_0;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->___boat), (void*)L_0);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:21>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_1;
+		L_1 = Component_GetComponent_TisRigidbody_t268697F5A994213ED97393309870968BC1C7393C_m4B5CAD64B52D153BEA96432633CA9A45FA523DD8(__this, Component_GetComponent_TisRigidbody_t268697F5A994213ED97393309870968BC1C7393C_m4B5CAD64B52D153BEA96432633CA9A45FA523DD8_RuntimeMethod_var);
+		__this->___body = L_1;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->___body), (void*)L_1);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:22>
+		return;
+	}
+}
+// Method Definition Index: 51951
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_OnEnable_m9CB38825234569BC0CF3F2C6BBCD28FA9D8D1F70 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	bool V_0 = false;
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:26>
+		__this->___measured = (bool)0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:27>
+		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_0 = __this->___MotorAnimator;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_1;
+		L_1 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_0, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		V_0 = L_1;
+		bool L_2 = V_0;
+		if (!L_2)
+		{
+			goto IL_0029;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:27>
+		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_3 = __this->___MotorAnimator;
+		NullCheck(L_3);
+		Animator_set_speed_m933F4D6770122BC9D8A7FF82DE1CD33D514379FC(L_3, (0.0f), NULL);
+	}
+
+IL_0029:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:28>
+		return;
+	}
+}
+// Method Definition Index: 51952
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_LateUpdate_m62B39EB69EE490A542141ED6797A08E6977967BE (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral3AE9C4DE4254E7C5522CE8975058967E15BF8FDB);
+		s_Il2CppMethodInitialized = true;
+	}
+	float V_0 = 0.0f;
+	bool V_1 = false;
+	bool V_2 = false;
+	bool V_3 = false;
+	bool V_4 = false;
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_5;
+	memset((&V_5), 0, sizeof(V_5));
+	bool V_6 = false;
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_7;
+	memset((&V_7), 0, sizeof(V_7));
+	bool V_8 = false;
+	bool V_9 = false;
+	int32_t G_B4_0 = 0;
+	int32_t G_B9_0 = 0;
+	int32_t G_B14_0 = 0;
+	int32_t G_B19_0 = 0;
+	int32_t G_B22_0 = 0;
+	Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* G_B25_0 = NULL;
+	Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* G_B24_0 = NULL;
+	float G_B26_0 = 0.0f;
+	Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* G_B26_1 = NULL;
+	int32_t G_B30_0 = 0;
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:32>
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_0 = __this->___boat;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_1;
+		L_1 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_0, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (L_1)
+		{
+			goto IL_003e;
+		}
+	}
+	{
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_2 = __this->___boat;
+		NullCheck(L_2);
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_3 = L_2->___Data;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_4;
+		L_4 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_3, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (L_4)
+		{
+			goto IL_003e;
+		}
+	}
+	{
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_5 = __this->___boat;
+		NullCheck(L_5);
+		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_6 = L_5->___Data;
+		NullCheck(L_6);
+		String_t* L_7 = L_6->___ID;
+		bool L_8;
+		L_8 = String_op_Inequality_m8C940F3CFC42866709D7CA931B3D77B4BE94BCB6(L_7, _stringLiteral3AE9C4DE4254E7C5522CE8975058967E15BF8FDB, NULL);
+		G_B4_0 = ((int32_t)(L_8));
+		goto IL_003f;
+	}
+
+IL_003e:
+	{
+		G_B4_0 = 1;
+	}
+
+IL_003f:
+	{
+		V_3 = (bool)G_B4_0;
+		bool L_9 = V_3;
+		if (!L_9)
+		{
+			goto IL_0048;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:33>
+		goto IL_0196;
+	}
+
+IL_0048:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:35>
+		V_0 = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:36>
+		bool L_10 = __this->___measured;
+		if (!L_10)
+		{
+			goto IL_0064;
+		}
+	}
+	{
+		float L_11;
+		L_11 = Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865(NULL);
+		G_B9_0 = ((((float)L_11) > ((float)(9.99999975E-05f)))? 1 : 0);
+		goto IL_0065;
+	}
+
+IL_0064:
+	{
+		G_B9_0 = 0;
+	}
+
+IL_0065:
+	{
+		V_4 = (bool)G_B9_0;
+		bool L_12 = V_4;
+		if (!L_12)
+		{
+			goto IL_009f;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:38>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_13;
+		L_13 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
+		NullCheck(L_13);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14;
+		L_14 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_13, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15 = __this->___lastPosition;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16;
+		L_16 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_14, L_15, NULL);
+		V_5 = L_16;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:39>
+		(&V_5)->___y = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:40>
+		float L_17;
+		L_17 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_5), NULL);
+		float L_18;
+		L_18 = Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865(NULL);
+		V_0 = ((float)(L_17/L_18));
+	}
+
+IL_009f:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:42>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_19 = __this->___body;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_20;
+		L_20 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_19, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (!L_20)
+		{
+			goto IL_00bd;
+		}
+	}
+	{
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_21 = __this->___body;
+		NullCheck(L_21);
+		bool L_22;
+		L_22 = Rigidbody_get_isKinematic_mC20906CA5A89983DE06EAC6E3AFC5BC012F90CA1(L_21, NULL);
+		G_B14_0 = ((((int32_t)L_22) == ((int32_t)0))? 1 : 0);
+		goto IL_00be;
+	}
+
+IL_00bd:
+	{
+		G_B14_0 = 0;
+	}
+
+IL_00be:
+	{
+		V_6 = (bool)G_B14_0;
+		bool L_23 = V_6;
+		if (!L_23)
+		{
+			goto IL_00e7;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:44>
+		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_24 = __this->___body;
+		NullCheck(L_24);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25;
+		L_25 = Rigidbody_get_linearVelocity_m367F5415641E5FB968440A91BAE2FCB8CAEA2C8C(L_24, NULL);
+		V_7 = L_25;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:45>
+		(&V_7)->___y = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:46>
+		float L_26;
+		L_26 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_7), NULL);
+		V_0 = L_26;
+	}
+
+IL_00e7:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:50>
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_27 = __this->___boat;
+		NullCheck(L_27);
+		bool L_28;
+		L_28 = Behaviour_get_enabled_mAAC9F15E9EBF552217A5AE2681589CC0BFA300C1(L_27, NULL);
+		if (!L_28)
+		{
+			goto IL_00ff;
+		}
+	}
+	{
+		float L_29 = V_0;
+		float L_30 = __this->___MovingThreshold;
+		G_B19_0 = ((((float)L_29) > ((float)L_30))? 1 : 0);
+		goto IL_0100;
+	}
+
+IL_00ff:
+	{
+		G_B19_0 = 0;
+	}
+
+IL_0100:
+	{
+		V_1 = (bool)G_B19_0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:51>
+		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_31 = __this->___MotorAnimator;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_32;
+		L_32 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_31, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (!L_32)
+		{
+			goto IL_0122;
+		}
+	}
+	{
+		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_33 = __this->___MotorAnimator;
+		NullCheck(L_33);
+		RuntimeAnimatorController_t6F7C753402B42EC23C163099CF935C5E0D7A7254* L_34;
+		L_34 = Animator_get_runtimeAnimatorController_mE10F46F893A630D1AE846EF66DC2769E3ECE5AB8(L_33, NULL);
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_35;
+		L_35 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_34, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		G_B22_0 = ((int32_t)(L_35));
+		goto IL_0123;
+	}
+
+IL_0122:
+	{
+		G_B22_0 = 0;
+	}
+
+IL_0123:
+	{
+		V_2 = (bool)G_B22_0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:52>
+		bool L_36 = V_2;
+		V_8 = L_36;
+		bool L_37 = V_8;
+		if (!L_37)
+		{
+			goto IL_0148;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:52>
+		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_38 = __this->___MotorAnimator;
+		bool L_39 = V_1;
+		if (L_39)
+		{
+			G_B25_0 = L_38;
+			goto IL_013b;
+		}
+		G_B24_0 = L_38;
+	}
+	{
+		G_B26_0 = (0.0f);
+		G_B26_1 = G_B24_0;
+		goto IL_0140;
+	}
+
+IL_013b:
+	{
+		G_B26_0 = (1.0f);
+		G_B26_1 = G_B25_0;
+	}
+
+IL_0140:
+	{
+		NullCheck(G_B26_1);
+		Animator_set_speed_m933F4D6770122BC9D8A7FF82DE1CD33D514379FC(G_B26_1, G_B26_0, NULL);
+		goto IL_017e;
+	}
+
+IL_0148:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:53>
+		bool L_40 = V_1;
+		if (!L_40)
+		{
+			goto IL_0159;
+		}
+	}
+	{
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_41 = __this->___FallbackPropeller;
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_42;
+		L_42 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_41, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		G_B30_0 = ((int32_t)(L_42));
+		goto IL_015a;
+	}
+
+IL_0159:
+	{
+		G_B30_0 = 0;
+	}
+
+IL_015a:
+	{
+		V_9 = (bool)G_B30_0;
+		bool L_43 = V_9;
+		if (!L_43)
+		{
+			goto IL_017e;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:54>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_44 = __this->___FallbackPropeller;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_45;
+		L_45 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
+		float L_46 = __this->___FallbackSpinDegreesPerSecond;
+		float L_47;
+		L_47 = Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865(NULL);
+		NullCheck(L_44);
+		Transform_Rotate_m683E67853797040312868B69E963D0E97F433EEB(L_44, L_45, ((float)il2cpp_codegen_multiply(L_46, L_47)), 1, NULL);
+	}
+
+IL_017e:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:55>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_48;
+		L_48 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
+		NullCheck(L_48);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_49;
+		L_49 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_48, NULL);
+		__this->___lastPosition = L_49;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:56>
+		__this->___measured = (bool)1;
+	}
+
+IL_0196:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:57>
+		return;
+	}
+}
+// Method Definition Index: 51953
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation__ctor_m932E5DC0F4F6A87B46906D0F8E1207231BF74742 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
+{
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:10>
+		__this->___MovingThreshold = (0.180000007f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MotorboatEngineAnimation.cs:11>
+		__this->___FallbackSpinDegreesPerSecond = (1440.0f);
+		MonoBehaviour__ctor_m592DB0105CA0BC97AA1C5F4AD27B12D68A3B7C1E(__this, NULL);
+		return;
+	}
+}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-offsetof"
+#pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+// Method Definition Index: 51954
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_Awake_m5CED7ED8319412C5E0450BBF0EBFB7468D844FEE (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21179,7 +21851,7 @@ IL_0055:
 		return;
 	}
 }
-// Method Definition Index: 51947
+// Method Definition Index: 51955
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_BuildGraph_mFD78D5025FED942D804489B73E3019991CB01583 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21290,7 +21962,7 @@ IL_00e7:
 		return;
 	}
 }
-// Method Definition Index: 51948
+// Method Definition Index: 51956
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_BuildPortableFallback_m18294B1C7DB56BC36F74C00FDF44E74518410C4C (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21419,7 +22091,7 @@ IL_00c2:
 		return;
 	}
 }
-// Method Definition Index: 51949
+// Method Definition Index: 51957
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_CalibratePaddle_mF60AB9EB27832AC6AB4D1B70D745C03761143926 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_pivot, float* ___1_side, float* ___2_strokeCenter, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21690,7 +22362,7 @@ IL_0138:
 		return;
 	}
 }
-// Method Definition Index: 51950
+// Method Definition Index: 51958
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_Update_mE78DB6DEE957F9628F40417BB06B8367243975D5 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21865,7 +22537,7 @@ IL_00b1:
 		return;
 	}
 }
-// Method Definition Index: 51951
+// Method Definition Index: 51959
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_UpdateAuthoredClip_m61AE266476291972E0F8B542F6784297D49A4BF9 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, bool ___0_shouldRow, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21997,7 +22669,7 @@ IL_00c0:
 		return;
 	}
 }
-// Method Definition Index: 51952
+// Method Definition Index: 51960
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_UpdatePortablePaddles_m5ED169D2BBC3A0ADF64862CFA62812FB553534CC (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, bool ___0_shouldRow, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -22078,7 +22750,7 @@ IL_00dc:
 		return;
 	}
 }
-// Method Definition Index: 51953
+// Method Definition Index: 51961
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_ApplyPortablePose_m9409DDE87FDA0D976124BA523CF20E4D4494DF56 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_pivot, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rest, float ___2_side, float ___3_center, float ___4_stroke, float ___5_dip, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -22150,7 +22822,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_ApplyPortablePose_m94
 		return;
 	}
 }
-// Method Definition Index: 51954
+// Method Definition Index: 51962
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_OnDisable_m8297CF812BEDA65349BBB6C1FE12A69BD8D8995F (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22184,7 +22856,7 @@ IL_0020:
 		return;
 	}
 }
-// Method Definition Index: 51955
+// Method Definition Index: 51963
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator_OnDestroy_mF62A90536A97D7180FF9B18CC6A0CC31124A37F4 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -22214,7 +22886,7 @@ IL_001c:
 		return;
 	}
 }
-// Method Definition Index: 51956
+// Method Definition Index: 51964
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator__ctor_m6D13B10F6008792E0D76D902AC1D3BE6F5F34A81 (RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22240,7 +22912,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RaftPaddleAnimator__ctor_m6D13B10F600879
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51957
+// Method Definition Index: 51965
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatPaddleAnimator_Awake_m121BA7910D7C4A1724110E4E7384820DBD029A6C (RowboatPaddleAnimator_tDE571126E481D87224D29EE48F894D851CD5C9A5* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22387,7 +23059,7 @@ IL_009b:
 		return;
 	}
 }
-// Method Definition Index: 51958
+// Method Definition Index: 51966
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatPaddleAnimator_Update_m433CF6C7B7801DF9921C057CFEBFD26F15CDC0BA (RowboatPaddleAnimator_tDE571126E481D87224D29EE48F894D851CD5C9A5* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22581,7 +23253,7 @@ IL_0109:
 		return;
 	}
 }
-// Method Definition Index: 51959
+// Method Definition Index: 51967
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatPaddleAnimator_Apply_m080340101CA03B7A5D4F570449D11A07882DD421 (RowboatStrokeData_t02A42FA19A2237AB14486B8FE1EEA14E18B862ED* ___0_data, TransformU5BU5D_tBB9C5F5686CAE82E3D97D43DF0F3D68ABF75EC24* ___1_parts, float ___2_time, int32_t ___3_first, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22875,7 +23547,7 @@ IL_0125:
 		return;
 	}
 }
-// Method Definition Index: 51960
+// Method Definition Index: 51968
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatPaddleAnimator__ctor_m6B1C4351AB3C1181BE3ECE83486BF7DCAA865F8B (RowboatPaddleAnimator_tDE571126E481D87224D29EE48F894D851CD5C9A5* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22893,7 +23565,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatPaddleAnimator__ctor_m6B1C4351AB3
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51961
+// Method Definition Index: 51969
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatStrokeData__ctor_mE1E349B06E0393330E8205D1B38F59CB189985CB (RowboatStrokeData_t02A42FA19A2237AB14486B8FE1EEA14E18B862ED* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22913,7 +23585,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void RowboatStrokeData__ctor_mE1E349B06E03933
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51962
+// Method Definition Index: 51970
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Track__ctor_m4FFE31DA139451FDD3E7FAA8A4B1E90A225F972C (Track_tAE85F093D916BF26725FE21532E5EA80C224071C* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22930,7 +23602,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Track__ctor_m4FFE31DA139451FDD3E7FAA8A4B
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51963
+// Method Definition Index: 51971
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishTankSaveRecord__ctor_m2969E9D60D4978108488D4D15B9250AD589E16CD (FishTankSaveRecord_t5898C14A106DCA77441EFF9D4AF61B2B605BD789* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22959,7 +23631,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishTankSaveRecord__ctor_m2969E9D60D4978
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51964
+// Method Definition Index: 51972
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSaveData__ctor_m55D9E2E63788984EC778D4D09CCC83A49F600754 (AquariumSaveData_t3CCE9C4713F7377A167F9DE8EDE52C30479D9B5E* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22988,7 +23660,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSaveData__ctor_m55D9E2E63788984E
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51965
+// Method Definition Index: 51973
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_add_Changed_m6B520602E5F65CD56100CF3F06DEA964023E3431 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07* ___0_value, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23032,7 +23704,7 @@ IL_0007:
 		return;
 	}
 }
-// Method Definition Index: 51966
+// Method Definition Index: 51974
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_remove_Changed_m879EDED9B838B71768022615D42769CE5915774D (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07* ___0_value, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23076,7 +23748,7 @@ IL_0007:
 		return;
 	}
 }
-// Method Definition Index: 51967
+// Method Definition Index: 51975
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t AquariumSystem_get_UnplacedTankCount_m428793C97ECA72C519A1532549819381A746449D (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -23108,7 +23780,7 @@ IL_0016:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 51968
+// Method Definition Index: 51976
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_get_IsPlacing_m0B65EB638CA8354EE857C591C5184004843CC986 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23117,7 +23789,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_get_IsPlacing_m0B65EB638C
 		return L_0;
 	}
 }
-// Method Definition Index: 51969
+// Method Definition Index: 51977
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Awake_mB412D8F9353EB899F32E904ABF3EF45557F65ABA (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23132,7 +23804,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Awake_mB412D8F9353EB899F3
 		return;
 	}
 }
-// Method Definition Index: 51970
+// Method Definition Index: 51978
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Start_m5BBA4B6A70293A1D200CB16533FBD9CCABFCA09F (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23144,7 +23816,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Start_m5BBA4B6A70293A1D20
 		return;
 	}
 }
-// Method Definition Index: 51971
+// Method Definition Index: 51979
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Update_m48D35F639353A7D8D64E45AA1D641786DFAEF73B (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -23169,7 +23841,7 @@ IL_0014:
 		return;
 	}
 }
-// Method Definition Index: 51972
+// Method Definition Index: 51980
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Configure_m3A166FBCC69F482A981649018516FD869653C978 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_playerTransform, Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* ___1_camera, FishingInventory_t3C92A57027FBD7299361FA290855A8BAB3D35E44* ___2_fishingInventory, EconomySystem_tCAED14F9F71DF211E8DC47C8F99B4875CE179CF1* ___3_economySystem, const RuntimeMethod* method) 
 {
 	{
@@ -23193,7 +23865,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Configure_m3A166FBCC69F48
 		return;
 	}
 }
-// Method Definition Index: 51973
+// Method Definition Index: 51981
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_BuyTank_m53F22BC3C51EA57CEB4E6BB049B9CAC153475D4E (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23267,7 +23939,7 @@ IL_004e:
 		return L_9;
 	}
 }
-// Method Definition Index: 51974
+// Method Definition Index: 51982
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_BeginPlacement_m0A6BDAF93E76F8DDB862CE8F43AD4CB42255B30B (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23393,7 +24065,7 @@ IL_007c:
 		return L_12;
 	}
 }
-// Method Definition Index: 51975
+// Method Definition Index: 51983
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_CancelPlacement_m9B20A4AB39E5DAF76F362813DFE122D24E10C521 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23455,7 +24127,7 @@ IL_0037:
 		return;
 	}
 }
-// Method Definition Index: 51976
+// Method Definition Index: 51984
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_ConfirmPlacement_m3A005CC1DDC6044BEA235B3C6B73B927D83B80AD (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23644,7 +24316,7 @@ IL_0101:
 		return L_34;
 	}
 }
-// Method Definition Index: 51977
+// Method Definition Index: 51985
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR PlacedFishTank_t01F077337DBAE541AA9A18445370E635FB034990* AquariumSystem_GetNearestTank_mE9541C0DEB07216BF61501B81FAF7304ABB7FB11 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, float ___0_maxDistance, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23827,7 +24499,7 @@ IL_00b0:
 		return L_25;
 	}
 }
-// Method Definition Index: 51978
+// Method Definition Index: 51986
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FishTankSaveRecord_t5898C14A106DCA77441EFF9D4AF61B2B605BD789* AquariumSystem_GetTankRecord_mB4773F0378A078CE362601451C5850FDA164EDD1 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, String_t* ___0_tankId, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23960,7 +24632,7 @@ IL_007f:
 		return L_22;
 	}
 }
-// Method Definition Index: 51979
+// Method Definition Index: 51987
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_AddFishToTank_m2FC7B6B08564B8EDAC88A52FF7C0F5F9E1E354FD (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, String_t* ___0_tankId, int32_t ___1_inventoryIndex, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24087,7 +24759,7 @@ IL_0072:
 		return L_18;
 	}
 }
-// Method Definition Index: 51980
+// Method Definition Index: 51988
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool AquariumSystem_RemoveFishFromTank_m9A07C9ADA4F2F1A7CE6202F2B0C01BA90F0E63CB (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, String_t* ___0_tankId, int32_t ___1_tankFishIndex, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24215,7 +24887,7 @@ IL_0075:
 		return L_22;
 	}
 }
-// Method Definition Index: 51981
+// Method Definition Index: 51989
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_ResolveReferences_m8D55F058EECC3FE76A6835A04A653EA218004A16 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24405,7 +25077,7 @@ IL_00b9:
 		return;
 	}
 }
-// Method Definition Index: 51982
+// Method Definition Index: 51990
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_SpawnSavedTanks_mB5F77A147D19A6516EACBEE7D581BF2010BC02AF (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24522,7 +25194,7 @@ IL_0061:
 		return;
 	}
 }
-// Method Definition Index: 51983
+// Method Definition Index: 51991
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_SpawnTank_m23638E2CD0D2990672ED3DFF47C8EF4D3B6155CA (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, FishTankSaveRecord_t5898C14A106DCA77441EFF9D4AF61B2B605BD789* ___0_record, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24616,7 +25288,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_SpawnTank_m23638E2CD0D299
 		return;
 	}
 }
-// Method Definition Index: 51984
+// Method Definition Index: 51992
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_RefreshTank_m6DCF3E8F83AC3D21C4777731638781815BCFEF97 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, String_t* ___0_tankId, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24742,7 +25414,7 @@ IL_005a:
 		return;
 	}
 }
-// Method Definition Index: 51985
+// Method Definition Index: 51993
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_UpdatePlacementPreview_m37EE521E6CEEEE32990A9D53A747D41BC48558AE (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24908,7 +25580,7 @@ IL_00f3:
 		return;
 	}
 }
-// Method Definition Index: 51986
+// Method Definition Index: 51994
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float AquariumSystem_FindGroundHeight_m73A50885DA2810231737DB1431F2BD237426AA1D (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_candidate, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25018,7 +25690,7 @@ IL_0081:
 		return L_22;
 	}
 }
-// Method Definition Index: 51987
+// Method Definition Index: 51995
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* AquariumSystem_CreateTankShell_m65D9FE636CA9AB2A8C21C1AA777CF10D655FDC43 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, String_t* ___0_objectName, bool ___1_preview, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25394,7 +26066,7 @@ IL_025b:
 		return L_61;
 	}
 }
-// Method Definition Index: 51988
+// Method Definition Index: 51996
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_CreateFrame_m5B63F23243355A2ECA1C665727C61B3A90B82EB1 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_localPosition, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25428,7 +26100,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_CreateFrame_m5B63F2324335
 		return;
 	}
 }
-// Method Definition Index: 51989
+// Method Definition Index: 51997
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* AquariumSystem_CreateCube_m64F0C82CD17AE219D3F4CA7C56EAB3AADF76C044 (String_t* ___0_name, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___1_parent, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_localPosition, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___3_localScale, Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* ___4_material, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25557,7 +26229,7 @@ IL_0073:
 		return L_26;
 	}
 }
-// Method Definition Index: 51990
+// Method Definition Index: 51998
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_EnsureMaterials_m6C331D53CC9D28969BBCCDDB35FA886F11F9E14E (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25755,7 +26427,7 @@ IL_0123:
 		return;
 	}
 }
-// Method Definition Index: 51991
+// Method Definition Index: 51999
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Load_mD94A251AACCA3588140ADD6CEAA98EC766FFAF59 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26019,7 +26691,7 @@ IL_00f8:
 		return;
 	}
 }
-// Method Definition Index: 51992
+// Method Definition Index: 52000
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem_Save_m9650631C7D3D8B0098478288726A8EF702335175 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26074,7 +26746,7 @@ IL_0031:
 		return;
 	}
 }
-// Method Definition Index: 51993
+// Method Definition Index: 52001
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void AquariumSystem__ctor_m31FBB6CBC5972DAD45AE69CF3590C7800FE9E735 (AquariumSystem_t84E4C486072FD67D5BABFF79E9226CDC164667C1* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26254,7 +26926,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 51863
+// Method Definition Index: 51867
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_get_Boat_m33A6D6679104FA5AF25CA92BFBBA498D52FEB1E1_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26263,11 +26935,11 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC258
 		return L_0;
 	}
 }
-// Method Definition Index: 51846
+// Method Definition Index: 51850
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:27>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:29>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = __this->___U3CDriverU3Ek__BackingField;
 		return L_0;
 	}
@@ -26284,7 +26956,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector2_get_sqrMagnitude_mA
 		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3))));
 	}
 }
-// Method Definition Index: 51835
+// Method Definition Index: 51838
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26347,7 +27019,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 51861
+// Method Definition Index: 51865
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* BoatPassenger_get_Controls_m5272D23BCBF9E61BB212279CAB9E39194A748252_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26409,7 +27081,7 @@ IL_0040:
 		return L_19;
 	}
 }
-// Method Definition Index: 51836
+// Method Definition Index: 51839
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26420,11 +27092,11 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_SecondRow
 		return;
 	}
 }
-// Method Definition Index: 51847
+// Method Definition Index: 51851
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:27>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:29>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_value;
 		__this->___U3CDriverU3Ek__BackingField = L_0;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___U3CDriverU3Ek__BackingField), (void*)L_0);
@@ -26451,45 +27123,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2;
 		L_2 = Vector3_Internal_RotateTowards_mAEFE707F84BEAC3FD2B3A11A639F7E0E6A9F664D((&___0_current), (&___1_target), L_0, L_1, NULL);
 		return L_2;
-	}
-}
-// Method Definition Index: 45580
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
-{
-	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
-	memset((&V_0), 0, sizeof(V_0));
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:357>
-		il2cpp_codegen_initobj((&V_0), sizeof(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2));
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = ___0_lhs;
-		float L_1 = L_0.___y;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___1_rhs;
-		float L_3 = L_2.___z;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4 = ___0_lhs;
-		float L_5 = L_4.___z;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = ___1_rhs;
-		float L_7 = L_6.___y;
-		(&V_0)->___x = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7))));
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = ___0_lhs;
-		float L_9 = L_8.___z;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = ___1_rhs;
-		float L_11 = L_10.___x;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12 = ___0_lhs;
-		float L_13 = L_12.___x;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___1_rhs;
-		float L_15 = L_14.___z;
-		(&V_0)->___y = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_9, L_11)), ((float)il2cpp_codegen_multiply(L_13, L_15))));
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = ___0_lhs;
-		float L_17 = L_16.___x;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = ___1_rhs;
-		float L_19 = L_18.___y;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = ___0_lhs;
-		float L_21 = L_20.___y;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22 = ___1_rhs;
-		float L_23 = L_22.___x;
-		(&V_0)->___z = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_17, L_19)), ((float)il2cpp_codegen_multiply(L_21, L_23))));
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_0;
-		return L_24;
 	}
 }
 // Method Definition Index: 45592
@@ -26569,6 +27202,290 @@ IL_006f:
 		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:518>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_2;
 		return L_23;
+	}
+}
+// Method Definition Index: 45598
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
+{
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Math_tEB65DE7CA8B083C412C969C92981C030865486CE_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:672>
+		float L_0 = __this->___x;
+		float L_1 = __this->___x;
+		float L_2 = __this->___y;
+		float L_3 = __this->___y;
+		float L_4 = __this->___z;
+		float L_5 = __this->___z;
+		il2cpp_codegen_runtime_class_init_inline(Math_tEB65DE7CA8B083C412C969C92981C030865486CE_il2cpp_TypeInfo_var);
+		double L_6;
+		L_6 = sqrt(((double)((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3)))), ((float)il2cpp_codegen_multiply(L_4, L_5))))));
+		return ((float)L_6);
+	}
+}
+// Method Definition Index: 45712
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline (float ___0_value, const RuntimeMethod* method) 
+{
+	bool V_0 = false;
+	float V_1 = 0.0f;
+	bool V_2 = false;
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:318>
+		float L_0 = ___0_value;
+		V_0 = (bool)((((float)L_0) < ((float)(0.0f)))? 1 : 0);
+		bool L_1 = V_0;
+		if (!L_1)
+		{
+			goto IL_0015;
+		}
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:319>
+		V_1 = (0.0f);
+		goto IL_002d;
+	}
+
+IL_0015:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:320>
+		float L_2 = ___0_value;
+		V_2 = (bool)((((float)L_2) > ((float)(1.0f)))? 1 : 0);
+		bool L_3 = V_2;
+		if (!L_3)
+		{
+			goto IL_0029;
+		}
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:321>
+		V_1 = (1.0f);
+		goto IL_002d;
+	}
+
+IL_0029:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:323>
+		float L_4 = ___0_value;
+		V_1 = L_4;
+		goto IL_002d;
+	}
+
+IL_002d:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:324>
+		float L_5 = V_1;
+		return L_5;
+	}
+}
+// Method Definition Index: 45710
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline (float ___0_value, float ___1_min, float ___2_max, const RuntimeMethod* method) 
+{
+	bool V_0 = false;
+	bool V_1 = false;
+	float V_2 = 0.0f;
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:289>
+		float L_0 = ___0_value;
+		float L_1 = ___1_min;
+		V_0 = (bool)((((float)L_0) < ((float)L_1))? 1 : 0);
+		bool L_2 = V_0;
+		if (!L_2)
+		{
+			goto IL_000e;
+		}
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:290>
+		float L_3 = ___1_min;
+		___0_value = L_3;
+		goto IL_0019;
+	}
+
+IL_000e:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:291>
+		float L_4 = ___0_value;
+		float L_5 = ___2_max;
+		V_1 = (bool)((((float)L_4) > ((float)L_5))? 1 : 0);
+		bool L_6 = V_1;
+		if (!L_6)
+		{
+			goto IL_0019;
+		}
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:292>
+		float L_7 = ___2_max;
+		___0_value = L_7;
+	}
+
+IL_0019:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:293>
+		float L_8 = ___0_value;
+		V_2 = L_8;
+		goto IL_001d;
+	}
+
+IL_001d:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:294>
+		float L_9 = V_2;
+		return L_9;
+	}
+}
+// Method Definition Index: 45590
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
+{
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:460>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = ___0_lhs;
+		float L_1 = L_0.___x;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___1_rhs;
+		float L_3 = L_2.___x;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4 = ___0_lhs;
+		float L_5 = L_4.___y;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = ___1_rhs;
+		float L_7 = L_6.___y;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = ___0_lhs;
+		float L_9 = L_8.___z;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = ___1_rhs;
+		float L_11 = L_10.___z;
+		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11))));
+	}
+}
+// Method Definition Index: 45639
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_axis, const RuntimeMethod* method) 
+{
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Math.bindings.cs:174>
+		float L_0 = ___0_angle;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_1;
+		L_1 = Quaternion_Internal_AngleAxis_m1A896524F98EF69748915ED902CC9DCEF16245D4(L_0, (&___1_axis), NULL);
+		return L_1;
+	}
+}
+// Method Definition Index: 45645
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_lhs, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rhs, const RuntimeMethod* method) 
+{
+	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 V_0;
+	memset((&V_0), 0, sizeof(V_0));
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Quaternion.cs:80>
+		il2cpp_codegen_initobj((&V_0), sizeof(Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974));
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_0 = ___0_lhs;
+		float L_1 = L_0.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_2 = ___1_rhs;
+		float L_3 = L_2.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_4 = ___0_lhs;
+		float L_5 = L_4.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_6 = ___1_rhs;
+		float L_7 = L_6.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_8 = ___0_lhs;
+		float L_9 = L_8.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_10 = ___1_rhs;
+		float L_11 = L_10.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_12 = ___0_lhs;
+		float L_13 = L_12.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_14 = ___1_rhs;
+		float L_15 = L_14.___y;
+		(&V_0)->___x = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11)))), ((float)il2cpp_codegen_multiply(L_13, L_15))));
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_16 = ___0_lhs;
+		float L_17 = L_16.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_18 = ___1_rhs;
+		float L_19 = L_18.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_20 = ___0_lhs;
+		float L_21 = L_20.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_22 = ___1_rhs;
+		float L_23 = L_22.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_24 = ___0_lhs;
+		float L_25 = L_24.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_26 = ___1_rhs;
+		float L_27 = L_26.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_28 = ___0_lhs;
+		float L_29 = L_28.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_30 = ___1_rhs;
+		float L_31 = L_30.___z;
+		(&V_0)->___y = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_17, L_19)), ((float)il2cpp_codegen_multiply(L_21, L_23)))), ((float)il2cpp_codegen_multiply(L_25, L_27)))), ((float)il2cpp_codegen_multiply(L_29, L_31))));
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_32 = ___0_lhs;
+		float L_33 = L_32.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_34 = ___1_rhs;
+		float L_35 = L_34.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_36 = ___0_lhs;
+		float L_37 = L_36.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_38 = ___1_rhs;
+		float L_39 = L_38.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_40 = ___0_lhs;
+		float L_41 = L_40.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_42 = ___1_rhs;
+		float L_43 = L_42.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_44 = ___0_lhs;
+		float L_45 = L_44.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_46 = ___1_rhs;
+		float L_47 = L_46.___x;
+		(&V_0)->___z = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_33, L_35)), ((float)il2cpp_codegen_multiply(L_37, L_39)))), ((float)il2cpp_codegen_multiply(L_41, L_43)))), ((float)il2cpp_codegen_multiply(L_45, L_47))));
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_48 = ___0_lhs;
+		float L_49 = L_48.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_50 = ___1_rhs;
+		float L_51 = L_50.___w;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_52 = ___0_lhs;
+		float L_53 = L_52.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_54 = ___1_rhs;
+		float L_55 = L_54.___x;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_56 = ___0_lhs;
+		float L_57 = L_56.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_58 = ___1_rhs;
+		float L_59 = L_58.___y;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_60 = ___0_lhs;
+		float L_61 = L_60.___z;
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_62 = ___1_rhs;
+		float L_63 = L_62.___z;
+		(&V_0)->___w = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_49, L_51)), ((float)il2cpp_codegen_multiply(L_53, L_55)))), ((float)il2cpp_codegen_multiply(L_57, L_59)))), ((float)il2cpp_codegen_multiply(L_61, L_63))));
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_64 = V_0;
+		return L_64;
+	}
+}
+// Method Definition Index: 45580
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
+{
+	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
+	memset((&V_0), 0, sizeof(V_0));
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:357>
+		il2cpp_codegen_initobj((&V_0), sizeof(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2));
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = ___0_lhs;
+		float L_1 = L_0.___y;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___1_rhs;
+		float L_3 = L_2.___z;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4 = ___0_lhs;
+		float L_5 = L_4.___z;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = ___1_rhs;
+		float L_7 = L_6.___y;
+		(&V_0)->___x = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7))));
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = ___0_lhs;
+		float L_9 = L_8.___z;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = ___1_rhs;
+		float L_11 = L_10.___x;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12 = ___0_lhs;
+		float L_13 = L_12.___x;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___1_rhs;
+		float L_15 = L_14.___z;
+		(&V_0)->___y = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_9, L_11)), ((float)il2cpp_codegen_multiply(L_13, L_15))));
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = ___0_lhs;
+		float L_17 = L_16.___x;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = ___1_rhs;
+		float L_19 = L_18.___y;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = ___0_lhs;
+		float L_21 = L_20.___y;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22 = ___1_rhs;
+		float L_23 = L_22.___x;
+		(&V_0)->___z = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_17, L_19)), ((float)il2cpp_codegen_multiply(L_21, L_23))));
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_0;
+		return L_24;
 	}
 }
 // Method Definition Index: 45597
@@ -26701,26 +27618,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_0;
 	}
 }
-// Method Definition Index: 45590
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
-{
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:460>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = ___0_lhs;
-		float L_1 = L_0.___x;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___1_rhs;
-		float L_3 = L_2.___x;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4 = ___0_lhs;
-		float L_5 = L_4.___y;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = ___1_rhs;
-		float L_7 = L_6.___y;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = ___0_lhs;
-		float L_9 = L_8.___z;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = ___1_rhs;
-		float L_11 = L_10.___z;
-		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11))));
-	}
-}
 // Method Definition Index: 45600
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
 {
@@ -26825,63 +27722,6 @@ IL_0065:
 		return;
 	}
 }
-// Method Definition Index: 45710
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline (float ___0_value, float ___1_min, float ___2_max, const RuntimeMethod* method) 
-{
-	bool V_0 = false;
-	bool V_1 = false;
-	float V_2 = 0.0f;
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:289>
-		float L_0 = ___0_value;
-		float L_1 = ___1_min;
-		V_0 = (bool)((((float)L_0) < ((float)L_1))? 1 : 0);
-		bool L_2 = V_0;
-		if (!L_2)
-		{
-			goto IL_000e;
-		}
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:290>
-		float L_3 = ___1_min;
-		___0_value = L_3;
-		goto IL_0019;
-	}
-
-IL_000e:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:291>
-		float L_4 = ___0_value;
-		float L_5 = ___2_max;
-		V_1 = (bool)((((float)L_4) > ((float)L_5))? 1 : 0);
-		bool L_6 = V_1;
-		if (!L_6)
-		{
-			goto IL_0019;
-		}
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:292>
-		float L_7 = ___2_max;
-		___0_value = L_7;
-	}
-
-IL_0019:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:293>
-		float L_8 = ___0_value;
-		V_2 = L_8;
-		goto IL_001d;
-	}
-
-IL_001d:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:294>
-		float L_9 = V_2;
-		return L_9;
-	}
-}
 // Method Definition Index: 45615
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_UnaryNegation_m5450829F333BD2A88AF9A592C4EE331661225915_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, const RuntimeMethod* method) 
 {
@@ -26922,60 +27762,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector2_get_magnitude_m5C59
 		double L_4;
 		L_4 = sqrt(((double)((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3))))));
 		return ((float)L_4);
-	}
-}
-// Method Definition Index: 45712
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline (float ___0_value, const RuntimeMethod* method) 
-{
-	bool V_0 = false;
-	float V_1 = 0.0f;
-	bool V_2 = false;
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:318>
-		float L_0 = ___0_value;
-		V_0 = (bool)((((float)L_0) < ((float)(0.0f)))? 1 : 0);
-		bool L_1 = V_0;
-		if (!L_1)
-		{
-			goto IL_0015;
-		}
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:319>
-		V_1 = (0.0f);
-		goto IL_002d;
-	}
-
-IL_0015:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:320>
-		float L_2 = ___0_value;
-		V_2 = (bool)((((float)L_2) > ((float)(1.0f)))? 1 : 0);
-		bool L_3 = V_2;
-		if (!L_3)
-		{
-			goto IL_0029;
-		}
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:321>
-		V_1 = (1.0f);
-		goto IL_002d;
-	}
-
-IL_0029:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:323>
-		float L_4 = ___0_value;
-		V_1 = L_4;
-		goto IL_002d;
-	}
-
-IL_002d:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:324>
-		float L_5 = V_1;
-		return L_5;
 	}
 }
 // Method Definition Index: 45605
@@ -27083,97 +27869,6 @@ IL_0088:
 		return L_37;
 	}
 }
-// Method Definition Index: 45639
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_axis, const RuntimeMethod* method) 
-{
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Math.bindings.cs:174>
-		float L_0 = ___0_angle;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_1;
-		L_1 = Quaternion_Internal_AngleAxis_m1A896524F98EF69748915ED902CC9DCEF16245D4(L_0, (&___1_axis), NULL);
-		return L_1;
-	}
-}
-// Method Definition Index: 45645
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_lhs, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rhs, const RuntimeMethod* method) 
-{
-	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 V_0;
-	memset((&V_0), 0, sizeof(V_0));
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Quaternion.cs:80>
-		il2cpp_codegen_initobj((&V_0), sizeof(Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974));
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_0 = ___0_lhs;
-		float L_1 = L_0.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_2 = ___1_rhs;
-		float L_3 = L_2.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_4 = ___0_lhs;
-		float L_5 = L_4.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_6 = ___1_rhs;
-		float L_7 = L_6.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_8 = ___0_lhs;
-		float L_9 = L_8.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_10 = ___1_rhs;
-		float L_11 = L_10.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_12 = ___0_lhs;
-		float L_13 = L_12.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_14 = ___1_rhs;
-		float L_15 = L_14.___y;
-		(&V_0)->___x = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11)))), ((float)il2cpp_codegen_multiply(L_13, L_15))));
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_16 = ___0_lhs;
-		float L_17 = L_16.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_18 = ___1_rhs;
-		float L_19 = L_18.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_20 = ___0_lhs;
-		float L_21 = L_20.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_22 = ___1_rhs;
-		float L_23 = L_22.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_24 = ___0_lhs;
-		float L_25 = L_24.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_26 = ___1_rhs;
-		float L_27 = L_26.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_28 = ___0_lhs;
-		float L_29 = L_28.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_30 = ___1_rhs;
-		float L_31 = L_30.___z;
-		(&V_0)->___y = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_17, L_19)), ((float)il2cpp_codegen_multiply(L_21, L_23)))), ((float)il2cpp_codegen_multiply(L_25, L_27)))), ((float)il2cpp_codegen_multiply(L_29, L_31))));
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_32 = ___0_lhs;
-		float L_33 = L_32.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_34 = ___1_rhs;
-		float L_35 = L_34.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_36 = ___0_lhs;
-		float L_37 = L_36.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_38 = ___1_rhs;
-		float L_39 = L_38.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_40 = ___0_lhs;
-		float L_41 = L_40.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_42 = ___1_rhs;
-		float L_43 = L_42.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_44 = ___0_lhs;
-		float L_45 = L_44.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_46 = ___1_rhs;
-		float L_47 = L_46.___x;
-		(&V_0)->___z = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_33, L_35)), ((float)il2cpp_codegen_multiply(L_37, L_39)))), ((float)il2cpp_codegen_multiply(L_41, L_43)))), ((float)il2cpp_codegen_multiply(L_45, L_47))));
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_48 = ___0_lhs;
-		float L_49 = L_48.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_50 = ___1_rhs;
-		float L_51 = L_50.___w;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_52 = ___0_lhs;
-		float L_53 = L_52.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_54 = ___1_rhs;
-		float L_55 = L_54.___x;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_56 = ___0_lhs;
-		float L_57 = L_56.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_58 = ___1_rhs;
-		float L_59 = L_58.___y;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_60 = ___0_lhs;
-		float L_61 = L_60.___z;
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_62 = ___1_rhs;
-		float L_63 = L_62.___z;
-		(&V_0)->___w = ((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_subtract(((float)il2cpp_codegen_multiply(L_49, L_51)), ((float)il2cpp_codegen_multiply(L_53, L_55)))), ((float)il2cpp_codegen_multiply(L_57, L_59)))), ((float)il2cpp_codegen_multiply(L_61, L_63))));
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_64 = V_0;
-		return L_64;
-	}
-}
 // Method Definition Index: 45713
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline (float ___0_a, float ___1_b, float ___2_t, const RuntimeMethod* method) 
 {
@@ -27197,7 +27892,53 @@ IL_0010:
 		return L_5;
 	}
 }
-// Method Definition Index: 51862
+// Method Definition Index: 45715
+IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline (float ___0_current, float ___1_target, float ___2_maxDelta, const RuntimeMethod* method) 
+{
+	bool V_0 = false;
+	float V_1 = 0.0f;
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:362>
+		float L_0 = ___1_target;
+		float L_1 = ___0_current;
+		float L_2;
+		L_2 = fabsf(((float)il2cpp_codegen_subtract(L_0, L_1)));
+		float L_3 = ___2_maxDelta;
+		V_0 = (bool)((((int32_t)((!(((float)L_2) <= ((float)L_3)))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_4 = V_0;
+		if (!L_4)
+		{
+			goto IL_0017;
+		}
+	}
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:363>
+		float L_5 = ___1_target;
+		V_1 = L_5;
+		goto IL_0026;
+	}
+
+IL_0017:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:364>
+		float L_6 = ___0_current;
+		float L_7 = ___1_target;
+		float L_8 = ___0_current;
+		float L_9;
+		L_9 = Mathf_Sign_m42EE1F0BC041AF14F89DED7F762BE996E2C50D8A_inline(((float)il2cpp_codegen_subtract(L_7, L_8)), NULL);
+		float L_10 = ___2_maxDelta;
+		V_1 = ((float)il2cpp_codegen_add(L_6, ((float)il2cpp_codegen_multiply(L_9, L_10))));
+		goto IL_0026;
+	}
+
+IL_0026:
+	{
+		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:365>
+		float L_11 = V_1;
+		return L_11;
+	}
+}
+// Method Definition Index: 51866
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2B266CDF99F926044006099F8313F_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27218,7 +27959,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_0;
 	}
 }
-// Method Definition Index: 51867
+// Method Definition Index: 51871
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F036FD57815E9E5AE80BF32664A9A04A4DF_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27228,7 +27969,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOn
 		return;
 	}
 }
-// Method Definition Index: 51866
+// Method Definition Index: 51870
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m0286772F95D8BDD3223A3A49FBC1EA5155DA5919_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27252,7 +27993,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 51864
+// Method Definition Index: 51868
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35DF52D3E18354D2502EB596E8E_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27263,7 +28004,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B
 		return;
 	}
 }
-// Method Definition Index: 53713
+// Method Definition Index: 53721
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopDimensionManager_t5A3BF0D5815ADD10B7184E08C8B7CBC4BE2F489B* ShopDimensionManager_get_Instance_m2CDCBB8C2E0427270D99350B5CA30B7AD16E96C0_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -27278,7 +28019,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopDimensionManager_t5A3BF0D5815
 		return L_0;
 	}
 }
-// Method Definition Index: 53720
+// Method Definition Index: 53728
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopDimensionManager_get_Traveling_m3BF9515601BD88C92A06324C93F32F0608EAA833_inline (ShopDimensionManager_t5A3BF0D5815ADD10B7184E08C8B7CBC4BE2F489B* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27316,7 +28057,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector2__ctor_m9525B79969AFF
 		return;
 	}
 }
-// Method Definition Index: 51881
+// Method Definition Index: 51885
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E017284269C23CF98149FABD1A8C04A_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27325,7 +28066,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode
 		return L_0;
 	}
 }
-// Method Definition Index: 51882
+// Method Definition Index: 51886
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD437023DA15CF8D90FC3C125A1678A09_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27335,7 +28076,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode
 		return;
 	}
 }
-// Method Definition Index: 53920
+// Method Definition Index: 53928
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mBDC1D92F3F5EDADB9541EC73FF7F8703DD71E20F_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -27351,7 +28092,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mB
 		return L_0;
 	}
 }
-// Method Definition Index: 53252
+// Method Definition Index: 53260
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingTournament_get_ModalOpen_mAD30C694E4D87E01E72B6385CFAEDBB6616178FA_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -27418,7 +28159,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3__ctor_m5F87930F9B082
 		return;
 	}
 }
-// Method Definition Index: 51879
+// Method Definition Index: 51883
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_get_ActiveBoat_m6691C9D74B0170F6FBB8204FD74770D8E93DDC46_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27451,7 +28192,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ButtonControl_t85949109B98AAF5B7A
 		return L_0;
 	}
 }
-// Method Definition Index: 51880
+// Method Definition Index: 51884
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940F30907732B544F6D58B0F5F3F53_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27462,7 +28203,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m1
 		return;
 	}
 }
-// Method Definition Index: 53859
+// Method Definition Index: 53867
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2D35CAC8CAB598BA36BE* ShopProgress_get_Data_m6914FA1ED3EA9895ACBBE372A50A8EAC377B5643_inline (ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27471,7 +28212,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2
 		return L_0;
 	}
 }
-// Method Definition Index: 53869
+// Method Definition Index: 53877
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopProgress_get_ReadOnly_m49B3B13A671902E01123995BC5600A9972C2E7D2_inline (ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27731,29 +28472,6 @@ IL_007d:
 		return L_28;
 	}
 }
-// Method Definition Index: 45598
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
-{
-	static bool s_Il2CppMethodInitialized;
-	if (!s_Il2CppMethodInitialized)
-	{
-		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Math_tEB65DE7CA8B083C412C969C92981C030865486CE_il2cpp_TypeInfo_var);
-		s_Il2CppMethodInitialized = true;
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Vector3.cs:672>
-		float L_0 = __this->___x;
-		float L_1 = __this->___x;
-		float L_2 = __this->___y;
-		float L_3 = __this->___y;
-		float L_4 = __this->___z;
-		float L_5 = __this->___z;
-		il2cpp_codegen_runtime_class_init_inline(Math_tEB65DE7CA8B083C412C969C92981C030865486CE_il2cpp_TypeInfo_var);
-		double L_6;
-		L_6 = sqrt(((double)((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3)))), ((float)il2cpp_codegen_multiply(L_4, L_5))))));
-		return ((float)L_6);
-	}
-}
 // Method Definition Index: 45706
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_CeilToInt_mF2BF9F4261B3431DC20E10A46CFEEED103C48963_inline (float ___0_f, const RuntimeMethod* method) 
 {
@@ -27889,52 +28607,6 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		(&V_0)->___z = ((float)il2cpp_codegen_multiply(L_5, (2.0f)));
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = V_0;
 		return L_6;
-	}
-}
-// Method Definition Index: 45715
-IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline (float ___0_current, float ___1_target, float ___2_maxDelta, const RuntimeMethod* method) 
-{
-	bool V_0 = false;
-	float V_1 = 0.0f;
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:362>
-		float L_0 = ___1_target;
-		float L_1 = ___0_current;
-		float L_2;
-		L_2 = fabsf(((float)il2cpp_codegen_subtract(L_0, L_1)));
-		float L_3 = ___2_maxDelta;
-		V_0 = (bool)((((int32_t)((!(((float)L_2) <= ((float)L_3)))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_4 = V_0;
-		if (!L_4)
-		{
-			goto IL_0017;
-		}
-	}
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:363>
-		float L_5 = ___1_target;
-		V_1 = L_5;
-		goto IL_0026;
-	}
-
-IL_0017:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:364>
-		float L_6 = ___0_current;
-		float L_7 = ___1_target;
-		float L_8 = ___0_current;
-		float L_9;
-		L_9 = Mathf_Sign_m42EE1F0BC041AF14F89DED7F762BE996E2C50D8A_inline(((float)il2cpp_codegen_subtract(L_7, L_8)), NULL);
-		float L_10 = ___2_maxDelta;
-		V_1 = ((float)il2cpp_codegen_add(L_6, ((float)il2cpp_codegen_multiply(L_9, L_10))));
-		goto IL_0026;
-	}
-
-IL_0026:
-	{
-		//<source_info:/home/bokken/build/output/unity/unity/Runtime/Export/Math/Mathf.cs:365>
-		float L_11 = V_1;
-		return L_11;
 	}
 }
 // Method Definition Index: 45720
@@ -28140,7 +28812,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Action_Invoke_m7126A54DACA72
 	typedef void (*FunctionPointerType) (RuntimeObject*, const RuntimeMethod*);
 	((FunctionPointerType)__this->___invoke_impl)((Il2CppObject*)__this->___method_code, reinterpret_cast<RuntimeMethod*>(__this->___method));
 }
-// Method Definition Index: 51994
+// Method Definition Index: 52002
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR String_t* PlacedFishTank_get_TankId_m0162334FD9FE89A909AD38333709AB8EC3C4F49A_inline (PlacedFishTank_t01F077337DBAE541AA9A18445370E635FB034990* __this, const RuntimeMethod* method) 
 {
 	{

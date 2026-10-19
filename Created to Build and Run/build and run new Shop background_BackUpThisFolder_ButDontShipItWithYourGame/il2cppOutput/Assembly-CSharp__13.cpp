@@ -843,7 +843,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Sign_m42EE1F0BC041AF1
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 54222
+// Method Definition Index: 54230
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_Awake_m01D4AED9827E7A19B53B01E54842B033690D82E6 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -915,7 +915,7 @@ IL_0035:
 		return;
 	}
 }
-// Method Definition Index: 54223
+// Method Definition Index: 54231
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_Update_m1AA8C12A023DC124D44EB9760092DEA122556897 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1231,7 +1231,7 @@ IL_017d:
 		return;
 	}
 }
-// Method Definition Index: 54224
+// Method Definition Index: 54232
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_Configure_mDF81A7D0693241992A6E808FFC13607A44B1CBC0 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___0_water, Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___1_overlay, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1294,7 +1294,7 @@ IL_002c:
 		return;
 	}
 }
-// Method Definition Index: 54225
+// Method Definition Index: 54233
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_ResolveWater_m33D04801EC95A1655ED04AE539512E6FDA9F6754 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1381,7 +1381,7 @@ IL_004e:
 		return;
 	}
 }
-// Method Definition Index: 54226
+// Method Definition Index: 54234
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_CacheOriginalFog_m0826DFB7424720DC3717A78499BEBAAADD321E61 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	{
@@ -1405,7 +1405,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_CacheOriginalFog_m0826
 		return;
 	}
 }
-// Method Definition Index: 54227
+// Method Definition Index: 54235
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_ApplyVisuals_mA0649CA5B7F5DB01F6A165024E4829031B05192D (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1556,7 +1556,7 @@ IL_00ef:
 		return;
 	}
 }
-// Method Definition Index: 54228
+// Method Definition Index: 54236
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_RestoreFog_mA5AD71D4CD107762D3785B6E9EC1EB76F3BA9F4D (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	{
@@ -1576,7 +1576,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_RestoreFog_mA5AD71D4CD
 		return;
 	}
 }
-// Method Definition Index: 54229
+// Method Definition Index: 54237
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals_OnDisable_m3879CAC3CBA01E34721D312765FC6122657491B4 (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1629,7 +1629,7 @@ IL_004e:
 		return;
 	}
 }
-// Method Definition Index: 54230
+// Method Definition Index: 54238
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals__ctor_m4102EDD8D03070AA14BBBCADC69AC15488B39BAA (UnderwaterVisuals_tF24A6BFD18DF373B12465FE5AD336AC3A4CC56BF* __this, const RuntimeMethod* method) 
 {
 	{
@@ -1655,7 +1655,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals__ctor_m4102EDD8D03070A
 		return;
 	}
 }
-// Method Definition Index: 54231
+// Method Definition Index: 54239
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals__cctor_m072BAEE6F96F0F3C906CD75B9623CF5D9627DFB4 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -1827,7 +1827,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void UnderwaterVisuals__cctor_m072BAEE6F96F0F
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-// Method Definition Index: 54178
+// Method Definition Index: 54186
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float DeepOceanWaterRuntime_get_VisibilityBlend_mD362500B039598085362A67447E8D35A32FA436B_inline (DeepOceanWaterRuntime_tE8BC09C2AAD997F1168302CA224E640EE587846E* __this, const RuntimeMethod* method) 
 {
 	{
