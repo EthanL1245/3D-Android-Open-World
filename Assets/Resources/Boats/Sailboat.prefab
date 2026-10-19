@@ -60,7 +60,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3387436226782259899}
+  - {fileID: 1601846554389847751}
   m_Father: {fileID: 3118143778648246135}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5520856515902319065
@@ -298,7 +298,7 @@ GameObject:
   - component: {fileID: 3118143778648246135}
   - component: {fileID: 56206104272228785}
   - component: {fileID: 7702086975379630751}
-  - component: {fileID: 1588207549322307674}
+  - component: {fileID: 2955567460000372391}
   m_Layer: 0
   m_Name: Sailboat
   m_TagString: Untagged
@@ -377,7 +377,7 @@ MonoBehaviour:
   NetworkFrontYaw: 0
   NetworkHasDriver: 0
   NetworkOtherPassengers: 0
---- !u!114 &1588207549322307674
+--- !u!114 &2955567460000372391
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -389,8 +389,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52abed26a07e44388d6b2cc6c467ea7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MotorboatEngineAnimation
-  MotorAnimator: {fileID: 5843707469220790812}
-  FallbackPropeller: {fileID: 5610942604724736321}
+  MotorAnimator: {fileID: 9120831337868893782}
+  FallbackPropeller: {fileID: 8423529191089857853}
   MovingThreshold: 0.18
   FallbackSpinDegreesPerSecond: 1440
 --- !u!1 &6860146249504024947
@@ -648,7 +648,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1001 &2920635144091471184
+--- !u!1001 &1274623737461373228
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -718,21 +718,26 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 5843707469220790812}
+      addedObject: {fileID: 9120831337868893782}
   m_SourcePrefab: {fileID: 100100000, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
---- !u!1 &2614700093010685953 stripped
+--- !u!4 &1601846554389847751 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
+  m_PrefabInstance: {fileID: 1274623737461373228}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2121536654570636413 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
-  m_PrefabInstance: {fileID: 2920635144091471184}
+  m_PrefabInstance: {fileID: 1274623737461373228}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &5843707469220790812
+--- !u!95 &9120831337868893782
 Animator:
   serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2614700093010685953}
+  m_GameObject: {fileID: 2121536654570636413}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: da6e28959e851444a9d07195452140f7, type: 2}
@@ -747,13 +752,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!4 &3387436226782259899 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
-  m_PrefabInstance: {fileID: 2920635144091471184}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &5610942604724736321 stripped
+--- !u!4 &8423529191089857853 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -1921281523141501935, guid: 7efcd21d9f2ec2f4e94aea3256b5479b, type: 3}
-  m_PrefabInstance: {fileID: 2920635144091471184}
+  m_PrefabInstance: {fileID: 1274623737461373228}
   m_PrefabAsset: {fileID: 0}
