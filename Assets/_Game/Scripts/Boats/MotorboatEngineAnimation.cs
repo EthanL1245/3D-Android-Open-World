@@ -134,33 +134,31 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
         float audibleSpeed = Mathf.Min(EngineTopSpeed, audioSpeed + 1.4f * Mathf.Clamp01(throttle));
         float lowToMid = SmoothRange(2f, 13f, audibleSpeed);
         float midToHigh = SmoothRange(15f, EngineTopSpeed, audibleSpeed);
-        float[] weights = {
-            Mathf.Cos(lowToMid * CrossfadeRadians),
-            Mathf.Sin(lowToMid * CrossfadeRadians) * Mathf.Cos(midToHigh * CrossfadeRadians),
-            Mathf.Sin(midToHigh * CrossfadeRadians)
-        };
+        float idleWeight = Mathf.Cos(lowToMid * CrossfadeRadians);
+        float moderateWeight = Mathf.Sin(lowToMid * CrossfadeRadians) * Mathf.Cos(midToHigh * CrossfadeRadians);
+        float fastWeight = Mathf.Sin(midToHigh * CrossfadeRadians);
         float pitchBoost = 0.045f * Mathf.Clamp01(throttle);
-        float[] pitches = {
-            Mathf.Lerp(0.95f, 1.09f, lowToMid) + pitchBoost,
-            Mathf.Lerp(0.94f, 1.10f, midToHigh) + pitchBoost,
-            Mathf.Lerp(0.96f, 1.13f, midToHigh) + pitchBoost
-        };
+        float blend = 1f - Mathf.Exp(-VolumeResponse * dt);
+        // No per-frame array allocations or audio processing; only AudioSource
+        // volume and pitch updates, with at most two audible layers at once.
+        ApplyLayer(0, idleWeight, Mathf.Lerp(0.95f, 1.09f, lowToMid) + pitchBoost, blend);
+        ApplyLayer(1, moderateWeight, Mathf.Lerp(0.94f, 1.10f, midToHigh) + pitchBoost, blend);
+        ApplyLayer(2, fastWeight, Mathf.Lerp(0.96f, 1.13f, midToHigh) + pitchBoost, blend);
+    }
 
-        float volumeBlend = 1f - Mathf.Exp(-VolumeResponse * dt);
-        for(int i = 0; i < engineSources.Length; i++)
+    private void ApplyLayer(int index, float weight, float pitch, float blend)
+    {
+        var source = engineSources[index];
+        if(source == null) return;
+        float target = weight * 0.48f;
+        source.volume = Mathf.Lerp(source.volume, target, blend);
+        source.pitch = Mathf.Lerp(source.pitch, pitch, blend);
+        // Do not decode/voice silent loops on Android or for distant boats.
+        if(target > 0.005f && !source.isPlaying) source.Play();
+        else if(target <= 0.005f && source.volume < 0.005f && source.isPlaying)
         {
-            var source = engineSources[i];
-            if(source == null) continue;
-            float target = weights[i] * 0.48f;
-            source.volume = Mathf.Lerp(source.volume, target, volumeBlend);
-            source.pitch = Mathf.Lerp(source.pitch, pitches[i], volumeBlend);
-            // Do not decode/voice silent loops on Android or for distant boats.
-            if(target > 0.005f && !source.isPlaying) source.Play();
-            else if(target <= 0.005f && source.volume < 0.005f && source.isPlaying)
-            {
-                source.Stop();
-                source.volume = 0f;
-            }
+            source.Stop();
+            source.volume = 0f;
         }
     }
 }
