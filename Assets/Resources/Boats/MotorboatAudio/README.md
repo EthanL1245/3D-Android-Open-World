@@ -4,19 +4,24 @@
 for the motorboat (legacy ID `sailboat`). No prefab rewiring is required.
 
 - `start.ogg`: plays once when a driver takes the helm.
-- `stop.ogg`: plays once after the driver leaves and speed reaches 5 m/s or less.
+- `stop.ogg`: plays once after the driver leaves and speed reaches 18 m/s or less.
   Taking the helm again cancels a pending shutdown.
 - `idle.ogg`: loops while driving without forward input, or below 1 m/s.
-- `slow.ogg`: forward driving at 1–8 m/s.
-- `moderate_speed.ogg`: forward driving at 8–21 m/s.
-- `fast.ogg`: forward driving at 21–27 m/s.
+- `slow.ogg`: forward driving at 1–12 m/s.
+- `moderate_speed.ogg`: forward driving at 12–24 m/s.
+- `fast.ogg`: forward driving at 24–27 m/s.
 
-Adjacent driving loops crossfade only over 7.5–8.5 and 20.5–21.5 m/s.
+Adjacent driving loops use broad equal-power crossfades over 8–16 and 21–27 m/s,
+centered on 12 and 24 m/s. Volume smoothing uses a 0.25 second time constant.
 When unoccupied, a previously running engine coasts with speed-based audio
 until shutdown. An unused boat stays silent. Multiplayer uses replicated helm
-and input state. Physics and motor animation are unchanged.
+and input state. After leaving the helm, forward damping is reduced from 0.65 to about 0.50,
+for roughly 30% more coasting range on unobstructed water. Shallow-water braking,
+collisions, vertical damping, driven acceleration and motor animation are unchanged.
 
-Clips were converted from the six supplied MP3s to 44.1 kHz mono Vorbis.
-Loops have a 50 ms seam crossfade; one-shots preserve their complete duration.
-Peaks exceeding 0.9 were reduced before encoding for headroom. Recordings play
-at their original pitch. Inaudible loops stop to save Android audio voices.
+Driving clips were rebuilt from the supplied MP3s with shared tonal filtering,
+gentle volume leveling, a shared 18% low engine texture, matched -20 dBFS RMS,
+and 450 ms loop-seam crossfades. Use `Tools/BoatSystem/RebuildMotorboatAudio.py`
+with the original upload directory to reproduce them. All processing is offline.
+Idle/start/stop recordings are unchanged. All clips remain 44.1 kHz mono Vorbis.
+Recordings play at original pitch; inaudible loops stop to save Android voices.

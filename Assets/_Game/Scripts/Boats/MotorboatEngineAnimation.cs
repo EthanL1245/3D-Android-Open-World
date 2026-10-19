@@ -12,7 +12,7 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
 
     private const float EngineTopSpeed = 27f;
     private const float CrossfadeRadians = Mathf.PI * 0.5f;
-    private const float VolumeResponse = 9f;
+    private const float VolumeResponse = 4f;
     private const float SpeedResponse = 7f;
     private static readonly string[] ClipNames = {
         "Boats/MotorboatAudio/slow",
@@ -160,7 +160,7 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
         }
         // Leaving the helm lets the engine coast down before one shutdown sound.
         // Retaking the helm cancels that pending shutdown.
-        if(engineRunning && !hasDriver && measuredSpeed <= 5f)
+        if(engineRunning && !hasDriver && measuredSpeed <= 18f)
         {
             engineRunning = false;
             PlayIgnition(stopClip);
@@ -171,10 +171,10 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
             ? (boat.Driver.Controls != null ? boat.Driver.Controls.BoatInput : Vector2.zero)
             : boat.NetworkFrontInput;
         bool idle = hasDriver && (input.y <= 0.05f || audioSpeed < 1f);
-        // Only a narrow 1 m/s window around each boundary mixes adjacent loops.
+        // Broad equal-power blends centered on the 12 and 24 m/s band boundaries.
         // No throttle-based speed offset, and no pitch shifting of the recordings.
-        float lowToMid = SmoothRange(7.5f, 8.5f, audioSpeed);
-        float midToHigh = SmoothRange(20.5f, 21.5f, audioSpeed);
+        float lowToMid = SmoothRange(8f, 16f, audioSpeed);
+        float midToHigh = SmoothRange(21f, 27f, audioSpeed);
         float driveGain = engineRunning && !idle ? 1f : 0f;
         float idleGain = engineRunning && idle ? 1f : 0f;
         // Let the short start recording lead into the loops without a loud pileup.

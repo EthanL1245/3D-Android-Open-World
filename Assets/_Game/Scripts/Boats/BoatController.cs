@@ -393,6 +393,16 @@ public sealed class BoatController : MonoBehaviour
             return;
         }
 
+        // Let an unattended motorboat glide farther after Leave Helm. Cancel
+        // only 0.15 of the existing 0.65 forward damping (about 30% more range).
+        // Keep vertical/side damping and the shallow-water braking above intact.
+        if(IsMotorboat && Driver==null && !NetworkHasDriver && propulsion<=.05f)
+        {
+            float coastingSpeed=Mathf.Max(0f,Vector3.Dot(planarVelocity,forward));
+            float dragRelief=Mathf.Min(.15f,body.linearDamping);
+            body.AddForce(forward*(coastingSpeed*dragRelief),ForceMode.Acceleration);
+        }
+
         if(propulsion>.05f && desiredDirection.sqrMagnitude>.0001f)
         {
             float forwardSpeed=Vector3.Dot(planarVelocity,forward);
