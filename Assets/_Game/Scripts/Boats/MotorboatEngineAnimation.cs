@@ -6,7 +6,9 @@ using UnityEngine;
 public sealed class MotorboatEngineAnimation : MonoBehaviour
 {
     public Animator MotorAnimator;
+    public Transform FallbackPropeller;
     public float MovingThreshold = 0.18f;
+    public float FallbackSpinDegreesPerSecond = 1440f;
 
     private BoatController boat;
     private Rigidbody body;
@@ -27,7 +29,7 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
 
     private void LateUpdate()
     {
-        if(boat == null || boat.Data == null || boat.Data.ID != "sailboat" || MotorAnimator == null)
+        if(boat == null || boat.Data == null || boat.Data.ID != "sailboat")
             return;
 
         float speed = 0f;
@@ -45,7 +47,11 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
         }
 
         // Placement ghosts disable BoatController, and should never animate.
-        MotorAnimator.speed = boat.enabled && speed > MovingThreshold ? 1f : 0f;
+        bool running = boat.enabled && speed > MovingThreshold;
+        bool hasImportedAnimation = MotorAnimator != null && MotorAnimator.runtimeAnimatorController != null;
+        if(hasImportedAnimation) MotorAnimator.speed = running ? 1f : 0f;
+        else if(running && FallbackPropeller != null)
+            FallbackPropeller.Rotate(Vector3.forward, FallbackSpinDegreesPerSecond * Time.deltaTime, Space.Self);
         lastPosition = transform.position;
         measured = true;
     }
