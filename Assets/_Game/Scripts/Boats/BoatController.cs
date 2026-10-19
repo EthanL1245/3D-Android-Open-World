@@ -9,6 +9,8 @@ public sealed class BoatController : MonoBehaviour
     public Transform SecondRowingSeat;
     public BoatPassenger SecondRower {get;private set;}
     public bool IsRowboat => Data!=null && Data.ID=="rowboat";
+    // The existing sailboat inventory ID is retained so old purchases and saves work.
+    public bool IsMotorboat => Data!=null && Data.ID=="sailboat";
     public MultiplayerBoat Shared;
     public Vector2 NetworkFrontInput, NetworkRearInput;
     public float NetworkFrontYaw;
@@ -38,6 +40,9 @@ public sealed class BoatController : MonoBehaviour
     private const float SailboatTiltLimit = 8f;
     private const float YachtTiltLimit = 5f;
     private const float RockingSpring = 26f;
+    private const float MotorboatAccelerationTime = 3f;
+    private const float MotorboatBankLimit = 15f;
+    private const float MotorboatBowRiseLimit = 6f;
     private const float RockingDamping = 8f;
 
     // No ocean wave has a physical wall. Constrain the vertical response, and
@@ -162,6 +167,23 @@ public sealed class BoatController : MonoBehaviour
         float maxTilt=raft?RaftTiltLimit:IsRowboat?RowboatTiltLimit:
                       Data.ID=="yacht"?YachtTiltLimit:SailboatTiltLimit;
         desiredUp=Vector3.RotateTowards(Vector3.up,desiredUp,maxTilt*Mathf.Deg2Rad,0f);
+        if(IsMotorboat)
+        {
+            // Keep the same four-point water response, but add a planing bow rise
+            // and turn bank. Limit the final pitch/roll individually so waves
+            // cannot make a fast motorboat exceed the requested presentation.
+            float planarSpeed=Vector3.ProjectOnPlane(body.linearVelocity,Vector3.up).magnitude;
+            float speedFraction=Mathf.Clamp01(planarSpeed/Mathf.Max(.01f,Data.Speed));
+            float bowRise=speedFraction*MotorboatBowRiseLimit;
+            float yawFraction=Mathf.Clamp(body.angularVelocity.y*Mathf.Rad2Deg/32f,-1f,1f);
+            float bank=-yawFraction*MotorboatBankLimit*Mathf.Clamp01(planarSpeed/5f);
+            float wavePitch=-Mathf.Asin(Mathf.Clamp(Vector3.Dot(desiredUp,forward),-1f,1f))*Mathf.Rad2Deg;
+            float waveRoll=-Mathf.Asin(Mathf.Clamp(Vector3.Dot(desiredUp,right),-1f,1f))*Mathf.Rad2Deg;
+            float finalPitch=Mathf.Clamp(wavePitch+bowRise,-MotorboatBowRiseLimit,MotorboatBowRiseLimit);
+            float finalRoll=Mathf.Clamp(waveRoll+bank,-MotorboatBankLimit,MotorboatBankLimit);
+            desiredUp=Quaternion.AngleAxis(finalRoll,forward)*
+                      Quaternion.AngleAxis(-finalPitch,right)*Vector3.up;
+        }
 
         // Angular spring/damping affects pitch and roll but not steering yaw.
         Vector3 tiltError=Vector3.ProjectOnPlane(
@@ -362,6 +384,18 @@ public sealed class BoatController : MonoBehaviour
                 // active rower doubles the target (including on partial stick input).
                 float target=speed*propulsion*thrustScale;
                 float acceleration=(target-forwardSpeed)*2.5f+forwardSpeed*body.linearDamping;
+                body.AddForce(forward*acceleration,ForceMode.Acceleration);
+            }
+            else if(IsMotorboat)
+            {
+                // Constant 9 m/s^2 ramp at full throttle: zero to 27 m/s in
+                // three seconds on open water. Counter linear damping without
+                // teleporting the Rigidbody, retaining collisions and buoyancy.
+                float target=speed*propulsion*thrustScale;
+                float allowedDelta=speed/MotorboatAccelerationTime*Time.fixedDeltaTime;
+                float nextSpeed=Mathf.MoveTowards(forwardSpeed,target,allowedDelta);
+                float acceleration=(nextSpeed-forwardSpeed)/Time.fixedDeltaTime+
+                                   forwardSpeed*body.linearDamping;
                 body.AddForce(forward*acceleration,ForceMode.Acceleration);
             }
             else if(forwardSpeed<Data.Speed)
