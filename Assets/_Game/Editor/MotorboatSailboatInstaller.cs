@@ -63,6 +63,7 @@ public static class MotorboatSailboatInstaller
         if(prefab.transform.Find("ModelContainer/ImportedMotorboat") != null)
         {
             UpgradeCockpitCollision();
+            MotorboatWaterMaskInstaller.Install(PrefabPath);
             if(explicitRequest) Debug.Log("Motorboat size and cockpit collision are up to date.");
             return;
         }
@@ -170,6 +171,7 @@ public static class MotorboatSailboatInstaller
             PrefabUtility.UnloadPrefabContents(root);
         }
         UpgradeCockpitCollision();
+        MotorboatWaterMaskInstaller.Install(PrefabPath);
         AssetDatabase.SaveAssets();
     }
 

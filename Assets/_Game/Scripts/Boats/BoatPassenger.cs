@@ -11,6 +11,7 @@ public sealed class BoatPassenger : MonoBehaviour
     public bool GroundedOnBoat {get;private set;}
 
     private CharacterController capsule;
+    private bool suspendedMotorboatCapsule;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
@@ -22,6 +23,7 @@ public sealed class BoatPassenger : MonoBehaviour
 
     private void Update()
     {
+        UpdateDriverCollision();
         if(Boat!=null)
         {
             // Carry the player by the exact rigid-platform delta first, then let the
@@ -121,6 +123,7 @@ public sealed class BoatPassenger : MonoBehaviour
         if(Driving)
         {
             Boat.ReleaseHelm(this);
+            UpdateDriverCollision();
             Controls.ResetMotion();
             return;
         }
@@ -131,6 +134,25 @@ public sealed class BoatPassenger : MonoBehaviour
             GetComponent<FishingSystem>()?.UnequipHands();
             Controls.ResetMotion();
             GroundedOnBoat=false;
+        }
+    }
+
+    private void UpdateDriverCollision()
+    {
+        if(capsule==null)return;
+        bool seated=Driving && Boat.IsMotorboat;
+        if(seated && !suspendedMotorboatCapsule && capsule.enabled)
+        {
+            // A seated driver is positioned by the seat anchor, not by walking
+            // physics. Leaving the capsule solid lets the fast/tilted cockpit hit
+            // its own driver and brake the hull. Restore it on every exit path.
+            capsule.enabled=false;
+            suspendedMotorboatCapsule=true;
+        }
+        else if(!seated && suspendedMotorboatCapsule)
+        {
+            capsule.enabled=true;
+            suspendedMotorboatCapsule=false;
         }
     }
 
@@ -146,6 +168,7 @@ public sealed class BoatPassenger : MonoBehaviour
     {
         if(!Driving || capsule==null)return;
         // Boarding a seat crosses benches; do not sweep the capsule through them.
+        UpdateDriverCollision();
         SetPlatformPosition(Boat.SeatFor(this).position);
         lastPosition=Boat.transform.position;lastRotation=Boat.transform.rotation;
         Controls.ResetMotion();
@@ -155,6 +178,7 @@ public sealed class BoatPassenger : MonoBehaviour
     {
         if(Boat!=null)Boat.Leave(this);
         Boat=null;
+        UpdateDriverCollision();
         GroundedOnBoat=false;
     }
 

@@ -42,7 +42,7 @@ public sealed class BoatController : MonoBehaviour
     private const float RockingSpring = 26f;
     private const float MotorboatAccelerationTime = 3f;
     private const float MotorboatBankLimit = 15f;
-    private const float MotorboatBowRiseLimit = 6f;
+    private const float MotorboatBowRiseLimit = 10f;
     private const float RockingDamping = 8f;
 
     // No ocean wave has a physical wall. Constrain the vertical response, and
@@ -51,7 +51,8 @@ public sealed class BoatController : MonoBehaviour
     private const float BuoyancyRiseSpeed = 5.5f;
     private const float BuoyancyFallSpeed = 5.0f;
     private const float MaxOpenWaterDeceleration = 2.5f;
-    private readonly Collider[] waveSafetyContacts = new Collider[48];
+    private Collider[] waveSafetyContacts = new Collider[48];
+    private int solidNavigationMask = Physics.DefaultRaycastLayers;
     private float filteredBuoyancyHeight;
     private float lastDrivenForwardSpeed;
     private bool buoyancyStarted;
@@ -65,6 +66,21 @@ public sealed class BoatController : MonoBehaviour
         body.constraints &= ~(RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ);
         body.interpolation=RigidbodyInterpolation.Interpolate;
         body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+
+        // Exclude the dedicated query-water layer without changing world collision
+        // rules. Rocks, terrain, docks and other boats remain physical obstacles.
+        int waterLayer=LayerMask.NameToLayer("Water");
+        solidNavigationMask=Physics.DefaultRaycastLayers;
+        if(IsMotorboat && waterLayer>=0)
+        {
+            body.excludeLayers |= 1<<waterLayer;
+            solidNavigationMask &= ~(1<<waterLayer);
+        }
+        // Reserve space for our own compound hull PLUS external obstacles once.
+        // The old 48 slots could all be occupied by the newly baked cockpit hull.
+        int hullCount=GetComponentsInChildren<Collider>().Length;
+        if(IsMotorboat && waveSafetyContacts.Length<hullCount+64)
+            waveSafetyContacts=new Collider[Mathf.Min(8192,Mathf.NextPowerOfTwo(hullCount+64))];
 
         // Water is visual/non-solid. If an older scene has an accidental ocean
         // collider, do not let the hull collide with it during wave crossings.
@@ -223,10 +239,17 @@ public sealed class BoatController : MonoBehaviour
         float verticalExtent=Mathf.Abs(body.position.y-water.BaseWaterLevel)*.5f+1.6f;
         centre.y=(body.position.y+water.BaseWaterLevel)*.5f;
         Vector3 half=new Vector3(hullWidth*.5f+.25f,verticalExtent,hullLength*.18f+.65f);
-        int hits=Physics.OverlapBoxNonAlloc(centre,half,waveSafetyContacts,yaw,
-                                           Physics.DefaultRaycastLayers,QueryTriggerInteraction.Ignore);
-        // A full buffer is ambiguous; fail safely instead of bypassing a collider.
-        if(hits==waveSafetyContacts.Length)return false;
+        int hits;
+        while(true)
+        {
+            hits=Physics.OverlapBoxNonAlloc(centre,half,waveSafetyContacts,yaw,
+                                          solidNavigationMask,QueryTriggerInteraction.Ignore);
+            if(hits<waveSafetyContacts.Length)break;
+            // Grow only on saturation, retain the buffer, and rerun the SAME query.
+            // Never treat incomplete results as proof that the path is clear.
+            if(waveSafetyContacts.Length>=8192)return false;
+            System.Array.Resize(ref waveSafetyContacts,Mathf.Min(8192,waveSafetyContacts.Length*2));
+        }
         for(int i=0;i<hits;i++)
         {
             Collider c=waveSafetyContacts[i];

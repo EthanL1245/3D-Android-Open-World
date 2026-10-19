@@ -86,7 +86,18 @@ public sealed class BoatSystem : MonoBehaviour
         ghostMaterial.SetFloat("_SrcBlend",(float)UnityEngine.Rendering.BlendMode.SrcAlpha);
         ghostMaterial.SetFloat("_DstBlend",(float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
         ghostMaterial.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");ghostMaterial.renderQueue=3000;
-        foreach(var r in ghost.GetComponentsInChildren<Renderer>())r.sharedMaterial=ghostMaterial;
+        foreach(var r in ghost.GetComponentsInChildren<Renderer>())
+        {
+            // A placement preview must neither punch a water hole nor display its
+            // invisible interior volume as a solid green/red block.
+            if(r.sharedMaterial!=null && r.sharedMaterial.shader!=null &&
+               r.sharedMaterial.shader.name=="OpenWorld/BoatWaterMask")
+            {
+                r.enabled=false;
+                continue;
+            }
+            r.sharedMaterial=ghostMaterial;
+        }
         ghost.SetActive(false);
         Notice("Aim at open water. Green: place. Red: shore or obstruction. Slot 2 cancels.",0f,true);
     }

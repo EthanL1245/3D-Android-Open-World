@@ -57,6 +57,17 @@ Shader "OpenWorld/OceanWater"
             ZWrite Off
             Cull Off
 
+            // Only bit 0 is ours; preserve URP/UI stencil bits. The cheap boat
+            // volume writes this before transparent water (queue 2990).
+            Stencil
+            {
+                Ref 1
+                ReadMask 1
+                WriteMask 0
+                Comp NotEqual
+                Pass Keep
+            }
+
             HLSLPROGRAM
 
             #pragma target 3.0
