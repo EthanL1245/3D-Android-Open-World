@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -33,6 +35,9 @@ public static class MotorboatSailboatInstaller
         try { Install(false); }
         catch(Exception e) { Debug.LogError("Motorboat automatic setup failed: " + e); }
     }
+
+    // Also installs in batch-mode builds where Unity may skip the editor delay call.
+    internal static void InstallBeforeBuild() { Install(false); }
 
     [MenuItem("Tools/Open World/Install Motorboat (Replaces Sailboat)")]
     public static void InstallFromMenu()
@@ -147,6 +152,9 @@ public static class MotorboatSailboatInstaller
             animator.applyRootMotion = false;
             var engine = root.GetComponent<MotorboatEngineAnimation>() ?? root.AddComponent<MotorboatEngineAnimation>();
             engine.MotorAnimator = animator;
+            engine.FallbackPropeller = instance.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(t => t != instance.transform &&
+                    t.name.IndexOf("propeller", StringComparison.OrdinalIgnoreCase) >= 0);
 
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Debug.Log(animation == null
@@ -242,5 +250,14 @@ public static class MotorboatSailboatInstaller
                                Mathf.Clamp(local.z - 0.65f, -2.4f, 2.2f));
         }
         if(boat.DriverSeat != null) boat.DriverSeat.localPosition = seat;
+    }
+}
+
+internal sealed class MotorboatBeforeBuild : IPreprocessBuildWithReport
+{
+    public int callbackOrder => -1000;
+    public void OnPreprocessBuild(BuildReport report)
+    {
+        MotorboatSailboatInstaller.InstallBeforeBuild();
     }
 }
