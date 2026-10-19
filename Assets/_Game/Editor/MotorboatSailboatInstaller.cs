@@ -62,7 +62,8 @@ public static class MotorboatSailboatInstaller
         }
         if(prefab.transform.Find("ModelContainer/ImportedMotorboat") != null)
         {
-            if(explicitRequest) Debug.Log("The motorboat is already installed in Sailboat.prefab.");
+            UpgradeCockpitCollision();
+            if(explicitRequest) Debug.Log("Motorboat size and cockpit collision are up to date.");
             return;
         }
 
@@ -101,6 +102,8 @@ public static class MotorboatSailboatInstaller
             var boat = root.GetComponent<BoatController>();
             var visuals = root.transform.Find("ModelContainer");
             if(boat == null || visuals == null) throw new InvalidOperationException("The original sailboat's boat controller/model container is missing.");
+
+            root.transform.localScale = Vector3.one;
 
             // Delete only the sailboat's old decorative primitives; its deck,
             // collision hull, water clearance and boat physics are retained.
@@ -156,6 +159,7 @@ public static class MotorboatSailboatInstaller
                 .FirstOrDefault(t => t != instance.transform &&
                     t.name.IndexOf("propeller", StringComparison.OrdinalIgnoreCase) >= 0);
 
+            root.transform.localScale = Vector3.one * 1.6f;
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
             Debug.Log(animation == null
                 ? "Motorboat model installed, but no imported motor animation clip was found. Check Motorboat_Reference.fbx Animation import."
@@ -165,7 +169,134 @@ public static class MotorboatSailboatInstaller
         {
             PrefabUtility.UnloadPrefabContents(root);
         }
+        UpgradeCockpitCollision();
         AssetDatabase.SaveAssets();
+    }
+
+    // Bake a compound of merged solid columns from the actual model surface.
+    // A single convex hull (or the old deck box) would seal the cockpit again.
+    // Box colliders support the existing dynamic Rigidbody on host and clients;
+    // all mesh processing happens once in the editor, never on a phone.
+    private static void UpgradeCockpitCollision()
+    {
+        const string collisionName = "Motorboat surface collision v1";
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        if(prefab.transform.Find(collisionName) != null) return;
+        var importer = AssetImporter.GetAtPath(SourcePath) as ModelImporter;
+        if(importer != null && !importer.isReadable)
+        {
+            importer.isReadable = true;
+            importer.SaveAndReimport();
+        }
+        var root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            var imported = root.transform.Find("ModelContainer/ImportedMotorboat");
+            if(imported == null) throw new InvalidOperationException("Motorboat model missing during collision bake.");
+            const float cell = 0.10f;
+            const float heightStep = 0.025f;
+            var vertices = new System.Collections.Generic.List<Vector3>();
+            var triangles = new System.Collections.Generic.List<int>();
+            foreach(var filter in imported.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mesh = filter.sharedMesh;
+                if(mesh == null) continue;
+                // Moving hardware must not become fixed collision over the cockpit.
+                bool hardware = false;
+                for(var t = filter.transform; t != imported && t != null; t = t.parent)
+                {
+                    string name = t.name.ToLowerInvariant();
+                    if(name.Contains("propell") || name.Contains("steering") || name.Contains("wheel"))
+                        hardware = true;
+                }
+                if(hardware) continue;
+                int offset = vertices.Count;
+                Matrix4x4 matrix = root.transform.worldToLocalMatrix * filter.transform.localToWorldMatrix;
+                foreach(var vertex in mesh.vertices) vertices.Add(matrix.MultiplyPoint3x4(vertex));
+                foreach(int index in mesh.triangles) triangles.Add(offset + index);
+            }
+            if(vertices.Count == 0) throw new InvalidOperationException("Motorboat has no readable static hull meshes.");
+            Bounds bounds = new Bounds(vertices[0], Vector3.zero);
+            foreach(var vertex in vertices) bounds.Encapsulate(vertex);
+            int nx = Mathf.CeilToInt(bounds.size.x / cell);
+            int nz = Mathf.CeilToInt(bounds.size.z / cell);
+            float[,] heights = new float[nx, nz];
+            for(int x = 0; x < nx; x++)
+                for(int z = 0; z < nz; z++) heights[x,z] = float.NegativeInfinity;
+            for(int i = 0; i < triangles.Count; i += 3)
+            {
+                Vector3 a = vertices[triangles[i]], b = vertices[triangles[i+1]], c = vertices[triangles[i+2]];
+                Vector3 normal = Vector3.Cross(b-a,c-a);
+                if(normal.y <= 0.000001f) continue;
+                int x0 = Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(a.x,b.x,c.x)-bounds.min.x)/cell),0,nx-1);
+                int x1 = Mathf.Clamp(Mathf.FloorToInt((Mathf.Max(a.x,b.x,c.x)-bounds.min.x)/cell),0,nx-1);
+                int z0 = Mathf.Clamp(Mathf.FloorToInt((Mathf.Min(a.z,b.z,c.z)-bounds.min.z)/cell),0,nz-1);
+                int z1 = Mathf.Clamp(Mathf.FloorToInt((Mathf.Max(a.z,b.z,c.z)-bounds.min.z)/cell),0,nz-1);
+                float denominator = (b.z-c.z)*(a.x-c.x)+(c.x-b.x)*(a.z-c.z);
+                if(Mathf.Abs(denominator)<0.000001f) continue;
+                for(int x=x0; x<=x1; x++)
+                for(int z=z0; z<=z1; z++)
+                {
+                    float px=bounds.min.x+(x+0.5f)*cell, pz=bounds.min.z+(z+0.5f)*cell;
+                    float u=((b.z-c.z)*(px-c.x)+(c.x-b.x)*(pz-c.z))/denominator;
+                    float v=((c.z-a.z)*(px-c.x)+(a.x-c.x)*(pz-c.z))/denominator;
+                    if(u<0f || v<0f || u+v>1f) continue;
+                    float y=u*a.y+v*b.y+(1f-u-v)*c.y;
+                    heights[x,z]=Mathf.Max(heights[x,z],Mathf.Round(y/heightStep)*heightStep);
+                }
+            }
+            var collision = new GameObject(collisionName);
+            collision.transform.SetParent(root.transform,false);
+            bool[,] used = new bool[nx,nz];
+            int count = 0;
+            for(int x=0; x<nx; x++)
+            for(int z=0; z<nz; z++)
+            {
+                float top=heights[x,z];
+                if(used[x,z] || float.IsNegativeInfinity(top)) continue;
+                int width=1, depth=1;
+                while(x+width<nx && !used[x+width,z] && heights[x+width,z]==top) width++;
+                bool extend=true;
+                while(z+depth<nz && extend)
+                {
+                    for(int dx=0; dx<width; dx++)
+                        if(used[x+dx,z+depth] || heights[x+dx,z+depth]!=top) { extend=false; break; }
+                    if(extend) depth++;
+                }
+                for(int dx=0; dx<width; dx++)
+                    for(int dz=0; dz<depth; dz++) used[x+dx,z+dz]=true;
+                float bottom=Mathf.Min(bounds.min.y,top-0.05f);
+                var box=collision.AddComponent<BoxCollider>();
+                box.center=new Vector3(bounds.min.x+(x+width*0.5f)*cell,(top+bottom)*0.5f,
+                                       bounds.min.z+(z+depth*0.5f)*cell);
+                box.size=new Vector3(width*cell,top-bottom,depth*cell);
+                count++;
+            }
+            if(count==0) throw new InvalidOperationException("Motorboat collision bake produced no surfaces.");
+            // Disable every previous solid hull/deck collider only after the bake
+            // succeeds. Keep any trigger volumes and all animation references.
+            foreach(var collider in root.GetComponentsInChildren<Collider>(true))
+                if(collider.gameObject!=collision && !collider.isTrigger) collider.enabled=false;
+            var boat=root.GetComponent<BoatController>();
+            SnapAnchorToSurface(boat.DriverSeat,root.transform,bounds,heights,cell);
+            SnapAnchorToSurface(boat.DeckExit,root.transform,bounds,heights,cell);
+            PrefabUtility.SaveAsPrefabAsset(root,PrefabPath);
+            Debug.Log("Motorboat cockpit collision baked from model: " + count + " merged boxes.");
+        }
+        finally { PrefabUtility.UnloadPrefabContents(root); }
+    }
+
+    private static void SnapAnchorToSurface(Transform anchor, Transform root, Bounds bounds, float[,] heights, float cell)
+    {
+        if(anchor==null) return;
+        Vector3 point=root.InverseTransformPoint(anchor.position);
+        int x=Mathf.Clamp(Mathf.FloorToInt((point.x-bounds.min.x)/cell),0,heights.GetLength(0)-1);
+        int z=Mathf.Clamp(Mathf.FloorToInt((point.z-bounds.min.z)/cell),0,heights.GetLength(1)-1);
+        float top=heights[x,z];
+        if(float.IsNegativeInfinity(top))
+            throw new InvalidOperationException("Motorboat boarding/driver anchor is outside the model surface: " + anchor.name);
+        point.y=top+0.02f;
+        anchor.position=root.TransformPoint(point);
     }
 
     private static int ClipPriority(string name)
@@ -261,3 +392,4 @@ internal sealed class MotorboatBeforeBuild : IPreprocessBuildWithReport
         MotorboatSailboatInstaller.InstallBeforeBuild();
     }
 }
+
