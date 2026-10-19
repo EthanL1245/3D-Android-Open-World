@@ -194,7 +194,8 @@ public sealed class MotorboatEngineAnimation : MonoBehaviour
     {
         var source = engineSources[index];
         if(source == null) return;
-        float target = weight * 0.48f;
+        // Raise only slow/moderate/fast; idle and ignition keep their levels.
+        float target = weight * 0.48f * (index < 3 ? 1.4f : 1f);
         source.volume = Mathf.Lerp(source.volume, target, blend);
         source.pitch = Mathf.Lerp(source.pitch, pitch, blend);
         // Stop inaudible layers to reduce concurrent audio voices on Android.

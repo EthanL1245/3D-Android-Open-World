@@ -78,13 +78,6 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         orbitYaw = Mathf.Repeat(orbitYaw + yawDelta, 360f);
     }
 
-    // Forward/strafe controls follow the view only when movement is requested.
-    // Looking around while standing or fishing never rotates the character.
-    public void AlignForMovement()
-    {
-        if (IsThirdPerson) transform.rotation = Quaternion.Euler(0f, orbitYaw, 0f);
-    }
-
     private float ClosestFullBodyDistance()
     {
         if (view == null || avatar == null) return MinZoomDistance;

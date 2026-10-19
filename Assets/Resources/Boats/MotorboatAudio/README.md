@@ -25,3 +25,6 @@ and 450 ms loop-seam crossfades. Use `Tools/BoatSystem/RebuildMotorboatAudio.py`
 with the original upload directory to reproduce them. All processing is offline.
 Idle/start/stop recordings are unchanged. All clips remain 44.1 kHz mono Vorbis.
 Recordings play at original pitch; inaudible loops stop to save Android voices.
+
+Driving layers use 1.4x gain (0.672 peak per-layer volume); idle and ignition
+retain their previous 0.48 gain. Speed crossfades are unchanged.
