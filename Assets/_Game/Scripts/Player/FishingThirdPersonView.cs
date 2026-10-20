@@ -15,6 +15,8 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     private float zoomDistance = MaxZoomDistance;
     private FishingSystem fishing;
     private FishingRemotePlayer avatar;
+    private Renderer[] avatarRenderers;
+    private bool avatarRenderVisible = true;
     private bool rendering;
     private Vector3 savedPosition;
     private Quaternion savedRotation;
@@ -53,20 +55,60 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         IsThirdPerson = !IsThirdPerson;
         movementHeldTime = returnYawVelocity = 0f;
         if (IsThirdPerson) orbitYaw = transform.eulerAngles.y;
-        if (IsThirdPerson && avatar == null)
+        SyncLocalAvatar();
+    }
+
+    private bool IsDrivingMotorboat()
+    {
+        BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
+        return passenger != null && passenger.Driving &&
+            passenger.Boat != null && passenger.Boat.IsMotorboat;
+    }
+
+    private void SyncLocalAvatar()
+    {
+        // A lightweight, visually hidden copy of the existing third-person rig
+        // supplies the real animated head location while driving in first person.
+        // Never touch the boat, driver anchor, controller or aiming camera.
+        bool needed = IsThirdPerson || IsDrivingMotorboat();
+        if (!needed)
+        {
+            if (avatar != null && avatar.gameObject.activeSelf)
+                avatar.gameObject.SetActive(false);
+            return;
+        }
+        if (avatar == null)
         {
             avatar = new GameObject("Local Third Person Angler").AddComponent<FishingRemotePlayer>();
             avatar.Initialize("", "local", false);
+            avatar.FollowLocal(FishingMultiplayer.For(player));
+            avatarRenderers = avatar.GetComponentsInChildren<Renderer>(true);
         }
-        if (avatar != null)
+        if (!avatar.gameObject.activeSelf) avatar.gameObject.SetActive(true);
+        if (avatarRenderVisible != IsThirdPerson)
         {
-            if (IsThirdPerson) avatar.FollowLocal(FishingMultiplayer.For(GetComponent<FirstPersonController>()));
-            avatar.gameObject.SetActive(IsThirdPerson);
+            // The character is still animated so we can track her head, but her
+            // face/hair must not be drawn in front of the first-person camera.
+            if (avatarRenderers != null)
+                foreach (Renderer renderer in avatarRenderers)
+                    if (renderer != null) renderer.forceRenderingOff = !IsThirdPerson;
+            avatarRenderVisible = IsThirdPerson;
         }
     }
 
+    private bool TryGetFirstPersonDriverHead(out Vector3 head)
+    {
+        head = Vector3.zero;
+        return !IsThirdPerson && IsDrivingMotorboat() && avatar != null &&
+            avatar.isActiveAndEnabled && avatar.TryGetMotorboatDriverHead(out head);
+    }
+
     // A render interrupted by scene changes must never leave gameplay at the boom position.
-    private void Update() => RestoreRenderPose();
+    private void Update()
+    {
+        RestoreRenderPose();
+        SyncLocalAvatar();
+    }
 
     private void LateUpdate()
     {
@@ -157,7 +199,18 @@ public sealed class FishingThirdPersonView : MonoBehaviour
 
     private void BeginRender(Camera camera)
     {
-        if (!IsThirdPerson || camera != view || rendering) return;
+        if (camera != view || rendering) return;
+        if (!IsThirdPerson)
+        {
+            if (!TryGetFirstPersonDriverHead(out Vector3 head)) return;
+            // Rendering-only eye shift: player aiming, touch look, fishing,
+            // physics and network poses keep the original camera transform.
+            savedPosition = view.transform.localPosition;
+            savedRotation = view.transform.localRotation;
+            rendering = true;
+            view.transform.position = head;
+            return;
+        }
         // Read the final rod flex before moving the eye for rendering. This includes
         // current tension, fish modes, reel load, lure flex and release/relaxation.
         if (avatar != null && fishing != null) avatar.CopyLocalRodBend(fishing.PresentationRod);
@@ -204,9 +257,16 @@ public sealed class FishingThirdPersonView : MonoBehaviour
     public static Vector3 WorldToScreenPoint(Camera camera, Vector3 point)
     {
         var perspective = camera != null ? camera.GetComponentInParent<FishingThirdPersonView>() : null;
-        if (perspective == null || !perspective.IsThirdPerson || perspective.rendering)
+        if (perspective == null || perspective.rendering)
             return camera != null ? camera.WorldToScreenPoint(point) : Vector3.zero;
-        perspective.CameraPose(out Vector3 position, out Quaternion rotation);
+        Vector3 position;
+        Quaternion rotation;
+        if (perspective.IsThirdPerson)
+            perspective.CameraPose(out position, out rotation);
+        else if (perspective.TryGetFirstPersonDriverHead(out position))
+            rotation = camera.transform.rotation;
+        else
+            return camera.WorldToScreenPoint(point);
         Vector3 local = Quaternion.Inverse(rotation) * (point - position);
         Vector4 clip = camera.projectionMatrix * new Vector4(local.x, local.y, -local.z, 1f);
         if (Mathf.Abs(clip.w) < .00001f) return new Vector3(0f, 0f, local.z);
