@@ -319,6 +319,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (!initialized || dt <= 0f) return;
 
         float blend = 1f - Mathf.Exp(-12f * dt);
+        // Local third-person must work without a server connection, while the
+        // remote players use the existing replicated helm seat number.
+        BoatPassenger localPassenger = localSource != null ? localSource.GetComponent<BoatPassenger>() : null;
+        BoatController localHelmBoat = localPassenger != null && localPassenger.Driving &&
+            localPassenger.Boat != null && localPassenger.Boat.IsMotorboat ? localPassenger.Boat : null;
         float boatWalkingSpeed=-1f;
         if(riddenBoat!=null)
         {
@@ -331,6 +336,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 ? riddenBoat.transform.rotation
                 : Quaternion.Euler(0f,riddenBoat.transform.eulerAngles.y+(seat!=null?0f:rideYaw),0f);
             boatWalkingSpeed=seat!=null?0f:Vector3.ProjectOnPlane(ridePosition-oldLocal,Vector3.up).magnitude/dt;
+        }
+        if (localHelmBoat != null)
+        {
+            target = localHelmBoat.DriverSeat.position;
+            facing = localHelmBoat.transform.rotation;
+            boatWalkingSpeed = 0f;
         }
         transform.position = localSource != null || riddenBoat!=null ? target : Vector3.Lerp(transform.position, target, blend);
         // Smooth the visual avatar only; local movement and aiming stay immediate.
@@ -345,8 +356,9 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
         // The authored seated pose is chosen by the same replicated rideSeat
         // already used for boat controls: works for local third person and peers.
-        MotorboatDrivingSeat drivingSeat = riddenBoat != null && rideSeat == 1
-            ? MotorboatDrivingSeat.For(riddenBoat.Boat) : null;
+        BoatController visualHelmBoat = localHelmBoat != null ? localHelmBoat :
+            riddenBoat != null && rideSeat == 1 && riddenBoat.Boat.IsMotorboat ? riddenBoat.Boat : null;
+        MotorboatDrivingSeat drivingSeat = MotorboatDrivingSeat.For(visualHelmBoat);
         bool drivingMotorboat = drivingSeat != null && drivePlayable.IsValid();
         drivingBlend = Mathf.MoveTowards(drivingBlend, drivingMotorboat ? 1f : 0f, dt * 12f);
         if (visualRoot != null) visualRoot.localPosition = restingVisualOffset;
@@ -439,7 +451,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 Vector3 hips = leftHip != null && rightHip != null
                     ? (leftHip.position + rightHip.position) * .5f
                     : visualRoot.position + transform.up * .70f;
-                Vector3 pelvisTarget = drivingSeat.SeatSurface + riddenBoat.transform.up * .10f;
+                Vector3 pelvisTarget = drivingSeat.SeatSurface + visualHelmBoat.transform.up * .10f;
                 visualRoot.position += (pelvisTarget - hips) * drivingBlend;
                 if (drivingBlend >= .95f)
                 {
