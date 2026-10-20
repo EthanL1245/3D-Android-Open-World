@@ -14,7 +14,9 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     public int World { get; private set; }
     public float BodyHeight { get; private set; } = 1.72f * AvatarScale;
-    public Vector3 BodyCenter => transform.position + Vector3.up * (FeetOffset + BodyHeight * .5f);
+    public Vector3 BodyCenter => drivingBlend > .95f && leftHip != null && rightHip != null
+        ? (leftHip.position + rightHip.position) * .5f + transform.up * .65f
+        : transform.position + Vector3.up * (FeetOffset + BodyHeight * .5f);
     public Transform RodTip => observerRodView != null ? observerRodView.RodTip : null;
     private FishingMultiplayer localSource;
 
@@ -39,8 +41,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable;
-    private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip;
+    private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable, drivePlayable;
+    private Transform visualRoot, leftHip, rightHip, leftUpperArm, leftForearm, rightUpperArm, rightForearm;
+    private Vector3 restingVisualOffset;
+    private float drivingBlend, drivingClock;
+    private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip, driveClip;
     private Transform leftHand, rodSocket, rightHand, heldMouth;
     private GameObject heldFish;
     private LineRenderer heldString;
@@ -92,6 +97,13 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
         GameObject visual = Instantiate(asset.ModelPrefab, transform, false);
         visual.name = "Female Character Model";
+        visualRoot = visual.transform;
+        leftHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.L");
+        rightHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.R");
+        leftUpperArm = FishingRemoteAvatarAsset.FindBone(visualRoot, "UpperArm.L");
+        leftForearm = FishingRemoteAvatarAsset.FindBone(visualRoot, "Forearm.L");
+        rightUpperArm = FishingRemoteAvatarAsset.FindBone(visualRoot, "UpperArm.R");
+        rightForearm = FishingRemoteAvatarAsset.FindBone(visualRoot, "Forearm.R");
         visual.transform.localPosition = Vector3.zero;
         visual.transform.localRotation = Quaternion.identity;
 
@@ -133,6 +145,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         castClip = asset.CastClip;
         if (castClip == null)
             Debug.LogError("Multiplayer: casting clip is missing from the avatar catalog. Rebuild the game with the casting FBX.");
+        driveClip = asset.DriveMotorboatClip;
         runClip = asset.RunClip;
         walkClip = asset.WalkClip;
         idleClip = asset.IdleClip != null ? asset.IdleClip : walkClip;
@@ -142,7 +155,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 9);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 10);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
@@ -182,6 +195,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 runPlayable = AnimationClipPlayable.Create(animationGraph, runClip);
                 animationGraph.Connect(runPlayable, 0, animationMixer, 8);
             }
+            if (driveClip != null)
+            {
+                drivePlayable = AnimationClipPlayable.Create(animationGraph, driveClip);
+                animationGraph.Connect(drivePlayable, 0, animationMixer, 9);
+            }
+            animationMixer.SetInputWeight(9, 0f);
             animationMixer.SetInputWeight(8, 0f);
             animationMixer.SetInputWeight(7, 0f);
             animationMixer.SetInputWeight(5, 0f);
@@ -226,6 +245,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         }
         BodyHeight = bounds.size.y;
         visual.transform.position += Vector3.up * (transform.position.y + FeetOffset - bounds.min.y);
+        restingVisualOffset = visual.transform.localPosition;
         return Mathf.Clamp(bounds.max.y - bounds.min.y + FeetOffset + .22f, 1.5f, 3f);
     }
 
@@ -253,7 +273,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         riddenBoat=rideSeat>=0?MultiplayerBoat.Find(rideOwner,rideKey):null;
         bool holding = peer.heldFishSpecies >= 0 && peer.heldFishWeight > 0f && !peer.rodEquipped && !peer.swimming;
         UpdateHeldFish(holding ? peer.heldFishSpecies : -1, peer.heldFishWeight);
-        UpdateHeldRod(peer.rodEquipped && !peer.swimming && !holding, peer.rodTier);
+        bool motorboatDriver = peer.rideSeat == 1 && (riddenBoat == null || riddenBoat.Boat.IsMotorboat);
+        UpdateHeldRod(peer.rodEquipped && !peer.swimming && !holding && !motorboatDriver, peer.rodTier);
         // The sequence survives the short local Casting state. HTTP polling can
         // miss that state entirely, so a new sequence must still play once even
         // when castAge is already -1. Do not abort playback on subsequent idle packets.
@@ -305,7 +326,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             ridePosition=localSource!=null?rideTarget:Vector3.Lerp(ridePosition,rideTarget,blend);
             Transform seat=rideSeat==2?riddenBoat.Boat.SecondRowingSeat:rideSeat==1?riddenBoat.Boat.DriverSeat:null;
             target=seat!=null?seat.position:riddenBoat.transform.TransformPoint(ridePosition);
-            facing=Quaternion.Euler(0f,riddenBoat.transform.eulerAngles.y+(seat!=null?0f:rideYaw),0f);
+            // A seated driver leans with the boat (including wave pitch and bank).
+            facing=rideSeat==1 && riddenBoat.Boat.IsMotorboat
+                ? riddenBoat.transform.rotation
+                : Quaternion.Euler(0f,riddenBoat.transform.eulerAngles.y+(seat!=null?0f:rideYaw),0f);
             boatWalkingSpeed=seat!=null?0f:Vector3.ProjectOnPlane(ridePosition-oldLocal,Vector3.up).magnitude/dt;
         }
         transform.position = localSource != null || riddenBoat!=null ? target : Vector3.Lerp(transform.position, target, blend);
@@ -318,6 +342,14 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
         heldFishMovementSwing = CaughtFishFlop.SmoothHeldMovement(
             heldFishMovementSwing, heldFish != null ? speed : 0f, Time.deltaTime);
+
+        // The authored seated pose is chosen by the same replicated rideSeat
+        // already used for boat controls: works for local third person and peers.
+        MotorboatDrivingSeat drivingSeat = riddenBoat != null && rideSeat == 1
+            ? MotorboatDrivingSeat.For(riddenBoat.Boat) : null;
+        bool drivingMotorboat = drivingSeat != null && drivePlayable.IsValid();
+        drivingBlend = Mathf.MoveTowards(drivingBlend, drivingMotorboat ? 1f : 0f, dt * 12f);
+        if (visualRoot != null) visualRoot.localPosition = restingVisualOffset;
 
         if (animationGraph.IsValid())
         {
@@ -383,20 +415,62 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             float freeWeight = (1f - holdFishBlend) * (1f - castBlend);
             float stationaryWeight = freeWeight * (1f - walkReelBlend);
             float locomotionWeight = (1f - fishingWeight) * stationaryWeight;
-            animationMixer.SetInputWeight(0, (1f - walkBlend) * locomotionWeight);
-            animationMixer.SetInputWeight(1, walkBlend * (1f - runBlend) * locomotionWeight);
-            animationMixer.SetInputWeight(8, walkBlend * runBlend * locomotionWeight);
-            animationMixer.SetInputWeight(2, castBlend * (1f - holdFishBlend));
-            animationMixer.SetInputWeight(3, reelBlend * stationaryWeight);
-            animationMixer.SetInputWeight(4, pullBlend * stationaryWeight);
-            animationMixer.SetInputWeight(5, walkReelBlend * freeWeight);
-            animationMixer.SetInputWeight(6, holdFishBlend * (1f - walkHoldFishBlend));
-            animationMixer.SetInputWeight(7, holdFishBlend * walkHoldFishBlend);
+            float regularWeight = 1f - drivingBlend;
+            animationMixer.SetInputWeight(0, (1f - walkBlend) * locomotionWeight * regularWeight);
+            animationMixer.SetInputWeight(1, walkBlend * (1f - runBlend) * locomotionWeight * regularWeight);
+            animationMixer.SetInputWeight(8, walkBlend * runBlend * locomotionWeight * regularWeight);
+            animationMixer.SetInputWeight(2, castBlend * (1f - holdFishBlend) * regularWeight);
+            animationMixer.SetInputWeight(3, reelBlend * stationaryWeight * regularWeight);
+            animationMixer.SetInputWeight(4, pullBlend * stationaryWeight * regularWeight);
+            animationMixer.SetInputWeight(5, walkReelBlend * freeWeight * regularWeight);
+            animationMixer.SetInputWeight(6, holdFishBlend * (1f - walkHoldFishBlend) * regularWeight);
+            animationMixer.SetInputWeight(7, holdFishBlend * walkHoldFishBlend * regularWeight);
+            if (drivePlayable.IsValid())
+            {
+                if (drivingMotorboat) drivingClock += dt;
+                drivePlayable.SetTime(drivingClock % Mathf.Max(.01f, driveClip.length));
+                animationMixer.SetInputWeight(9, drivingBlend);
+            }
             animationGraph.Evaluate(0f);
+            if (drivingMotorboat && drivingBlend > .001f && visualRoot != null)
+            {
+                // Align the animated pelvis to the actual seat cushion, rather
+                // than treating a seated character as standing on the deck.
+                Vector3 hips = leftHip != null && rightHip != null
+                    ? (leftHip.position + rightHip.position) * .5f
+                    : visualRoot.position + transform.up * .70f;
+                Vector3 pelvisTarget = drivingSeat.SeatSurface + riddenBoat.transform.up * .10f;
+                visualRoot.position += (pelvisTarget - hips) * drivingBlend;
+                if (drivingBlend >= .95f)
+                {
+                    AimHand(leftUpperArm, leftForearm, leftHand, drivingSeat.LeftGrip);
+                    AimHand(rightUpperArm, rightForearm, rightHand, drivingSeat.RightGrip);
+                }
+            }
         }
 
         if (label != null && Camera.main != null)
             label.rotation = Camera.main.transform.rotation;
+    }
+
+    private static void AimHand(Transform upper, Transform forearm, Transform hand, Vector3 goal)
+    {
+        if (upper == null || forearm == null || hand == null) return;
+        if ((hand.position - goal).sqrMagnitude > .65f * .65f) return;
+        for (int i = 0; i < 3; i++)
+        {
+            RotateTowardsGrip(forearm, hand, goal, 15f);
+            RotateTowardsGrip(upper, hand, goal, 15f);
+        }
+    }
+
+    private static void RotateTowardsGrip(Transform joint, Transform hand, Vector3 goal, float limit)
+    {
+        Vector3 current = hand.position - joint.position;
+        Vector3 desired = goal - joint.position;
+        if (current.sqrMagnitude < .0001f || desired.sqrMagnitude < .0001f) return;
+        Quaternion target = Quaternion.FromToRotation(current, desired) * joint.rotation;
+        joint.rotation = Quaternion.RotateTowards(joint.rotation, target, limit);
     }
 
     private void UpdateHeldRod(bool equipped, int tier)
