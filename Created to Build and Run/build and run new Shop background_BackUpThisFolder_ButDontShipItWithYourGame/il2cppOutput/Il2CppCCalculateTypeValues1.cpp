@@ -496,6 +496,7 @@ struct StringU5BU5DU5BU5D_t8BCC500C5CC1686D9BADCBAA811074FE00F83ACF;
 struct TextureHandleU5BU5DU5BU5D_t36A34F73F4A1EE7E90D37774A796785F0548EEB9;
 struct AnimatorU5BU5D_tC96418EE48F8DA017567CAE0235488C27640E759;
 struct AudioClipU5BU5D_t916722468F7EDCFA833318C35CD7D41097D75D31;
+struct AudioSourceU5BU5D_tBBF6E920E0DC80D53D4BB2A8D4C80D244EF170B2;
 struct BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65;
 struct BooleanU5BU5D_tD317D27C31DB892BE79FAE3AEBC0B3FFB73DE9B4;
 struct BoundingSphereU5BU5D_tD7485B1D5D5A0EE26537B093423FC3AC149BEA47;
@@ -37600,6 +37601,7 @@ struct BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013  : public MonoBe
 	OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___water;
 	Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* ___driverView;
 	ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* ___waveSafetyContacts;
+	int32_t ___solidNavigationMask;
 	float ___filteredBuoyancyHeight;
 	float ___lastDrivenForwardSpeed;
 	bool ___buoyancyStarted;
@@ -37611,6 +37613,7 @@ struct BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4  : public MonoBeh
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___U3CBoatU3Ek__BackingField;
 	bool ___U3CGroundedOnBoatU3Ek__BackingField;
 	CharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A* ___capsule;
+	bool ___suspendedMotorboatCapsule;
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___lastPosition;
 	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___lastRotation;
 };
@@ -38707,6 +38710,9 @@ struct FishingThirdPersonView_t226B9F954147858535A26B1315F44F2A33EA8795  : publi
 {
 	bool ___U3CIsThirdPersonU3Ek__BackingField;
 	Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* ___view;
+	FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* ___player;
+	float ___movementHeldTime;
+	float ___returnYawVelocity;
 	float ___orbitYaw;
 	float ___zoomDistance;
 	FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* ___fishing;
@@ -39140,6 +39146,14 @@ struct MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6  : pub
 	Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* ___body;
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___lastPosition;
 	bool ___measured;
+	bool ___clipsChecked;
+	float ___audioSpeed;
+	AudioSourceU5BU5D_tBBF6E920E0DC80D53D4BB2A8D4C80D244EF170B2* ___engineSources;
+	AudioSource_t871AC2272F896738252F04EE949AEF5B241D3299* ___ignitionSource;
+	AudioClip_t5D272C4EB4F2D3ED49F1C346DEA373CF6D585F20* ___startClip;
+	AudioClip_t5D272C4EB4F2D3ED49F1C346DEA373CF6D585F20* ___stopClip;
+	bool ___hadDriver;
+	bool ___engineRunning;
 };
 struct MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
 {
@@ -44100,6 +44114,10 @@ struct MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_Stat
 	MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* ___active;
 	ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* ___waterHits;
 };
+struct MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6_StaticFields
+{
+	StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248* ___ClipNames;
+};
 struct MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242_StaticFields
 {
 	List_1_t1A65684C781BADE0251B9581D3AA1985DB4EC45E* ___live;
@@ -45809,7 +45827,7 @@ const Il2CppTypeDefinitionSizes g_typeDefinitionSize6140 = { sizeof(U3CFitNextFr
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize6141;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize6141 = { sizeof(MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize6142;
-const Il2CppTypeDefinitionSizes g_typeDefinitionSize6142 = { sizeof(MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6), -1, 0, 0 };
+const Il2CppTypeDefinitionSizes g_typeDefinitionSize6142 = { sizeof(MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6), -1, sizeof(MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6_StaticFields), 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize6143;
 const Il2CppTypeDefinitionSizes g_typeDefinitionSize6143 = { sizeof(RaftPaddleAnimator_tC5F67EE9A3A8903BDC26A557BA0DE7F701C8DCB3), -1, 0, 0 };
 IL2CPP_EXTERN_C_CONST Il2CppTypeDefinitionSizes g_typeDefinitionSize6144;
