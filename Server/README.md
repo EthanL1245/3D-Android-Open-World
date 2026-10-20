@@ -32,7 +32,13 @@ existing ROW BOAT / DRIVE BOAT control. Capacity limits still apply. On a rowboa
 the owner uses the front seat and the guest uses the rear seat; leaving the front
 seat never promotes the guest. Each player's movement input drives their own oars.
 The front rower steers, the rear rower adds propulsion, and both rowing together
-use the existing two-rower speed. Larger boats retain one helm and walking decks.
+use the existing two-rower speed. The motorboat (saved as `sailboat`) retains one helm and adds a non-driving
+right-chair seat. With the helm occupied, a nearby player uses SIT / STAND UP.
+Seat 2 carries the passenger animation but always has zero steering/throttle;
+rowboat seat 2 retains its existing rowing behavior. Only one player may hold
+each chair, and passengers are not promoted when the driver leaves. Install the
+updated server runtime as well as rebuilding both clients for this feature.
+The yacht retains one helm and walking decks.
 
 The boat owner simulates hull physics and sends the transform with their normal
 player snapshots. Guests use solid interpolated copies and send rowing/helm input

@@ -39,8 +39,11 @@ export function acceptBoatRide(p, previous) {
   // Reserve the owner's front position; guests never get promoted into it.
   if(boat.kind==='rowboat'&&p!==owner&&riders.some(q=>q!==owner)){clearRide(p);return;}
   if(v.rideSeat>0){
-    const allowed=boat.kind==='rowboat'?(p===owner?1:2):1;
+    const keepingPassenger=already && previous?.rideSeat===2;
+    const motorboatPassenger=boat.kind==='sailboat' && v.rideSeat===2 &&
+      (keepingPassenger || riders.some(q=>q.pose.rideSeat===1));
+    const allowed=boat.kind==='rowboat'?(p===owner?1:2):motorboatPassenger?2:1;
     if(v.rideSeat!==allowed||riders.some(q=>q.pose.rideSeat===v.rideSeat))v.rideSeat=0;
   }
-  if(v.rideSeat===0){v.boatInputX=0;v.boatInputY=0;}
+  if(v.rideSeat===0 || (boat.kind==='sailboat' && v.rideSeat===2)){v.boatInputX=0;v.boatInputY=0;}
 }

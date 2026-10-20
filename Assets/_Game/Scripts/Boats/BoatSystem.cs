@@ -72,7 +72,7 @@ public sealed class BoatSystem : MonoBehaviour
     public void TogglePlacement()
     {
         if(PlacementMode){CancelPlacement();return;}
-        if(!OnIsland || controls.BoatUIBlocked || passenger.Driving)return;
+        if(!OnIsland || controls.BoatUIBlocked || passenger.Seated)return;
         if(Selected==null){Notice("Buy a permanent boat at Suncrest Marina.");return;}
 
         GetComponent<FishingSystem>()?.UnequipHands();
@@ -127,12 +127,13 @@ public sealed class BoatSystem : MonoBehaviour
         bool board=passenger.Boat==null && NearestBoat()!=null;
         bool helm=passenger.Boat!=null && passenger.Boat.CanUseSeat(passenger);
         interact.gameObject.SetActive(!tournamentNearby && !otherMenu && !shop.activeSelf && !PlacementMode && (NearMarina || helm || board));
-        interact.GetComponentInChildren<Text>().text=helm?(passenger.Driving?(passenger.Boat.IsRowboat?"STOP ROWING":"LEAVE HELM"):passenger.Boat.IsRowboat?"ROW BOAT":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
+        interact.GetComponentInChildren<Text>().text=passenger.Sitting?"STAND UP":
+            passenger.Boat!=null && passenger.Boat.CanSit(passenger)?"SIT":helm?(passenger.Seated?(passenger.Boat.IsRowboat?"STOP ROWING":"LEAVE HELM"):passenger.Boat.IsRowboat?"ROW BOAT":"DRIVE BOAT"):board?"BOARD BOAT":"MARINA SHOP";
 
         if(Keyboard.current!=null && Keyboard.current.digit2Key.wasPressedThisFrame && !shop.activeSelf && !otherMenu)TogglePlacement();
         if(Keyboard.current!=null && Keyboard.current.eKey.wasPressedThisFrame && interact.gameObject.activeSelf)Interact();
         if(!PlacementMode)return;
-        if(controls.BoatUIBlocked || passenger.Driving){CancelPlacement();return;}
+        if(controls.BoatUIBlocked || passenger.Seated){CancelPlacement();return;}
 
         // Placement intentionally stays close to the player. This keeps the ghost
         // easy to judge and prevents dropping a boat a long distance offshore.

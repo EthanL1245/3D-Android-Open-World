@@ -58,6 +58,12 @@ public sealed class MultiplayerBoat : MonoBehaviour
         return seat!=null && (string.IsNullOrEmpty(occupant)||occupant==Session.LocalId) &&
             Vector3.Distance(passenger.transform.position,seat.position)<2.5f;
     }
+    public bool PassengerSeatAvailable(BoatPassenger passenger)
+    {
+        return Boat.IsMotorboat && Session!=null && Session.Connected &&
+            !string.IsNullOrEmpty(FrontId) && FrontId!=Session.LocalId &&
+            (string.IsNullOrEmpty(RearId) || RearId==Session.LocalId);
+    }
     private void OnDestroy()
     {
         live.Remove(this);

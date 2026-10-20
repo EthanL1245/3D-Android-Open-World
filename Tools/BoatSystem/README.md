@@ -139,3 +139,26 @@ Validate in Unity/Android: traverse waves while at helm and on deck, test
 rotating the view and looking up/down, then disembark and inspect horizon
 leveling. Check fishing aim and underwater transitions. This change has not
 been play-tested on an Android device.
+
+
+### Motorboat passenger and wheel presentation (October 20)
+
+The supplied `Female Being a Motorboat Passenger.fbx` is imported as a generic
+clip with preserved hierarchy and validated against the existing female rig.
+`FishingRemoteAvatarSetup` resolves its actual clip reference on editor load,
+reimport, and before builds. No source animation joints are rewritten.
+
+The passenger pelvis uses the driver's previous cushion height and +0.05 m
+fore/aft offset, translated laterally to the modeled right cushion. The driver's
+visual root is translated until the animated right palm touches the nearest
+outer steering-wheel rim. The left arm keeps its authored animation. Both seats
+follow hull pitch/roll/yaw, and both first-person rendered cameras use their
+animated head position without changing the simulation/steering camera.
+
+Validation here: all 32 server tests pass, including motorboat occupied-helm
+requirement, contested seats, zero passenger input, stand/re-sit, driver exit,
+owner riding while a guest drives, boat removal, and unchanged raft/yacht seats.
+The passenger FBX's 50 model paths all exist in the original character FBX.
+Unity is unavailable in the editing environment; check both rebuilt clients in
+Play Mode/on device for final hand contact, cushion placement, bank/turn follow,
+first/third-person toggles, stand-up and disconnect behavior.

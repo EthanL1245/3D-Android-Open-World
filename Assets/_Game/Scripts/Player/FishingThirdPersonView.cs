@@ -59,7 +59,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         if (IsThirdPerson)
         {
             BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
-            orbitYaw = passenger != null && passenger.Driving &&
+            orbitYaw = passenger != null && passenger.Seated &&
                 passenger.Boat != null && passenger.Boat.IsMotorboat
                 ? passenger.Boat.transform.eulerAngles.y
                 : transform.eulerAngles.y;
@@ -67,10 +67,10 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         SyncLocalAvatar();
     }
 
-    private bool IsDrivingMotorboat()
+    private bool IsSeatedMotorboat()
     {
         BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
-        return passenger != null && passenger.Driving &&
+        return passenger != null && passenger.Seated &&
             passenger.Boat != null && passenger.Boat.IsMotorboat;
     }
 
@@ -79,7 +79,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         // A lightweight, visually hidden copy of the existing third-person rig
         // supplies the real animated head location while driving in first person.
         // Never touch the boat, driver anchor, controller or aiming camera.
-        bool needed = IsThirdPerson || IsDrivingMotorboat();
+        bool needed = IsThirdPerson || IsSeatedMotorboat();
         if (!needed)
         {
             if (avatar != null && avatar.gameObject.activeSelf)
@@ -105,11 +105,11 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         }
     }
 
-    private bool TryGetFirstPersonDriverHead(out Vector3 head)
+    private bool TryGetFirstPersonSeatedHead(out Vector3 head)
     {
         head = Vector3.zero;
-        return !IsThirdPerson && IsDrivingMotorboat() && avatar != null &&
-            avatar.isActiveAndEnabled && avatar.TryGetMotorboatDriverHead(out head);
+        return !IsThirdPerson && IsSeatedMotorboat() && avatar != null &&
+            avatar.isActiveAndEnabled && avatar.TryGetMotorboatSeatedHead(out head);
     }
 
     // A render interrupted by scene changes must never leave gameplay at the boom position.
@@ -137,7 +137,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         // that controller yaw would incorrectly show the character from the side
         // or front. Other modes retain their original character-relative target.
         BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
-        float behindYaw = passenger != null && passenger.Driving &&
+        float behindYaw = passenger != null && passenger.Seated &&
             passenger.Boat != null && passenger.Boat.IsMotorboat
             ? passenger.Boat.transform.eulerAngles.y
             : transform.eulerAngles.y;
@@ -196,7 +196,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
             distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         BoatPassenger passenger = GetComponent<BoatPassenger>();
-        Transform ownBoat = passenger != null && passenger.Boat != null && passenger.Driving
+        Transform ownBoat = passenger != null && passenger.Boat != null && passenger.Seated
             ? passenger.Boat.transform : null;
         for (int i = 0; i < count; i++)
         {
@@ -219,7 +219,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         if (camera != view || rendering) return;
         if (!IsThirdPerson)
         {
-            if (!TryGetFirstPersonDriverHead(out Vector3 head)) return;
+            if (!TryGetFirstPersonSeatedHead(out Vector3 head)) return;
             // Rendering-only eye shift: player aiming, touch look, fishing,
             // physics and network poses keep the original camera transform.
             savedPosition = view.transform.localPosition;
@@ -280,7 +280,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         Quaternion rotation;
         if (perspective.IsThirdPerson)
             perspective.CameraPose(out position, out rotation);
-        else if (perspective.TryGetFirstPersonDriverHead(out position))
+        else if (perspective.TryGetFirstPersonSeatedHead(out position))
             rotation = camera.transform.rotation;
         else
             return camera.WorldToScreenPoint(point);

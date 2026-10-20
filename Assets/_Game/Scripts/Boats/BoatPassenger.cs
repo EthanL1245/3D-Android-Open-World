@@ -8,6 +8,8 @@ public sealed class BoatPassenger : MonoBehaviour
     public FirstPersonController Controls {get;private set;}
     public BoatController Boat {get;private set;}
     public bool Driving => Boat!=null && (Boat.Driver==this || Boat.SecondRower==this);
+    public bool Sitting => Boat!=null && Boat.SeatedGuest==this;
+    public bool Seated => Driving || Sitting;
     public bool GroundedOnBoat {get;private set;}
 
     private CharacterController capsule;
@@ -30,7 +32,7 @@ public sealed class BoatPassenger : MonoBehaviour
             // normal FirstPersonController movement run later this frame.
             Vector3 relative=transform.position-lastPosition;
             Vector3 target=Boat.transform.position+Boat.transform.rotation*Quaternion.Inverse(lastRotation)*relative;
-            if(Driving)target=Boat.SeatFor(this).position;
+            if(Seated)target=Boat.SeatFor(this).position;
             // Platform transport is not a walking sweep: the hull has already
             // moved into our old capsule position. Sweeping out of that overlap
             // makes collision recovery/step offset kick the passenger upward.
@@ -40,7 +42,7 @@ public sealed class BoatPassenger : MonoBehaviour
             lastRotation=Boat.transform.rotation;
         }
 
-        if(Driving)
+        if(Seated)
         {
             GroundedOnBoat=false;
             return;
@@ -120,7 +122,7 @@ public sealed class BoatPassenger : MonoBehaviour
     public void ToggleHelm()
     {
         if(Boat==null)return;
-        if(Driving)
+        if(Seated)
         {
             Boat.ReleaseHelm(this);
             UpdateDriverCollision();
@@ -128,7 +130,7 @@ public sealed class BoatPassenger : MonoBehaviour
             return;
         }
         if(!Boat.CanUseSeat(this))return;
-        if(Boat.TakeHelm(this))
+        if(Boat.CanSit(this) ? Boat.TakePassengerSeat(this) : Boat.TakeHelm(this))
         {
             // The head-aligned first-person driving view must also work before
             // the player ever switches into third person.
@@ -143,7 +145,7 @@ public sealed class BoatPassenger : MonoBehaviour
     private void UpdateDriverCollision()
     {
         if(capsule==null)return;
-        bool seated=Driving && Boat.IsMotorboat;
+        bool seated=Seated && Boat.IsMotorboat;
         if(seated && !suspendedMotorboatCapsule && capsule.enabled)
         {
             // A seated driver is positioned by the seat anchor, not by walking
@@ -169,7 +171,7 @@ public sealed class BoatPassenger : MonoBehaviour
 
     public void SnapToRowingSeat()
     {
-        if(!Driving || capsule==null)return;
+        if(!Seated || capsule==null)return;
         // Boarding a seat crosses benches; do not sweep the capsule through them.
         UpdateDriverCollision();
         SetPlatformPosition(Boat.SeatFor(this).position);

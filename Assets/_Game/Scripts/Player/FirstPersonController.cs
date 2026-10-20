@@ -210,7 +210,7 @@ public class FirstPersonController : MonoBehaviour
     private void HandleMovement()
     {
         var passenger=GetComponent<BoatPassenger>();
-        if(passenger!=null && passenger.Driving){IsSwimming=false;IsSprinting=false;return;}
+        if(passenger!=null && passenger.Seated){IsSwimming=false;IsSprinting=false;return;}
 
         Vector2 input =
             Vector2.ClampMagnitude(

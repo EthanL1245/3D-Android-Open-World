@@ -7,6 +7,18 @@ public sealed class BoatController : MonoBehaviour
     public Transform DriverSeat;
     public Transform DeckExit;
     public Transform SecondRowingSeat;
+    public BoatPassenger SeatedGuest {get;private set;}
+    public Transform GuestSeat => IsMotorboat ? MotorboatDrivingSeat.For(this).PassengerAnchor : null;
+    public bool HasHelmOccupant => Driver!=null || (Shared!=null && !string.IsNullOrEmpty(Shared.FrontId));
+    public bool CanSit(BoatPassenger p) => IsMotorboat && p!=null && p.Boat==this && !p.Driving &&
+        (SeatedGuest==p || (SeatedGuest==null && HasHelmOccupant &&
+        (Shared==null || Shared.PassengerSeatAvailable(p)) &&
+        Vector3.Distance(p.transform.position,GuestSeat.position)<2.5f));
+    public bool TakePassengerSeat(BoatPassenger p)
+    {
+        if(!CanSit(p))return false;
+        SeatedGuest=p;return true;
+    }
     public BoatPassenger SecondRower {get;private set;}
     public bool IsRowboat => Data!=null && Data.ID=="rowboat";
     // The existing sailboat inventory ID is retained so old purchases and saves work.
@@ -22,8 +34,8 @@ public sealed class BoatController : MonoBehaviour
     public void ClearNetworkInput(){NetworkFrontInput=NetworkRearInput=Vector2.zero;NetworkHasDriver=false;}
     public float RowingSpeed => Data==null?0f:Data.Speed*(IsRowboat?Mathf.Max(1,ActivePaddlers):1);
     private static bool HasInput(BoatPassenger p) => p!=null && p.Controls!=null && p.Controls.BoatInput.sqrMagnitude>.0025f;
-    public Transform SeatFor(BoatPassenger p) => p==SecondRower?SecondRowingSeat:DriverSeat;
-    public bool CanUseSeat(BoatPassenger p) => p!=null && (p.Driving || (Shared!=null ? Shared.SeatAvailable(p) : (
+    public Transform SeatFor(BoatPassenger p) => p==SeatedGuest?GuestSeat:p==SecondRower?SecondRowingSeat:DriverSeat;
+    public bool CanUseSeat(BoatPassenger p) => p!=null && (p.Seated || CanSit(p) || (Shared!=null ? Shared.SeatAvailable(p) : (
         (Driver==null && Vector3.Distance(p.transform.position,DriverSeat.position)<2.5f) ||
         (IsRowboat && SecondRower==null && SecondRowingSeat!=null && Vector3.Distance(p.transform.position,SecondRowingSeat.position)<2.5f))));
     public BoatPassenger Driver {get;private set;}
@@ -135,6 +147,7 @@ public sealed class BoatController : MonoBehaviour
 
     public void ReleaseHelm(BoatPassenger passenger)
     {
+        if(SeatedGuest==passenger)SeatedGuest=null;
         if(SecondRower==passenger)SecondRower=null;
         if(Driver!=passenger)return;
         if(Shared!=null){Driver=null;driverView=null;return;}

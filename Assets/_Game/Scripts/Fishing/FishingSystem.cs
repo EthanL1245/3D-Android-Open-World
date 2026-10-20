@@ -479,7 +479,7 @@ public class FishingSystem : MonoBehaviour
     public void EquipRod()
     {
         var boatPassenger=GetComponent<BoatPassenger>();
-        if(boatPassenger!=null && boatPassenger.Driving)return;
+        if(boatPassenger!=null && boatPassenger.Seated)return;
         GetComponent<BoatSystem>()?.CancelPlacement();
 
         if(shopMode)return;

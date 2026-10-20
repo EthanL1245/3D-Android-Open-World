@@ -409,3 +409,48 @@ test('successful cast splash and ripple events replicate independently of fishin
   assert.equal((await post('/v1/state',{pose:{...pose(),castImpactAge:.15}},guest.token)).status,400);
   assert.equal((await post('/v1/state',{pose:{...pose(),castImpactSequence:2,castImpactAge:.1}},guest.token)).status,400);
 });
+
+test('motorboat right seat requires a driver, is exclusive, and never transmits steering',async t=>{
+  const post=await fixture(t), boat={...rowboat,kind:'sailboat'};
+  const owner=await post('/v1/open',{...hello,pose:{...pose(),boat}});
+  const guest=await post('/v1/join',{...hello,code:owner.code});
+  const third=await post('/v1/join',{...hello,code:owner.code});
+  const state=async(player,seat,extra={})=>post('/v1/state',{pose:ride(owner,seat,extra)},player.token);
+  let reply=await state(guest,2);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,0,'cannot sit before helm is occupied');
+  await state(owner,1,{boat});
+  reply=await state(guest,2,{boatInputX:1,boatInputY:1});
+  let seated=reply.players.find(p=>p.id===guest.id);
+  assert.equal(seated.rideSeat,2);assert.equal(seated.boatInputX,0);assert.equal(seated.boatInputY,0);
+  reply=await state(third,2);
+  assert.equal(reply.players.find(p=>p.id===third.id).rideSeat,0,'right seat cannot be claimed twice');
+  reply=await state(third,1);
+  assert.equal(reply.players.find(p=>p.id===third.id).rideSeat,0,'driver cannot be displaced');
+  await state(owner,0,{boat});
+  reply=await state(guest,2);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,2,'passenger remains seated without promotion');
+  reply=await state(guest,0);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,0,'stand up releases chair');
+  // Ownership does not decide the motorboat seat: a guest may drive the owner.
+  await state(third,1);
+  reply=await state(owner,2,{boat,boatInputX:-1});
+  seated=reply.players.find(p=>p.id===owner.id);
+  assert.equal(seated.rideSeat,2);assert.equal(seated.boatInputX,0);
+  await state(owner,0,{boat});
+  reply=await state(guest,2);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,2,'released chair is reusable');
+  reply=await post('/v1/state',{pose:{...pose(),boat:null}},owner.token);
+  assert.equal(reply.players.find(p=>p.id===guest.id).rideSeat,-1,'removing boat releases passenger');
+});
+
+test('right passenger seat is not enabled on yachts or rafts',async t=>{
+  const post=await fixture(t);
+  const owner=await post('/v1/open',hello);
+  const guest=await post('/v1/join',{...hello,code:owner.code});
+  for(const kind of ['yacht','raft']){
+    const boat={...rowboat,kind};
+    await post('/v1/state',{pose:ride(owner,1,{boat})},owner.token);
+    const reply=await post('/v1/state',{pose:ride(owner,2)},guest.token);
+    assert.notEqual(reply.players.find(p=>p.id===guest.id).rideSeat,2);
+  }
+});

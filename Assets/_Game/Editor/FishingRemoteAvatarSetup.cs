@@ -19,6 +19,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
     public const string HoldFishSourcePath = "Assets/Manually Added Assets/Female Holding the Fish.fbx";
     public const string WalkHoldFishSourcePath = "Assets/Manually Added Assets/Female Holding the Fish while Walking.fbx";
     public const string DriveMotorboatSourcePath = "Assets/Manually Added Assets/Female Driving Motorboat.fbx";
+    public const string PassengerMotorboatSourcePath = "Assets/Manually Added Assets/Female Being a Motorboat Passenger.fbx";
     private const string ResourceFolder = "Assets/Resources/Multiplayer";
     private const string CatalogPath = ResourceFolder + "/FemaleRemoteAvatar.asset";
 
@@ -134,6 +135,8 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
         if (!ValidateBindings(model, walkReel) || !ValidateBindings(model, holdFish) || !ValidateBindings(model, walkHoldFish)) return false;
         AnimationClip driveMotorboat = FindAnimation(DriveMotorboatSourcePath, "driv");
         if (driveMotorboat != null && !ValidateBindings(model, driveMotorboat)) return false;
+        AnimationClip passengerMotorboat = FindAnimation(PassengerMotorboatSourcePath, "passenger");
+        if (passengerMotorboat == null || !ValidateBindings(model, passengerMotorboat)) return false;
         if (FishingRemoteAvatarAsset.FindBone(model.transform, "Hand.R") == null)
         {
             Debug.LogError("Multiplayer: imported model has no right hand for the held fish.");
@@ -162,7 +165,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.RunClip != run || catalog.IdleClip != idle || catalog.CastClip != cast || catalog.LeftHandPath != leftHandPath || catalog.ReelClip != reel || catalog.PullClip != pull || catalog.WalkReelClip != walkReel || catalog.HoldFishClip != holdFish || catalog.WalkHoldFishClip != walkHoldFish || catalog.DriveMotorboatClip != driveMotorboat;
+        bool changed = catalog.ModelPrefab != model || catalog.WalkClip != walk || catalog.RunClip != run || catalog.IdleClip != idle || catalog.CastClip != cast || catalog.LeftHandPath != leftHandPath || catalog.ReelClip != reel || catalog.PullClip != pull || catalog.WalkReelClip != walkReel || catalog.HoldFishClip != holdFish || catalog.WalkHoldFishClip != walkHoldFish || catalog.DriveMotorboatClip != driveMotorboat || catalog.PassengerMotorboatClip != passengerMotorboat;
         if (changed)
         {
             catalog.ModelPrefab = model;
@@ -176,6 +179,7 @@ public sealed class FishingRemoteAvatarSetup : IPreprocessBuildWithReport
             catalog.HoldFishClip = holdFish;
             catalog.WalkHoldFishClip = walkHoldFish;
             catalog.DriveMotorboatClip = driveMotorboat;
+            catalog.PassengerMotorboatClip = passengerMotorboat;
             catalog.LeftHandPath = leftHandPath;
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
@@ -242,7 +246,8 @@ public sealed class FishingRemoteIdleModelImport : AssetPostprocessor
             assetPath != FishingRemoteAvatarSetup.WalkReelSourcePath &&
             assetPath != FishingRemoteAvatarSetup.HoldFishSourcePath &&
             assetPath != FishingRemoteAvatarSetup.WalkHoldFishSourcePath &&
-            assetPath != FishingRemoteAvatarSetup.DriveMotorboatSourcePath) return;
+            assetPath != FishingRemoteAvatarSetup.DriveMotorboatSourcePath &&
+            assetPath != FishingRemoteAvatarSetup.PassengerMotorboatSourcePath) return;
         ModelImporter importer = assetImporter as ModelImporter;
         if (importer == null) return;
         importer.importAnimation = true;
@@ -274,7 +279,8 @@ public sealed class FishingRemoteAvatarImportWatcher : AssetPostprocessor
                 importedAssets[i] != FishingRemoteAvatarSetup.WalkReelSourcePath &&
                 importedAssets[i] != FishingRemoteAvatarSetup.HoldFishSourcePath &&
                 importedAssets[i] != FishingRemoteAvatarSetup.WalkHoldFishSourcePath &&
-                importedAssets[i] != FishingRemoteAvatarSetup.DriveMotorboatSourcePath) continue;
+                importedAssets[i] != FishingRemoteAvatarSetup.DriveMotorboatSourcePath &&
+                importedAssets[i] != FishingRemoteAvatarSetup.PassengerMotorboatSourcePath) continue;
             EditorApplication.delayCall += () => FishingRemoteAvatarSetup.EnsureSetup(false);
             break;
         }

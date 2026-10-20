@@ -21,7 +21,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     // A read-only visual attachment used for the first-person *rendered* eye.
     // The gameplay camera's saved simulation pose is never moved for aiming/input.
-    public bool TryGetMotorboatDriverHead(out Vector3 worldHead)
+    public bool TryGetMotorboatSeatedHead(out Vector3 worldHead)
     {
         worldHead = Vector3.zero;
         if (drivingBlend < .95f || visualRoot == null) return false;
@@ -61,11 +61,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
 
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
-    private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable, drivePlayable;
+    private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable, drivePlayable, passengerPlayable;
     private Transform visualRoot, headBone, leftHip, rightHip, leftUpperArm, leftForearm, rightUpperArm, rightForearm;
     private Vector3 restingVisualOffset;
     private float drivingBlend, drivingClock;
-    private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip, driveClip;
+    private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip, driveClip, passengerClip;
     private Transform leftHand, rodSocket, rightHand, heldMouth;
     private GameObject heldFish;
     private LineRenderer heldString;
@@ -168,6 +168,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (castClip == null)
             Debug.LogError("Multiplayer: casting clip is missing from the avatar catalog. Rebuild the game with the casting FBX.");
         driveClip = asset.DriveMotorboatClip;
+        passengerClip = asset.PassengerMotorboatClip;
         runClip = asset.RunClip;
         walkClip = asset.WalkClip;
         idleClip = asset.IdleClip != null ? asset.IdleClip : walkClip;
@@ -177,7 +178,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationGraph = PlayableGraph.Create("Remote Female Character Walk");
             animationGraph.SetTimeUpdateMode(DirectorUpdateMode.Manual);
 
-            animationMixer = AnimationMixerPlayable.Create(animationGraph, 10);
+            animationMixer = AnimationMixerPlayable.Create(animationGraph, 11);
             idlePlayable = AnimationClipPlayable.Create(animationGraph, idleClip);
             walkPlayable = AnimationClipPlayable.Create(animationGraph, walkClip);
             animationGraph.Connect(idlePlayable, 0, animationMixer, 0);
@@ -222,6 +223,12 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 drivePlayable = AnimationClipPlayable.Create(animationGraph, driveClip);
                 animationGraph.Connect(drivePlayable, 0, animationMixer, 9);
             }
+            if (passengerClip != null)
+            {
+                passengerPlayable = AnimationClipPlayable.Create(animationGraph, passengerClip);
+                animationGraph.Connect(passengerPlayable, 0, animationMixer, 10);
+            }
+            animationMixer.SetInputWeight(10, 0f);
             animationMixer.SetInputWeight(9, 0f);
             animationMixer.SetInputWeight(8, 0f);
             animationMixer.SetInputWeight(7, 0f);
@@ -295,7 +302,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         riddenBoat=rideSeat>=0?MultiplayerBoat.Find(rideOwner,rideKey):null;
         bool holding = peer.heldFishSpecies >= 0 && peer.heldFishWeight > 0f && !peer.rodEquipped && !peer.swimming;
         UpdateHeldFish(holding ? peer.heldFishSpecies : -1, peer.heldFishWeight);
-        bool motorboatDriver = peer.rideSeat == 1 && (riddenBoat == null || riddenBoat.Boat.IsMotorboat);
+        bool motorboatDriver = (peer.rideSeat == 1 || peer.rideSeat == 2) && (riddenBoat == null || riddenBoat.Boat.IsMotorboat);
         UpdateHeldRod(peer.rodEquipped && !peer.swimming && !holding && !motorboatDriver, peer.rodTier);
         // The sequence survives the short local Casting state. HTTP polling can
         // miss that state entirely, so a new sequence must still play once even
@@ -344,30 +351,32 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         // Local third-person must work without a server connection, while the
         // remote players use the existing replicated helm seat number.
         BoatPassenger localPassenger = localSource != null ? localSource.GetComponent<BoatPassenger>() : null;
-        BoatController localHelmBoat = localPassenger != null && localPassenger.Driving &&
+        BoatController localHelmBoat = localPassenger != null && localPassenger.Seated &&
             localPassenger.Boat != null && localPassenger.Boat.IsMotorboat ? localPassenger.Boat : null;
         float boatWalkingSpeed=-1f;
         if(riddenBoat!=null)
         {
             Vector3 oldLocal=ridePosition;
             ridePosition=localSource!=null?rideTarget:Vector3.Lerp(ridePosition,rideTarget,blend);
-            Transform seat=rideSeat==2?riddenBoat.Boat.SecondRowingSeat:rideSeat==1?riddenBoat.Boat.DriverSeat:null;
+            Transform seat=rideSeat==2?(riddenBoat.Boat.IsMotorboat?riddenBoat.Boat.GuestSeat:riddenBoat.Boat.SecondRowingSeat):rideSeat==1?riddenBoat.Boat.DriverSeat:null;
             target=seat!=null?seat.position:riddenBoat.transform.TransformPoint(ridePosition);
             // A seated driver leans with the boat (including wave pitch and bank).
-            facing=rideSeat==1 && riddenBoat.Boat.IsMotorboat
+            facing=rideSeat>0 && riddenBoat.Boat.IsMotorboat
                 ? riddenBoat.transform.rotation
                 : Quaternion.Euler(0f,riddenBoat.transform.eulerAngles.y+(seat!=null?0f:rideYaw),0f);
             boatWalkingSpeed=seat!=null?0f:Vector3.ProjectOnPlane(ridePosition-oldLocal,Vector3.up).magnitude/dt;
         }
         if (localHelmBoat != null)
         {
-            target = localHelmBoat.DriverSeat.position;
+            target = localHelmBoat.SeatFor(localPassenger).position;
             facing = localHelmBoat.transform.rotation;
             boatWalkingSpeed = 0f;
         }
         transform.position = localSource != null || riddenBoat!=null ? target : Vector3.Lerp(transform.position, target, blend);
         // Smooth the visual avatar only; local movement and aiming stay immediate.
-        transform.rotation = Quaternion.Slerp(transform.rotation, facing, blend);
+        // Seated figures must stay rigidly aligned with a turning/banking hull.
+        bool motorboatSeated = localHelmBoat != null || (riddenBoat != null && rideSeat > 0 && riddenBoat.Boat.IsMotorboat);
+        transform.rotation = motorboatSeated ? facing : Quaternion.Slerp(transform.rotation, facing, blend);
         float measured = Vector3.ProjectOnPlane(transform.position - previous, Vector3.up).magnitude / dt;
         if(boatWalkingSpeed>=0f)measured=boatWalkingSpeed;
         previous = transform.position;
@@ -379,9 +388,10 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         // The authored seated pose is chosen by the same replicated rideSeat
         // already used for boat controls: works for local third person and peers.
         BoatController visualHelmBoat = localHelmBoat != null ? localHelmBoat :
-            riddenBoat != null && rideSeat == 1 && riddenBoat.Boat.IsMotorboat ? riddenBoat.Boat : null;
+            riddenBoat != null && rideSeat > 0 && riddenBoat.Boat.IsMotorboat ? riddenBoat.Boat : null;
         MotorboatDrivingSeat drivingSeat = MotorboatDrivingSeat.For(visualHelmBoat);
-        bool drivingMotorboat = drivingSeat != null && drivePlayable.IsValid();
+        bool passengerPose = localHelmBoat != null ? localPassenger.Sitting : rideSeat == 2;
+        bool drivingMotorboat = drivingSeat != null && (passengerPose ? passengerPlayable.IsValid() : drivePlayable.IsValid());
         drivingBlend = Mathf.MoveTowards(drivingBlend, drivingMotorboat ? 1f : 0f, dt * 12f);
         if (visualRoot != null) visualRoot.localPosition = restingVisualOffset;
 
@@ -459,11 +469,16 @@ public sealed class FishingRemotePlayer : MonoBehaviour
             animationMixer.SetInputWeight(5, walkReelBlend * freeWeight * regularWeight);
             animationMixer.SetInputWeight(6, holdFishBlend * (1f - walkHoldFishBlend) * regularWeight);
             animationMixer.SetInputWeight(7, holdFishBlend * walkHoldFishBlend * regularWeight);
+            if (drivingMotorboat) drivingClock += dt;
             if (drivePlayable.IsValid())
             {
-                if (drivingMotorboat) drivingClock += dt;
                 drivePlayable.SetTime(drivingClock % Mathf.Max(.01f, driveClip.length));
-                animationMixer.SetInputWeight(9, drivingBlend);
+                animationMixer.SetInputWeight(9, passengerPose ? 0f : drivingBlend);
+            }
+            if (passengerPlayable.IsValid())
+            {
+                passengerPlayable.SetTime(drivingClock % Mathf.Max(.01f, passengerClip.length));
+                animationMixer.SetInputWeight(10, passengerPose ? drivingBlend : 0f);
             }
             animationGraph.Evaluate(0f);
             if (drivingMotorboat && drivingBlend > .001f && visualRoot != null)
@@ -473,13 +488,18 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 Vector3 hips = leftHip != null && rightHip != null
                     ? (leftHip.position + rightHip.position) * .5f
                     : visualRoot.position + transform.up * .70f;
-                // Preserve the original FBX's authored shoulder/elbow/hand pose.
-                // The post-animation wheel IK altered both arms away from their
-                // imported animation; only reposition the whole avatar at the seat.
-                // Raise the previous driver pose 10 cm, retaining its 5 cm bow offset.
-                Vector3 pelvisTarget = drivingSeat.SeatSurface
+                // Passenger matches the previous driver placement exactly except
+                // for lateral chair spacing; both keep the authored FBX joint pose.
+                Vector3 pelvisTarget = (passengerPose ? drivingSeat.PassengerSurface : drivingSeat.SeatSurface)
                     + visualHelmBoat.transform.forward * .05f;
                 visualRoot.position += (pelvisTarget - hips) * drivingBlend;
+                if (!passengerPose && rightHand != null)
+                {
+                    // Move only the visual model until the right palm contacts
+                    // the outside rim. No IK, bone rotations or gameplay offsets.
+                    Vector3 palm = rightHand.TransformPoint(rightGripLocal);
+                    visualRoot.position += (drivingSeat.ClosestRimPoint(palm) - palm) * drivingBlend;
+                }
             }
         }
 

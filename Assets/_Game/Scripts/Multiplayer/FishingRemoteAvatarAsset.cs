@@ -15,6 +15,7 @@ public sealed class FishingRemoteAvatarAsset : ScriptableObject
     public AnimationClip HoldFishClip;
     public AnimationClip WalkHoldFishClip;
     public AnimationClip DriveMotorboatClip;
+    public AnimationClip PassengerMotorboatClip;
     public string LeftHandPath;
 
     // FBX importers can sanitize punctuation or add an armature/namespace prefix.

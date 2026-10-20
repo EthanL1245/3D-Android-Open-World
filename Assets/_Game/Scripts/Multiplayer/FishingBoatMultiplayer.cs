@@ -30,7 +30,7 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
         if(session.Connected && pose.world==0 && ride!=null)
         {
             pose.rideOwner=ride.OwnerId;pose.rideKey=ride.Key;
-            pose.rideSeat=passenger.Driving?(passenger.Boat.SecondRower==passenger?2:1):0;
+            pose.rideSeat=passenger.Sitting?2:passenger.Driving?(passenger.Boat.SecondRower==passenger?2:1):0;
             Vector3 local=ride.transform.InverseTransformPoint(transform.position);
             pose.rideX=Mathf.Clamp(local.x,-12,12);pose.rideY=Mathf.Clamp(local.y,-5,5);pose.rideZ=Mathf.Clamp(local.z,-12,12);
             pose.rideYaw=Mathf.DeltaAngle(ride.transform.eulerAngles.y,transform.eulerAngles.y);
@@ -82,7 +82,7 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
             var current=passenger.Boat.Shared;if(current==null)continue;
             // Only reconcile an echo of our current request, never a stale response to an earlier click.
             if(peer.rideOwner!=requestOwner || peer.rideKey!=requestKey)passenger.Detach();
-            else if(passenger.Driving && peer.rideSeat!=requestSeat){passenger.Boat.ReleaseHelm(passenger);passenger.Controls.ResetMotion();}
+            else if(passenger.Seated && peer.rideSeat!=requestSeat){passenger.Boat.ReleaseHelm(passenger);passenger.Controls.ResetMotion();}
         }
     }
     private void ApplyRiders(MultiplayerBoat shared,FishingMultiplayer.Peer[] peers)
@@ -97,7 +97,7 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
             if(peer.rideSeat==2)shared.RearId=peer.id;
             if(peer.id==session.LocalId)continue;
             if(peer.rideSeat==1){boat.NetworkFrontInput=new Vector2(peer.boatInputX,peer.boatInputY);boat.NetworkFrontYaw=peer.boatLookYaw;boat.NetworkHasDriver=true;}
-            if(peer.rideSeat==2)boat.NetworkRearInput=new Vector2(peer.boatInputX,peer.boatInputY);
+            if(peer.rideSeat==2 && boat.IsRowboat)boat.NetworkRearInput=new Vector2(peer.boatInputX,peer.boatInputY);
         }
     }
     public BoatController NearestBoardable()
@@ -125,6 +125,7 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
     public void Clear()
     {
         foreach(string id in new List<string>(replicas.Keys))Remove(id);
+        if(passenger!=null && passenger.Sitting)passenger.ToggleHelm();
         if(owned!=null){owned.Boat.NetworkOtherPassengers=0;owned.Boat.ClearNetworkInput();owned.Boat.Shared=null;Destroy(owned);owned=null;}
         requestOwner=requestKey="";requestSeat=-1;revision=0;
     }
