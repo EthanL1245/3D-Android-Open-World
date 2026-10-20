@@ -13,7 +13,9 @@ public sealed class BoatPassenger : MonoBehaviour
     public bool GroundedOnBoat {get;private set;}
 
     private CharacterController capsule;
-    private bool suspendedMotorboatCapsule;
+    private bool suspendedSeatedCapsule;
+    private bool isolatedFromBoatPhysics;
+    private bool previousDetectCollisions;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
@@ -25,7 +27,7 @@ public sealed class BoatPassenger : MonoBehaviour
 
     private void Update()
     {
-        UpdateDriverCollision();
+        UpdatePassengerCollision();
         if(Boat!=null)
         {
             // Carry the player by the exact rigid-platform delta first, then let the
@@ -69,6 +71,7 @@ public sealed class BoatPassenger : MonoBehaviour
         if(under!=null && under.Board())
         {
             Boat=under;
+            UpdatePassengerCollision();
             lastPosition=under.transform.position;
             lastRotation=under.transform.rotation;
             GroundedOnBoat=true;
@@ -109,9 +112,11 @@ public sealed class BoatPassenger : MonoBehaviour
     {
         if(Boat!=null || boat==null || Vector3.Distance(transform.position,boat.DeckExit.position)>4 || !boat.Board())return false;
         Boat=boat;
+        UpdatePassengerCollision();
         capsule.enabled=false;
         transform.position=boat.DeckExit.position;
         capsule.enabled=true;
+        UpdatePassengerCollision();
         Controls.ResetMotion();
         lastPosition=boat.transform.position;
         lastRotation=boat.transform.rotation;
@@ -125,7 +130,7 @@ public sealed class BoatPassenger : MonoBehaviour
         if(Seated)
         {
             Boat.ReleaseHelm(this);
-            UpdateDriverCollision();
+            UpdatePassengerCollision();
             Controls.ResetMotion();
             return;
         }
@@ -142,22 +147,40 @@ public sealed class BoatPassenger : MonoBehaviour
         }
     }
 
-    private void UpdateDriverCollision()
+    private void UpdatePassengerCollision()
     {
         if(capsule==null)return;
-        bool seated=Seated && Boat.IsMotorboat;
-        if(seated && !suspendedMotorboatCapsule && capsule.enabled)
+        // Incoming hull contacts must never use a rider as a solid obstacle.
+        // detectCollisions=false still lets CharacterController.Move query the
+        // deck and walls, so standing passengers keep walking/jumping normally.
+        // Platform transport above supplies boat motion without physical pushing.
+        bool aboard=Boat!=null && (Boat.IsRowboat || Boat.IsMotorboat);
+        if(aboard && !isolatedFromBoatPhysics)
         {
-            // A seated driver is positioned by the seat anchor, not by walking
-            // physics. Leaving the capsule solid lets the fast/tilted cockpit hit
-            // its own driver and brake the hull. Restore it on every exit path.
-            capsule.enabled=false;
-            suspendedMotorboatCapsule=true;
+            previousDetectCollisions=capsule.detectCollisions;
+            isolatedFromBoatPhysics=true;
         }
-        else if(!seated && suspendedMotorboatCapsule)
+        bool seated=Seated && aboard;
+        if(seated && !suspendedSeatedCapsule && capsule.enabled)
+        {
+            // All seats (including both rowers) use exact anchor placement;
+            // an enabled capsule must not fight the hull as it pitches/rolls.
+            // Standing riders keep their controller for deck walking.
+            capsule.enabled=false;
+            suspendedSeatedCapsule=true;
+        }
+        else if(!seated && suspendedSeatedCapsule)
         {
             capsule.enabled=true;
-            suspendedMotorboatCapsule=false;
+            suspendedSeatedCapsule=false;
+        }
+        // Apply after any enable/disable transition so leaving a seat while
+        // still aboard cannot briefly turn the rider back into a hull obstacle.
+        if(aboard) capsule.detectCollisions=false;
+        else if(isolatedFromBoatPhysics)
+        {
+            capsule.detectCollisions=previousDetectCollisions;
+            isolatedFromBoatPhysics=false;
         }
     }
 
@@ -166,14 +189,18 @@ public sealed class BoatPassenger : MonoBehaviour
         bool enabled=capsule!=null && capsule.enabled;
         if(enabled)capsule.enabled=false;
         transform.position=position;
-        if(enabled)capsule.enabled=true;
+        if(enabled)
+        {
+            capsule.enabled=true;
+            if(isolatedFromBoatPhysics)capsule.detectCollisions=false;
+        }
     }
 
     public void SnapToRowingSeat()
     {
         if(!Seated || capsule==null)return;
         // Boarding a seat crosses benches; do not sweep the capsule through them.
-        UpdateDriverCollision();
+        UpdatePassengerCollision();
         SetPlatformPosition(Boat.SeatFor(this).position);
         lastPosition=Boat.transform.position;lastRotation=Boat.transform.rotation;
         Controls.ResetMotion();
@@ -183,7 +210,7 @@ public sealed class BoatPassenger : MonoBehaviour
     {
         if(Boat!=null)Boat.Leave(this);
         Boat=null;
-        UpdateDriverCollision();
+        UpdatePassengerCollision();
         GroundedOnBoat=false;
     }
 

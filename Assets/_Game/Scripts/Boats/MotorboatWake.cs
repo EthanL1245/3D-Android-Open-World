@@ -31,7 +31,7 @@ public sealed class MotorboatWake : MonoBehaviour
     private static Texture2D sharedFoam;
     private static int users;
     private int count, first, strip;
-    private float nextSample, nextMesh, lastTime, lastYaw, distance, strength, turn;
+    private float nextSample, nextMesh, nextCameraLookup, lastTime, lastYaw, distance, strength, turn;
     private Vector3 lastPosition;
     private bool tracking, emitting, ownsResources;
     private static readonly int BaseLevelId = Shader.PropertyToID("_BaseLevel");
@@ -44,6 +44,7 @@ public sealed class MotorboatWake : MonoBehaviour
         if (wake == null) wake = owner.gameObject.AddComponent<MotorboatWake>();
         wake.boat = owner;
         wake.ocean = water;
+        wake.ResolveView();
     }
 
     private bool Prepare()
@@ -53,7 +54,12 @@ public sealed class MotorboatWake : MonoBehaviour
         {
             // Resource reference keeps the shader in Android builds (no Shader.Find).
             var template = Resources.Load<Material>("Boats/MotorboatWake");
-            if (template == null) { enabled = false; return false; }
+            if (template == null)
+            {
+                Debug.LogError("Motorboat wake material is missing: Resources/Boats/MotorboatWake", this);
+                enabled = false;
+                return false;
+            }
             sharedMaterial = new Material(template) { name = "Shared motorboat foam" };
             sharedFoam = CreateFoam();
             sharedMaterial.mainTexture = sharedFoam;
@@ -87,7 +93,16 @@ public sealed class MotorboatWake : MonoBehaviour
             return;
         }
         float now = Time.time;
-        if (view == null || !view.isActiveAndEnabled) view = Camera.main;
+        if (view == null || !view.isActiveAndEnabled)
+        {
+            // PrototypeWorld's PlayerCamera is intentionally untagged. Do not
+            // depend on Camera.main; all local and replica wakes use this player.
+            if (now >= nextCameraLookup)
+            {
+                nextCameraLookup = now + 1f;
+                ResolveView();
+            }
+        }
         // Include the longest possible 108 m trail when deciding to stop work.
         if (view == null || (view.transform.position - transform.position).sqrMagnitude > 250f * 250f)
         {
@@ -120,6 +135,13 @@ public sealed class MotorboatWake : MonoBehaviour
         int step = range > 65f * 65f ? 2 : 1;
         nextMesh = now + (step == 1 ? .05f : .1f);
         Build(now, step);
+    }
+
+    private void ResolveView()
+    {
+        var player = FindFirstObjectByType<FirstPersonController>();
+        view = player != null ? player.ViewCamera : null;
+        if (view == null || !view.isActiveAndEnabled) view = Camera.main;
     }
 
     private void Sample(float now)

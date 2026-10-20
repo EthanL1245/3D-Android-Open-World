@@ -64,9 +64,11 @@ Shader "OpenWorld/MotorboatWake"
                 float fade = saturate(1 - age / 4.0);
                 float range = distance(_WorldSpaceCameraPos.xz, world.xz);
                 float distanceFade = 1 - smoothstep(100.0, 140.0, range);
-                float aboveWater = smoothstep(-.3, .15, _WorldSpaceCameraPos.y - (_BaseLevel + height));
+                // A crest behind the boat can be above a seated camera while
+                // the camera itself is above water. Do not hide that entire wake
+                // by comparing eye height to the height of each distant vertex.
                 output.uv = input.uv;
-                output.foam = half4(input.color.a, input.color.g * fade * fade * distanceFade * aboveWater,
+                output.foam = half4(input.color.a, input.color.g * fade * fade * distanceFade,
                     input.color.b, ComputeFogFactor(output.positionCS.z));
                 return output;
             }

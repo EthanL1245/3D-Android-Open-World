@@ -207,3 +207,43 @@ Validation before release on phones (Unity/device execution is required):
   Verify no steady-state wake GC allocations and compare CPU/GPU frame times
   with the component disabled. The budget is bounded; zero FPS impact is not a
   claim that can be made without these device measurements.
+
+
+### Wake visibility and passenger contact correction
+
+PrototypeWorld's PlayerCamera is untagged. Wakes now resolve
+FirstPersonController.ViewCamera directly, with Camera.main only as a fallback.
+They cache it and retry at most once per second if unavailable. Previously the
+Camera.main-only lookup returned null and cleared the wake every frame.
+The shader also no longer masks foam by comparing the camera's height against
+individual distant wave crests. The geometry/update budget remains unchanged.
+
+While aboard a rowboat or motorboat, BoatPassenger temporarily sets the local
+CharacterController.detectCollisions to false. This disables incoming hull
+contacts while preserving CharacterController.Move deck/wall collision queries.
+All seated riders, including rowboat rowers, suspend their capsule entirely.
+Exact platform displacement and seat anchors still carry riders with the boat.
+The original incoming-collision setting is restored when detaching, disabling,
+or losing the boat; leaving a seat while still aboard keeps contact protection.
+No passenger-based ballast, buoyancy, thrust, steering, or wave settings are added.
+Existing deliberate rowing input is unchanged. Remote avatar colliders were
+already disabled; no new network messages or physics queries are introduced.
+
+Regression playtest: in two-client sessions, board a rowboat and motorboat, both
+standing and seated. Drive/row, turn, cross waves, stand up, jump, and disembark.
+Neither rider should hold down or obstruct the hull, and both should follow it.
+Check the wake from an untagged PlayerCamera in first and third person. These
+runtime/device checks require Unity; source inspection alone cannot prove them.
+
+### Plain git pull on the developer PC
+
+Branch tracking is local Git configuration, not a versioned project setting.
+For the existing upstream remote, run once in the Unity project folder:
+
+```powershell
+git fetch upstream
+git branch --set-upstream-to=upstream/main main
+```
+
+Then, while on main, future updates need only `git pull`. Save and commit local
+Unity edits before pulling if Git reports conflicting uncommitted changes.
