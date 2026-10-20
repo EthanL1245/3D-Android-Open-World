@@ -355,10 +355,18 @@ public sealed class BoatController : MonoBehaviour
             if(lookRight.sqrMagnitude<.0001f)lookRight=right;
             lookForward.Normalize();lookRight.Normalize();
 
-            // Same mental model as walking: joystick direction is interpreted in
-            // camera space. The hull then turns toward that travel direction instead
-            // of instantly strafing or using the joystick X axis as a rudder.
-            desiredDirection=lookForward*input.y+lookRight*input.x;
+            // Keep first-person motorboat control and all other boats' existing
+            // camera-relative steering unchanged. In third-person motorboat mode
+            // the camera is merely orbiting/recentering behind the bow: steering
+            // against a fixed player-camera yaw makes a held left/right stick stop
+            // turning once the hull reaches that world-space heading.
+            // Resolve only that mode's joystick against the moving hull, so a
+            // held sideways input keeps requesting a turn as the hull rotates.
+            bool motorboatThirdPerson = IsMotorboat && Driver != null &&
+                Driver.Controls != null && Driver.Controls.IsThirdPersonView;
+            desiredDirection = motorboatThirdPerson
+                ? forward * input.y + right * input.x
+                : lookForward * input.y + lookRight * input.x;
             desiredDirection=Vector3.ProjectOnPlane(desiredDirection,Vector3.up);
             if(desiredDirection.sqrMagnitude>.0001f)
             {
