@@ -18,6 +18,26 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         ? (leftHip.position + rightHip.position) * .5f + transform.up * .65f
         : transform.position + Vector3.up * (FeetOffset + BodyHeight * .5f);
     public Transform RodTip => observerRodView != null ? observerRodView.RodTip : null;
+
+    // A read-only visual attachment used for the first-person *rendered* eye.
+    // The gameplay camera's saved simulation pose is never moved for aiming/input.
+    public bool TryGetMotorboatDriverHead(out Vector3 worldHead)
+    {
+        worldHead = Vector3.zero;
+        if (drivingBlend < .95f || visualRoot == null) return false;
+        if (headBone != null)
+        {
+            worldHead = headBone.position;
+            return true;
+        }
+        // Compatible fallback for rigs that omit a named Head bone.
+        if (leftHip != null && rightHip != null)
+        {
+            worldHead = (leftHip.position + rightHip.position) * .5f + transform.up * .85f;
+            return true;
+        }
+        return false;
+    }
     private FishingMultiplayer localSource;
 
     public void FollowLocal(FishingMultiplayer source)
@@ -42,7 +62,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private PlayableGraph animationGraph;
     private AnimationMixerPlayable animationMixer;
     private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable, drivePlayable;
-    private Transform visualRoot, leftHip, rightHip, leftUpperArm, leftForearm, rightUpperArm, rightForearm;
+    private Transform visualRoot, headBone, leftHip, rightHip, leftUpperArm, leftForearm, rightUpperArm, rightForearm;
     private Vector3 restingVisualOffset;
     private float drivingBlend, drivingClock;
     private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip, driveClip;
@@ -98,6 +118,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         GameObject visual = Instantiate(asset.ModelPrefab, transform, false);
         visual.name = "Female Character Model";
         visualRoot = visual.transform;
+        headBone = FishingRemoteAvatarAsset.FindBone(visualRoot, "Head");
+        if (headBone == null) headBone = FishingRemoteAvatarAsset.FindBone(visualRoot, "Neck");
         leftHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.L");
         rightHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.R");
         leftUpperArm = FishingRemoteAvatarAsset.FindBone(visualRoot, "UpperArm.L");
@@ -451,7 +473,11 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 Vector3 hips = leftHip != null && rightHip != null
                     ? (leftHip.position + rightHip.position) * .5f
                     : visualRoot.position + transform.up * .70f;
-                Vector3 pelvisTarget = drivingSeat.SeatSurface + visualHelmBoat.transform.up * .10f;
+                // Driver-only pose tweak, relative to the original seated position:
+                // 20 cm down and 5 cm toward the bow (including boat bank/pitch).
+                Vector3 pelvisTarget = drivingSeat.SeatSurface
+                    + visualHelmBoat.transform.up * (.10f - .20f)
+                    + visualHelmBoat.transform.forward * .05f;
                 visualRoot.position += (pelvisTarget - hips) * drivingBlend;
                 if (drivingBlend >= .95f)
                 {
