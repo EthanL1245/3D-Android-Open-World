@@ -65,6 +65,16 @@ public class FirstPersonController : MonoBehaviour
     private bool mobileSprintLatched;
 
     public Camera ViewCamera => playerCamera;
+    // Read the existing view mode without changing walking/looking/camera behavior.
+    // Motorboat steering uses this only to distinguish its third-person helm.
+    public bool IsThirdPersonView
+    {
+        get
+        {
+            if (thirdPersonView == null) thirdPersonView = GetComponent<FishingThirdPersonView>();
+            return thirdPersonView != null && thirdPersonView.IsThirdPerson;
+        }
+    }
     public bool IsSwimming { get; private set; }
     public bool IsSprinting { get; private set; }
 
