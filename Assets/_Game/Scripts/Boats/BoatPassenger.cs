@@ -130,6 +130,9 @@ public sealed class BoatPassenger : MonoBehaviour
         if(!Boat.CanUseSeat(this))return;
         if(Boat.TakeHelm(this))
         {
+            // The head-aligned first-person driving view must also work before
+            // the player ever switches into third person.
+            if (Boat.IsMotorboat) FishingThirdPersonView.For(Controls);
             SnapToRowingSeat();
             GetComponent<FishingSystem>()?.UnequipHands();
             Controls.ResetMotion();
