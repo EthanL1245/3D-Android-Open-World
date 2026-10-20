@@ -54,7 +54,16 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         RestoreRenderPose();
         IsThirdPerson = !IsThirdPerson;
         movementHeldTime = returnYawVelocity = 0f;
-        if (IsThirdPerson) orbitYaw = transform.eulerAngles.y;
+        // The visible motorboat driver faces the bow, not the player controller's
+        // last independent look yaw. Enter third person directly behind her.
+        if (IsThirdPerson)
+        {
+            BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
+            orbitYaw = passenger != null && passenger.Driving &&
+                passenger.Boat != null && passenger.Boat.IsMotorboat
+                ? passenger.Boat.transform.eulerAngles.y
+                : transform.eulerAngles.y;
+        }
         SyncLocalAvatar();
     }
 
@@ -123,8 +132,16 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         }
         movementHeldTime += Time.deltaTime;
         if(movementHeldTime <= 1f) return;
-        // Rotate only the viewing orbit, never the character or movement direction.
-        orbitYaw = Mathf.SmoothDampAngle(orbitYaw, transform.eulerAngles.y,
+        // The driving motorboat avatar faces the bow, whereas the real player
+        // controller keeps an independent yaw for steering/look. Recentering to
+        // that controller yaw would incorrectly show the character from the side
+        // or front. Other modes retain their original character-relative target.
+        BoatPassenger passenger = player != null ? player.GetComponent<BoatPassenger>() : null;
+        float behindYaw = passenger != null && passenger.Driving &&
+            passenger.Boat != null && passenger.Boat.IsMotorboat
+            ? passenger.Boat.transform.eulerAngles.y
+            : transform.eulerAngles.y;
+        orbitYaw = Mathf.SmoothDampAngle(orbitYaw, behindYaw,
             ref returnYawVelocity, .35f, 240f, Time.deltaTime);
     }
 
