@@ -8,6 +8,10 @@ public static class BoatClearance
     private static readonly Vector3 AuthoredRaftHullSize = new Vector3(2.6749f,1.254236f,4.5634f);
     private const float AuthoredRaftDraft = .45f;
 
+    // Keep navigation and placement tied to the same motorboat depth threshold.
+    private static float MotorboatBrakingDepth(BoatData data) => data.Draft - .95f;
+    private const float MotorboatPlacementMargin = .10f;
+
     // Strict placement checks must not be used to cancel thrust on open waves.
     // Navigation only checks the seabed; solid props still collide normally.
     public static bool ApproachingShallowWater(BoatData data, Vector3 position, Quaternion rotation, OceanWater water)
@@ -18,9 +22,9 @@ public static class BoatClearance
         float draft=raft?AuthoredRaftDraft:data.Draft;
         float halfX=size.x*.5f+(raft ? 0.18f : 0.6f);
         float halfZ=size.z*.5f+(raft ? 0.35f : 0.6f);
-        // Motorboat may navigate water 1.1 m shallower before pre-braking.
-        // Keep placement clearance and other boats' navigation margins intact.
-        float requiredDepth=draft+(data.ID=="sailboat" ? -.45f : .65f);
+        // Motorboat may navigate water 1.6 m shallower before pre-braking.
+        // Other boats retain their existing navigation margins.
+        float requiredDepth=data.ID=="sailboat" ? MotorboatBrakingDepth(data) : draft+.65f;
         foreach(var terrain in Terrain.activeTerrains)
         {
             if(terrain==null || terrain.terrainData==null)continue;
@@ -48,6 +52,7 @@ public static class BoatClearance
         if(data==null || water==null || PondWater.TrySurface(position,out _))return false;
 
         bool authoredRaft=data.ID=="raft";
+        bool motorboat=data.ID=="sailboat";
         Vector3 hullSize=authoredRaft?AuthoredRaftHullSize:data.HullSize;
         float draft=authoredRaft?AuthoredRaftDraft:data.Draft;
         if(hullSize.x<=0 || hullSize.z<=0 || draft<0)return false;
@@ -58,6 +63,7 @@ public static class BoatClearance
         // preserve the original larger buffer for the other boats.
         Vector3 buffer=authoredRaft?new Vector3(.18f,0,.35f):new Vector3(1,0,1);
         Vector3 half=hullSize*.5f+buffer;
+        float requiredDepth=motorboat ? MotorboatBrakingDepth(data)+MotorboatPlacementMargin : draft+.8f;
         var terrains=Terrain.activeTerrains;
         for(float x=-half.x;x<=half.x+.01f;x+=Mathf.Max(.08f,half.x/3f))
         for(float z=-half.z;z<=half.z+.01f;z+=Mathf.Max(.08f,half.z/4f))
@@ -70,7 +76,7 @@ public static class BoatClearance
                 if(local.x<0 || local.z<0 || local.x>size.x || local.z>size.z)continue;
                 found=true;
                 float ground=terrain.SampleHeight(p)+terrain.transform.position.y;
-                if(water.BaseWaterLevel-ground<draft+.8f)return false;
+                if(water.BaseWaterLevel-ground<requiredDepth)return false;
             }
             // No known bathymetry: fail closed instead of allowing an unseen shore.
             if(!found)return false;
@@ -78,6 +84,9 @@ public static class BoatClearance
         half.y=(draft+2f)*.5f;
         foreach(var c in Physics.OverlapBox(position+Vector3.up*((2f-draft)*.5f),half,rotation,~0,QueryTriggerInteraction.Ignore))
         {
+            // Terrain depth was checked over the footprint above. The old
+            // full-draft overlap would otherwise override the new shallow limit.
+            if(motorboat && c is TerrainCollider)continue;
             var rider=c.GetComponentInParent<BoatPassenger>();
             if(rider!=null && rider.Boat!=null && ignored==rider.Boat.transform)continue;
             if(ignored!=null && c.transform.IsChildOf(ignored))continue;

@@ -8,6 +8,8 @@ public sealed class FishingThirdPersonView : MonoBehaviour
 {
     public bool IsThirdPerson { get; private set; }
     private Camera view;
+    private FirstPersonController player;
+    private float movementHeldTime, returnYawVelocity;
     private float orbitYaw;
     private const float MinZoomDistance = 1.2f, MaxZoomDistance = 3.4f;
     private float zoomDistance = MaxZoomDistance;
@@ -31,7 +33,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
 
     private void Awake()
     {
-        var player = GetComponent<FirstPersonController>();
+        player = GetComponent<FirstPersonController>();
         view = player != null ? player.ViewCamera : null;
         fishing = GetComponent<FishingSystem>();
     }
@@ -49,6 +51,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         if (view == null) return;
         RestoreRenderPose();
         IsThirdPerson = !IsThirdPerson;
+        movementHeldTime = returnYawVelocity = 0f;
         if (IsThirdPerson) orbitYaw = transform.eulerAngles.y;
         if (IsThirdPerson && avatar == null)
         {
@@ -64,6 +67,24 @@ public sealed class FishingThirdPersonView : MonoBehaviour
 
     // A render interrupted by scene changes must never leave gameplay at the boom position.
     private void Update() => RestoreRenderPose();
+
+    private void LateUpdate()
+    {
+        // Releasing the stick or opening UI restarts the one-second grace period.
+        // Keyboard movement uses the same input, so desktop behaves consistently.
+        bool moving = IsThirdPerson && player != null && player.isActiveAndEnabled
+            && player.BoatInput.sqrMagnitude > .0025f;
+        if(!moving)
+        {
+            movementHeldTime = returnYawVelocity = 0f;
+            return;
+        }
+        movementHeldTime += Time.deltaTime;
+        if(movementHeldTime <= 1f) return;
+        // Rotate only the viewing orbit, never the character or movement direction.
+        orbitYaw = Mathf.SmoothDampAngle(orbitYaw, transform.eulerAngles.y,
+            ref returnYawVelocity, .35f, 240f, Time.deltaTime);
+    }
 
     // Fingers spreading apart move closer; bringing them together zooms out.
     public void PinchZoom(float previousSeparation, float separation)
@@ -184,6 +205,7 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         Camera.onPreCull -= BeginBuiltin;
         Camera.onPostRender -= EndBuiltin;
         IsThirdPerson = false;
+        movementHeldTime = returnYawVelocity = 0f;
         if (avatar != null) avatar.gameObject.SetActive(false);
     }
 
