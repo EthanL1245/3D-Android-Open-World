@@ -63,6 +63,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
     private AnimationMixerPlayable animationMixer;
     private AnimationClipPlayable runPlayable, walkPlayable, idlePlayable, castPlayable, reelPlayable, pullPlayable, walkReelPlayable, holdFishPlayable, walkHoldFishPlayable, drivePlayable, passengerPlayable;
     private Transform visualRoot, headBone, leftHip, rightHip, leftUpperArm, leftForearm, rightUpperArm, rightForearm;
+    private Transform leftShin, rightShin;
     private Vector3 restingVisualOffset;
     private float drivingBlend, drivingClock;
     private AnimationClip runClip, walkClip, idleClip, castClip, reelClip, pullClip, walkReelClip, holdFishClip, walkHoldFishClip, driveClip, passengerClip;
@@ -122,6 +123,8 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         if (headBone == null) headBone = FishingRemoteAvatarAsset.FindBone(visualRoot, "Neck");
         leftHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.L");
         rightHip = FishingRemoteAvatarAsset.FindBone(visualRoot, "Pelvis.R");
+        leftShin = FishingRemoteAvatarAsset.FindBone(visualRoot, "Shin.L");
+        rightShin = FishingRemoteAvatarAsset.FindBone(visualRoot, "Shin.R");
         leftUpperArm = FishingRemoteAvatarAsset.FindBone(visualRoot, "UpperArm.L");
         leftForearm = FishingRemoteAvatarAsset.FindBone(visualRoot, "Forearm.L");
         rightUpperArm = FishingRemoteAvatarAsset.FindBone(visualRoot, "UpperArm.R");
@@ -489,16 +492,22 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                     ? (leftHip.position + rightHip.position) * .5f
                     : visualRoot.position + transform.up * .70f;
                 // Passenger matches the previous driver placement exactly except
-                // for lateral chair spacing; both keep the authored FBX joint pose.
+                // for lateral chair spacing; the driver retains her authored arm pose.
                 Vector3 pelvisTarget = (passengerPose ? drivingSeat.PassengerSurface : drivingSeat.SeatSurface)
-                    + visualHelmBoat.transform.forward * .05f;
+                    + visualHelmBoat.transform.forward * (passengerPose ? .05f : .07f);
+                // Restore the driver's cushion-based position, adding only 2 cm
+                // toward the wheel to her original 5 cm forward offset.
                 visualRoot.position += (pelvisTarget - hips) * drivingBlend;
-                if (!passengerPose && rightHand != null)
+                if (passengerPose)
                 {
-                    // Move only the visual model until the right palm contacts
-                    // the outside rim. No IK, bone rotations or gameplay offsets.
-                    Vector3 palm = rightHand.TransformPoint(rightGripLocal);
-                    visualRoot.position += (drivingSeat.ClosestRimPoint(palm) - palm) * drivingBlend;
+                    // The driver sits to the passenger's left and looks along
+                    // boat +X. Positive rotation around that viewing direction
+                    // is clockwise. Apply after sampling, never cumulatively,
+                    // to the tibias only; each foot follows its shin naturally.
+                    Quaternion shinOffset = Quaternion.AngleAxis(15f * drivingBlend,
+                        visualHelmBoat.transform.right);
+                    if (leftShin != null) leftShin.rotation = shinOffset * leftShin.rotation;
+                    if (rightShin != null) rightShin.rotation = shinOffset * rightShin.rotation;
                 }
             }
         }

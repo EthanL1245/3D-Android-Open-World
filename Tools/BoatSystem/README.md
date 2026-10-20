@@ -150,8 +150,11 @@ reimport, and before builds. No source animation joints are rewritten.
 
 The passenger pelvis uses the driver's previous cushion height and +0.05 m
 fore/aft offset, translated laterally to the modeled right cushion. The driver's
-visual root is translated until the animated right palm touches the nearest
-outer steering-wheel rim. The left arm keeps its authored animation. Both seats
+visual root uses the original cushion-based placement plus 0.02 m toward the
+wheel (0.07 m total forward offset); automatic palm-to-wheel alignment is removed.
+Both arms keep their authored animation. The passenger's Shin.L and Shin.R bones
+receive a 15-degree clockwise visual rotation viewed from the driver's left chair,
+after each animation sample, around the boat's right axis. Both seats
 follow hull pitch/roll/yaw, and both first-person rendered cameras use their
 animated head position without changing the simulation/steering camera.
 
