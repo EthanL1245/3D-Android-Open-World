@@ -136,11 +136,15 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         float distance = offset.magnitude;
         int count = Physics.SphereCastNonAlloc(pivot, .22f, offset / distance, obstacles,
             distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        BoatPassenger passenger = GetComponent<BoatPassenger>();
+        Transform ownBoat = passenger != null && passenger.Boat != null && passenger.Driving
+            ? passenger.Boat.transform : null;
         for (int i = 0; i < count; i++)
         {
             Transform hit = obstacles[i].transform;
             if (hit == null || hit.IsChildOf(transform) ||
-                (avatar != null && hit.IsChildOf(avatar.transform))) continue;
+                (avatar != null && hit.IsChildOf(avatar.transform)) ||
+                (ownBoat != null && hit.IsChildOf(ownBoat))) continue;
             distance = Mathf.Min(distance, Mathf.Max(0f, obstacles[i].distance - .08f));
         }
         position = pivot + offset.normalized * distance;
