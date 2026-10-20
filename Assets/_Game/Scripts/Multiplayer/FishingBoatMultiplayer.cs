@@ -37,7 +37,15 @@ public sealed class FishingBoatMultiplayer : MonoBehaviour
             Vector2 input=passenger.Driving?passenger.Controls.BoatInput:Vector2.zero;
             pose.boatInputX=input.x;pose.boatInputY=input.y;
             Camera camera=passenger.Controls.ViewCamera;
-            pose.boatLookYaw=camera!=null?camera.transform.eulerAngles.y:transform.eulerAngles.y;
+            // A remotely hosted helm uses the existing replicated look-yaw field.
+            // Send the moving hull heading for third-person motorboat steering so
+            // its held left/right joystick direction stays relative to the boat,
+            // without changing the server protocol or any other boat/view mode.
+            bool motorboatThirdPerson=passenger.Driving && passenger.Boat.IsMotorboat &&
+                passenger.Controls.IsThirdPersonView;
+            pose.boatLookYaw=motorboatThirdPerson
+                ? passenger.Boat.transform.eulerAngles.y
+                : camera!=null?camera.transform.eulerAngles.y:transform.eulerAngles.y;
         }
         if(requestOwner!=pose.rideOwner || requestKey!=pose.rideKey || requestSeat!=pose.rideSeat)
         {requestOwner=pose.rideOwner;requestKey=pose.rideKey;requestSeat=pose.rideSeat;revision++;}
