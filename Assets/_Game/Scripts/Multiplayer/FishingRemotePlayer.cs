@@ -473,42 +473,18 @@ public sealed class FishingRemotePlayer : MonoBehaviour
                 Vector3 hips = leftHip != null && rightHip != null
                     ? (leftHip.position + rightHip.position) * .5f
                     : visualRoot.position + transform.up * .70f;
-                // Driver-only pose tweak, relative to the original seated position:
-                // 20 cm down and 5 cm toward the bow (including boat bank/pitch).
+                // Preserve the original FBX's authored shoulder/elbow/hand pose.
+                // The post-animation wheel IK altered both arms away from their
+                // imported animation; only reposition the whole avatar at the seat.
+                // Raise the previous driver pose 10 cm, retaining its 5 cm bow offset.
                 Vector3 pelvisTarget = drivingSeat.SeatSurface
-                    + visualHelmBoat.transform.up * (.10f - .20f)
                     + visualHelmBoat.transform.forward * .05f;
                 visualRoot.position += (pelvisTarget - hips) * drivingBlend;
-                if (drivingBlend >= .95f)
-                {
-                    AimHand(leftUpperArm, leftForearm, leftHand, drivingSeat.LeftGrip);
-                    AimHand(rightUpperArm, rightForearm, rightHand, drivingSeat.RightGrip);
-                }
             }
         }
 
         if (label != null && Camera.main != null)
             label.rotation = Camera.main.transform.rotation;
-    }
-
-    private static void AimHand(Transform upper, Transform forearm, Transform hand, Vector3 goal)
-    {
-        if (upper == null || forearm == null || hand == null) return;
-        if ((hand.position - goal).sqrMagnitude > .65f * .65f) return;
-        for (int i = 0; i < 3; i++)
-        {
-            RotateTowardsGrip(forearm, hand, goal, 15f);
-            RotateTowardsGrip(upper, hand, goal, 15f);
-        }
-    }
-
-    private static void RotateTowardsGrip(Transform joint, Transform hand, Vector3 goal, float limit)
-    {
-        Vector3 current = hand.position - joint.position;
-        Vector3 desired = goal - joint.position;
-        if (current.sqrMagnitude < .0001f || desired.sqrMagnitude < .0001f) return;
-        Quaternion target = Quaternion.FromToRotation(current, desired) * joint.rotation;
-        joint.rotation = Quaternion.RotateTowards(joint.rotation, target, limit);
     }
 
     private void UpdateHeldRod(bool equipped, int tier)
