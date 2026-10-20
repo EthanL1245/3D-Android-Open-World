@@ -208,8 +208,9 @@ public class FirstPersonController : MonoBehaviour
                 1f
             );
 
-        // Third-person orbit is independent of character facing. Keep movement
-        // character-relative, including walking toward a camera facing the player.
+        if (thirdPersonView == null) thirdPersonView = GetComponent<FishingThirdPersonView>();
+        if (thirdPersonView != null && input.sqrMagnitude > .0001f)
+            thirdPersonView.AlignForMovement();
 
         bool jumpPressed =
             ReadJumpPressed();

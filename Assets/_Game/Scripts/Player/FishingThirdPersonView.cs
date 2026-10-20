@@ -99,6 +99,20 @@ public sealed class FishingThirdPersonView : MonoBehaviour
         orbitYaw = Mathf.Repeat(orbitYaw + yawDelta, 360f);
     }
 
+    // Rear half (including either 90-degree side view): restore the original
+    // camera-relative movement. Front half: retain character-relative movement,
+    // so forward walks toward a camera looking at the character's face.
+    public void AlignForMovement()
+    {
+        if (!IsThirdPerson) return;
+        float relativeYaw = Mathf.Abs(Mathf.DeltaAngle(transform.eulerAngles.y, orbitYaw));
+        if (relativeYaw <= 90f)
+        {
+            transform.rotation = Quaternion.Euler(0f, orbitYaw, 0f);
+            returnYawVelocity = 0f;
+        }
+    }
+
     private float ClosestFullBodyDistance()
     {
         if (view == null || avatar == null) return MinZoomDistance;
