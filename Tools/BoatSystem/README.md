@@ -165,3 +165,45 @@ The passenger FBX's 50 model paths all exist in the original character FBX.
 Unity is unavailable in the editing environment; check both rebuilt clients in
 Play Mode/on device for final hand contact, cushion placement, bank/turn follow,
 first/third-person toggles, stand-up and disconnect behavior.
+
+## Procedural motorboat wake
+
+`BoatController.Initialize` attaches `MotorboatWake` only to the motorboat, for
+both locally simulated boats and remote multiplayer replicas. This is entirely
+visual: no collider, forces, rigidbody writes, input changes, or network messages.
+Placement previews do not initialize a wake. All existing motion/seating is intact.
+
+The effect draws central propeller foam and two outward-spreading ribbons. It
+records world-space stern positions so turns leave curved trails. Strength grows
+with measured speed up to 27 m/s; yaw rates up to the existing 32 degrees/second
+increase ribbon width, breakup, and outside-turn foam. Emission stops below
+0.7 m/s, old foam dissolves over four seconds, and a new strip starts after a stop.
+Teleports and sample gaps over 0.4 seconds clear history instead of drawing a
+long streak. The stern offset uses the already-scaled HullSize (not TransformScale).
+
+Mobile budget per boat: 80 fixed history entries, at most 720 vertices / 948
+triangles, one transparent draw, no shadows, physics probes, depth-texture reads,
+particles, or fluid simulation. Geometry updates at most 20 Hz, dropping to 10 Hz
+and alternate path samples beyond 65 m from the wake bounds. Foam fades between
+100–140 m per vertex; sampling stops beyond 250 m from the boat (including space
+for the 108 m full-speed trail). Unity also frustum-culls the mesh. Wave movement
+and fading continue in the shader between mesh uploads. Arrays are reused.
+
+A 64x64 repeating noise texture with mipmaps is generated once and shared with
+one material across active wakes; both are released when the last wake is destroyed.
+The Resources material references the shader explicitly so Android shader stripping
+does not remove it. No imported model, image, or manual Unity setup is needed.
+The shader uses OceanGerstner.hlsl and copies the ocean's current property block
+after its LateUpdate, including island wave phases and cockpit stencil masking.
+
+Validation before release on phones (Unity/device execution is required):
+- Drive straight at low speed, then 27 m/s; check propeller origin and stronger foam.
+- Hold sharp turns both ways; check curved history and stronger outer-side foam.
+- Coast, stop, restart, remove and replace the boat; old trails must fade/clear.
+- Observe a second player's boat; both clients should see the interpolated wake.
+- Cross normal and offshore storm waves and view from first and third person.
+- Check close, distant, and underwater views; foam must fade without cockpit bleed.
+- Profile on Galaxy A71 and S23, especially turns and multiple visible boats.
+  Verify no steady-state wake GC allocations and compare CPU/GPU frame times
+  with the component disabled. The budget is bounded; zero FPS impact is not a
+  claim that can be made without these device measurements.

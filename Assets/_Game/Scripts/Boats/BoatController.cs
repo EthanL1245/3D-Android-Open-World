@@ -109,6 +109,7 @@ public sealed class BoatController : MonoBehaviour
         buoyancyStarted=false;
         wasPropelling=false;
         lastDrivenForwardSpeed=0f;
+        MotorboatWake.Attach(this, ocean);
     }
 
     public bool Board()
