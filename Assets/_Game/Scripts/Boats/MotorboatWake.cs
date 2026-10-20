@@ -11,8 +11,8 @@ public sealed class MotorboatWake : MonoBehaviour
     private const float Lifetime = 4f, SampleInterval = .05f;
     private struct Point
     {
-        public Vector3 Position, Right;
-        public float Born, Distance, Strength, Turn;
+        public Vector3 Position, SidePosition, Right;
+        public float Born, Distance, Strength, Turn, Speed;
         public int Strip;
     }
     private readonly Point[] history = new Point[Capacity];
@@ -33,6 +33,7 @@ public sealed class MotorboatWake : MonoBehaviour
     private int count, first, strip;
     private float nextSample, nextMesh, nextCameraLookup, lastTime, lastYaw, distance, strength, turn;
     private Vector3 lastPosition;
+    private float sideOriginForward;
     private bool tracking, emitting, ownsResources;
     private static readonly int BaseLevelId = Shader.PropertyToID("_BaseLevel");
     private static readonly int NowId = Shader.PropertyToID("_WakeTime");
@@ -45,6 +46,7 @@ public sealed class MotorboatWake : MonoBehaviour
         wake.boat = owner;
         wake.ocean = water;
         wake.ResolveView();
+        wake.ResolveSideOrigin();
     }
 
     private bool Prepare()
@@ -144,6 +146,28 @@ public sealed class MotorboatWake : MonoBehaviour
         if (view == null || !view.isActiveAndEnabled) view = Camera.main;
     }
 
+    private void ResolveSideOrigin()
+    {
+        // Cache the authored windshield station once, in world metres along
+        // the hull. Fall back to amidships if the imported model is unavailable.
+        sideOriginForward = 0f;
+        Transform model = transform.Find("ModelContainer/ImportedMotorboat");
+        if (model == null) return;
+        float front = float.NegativeInfinity, back = float.PositiveInfinity;
+        Quaternion unrotate = Quaternion.Inverse(transform.rotation);
+        foreach (Renderer renderer in model.GetComponentsInChildren<Renderer>(true))
+        {
+            string parent = renderer.transform.parent != null ? renderer.transform.parent.name : "";
+            if (renderer.name.IndexOf("windshield", System.StringComparison.OrdinalIgnoreCase) < 0 &&
+                parent.IndexOf("windshield", System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+            Vector3 center = renderer.transform.TransformPoint(renderer.localBounds.center);
+            float station = (unrotate * (center - transform.position)).z;
+            front = Mathf.Max(front, station);
+            back = Mathf.Min(back, station);
+        }
+        if (!float.IsInfinity(front)) sideOriginForward = (front + back) * .5f;
+    }
+
     private void Sample(float now)
     {
         Vector3 position = transform.position;
@@ -171,9 +195,10 @@ public sealed class MotorboatWake : MonoBehaviour
                 distance += movement.magnitude;
                 Vector3 forward = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
                 Point point = new Point {
-                    Position = position - forward * (boat.Data.HullSize.z * .49f),
+                    Position = position - forward * (boat.Data.HullSize.z * .49f - .1f),
+                    SidePosition = position + forward * sideOriginForward,
                     Right = Vector3.Cross(Vector3.up, forward), Born = now,
-                    Distance = distance, Strength = strength, Turn = turn, Strip = strip
+                    Distance = distance, Strength = strength, Turn = turn, Speed = speed, Strip = strip
                 };
                 int slot = (first + count) % Capacity;
                 if (count == Capacity) first = (first + 1) % Capacity;
@@ -198,13 +223,27 @@ public sealed class MotorboatWake : MonoBehaviour
             Point p = history[(first + i) % Capacity];
             float age = now - p.Born;
             float turbulence = Mathf.Abs(p.Turn) * Mathf.Clamp01(p.Strength * 3f);
-            float spread = age * Mathf.Lerp(.6f, 2.2f, p.Strength);
+            float spreadRate = Mathf.Lerp(.6f, 2.2f, p.Strength);
+            float sideStart = Mathf.Max(.1f, boat.Data.HullSize.x * .32f - .1f);
+            float sideOffset = sideStart + age * spreadRate;
+            float sideWidth = (.22f + p.Strength * .32f + age * .13f) * 1.5f;
+            // Keep the previous .25 m/s expansion for the first .65 seconds,
+            // then smoothly fan out to overlap both thicker side ribbons.
+            // Those ribbons start farther forward, so at the same position
+            // behind the boat their foam is older and has spread farther.
+            float leadTime = Vector3.Distance(p.Position, p.SidePosition) / Mathf.Max(1f, p.Speed);
+            float sideAge = Mathf.Min(Lifetime, age + leadTime);
+            float overlapWidth = sideStart + sideAge * spreadRate +
+                2f * (.22f + p.Strength * .32f + sideAge * .13f) * 1.5f;
+            float initialWidth = Mathf.Lerp(.4f, 1.1f, p.Strength) * 1.3f + age * .25f;
+            float fan = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.65f, 1.8f, age));
+            float centerWidth = Mathf.Lerp(initialWidth, Mathf.Max(initialWidth, overlapWidth), fan);
             for (int ribbon = 0; ribbon < 3; ribbon++)
             {
                 int side = ribbon - 1;
-                float offset = side == 0 ? 0f : side * (boat.Data.HullSize.x * .32f + spread);
-                float width = side == 0 ? Mathf.Lerp(.4f, 1.1f, p.Strength) + age * .25f
-                    : .22f + p.Strength * .32f + age * .13f;
+                float offset = side == 0 ? 0f : side * sideOffset;
+                float width = side == 0 ? centerWidth : sideWidth;
+                Vector3 origin = side == 0 ? p.Position : p.SidePosition;
                 width *= 1f + turbulence * .65f;
                 // More broken, wider foam on sharp turns; stronger outer wake.
                 offset += Mathf.Sin(p.Distance * 2.1f + age * 3f) * turbulence * .3f;
@@ -213,7 +252,7 @@ public sealed class MotorboatWake : MonoBehaviour
                 for (int across = 0; across < 3; across++)
                 {
                     int v = rows * RowVertices + ribbon * 3 + across;
-                    Vector3 point = p.Position + p.Right * (offset + (across - 1) * width);
+                    Vector3 point = origin + p.Right * (offset + (across - 1) * width);
                     vertices[v] = point;
                     uv[v] = new Vector2(across * .5f, p.Distance * .35f + ribbon * .37f);
                     // Shader fades every frame, including between CPU mesh updates.

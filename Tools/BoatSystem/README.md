@@ -247,3 +247,23 @@ git branch --set-upstream-to=upstream/main main
 
 Then, while on main, future updates need only `git pull`. Save and commit local
 Unity edits before pulling if Git reports conflicting uncommitted changes.
+
+
+### Wake shape tuning
+
+The center ribbon starts 0.10 m forward of its previous stern position, with
+30% more initial half-width. Its initial expansion remains 0.25 m/s for 0.65 s;
+it then smoothly fans out through age 1.8 s to overlap both side ribbons. The
+final width accounts for the side ribbons' farther-forward emission station
+and extra spreading time at the same point along a straight wake.
+
+Side ribbons start beneath the authored windshield station (resolved once from
+imported windshield renderer centers, with amidships as fallback). Each moves
+0.10 m inward, reducing total separation by 0.20 m, and is 50% thicker. Their
+outward expansion rate is unchanged. Each sample stores separate center and
+side origins in world space, so both retain their traveled paths in turns.
+
+Vertex/triangle counts, update rates, material count and physics are unchanged.
+Wider foam covers more pixels; actual GPU cost still requires device profiling.
+Check windshield alignment and overlap visually in Unity at low/full speed and
+on both turn directions; source/numerical checks do not replace that playtest.
