@@ -23,5 +23,5 @@ MonoBehaviour:
   HoldFishClip: {fileID: -623603649343465320, guid: 516514f2f1ce432599e83ec2fe279305, type: 3}
   WalkHoldFishClip: {fileID: -623603649343465320, guid: 93e17a6e532b42528198d3ae71ba1579, type: 3}
   DriveMotorboatClip: {fileID: -623603649343465320, guid: 3fd12accafeb9ed489618e2be5440ab2, type: 3}
-  PassengerMotorboatClip: {fileID: 0}
+  PassengerMotorboatClip: {fileID: -623603649343465320, guid: 77262660f41f4502aa75ff26a5552bae, type: 3}
   LeftHandPath: Armature/UpperArm.L/Forearm.L/Hand.L
