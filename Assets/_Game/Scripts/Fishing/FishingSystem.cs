@@ -2631,10 +2631,13 @@ public class FishingSystem : MonoBehaviour
                 Time.deltaTime
             );
 
-        // Unconscious fish may be pulled toward shore, but cannot pass
-        // through the solid rock itself during either retrieve step.
+        // Treat a subdued fish reaching a Snapper rock exactly like reaching
+        // shallow terrain: stop at the obstacle and complete the existing catch.
         if (!SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f))
+        {
+            fishOnShore = true;
             return;
+        }
         if (TryGetTerrainWaterDepth(
                 candidate,
                 out float ground,
