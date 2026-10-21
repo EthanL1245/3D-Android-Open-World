@@ -214,6 +214,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
         var capsule=GetComponent<CharacterController>();
         // Disable first so the overlap query cannot mistake our own collider
         // for a rock. Preserve the player's old location on an aborted travel.
+        GetComponent<BoatSystem>()?.BeforeTeleport();
         bool wasEnabled=capsule!=null && capsule.enabled;
         if(capsule!=null)capsule.enabled=false;
         try
@@ -221,7 +222,6 @@ public sealed class ShopDimensionManager : MonoBehaviour
             if(snapperArrival && capsule!=null &&
                 !TrySnapperArrival(position,capsule,out position))
                 return;
-            GetComponent<BoatSystem>()?.BeforeTeleport();
             transform.SetPositionAndRotation(position,rotation);
             controller.ResetMotion(); controller.ResetViewPitch();
             Physics.SyncTransforms();
