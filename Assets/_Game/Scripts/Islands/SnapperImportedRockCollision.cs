@@ -43,7 +43,9 @@ public static class SnapperImportedRockCollision
     {
         return string.Equals(name, "Snapper island Rocks", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(name, "Snapper Island Rock Single", StringComparison.OrdinalIgnoreCase) ||
-            name.StartsWith("Snapper Island Rock Single (", StringComparison.OrdinalIgnoreCase);
+            name.StartsWith("Snapper Island Rock Single (", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("Snapper Island Rock Formation", StringComparison.OrdinalIgnoreCase) ||
+            name.StartsWith("Snapper Island Main Rock Formation", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Enumerate only the imported group and placed single-rock instances.</summary>

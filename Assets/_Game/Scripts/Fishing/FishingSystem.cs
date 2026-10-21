@@ -1753,7 +1753,8 @@ public class FishingSystem : MonoBehaviour
     private bool IsValidFishingWater(
         Vector3 worldPosition)
     {
-        if (!HasFishingDepth(
+        if (!SnapperRockFishObstacles.SurfacePointClear(worldPosition,.40f) ||
+            !HasFishingDepth(
                 worldPosition,
                 minimumFishingDepth))
         {
@@ -2547,8 +2548,9 @@ public class FishingSystem : MonoBehaviour
             ) -
             0.08f;
 
-        if (!MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) || !IsValidFishingWater(
-                candidate))
+        if (!MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) ||
+            !SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
+            !IsValidFishingWater(candidate))
         {
             next = current;
             return false;
@@ -2629,6 +2631,10 @@ public class FishingSystem : MonoBehaviour
                 Time.deltaTime
             );
 
+        // Unconscious fish may be pulled toward shore, but cannot pass
+        // through the solid rock itself during either retrieve step.
+        if (!SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f))
+            return;
         if (TryGetTerrainWaterDepth(
                 candidate,
                 out float ground,

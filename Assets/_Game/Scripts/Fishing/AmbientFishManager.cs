@@ -92,6 +92,9 @@ public class AmbientFishManager : MonoBehaviour
         if(biome==ReefCatalog.SnapperBiomeId && SnapperIslandRuntime.Ready &&
             SnapperIslandGeometry.DistanceFromShore(position,SnapperIslandRuntime.Center)+clearance>SnapperIslandGeometry.FishingMargin)return false;
         if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
+        // Imported Blender rocks have their own MeshColliders; Terrain.SampleHeight
+        // alone cannot detect a submerged or overhanging rock.
+        if(!SnapperRockFishObstacles.AmbientPointClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
@@ -284,7 +287,18 @@ public class AmbientFishAgent : MonoBehaviour
         // The fish are transform-driven: terrain route checks, not just colliders,
         // caused the stall. Bypass those checks for this bounded 2-metre escape.
         float step=Mathf.Min(recoveryRemaining,speed*Time.deltaTime);
-        transform.position+=recoveryDirection*step;
+        Vector3 recovered=transform.position+recoveryDirection*step;
+        // Do not let the legacy stall-recovery mode tunnel through authored rocks.
+        if(!SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance))
+        {
+            EndRecovery();
+            SetVisible(false);
+            hasTarget=false;
+            retry=0f;
+            safeTrail.Clear();
+            return;
+        }
+        transform.position=recovered;
         recoveryRemaining-=step;
         if(recoveryRemaining>0f)return;
         EndRecovery();
