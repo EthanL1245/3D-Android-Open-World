@@ -52,7 +52,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
         if(point==null)return;
         travelIslandBiome=biome;
         if(Destination!=0){StartCoroutine(TravelRoutine(0));return;}
-        fishing.PrepareForWorldTravel();Teleport(point.position,point.rotation,biome==4);
+        fishing.PrepareForWorldTravel();Teleport(point.position,point.rotation,biome==4,biome==3);
         var ui=FindFirstObjectByType<ShopWorldHUD>();if(ui!=null)ui.Close();
         travelIslandBiome=0;
     }
@@ -103,9 +103,12 @@ public sealed class ShopDimensionManager : MonoBehaviour
             }
             bool returningToSnapper=travelIslandBiome==4 && dock==SnapperIslandRuntime.Arrival &&
                 SnapperIslandRuntime.Ready;
+            bool returningToBluewater=travelIslandBiome==3 && expansion!=null &&
+                dock==expansion.PelagicArrival;
             travelIslandBiome=0;
             Teleport(dock!=null?dock.position:hasReturn?returnPosition:islandArrival.position,
-                dock!=null?dock.rotation:hasReturn?returnRotation:islandArrival.rotation,returningToSnapper);
+                dock!=null?dock.rotation:hasReturn?returnRotation:islandArrival.rotation,
+                returningToSnapper,returningToBluewater);
             RenderSettings.fog=oldFog; RenderSettings.fogColor=oldFogColor; RenderSettings.fogDensity=oldFogDensity;
         }
         else Teleport(target.spawn.position,target.spawn.rotation);
@@ -209,7 +212,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
         return false;
     }
 
-    private void Teleport(Vector3 position,Quaternion rotation,bool snapperArrival=false)
+    private void Teleport(Vector3 position,Quaternion rotation,bool snapperArrival=false,bool bluewaterArrival=false)
     {
         var capsule=GetComponent<CharacterController>();
         // Disable first so the overlap query cannot mistake our own collider
@@ -221,6 +224,11 @@ public sealed class ShopDimensionManager : MonoBehaviour
         {
             if(snapperArrival && capsule!=null &&
                 !TrySnapperArrival(position,capsule,out position))
+                return;
+            // Bluewater is now a single imported rock, not the old terrain island.
+            // Resolve a safe near-water NW rock surface each loaded world session.
+            if(bluewaterArrival && (capsule==null ||
+                !BluewaterCayRockCollision.TryGetArrival(capsule,out position,out rotation)))
                 return;
             transform.SetPositionAndRotation(position,rotation);
             controller.ResetMotion(); controller.ResetViewPitch();

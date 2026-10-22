@@ -95,6 +95,7 @@ public class AmbientFishManager : MonoBehaviour
         // Imported Blender rocks have their own MeshColliders; Terrain.SampleHeight
         // alone cannot detect a submerged or overhanging rock.
         if(!SnapperRockFishObstacles.AmbientPointClear(position,clearance))return false;
+        if(!BluewaterCayRockCollision.AmbientPointClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;

@@ -189,7 +189,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
             {
                 Vector3 candidate = previousBobberPosition + steeringDirection * stepLength;
                 if (StableWaterDepth(candidate) >= MinimumEscapeDepth &&
-                    SnapperRockFishObstacles.SurfaceSegmentClear(
+                    RockFishSegmentClear(
                         previousBobberPosition, candidate, .40f))
                 {
                     if (ocean != null) candidate.y = ocean.GetSurfaceHeight(candidate) - 0.08f;
@@ -205,7 +205,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
                     PlanRoute(previousBobberPosition, away, steeringDirection, true);
                     candidate = previousBobberPosition + steeringDirection * stepLength;
                     if (StableWaterDepth(candidate) >= MinimumEscapeDepth &&
-                        SnapperRockFishObstacles.SurfaceSegmentClear(
+                        RockFishSegmentClear(
                             previousBobberPosition, candidate, .40f))
                     {
                         if (ocean != null) candidate.y = ocean.GetSurfaceHeight(candidate) - 0.08f;
@@ -333,7 +333,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         if (float.IsPositiveInfinity(minimumDepth)) minimumDepth = endDepth;
         // Rock geometry can protrude into deep water between terrain-depth
         // samples. Check the entire projected corridor against the rock meshes.
-        if (!SnapperRockFishObstacles.SurfaceSegmentClear(
+        if (!RockFishSegmentClear(
                 origin, origin + direction * RouteLookAheadMetres, 0.40f))
             minimumDepth = 0f;
     }
@@ -365,7 +365,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         }
 
         if (bestDepth <= currentDepth + 0.02f) return;
-        if (!SnapperRockFishObstacles.SurfaceSegmentClear(
+        if (!RockFishSegmentClear(
                 position, position + bestDirection * 0.32f, .40f)) return;
 
         Vector3 recovered = position + bestDirection * 0.32f;
@@ -380,10 +380,23 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
         havePreviousBobberPosition = true;
     }
 
+    // Imported Bluewater rock meshes must block fish routes just like Snapper rocks.
+    private static bool RockFishSegmentClear(Vector3 from, Vector3 to, float radius)
+    {
+        return SnapperRockFishObstacles.SurfaceSegmentClear(from,to,radius) &&
+               BluewaterCayRockCollision.SurfaceSegmentClear(from,to,radius);
+    }
+
+    private static bool RockFishPointClear(Vector3 position, float radius)
+    {
+        return SnapperRockFishObstacles.SurfacePointClear(position,radius) &&
+               BluewaterCayRockCollision.SurfacePointClear(position,radius);
+    }
+
     private float StableWaterDepth(Vector3 position)
     {
         if (!MarinaDockExtensionRuntime.WaterClear(position,.4f))return 0f;
-        if (!SnapperRockFishObstacles.SurfacePointClear(position,.40f))return 0f;
+        if (!RockFishPointClear(position,.40f))return 0f;
         if (terrain == null || ocean == null) return 1000f;
         TerrainData data = terrain.terrainData;
         Vector3 local = position - terrain.transform.position;
