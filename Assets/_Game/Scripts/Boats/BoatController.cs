@@ -110,6 +110,7 @@ public sealed class BoatController : MonoBehaviour
         wasPropelling=false;
         lastDrivenForwardSpeed=0f;
         MotorboatWake.Attach(this, ocean);
+        OceanContactFoam.RegisterExclusion(transform);
     }
 
     public bool Board()

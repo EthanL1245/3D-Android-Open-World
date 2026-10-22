@@ -1,74 +1,79 @@
-# Baked shoreline foam
+# Water-shader contact foam
 
-Open `Assets/Scenes/PrototypeWorld.unity`, leave Play Mode, then run
-**Tools > Open World > Shoreline Foam > Regenerate Shoreline Foam**.
-Save the scene. First import alone does not generate foam. A Unity editor bake is
-required before playing or building. Regenerate after moving/adding rocks,
-sculpting terrain, changing the ocean base level, or changing foam width.
+The ocean shader now draws textured foam at its live intersection with opaque
+scene geometry. Pull the update, let Unity compile, and enter Play Mode or build.
+**No bake, regeneration, added source component, or scene setup is required.**
+New rocks and terrain edits that render into the camera depth texture are picked
+up automatically. Both ocean look variants use the replacement.
 
-The generated root also has a **Regenerate Shoreline Foam** Inspector button.
-Defaults: 0.65 m width, 2.8 s wash, distance fade from 85 to 140 m, 256-square
-tileable breakup texture. Width changes require regeneration. Other settings are
-applied in Play Mode. Scene view shows the flat, animated mean-waterline band;
-Play Mode supplies the ocean's live wave parameters.
+The existing OceanWater inspector exposes **Water Contact Foam**:
 
-## Sources and ownership
+- Strength: 0.9 by default; set to 0 for an A/B comparison or to turn it off.
+- Width: 0.6 m depth-contact range by default.
+- Texture Scale: 1.1 repeats per world metre by default.
 
-All active terrains in the active scene are read. Active MeshFilters whose
-hierarchy names or mesh source asset paths contain `rock` or `cliff` are included.
-For differently named rocks, add **Shoreline Foam Source** to the object or parent.
-Untick its Include field to exclude that hierarchy. Disabled renderers, inactive
-objects, rigidbody hierarchies, BoatController hierarchies, water and generated
-foam are excluded. Lower LOD renderers are excluded automatically; the highest
-detail LOD supplies the bake geometry.
+Width is a depth-contact threshold, not a guaranteed horizontal band width.
+Apparent thickness changes with camera angle and slope. Foam is drawn in the same
+pass on the actual displaced water surface, so it does not float independently
+of the ocean or remain attached to the mean-waterline contour.
 
-The bake reads mesh vertices, transforms and terrain heights; it does not modify
-scenery, materials, UVs, mesh import Read/Write, colliders, or gameplay scripts.
-Closed solid meshes are expected. Open/non-manifold meshes, touching/coplanar
-faces, nested shells within one mesh and terrain holes touching the shoreline
-need visual inspection. Foam is visual only and has no collider.
+## Old baked foam
 
-## Generated assets
+Existing `ShorelineFoam` components retain their serialized fields and GUID, but
+now hide their old mesh renderers in edit and play mode. There is no material
+instance, CullingGroup or Update loop for these retired strips. They are no longer
+rendered or generated. Old bake assets are retained to avoid missing references.
+Optional cleanup: **Tools > Open World > Shoreline Foam > Remove Retired Baked
+Foam From Scene**, then save. The cleanup supports Undo and does not delete assets
+which might be referenced by another scene. The old baker and its validation menu
+have been removed.
 
-Each successful bake creates one asset under
-`Assets/_Game/Water/ShorelineBakes/`, containing the mesh chunks, one material and
-one texture. Commit that asset, its `.meta`, and the saved scene together. Older
-bakes are retained to support Undo. After saving and confirming a new bake,
-unreferenced old bake assets may be deleted in Unity's Project window. Cancel or
-failure before replacement leaves the previous foam intact.
+## Boats and marina
 
-## Rendering and performance
+BoatController registers each boat hull after initialization. The fitted marina
+registers its bounds after placement (including the fallback/original dock).
+These are conservative moving XZ exclusion boxes for contact foam only; the
+existing motorboat wake is unchanged. Foam on nearby shoreline inside those boxes
+is also suppressed. No colliders, physics layers, boat mechanics, or rock/terrain
+transforms are changed.
 
-The editor slices rock triangles and terrain at mean water level. The union of
-those solids is sampled on a 0.25 m grid; only a narrow 0–width distance band is
-triangulated. Shared world-grid boundaries prevent tile cracks. This suppresses
-overlapping foam layers where separate rocks meet each other or terrain.
-24 m chunks let Unity frustum-cull individual shoreline sections, including
-sections on large islands. A native CullingGroup disables distant renderers.
-One scene controller copies the existing ocean wave phases into one shared
-runtime material. It does no physics, shoreline detection or mesh generation.
-The shader uses OceanGerstner.hlsl, two texture samples, fog and distance fading.
-No shadows or probes are used. Bounds include vertical wave displacement.
+The previous marina obstruction fix remains: renderer bounds belonging to old
+ShorelineFoam roots cannot obstruct marina placement.
 
-This is a baked **mean shoreline**, not a live moving water/land intersection.
-Foam follows analytic ocean wave heights; steep rock shores suit this best.
-On shallow slopes, waves can move the true shore beyond the baked strip.
-The finite-resolution ocean mesh also interpolates wave heights differently from
-the finer foam mesh. Inspect for gaps/submergence during full wave cycles before
-shipping; extreme waves, dynamic terrain/rocks and changing water levels are not
-covered by a static bake. Very fine details smaller than 0.25 m may be omitted.
+## Cost and limits
 
-## Verification in Unity / Android
+- Reuses the depth sample already used for ocean fog. No additional camera,
+  render target, depth pass, draw call or foam mesh.
+- Two samples from one repeating, mipmapped 256x256 RGB texture, on contact
+  fragments. Branches skip texture samples outside the depth band/distance range;
+  exact savings depend on GPU execution of adjacent pixels.
+- Fades from 66 to 120 m. Explicit mip sampling uses derivatives calculated before
+  divergent branches, to reduce shimmer at shallow viewing angles.
+- A bounded shader list supports 16 nearby boat/marina exclusion boxes. If that
+  capacity is exceeded, contact foam is disabled for that view until space opens;
+  gameplay, water and boat wakes are unaffected. Only registered exclusions are
+  updated; there is no per-frame search over world rocks or terrain.
 
-Run **Tools > Open World > Shoreline Foam > Validate Baker Geometry** first.
-Then regenerate and check the reported source, chunk and triangle counts. Inspect
-Snapper Island, Bluewater Cay, overlapping rocks, isolated rocks, shallow terrain
-and 24 m chunk boundaries for a full wave cycle. Add a temporary rock duplicate,
-regenerate, verify coverage, then undo the temporary edit and regenerate again.
-Check the distance fade and confirm boats have no new foam generated around them.
+This is screen-space contact foam. It depends on opaque geometry writing depth;
+transparent objects without a depth pass do not create an edge. Other opaque
+props can also create contact foam unless excluded. Boats and the marina are
+explicitly excluded. Extremely shallow views and fine geometry can expose normal
+screen-depth limitations. It is not a physical surf or wet-rock simulation.
 
-Build to the target Android phone. Compare GPU/CPU frame time with the generated
-foam root enabled and disabled from identical camera positions, especially the
-densest shoreline. Record draw calls, triangles and transparent overdraw. The
-system is designed to bound runtime work to nearby shoreline, but no FPS claim
-is made without this device measurement.
+## Verification
+
+Static source/property/resource checks were run without Unity. Unity and Android
+are not installed in the implementation environment, so shader compilation,
+visual quality and device frame time still require validation:
+
+1. Open the world with a previously baked foam root. Confirm its child renderers
+   are disabled and no duplicate strips are visible.
+2. In Play Mode, inspect Bluewater Cay and Snapper Island during full wave cycles,
+   from above and near water level. The contact line should move with the water.
+3. Move/add a rock or sculpt terrain in edit mode, then enter Play Mode again.
+   No regeneration should be needed.
+4. View rowboat and motorboat hulls offshore and beside rocks; check the existing
+   motorboat wake still renders. Confirm the marina loads without the foam-related
+   obstruction error.
+5. Compare Contact Foam Strength 0 versus 0.9 on the target Android device from
+   identical shoreline views; record GPU/CPU frame time and inspect visual aliasing.
