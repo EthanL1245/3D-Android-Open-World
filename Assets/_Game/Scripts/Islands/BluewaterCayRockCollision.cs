@@ -250,50 +250,25 @@ public static class BluewaterCayRockCollision
         return true;
     }
 
+    // All fish queries now use the full artist-placed Bluewater rock cluster.
+    // The original main-rock-only collection above remains for safe fast travel.
     public static bool AmbientPointClear(Vector3 position, float radius)
     {
-        if (!Ensure()) return true;
-        radius = Mathf.Max(0.15f, radius);
-        if (rockBounds.SqrDistance(position) > radius * radius) return true;
-        int count = Physics.OverlapSphereNonAlloc(position, radius, Overlaps,
-            ~0, QueryTriggerInteraction.Ignore);
-        for (int i = 0; i < count; i++)
-            if (ColliderSet.Contains(Overlaps[i])) return false;
-        return count < Overlaps.Length;
+        return BluewaterCayRockRegion.AmbientPointClear(position, radius);
+    }
+
+    public static bool AmbientSegmentClear(Vector3 from, Vector3 to, float radius)
+    {
+        return BluewaterCayRockRegion.AmbientSegmentClear(from, to, radius);
     }
 
     public static bool SurfacePointClear(Vector3 position, float radius)
     {
-        if (!Ensure()) return true;
-        if (position.x < rockBounds.min.x - radius || position.x > rockBounds.max.x + radius ||
-            position.z < rockBounds.min.z - radius || position.z > rockBounds.max.z + radius)
-            return true;
-        OceanWater water = IslandExpansionWorld.Active != null ? IslandExpansionWorld.Active.Water : null;
-        if (water == null) water = UnityEngine.Object.FindFirstObjectByType<OceanWater>();
-        if (water == null) return true;
-        float sea = water.BaseWaterLevel;
-        position.y = sea - 0.30f;
-        if (!AmbientPointClear(position, radius)) return false;
-        position.y = sea - 0.95f;
-        if (!AmbientPointClear(position, radius)) return false;
-        position.y = sea - 1.60f;
-        return AmbientPointClear(position, radius);
+        return BluewaterCayRockRegion.SurfacePointClear(position, radius);
     }
 
     public static bool SurfaceSegmentClear(Vector3 from, Vector3 to, float radius)
     {
-        if (!Ensure()) return true;
-        if (Mathf.Max(from.x, to.x) + radius < rockBounds.min.x ||
-            Mathf.Min(from.x, to.x) - radius > rockBounds.max.x ||
-            Mathf.Max(from.z, to.z) + radius < rockBounds.min.z ||
-            Mathf.Min(from.z, to.z) - radius > rockBounds.max.z)
-            return true;
-        Vector3 horizontal = to - from;
-        horizontal.y = 0f;
-        int steps = Mathf.Max(1, Mathf.CeilToInt(horizontal.magnitude / 0.55f));
-        for (int i = 1; i <= steps; i++)
-            if (!SurfacePointClear(Vector3.Lerp(from, to, i / (float)steps), radius))
-                return false;
-        return true;
+        return BluewaterCayRockRegion.SurfaceSegmentClear(from, to, radius);
     }
 }

@@ -88,7 +88,7 @@ public class AmbientFishManager : MonoBehaviour
         if(!InReef||oceanWater==null||terrain==null)return false;
         if(biome>=0 && SnapperIslandGeometry.ResolveBiome(position)!=biome)return false;
         var world=IslandExpansionWorld.Active;
-        if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin)return false;
+        if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin && !BluewaterCayRockRegion.ContainsBiome(position,clearance))return false;
         if(biome==ReefCatalog.SnapperBiomeId && SnapperIslandRuntime.Ready &&
             SnapperIslandGeometry.DistanceFromShore(position,SnapperIslandRuntime.Center)+clearance>SnapperIslandGeometry.FishingMargin)return false;
         if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
@@ -290,7 +290,8 @@ public class AmbientFishAgent : MonoBehaviour
         float step=Mathf.Min(recoveryRemaining,speed*Time.deltaTime);
         Vector3 recovered=transform.position+recoveryDirection*step;
         // Do not let the legacy stall-recovery mode tunnel through authored rocks.
-        if(!SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance))
+        if(!SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance) ||
+            !BluewaterCayRockCollision.AmbientSegmentClear(transform.position,recovered,clearance))
         {
             EndRecovery();
             SetVisible(false);
