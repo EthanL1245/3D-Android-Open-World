@@ -10,6 +10,8 @@ Shader "OpenWorld/OceanWater"
         _DeepColor ("Deep Color", Color) = (0.01, 0.10, 0.28, 1)
         _FoamColor ("Foam Color", Color) = (0.86, 0.96, 1.0, 1)
         _FoamStrength ("Foam Strength", Range(0,1)) = 1
+        [HideInInspector] _ContactFoamTex ("Water Contact Foam", 2D) = "black" {}
+        [HideInInspector] _ContactFoamParams ("Width Strength Tiling Fade", Vector) = (.6,0,1.1,120)
         _Alpha ("Base Alpha", Range(0.1, 0.95)) = 0.72
         _WaterFogDensity ("Water Column Fog Density", Range(0.01,0.25)) = 0.085
         _Smoothness ("Smoothness", Range(0, 1)) = 0.82
@@ -87,6 +89,9 @@ Shader "OpenWorld/OceanWater"
                 float4 _FoamColor;
                 float _Alpha;
                 float _FoamStrength;
+                float4 _ContactFoamParams;
+                float _ContactFoamExclusionCount;
+                float4 _ContactFoamExclusions[16];
                 float _WaterFogDensity;
                 float _Smoothness;
                 float _SpecularStrength;
@@ -119,7 +124,43 @@ Shader "OpenWorld/OceanWater"
             CBUFFER_END
 
             TEXTURE2D(_RippleNormalA); SAMPLER(sampler_RippleNormalA);
+            TEXTURE2D(_ContactFoamTex); SAMPLER(sampler_ContactFoamTex);
             #include "OceanGerstner.hlsl"
+
+            // Runs on the actual displaced ocean fragment. The depth difference
+            // has already been sampled for water fog, so there is no extra depth
+            // fetch, camera, geometry overlay or rendering pass for shoreline foam.
+            half ContactFoam(float3 positionWS, float column, float cameraDistance)
+            {
+                float width = max(.1, _ContactFoamParams.x);
+                float fadeEnd = max(1, _ContactFoamParams.w);
+                // Derivatives must be evaluated before the divergent early-outs.
+                float2 dx = ddx(positionWS.xz) * (_ContactFoamParams.z * 256 * 1.73);
+                float2 dy = ddy(positionWS.xz) * (_ContactFoamParams.z * 256 * 1.73);
+                float mip = clamp(.5 * log2(max(1, max(dot(dx,dx),dot(dy,dy)))), 0, 8);
+                [branch] if (_ContactFoamParams.y <= 0 || column >= width || cameraDistance >= fadeEnd)
+                    return 0;
+                [loop] for (int i = 0; i < 16; i++)
+                {
+                    if (i >= (int)_ContactFoamExclusionCount) break;
+                    float4 region = _ContactFoamExclusions[i];
+                    if (all(abs(positionWS.xz-region.xy) < region.zw)) return 0;
+                }
+                float2 uv = positionWS.xz * _ContactFoamParams.z;
+                float t = _Time.y;
+                // Explicit LOD avoids implicit derivative sampling in a divergent
+                // contact branch. Fade/coarser mips limit distant shimmer.
+                half broad = SAMPLE_TEXTURE2D_LOD(_ContactFoamTex, sampler_ContactFoamTex,
+                    uv + t * float2(.025,-.019), mip).r;
+                half fine = SAMPLE_TEXTURE2D_LOD(_ContactFoamTex, sampler_ContactFoamTex,
+                    uv * 1.73 + t * float2(-.018,.028), mip).g;
+                float wash = .5 + .5 * sin(t * 2.24 + broad * 3.0);
+                float edge = width * lerp(.65,1.0,wash);
+                half contact = 1 - smoothstep(edge*.12,edge,column);
+                half lace = smoothstep(.18h,.75h,broad*.65h + fine*.35h);
+                half distanceFade = 1 - smoothstep(fadeEnd*.55,fadeEnd,cameraDistance);
+                return saturate(contact * lerp(.2h,1.0h,lace) * _ContactFoamParams.y * distanceFade);
+            }
 
             struct Attributes
             {
@@ -319,7 +360,6 @@ Shader "OpenWorld/OceanWater"
                 float column = min(500.0, max(0.0, sceneDepth - surfaceDepth)
                                    * cameraDistance / surfaceDepth);
                 half waterFog = 1.0 - exp(-column * max(0.01, _WaterFogDensity));
-                half shore = 1.0 - smoothstep(0.08, 0.85, column);
 
                 // Retain the biome material/property-block tints, shifting the green
                 // reef palette toward turquoise and the offshore palette toward blue.
@@ -347,8 +387,10 @@ Shader "OpenWorld/OceanWater"
                 // does not become a continuous white sheet at larger wave amplitudes.
                 half crest = smoothstep(0.74, 0.98, input.waveHeight / max(0.001, input.waterData.y));
                 half breakup = smoothstep(0.08, 0.36, length(normalA.xy));
-                half foam = (crest * 0.06 + shore * 0.085) * breakup
+                half foam = crest * 0.06 * breakup
                             * _FoamStrength * detailFade;
+                half contactFoam = ContactFoam(input.positionWS, column, cameraDistance);
+                foam = max(foam, contactFoam);
                 color = lerp(color, _FoamColor.rgb, saturate(foam));
 
                 // No painted light bands: highlights now come only from the
@@ -357,10 +399,11 @@ Shader "OpenWorld/OceanWater"
                 half alpha = saturate(_Alpha * lerp(0.65, 1.0, waterFog)
                                       + fresnel * 0.25 + foam * 0.10);
                 alpha = lerp(alpha, 1.0, waterFog);
+                alpha = lerp(alpha, 1.0, contactFoam * .85h);
                 return half4(color, alpha);
             }
             #else
-            // Original rendering path retained verbatim for performance comparison.
+            // Legacy water look also receives the live contact effect.
             half4 Frag(Varyings input) : SV_Target
             {
                 float3 normalWS = normalize(input.normalWS);
@@ -480,6 +523,9 @@ Shader "OpenWorld/OceanWater"
 
                 // Long paths become opaque blue-green instead of transparent or black.
                 alpha=lerp(alpha,1.0,waterFog);
+                half contactFoam = ContactFoam(input.positionWS, column, length(GetCameraPositionWS()-input.positionWS));
+                color = lerp(color, _FoamColor.rgb, contactFoam);
+                alpha = lerp(alpha, 1.0, contactFoam * .85h);
                 return half4(color, alpha);
             }
             #endif

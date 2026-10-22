@@ -16,6 +16,13 @@ public class OceanWater : MonoBehaviour
     private Vector2 recenterStep;
     private bool alignedGrid;
 
+    [Header("Water Contact Foam")]
+    [Tooltip("Textured foam at the live water/opaque-scene intersection. Zero disables it.")]
+    [Range(0f, 1f)] [SerializeField] private float contactFoamStrength = .9f;
+    [Tooltip("Depth-contact width in metres; apparent width varies with viewing angle and shore slope.")]
+    [Range(.1f, 1.5f)] [SerializeField] private float contactFoamWidth = .6f;
+    [Range(.2f, 3f)] [SerializeField] private float contactFoamTextureScale = 1.1f;
+
 
     [Header("Large Waves")]
     [SerializeField] private float waveAmplitude1 = 0.45f;
@@ -232,6 +239,8 @@ public class OceanWater : MonoBehaviour
             waveDirection3
         );
 
+        OceanContactFoam.Apply(propertyBlock, followTarget != null ? followTarget.position : transform.position,
+            contactFoamWidth, contactFoamStrength, contactFoamTextureScale);
         waterRenderer.SetPropertyBlock(propertyBlock);
     }
 

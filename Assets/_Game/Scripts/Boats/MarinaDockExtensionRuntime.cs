@@ -31,7 +31,7 @@ public sealed class MarinaDockExtensionRuntime : MonoBehaviour
         var postPrefab=Resources.Load<GameObject>("Boats/AuthoredDockPost");
         if(boats==null || marina==null || dockPrefab==null || postPrefab==null)return;
         Transform root=marina.transform;
-        if(root.Find(ExtensionName)!=null)return;
+        if(root.Find(ExtensionName)!=null){OceanContactFoam.RegisterExclusion(root);return;}
         OceanWater water=boats.Water!=null?boats.Water:FindFirstObjectByType<OceanWater>();
         if(water==null)return;
         float end=FindSafeDockEnd(root,water);
@@ -52,6 +52,7 @@ public sealed class MarinaDockExtensionRuntime : MonoBehaviour
         if(!FindClearSite(root,installation.transform))
         {
             installation.SetActive(false);Destroy(installation);
+            OceanContactFoam.RegisterExclusion(root);
             Debug.LogError("Marina replacement found an obstructed dock footprint. Clear the shoreline around MarinaShop, then restart Play. The existing marina was kept.");
             return;
         }
@@ -77,6 +78,7 @@ public sealed class MarinaDockExtensionRuntime : MonoBehaviour
         worldBounds=new Bounds(installation.transform.position,Vector3.zero);
         foreach(var solid in solids)worldBounds.Encapsulate(solid.bounds);
         Physics.SyncTransforms();
+        OceanContactFoam.RegisterExclusion(root);
     }
 
     private static void AddPost(Transform parent,GameObject prefab,Vector3 local)
