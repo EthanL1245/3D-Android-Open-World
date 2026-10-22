@@ -229,6 +229,7 @@ IL2CPP_EXTERN_C RuntimeClass* ShopCatalog_tAE42042CFE2E311285FAB684EF2088168A9D4
 IL2CPP_EXTERN_C RuntimeClass* ShopWorldHUD_t8812EFB0576ECEF8F3A54219BEBC76CEA1118A2B_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E_il2cpp_TypeInfo_var;
+IL2CPP_EXTERN_C RuntimeClass* SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* StringU5BU5D_t7674CD946EC0CE7B3AE0BE70E6EE85F2ECD9F248_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB_il2cpp_TypeInfo_var;
@@ -951,7 +952,9 @@ struct BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4  : public MonoBeh
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___U3CBoatU3Ek__BackingField;
 	bool ___U3CGroundedOnBoatU3Ek__BackingField;
 	CharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A* ___capsule;
-	bool ___suspendedMotorboatCapsule;
+	bool ___suspendedSeatedCapsule;
+	bool ___isolatedFromBoatPhysics;
+	bool ___previousDetectCollisions;
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___lastPosition;
 	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___lastRotation;
 };
@@ -2513,7 +2516,7 @@ inline BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* Component_GetCom
 {
 	return ((  BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponent_TisRuntimeObject_m7181F81CAEC2CF53F5D2BC79B7425C16E1F80D33_gshared)(__this, method);
 }
-IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Driving_m6CE76AA5E39700A1A6EDFDEB3281F6C9ADA35B85 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Seated_mE7DA6F7E9B87D4ED10A9423C2EC58D8146D8CB38 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) ;
 inline BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* Component_GetComponent_TisBoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63_m29BF852545EA1DCD105BAC38435EB421FD696767 (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3* __this, const RuntimeMethod* method)
 {
 	return ((  BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponent_TisRuntimeObject_m7181F81CAEC2CF53F5D2BC79B7425C16E1F80D33_gshared)(__this, method);
@@ -2718,6 +2721,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ReefZone_tC974D4F46AC04C70F8C0668
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool ReefZone_Contains_mEED614F8A4BF2D27001F8E148B2811562A8E8A28 (ReefZone_tC974D4F46AC04C70F8C0668DB01ADFE69BE49A5F* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_point, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_IsValidFishingWater_m326A5381305273A1F7B355FA324293467E34B708 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_worldPosition, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Physics_Linecast_mB0325E32F70A3BC4A56A06877DA5944355B3B368 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_start, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_end, int32_t ___2_layerMask, int32_t ___3_queryTriggerInteraction, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool SnapperRockFishObstacles_SurfacePointClear_mE563DE6EDCE39E6E6AFD3AB764C531DB90271050 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_position, float ___1_radius, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_worldPosition, float ___1_requiredDepth, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline (const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* Terrain_get_terrainData_m3B6C1D89471A4E1C60FC19C168DB37A011B924FD (Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* __this, const RuntimeMethod* method) ;
@@ -2742,6 +2746,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_rotation, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_point, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryValidateFightMove_m7037FEB6DF59AD5A23EDF14B295D917897A6EEE3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_current, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_direction, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_away, float ___3_distance, bool ___4_requireAway, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___5_next, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterSegmentClear_m3072096FBD2B0B320691F4C97DB76DE4909A3579 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_to, float ___2_radius, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool SnapperRockFishObstacles_SurfaceSegmentClear_mD7BE98564371989EB79A6517F6C0942080CDC588 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_to, float ___2_radius, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Distance_m2314DB9B8BD01157E013DF87BEA557375C7F9FF9_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, const RuntimeMethod* method) ;
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_UnaryNegation_m5450829F333BD2A88AF9A592C4EE331661225915_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetLinePositions_mCE5B4F1C70D9F96734837DFD9D630CFCF992FDB3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) ;
@@ -2977,7 +2982,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Bounds_SetMinMax_m42AF5C7723
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 52606
+// Method Definition Index: 52651
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CurrentDrag_m9D64199EBE6E251BF0E9F1888D743903F7460AAA (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3029,7 +3034,7 @@ IL_0029:
 		return G_B4_0;
 	}
 }
-// Method Definition Index: 52607
+// Method Definition Index: 52652
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* FishingSystem_get_PresentationLine_m96CCEDED29501294FCCD721AC6ABFD5CEF02A007 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3038,7 +3043,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR LineRenderer_tEFEF960672DB69CB14B6D181FAE6292
 		return L_0;
 	}
 }
-// Method Definition Index: 52608
+// Method Definition Index: 52653
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* FishingSystem_get_PresentationWater_m9E672C27A55334D5D8F46603DD0CC18DD0F70379 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3047,7 +3052,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR OceanWater_t4335938C85C93BBD8FC6B42830E845900
 		return L_0;
 	}
 }
-// Method Definition Index: 52609
+// Method Definition Index: 52654
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* FishingSystem_get_PresentationCamera_m41435B3424567F54C8F7ED18C81D1B196C2A8AF8 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3056,7 +3061,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E
 		return L_0;
 	}
 }
-// Method Definition Index: 52610
+// Method Definition Index: 52655
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* FishingSystem_get_PresentationFishStatusIcon_mC6A791EC2C6C61CCA3567FC40AA92050AD5C5E07 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3065,7 +3070,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8
 		return L_0;
 	}
 }
-// Method Definition Index: 52611
+// Method Definition Index: 52656
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* FishingSystem_get_PresentationRod_m518E14D11F282971721A6E65191ECA336ECF10C3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3074,7 +3079,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FishingRodView_t0398935C302B9CCEB343645D9520F
 		return L_0;
 	}
 }
-// Method Definition Index: 52612
+// Method Definition Index: 52657
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_IsSkillStunned_mDBDDB7FE610A287E6B4D90233615A8155EABC84B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B4_0 = 0;
@@ -3111,7 +3116,7 @@ IL_0021:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 52613
+// Method Definition Index: 52658
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ApplySkillStun_m1B36A1EC12AC03B20058854B56F387C9684DF24B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -3171,7 +3176,7 @@ IL_0052:
 		return;
 	}
 }
-// Method Definition Index: 52614
+// Method Definition Index: 52659
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_IsRodEquipped_mEA043BAF288BDF19A6E8A75A98278D46F0999E53 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B4_0 = 0;
@@ -3207,7 +3212,7 @@ IL_0019:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 52615
+// Method Definition Index: 52660
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CastSequence_m9E7E4CDD3B37B94815F96560C33DC672E032192A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3216,7 +3221,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CastSequence_m9E7E4
 		return L_0;
 	}
 }
-// Method Definition Index: 52616
+// Method Definition Index: 52661
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_CastSequence_mB7E0BE19F54D60655E1A18E76646248A0F167494 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -3226,7 +3231,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_CastSequence_mB7E0BE19
 		return;
 	}
 }
-// Method Definition Index: 52617
+// Method Definition Index: 52662
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_NetworkCastImpactSequence_m330C4415115385D40522EF25B3D59F2248E7812A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3235,7 +3240,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_NetworkCastImpactSe
 		return L_0;
 	}
 }
-// Method Definition Index: 52618
+// Method Definition Index: 52663
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkCastImpactSequence_m66AD0AB67D86EAAC0A280840E46A319B20B04D34 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -3245,7 +3250,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkCastImpactSeque
 		return;
 	}
 }
-// Method Definition Index: 52619
+// Method Definition Index: 52664
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_get_NetworkCastImpactPoint_m596F00FD4203F54A38571D631561076BCD91C5B7 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3254,7 +3259,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_0;
 	}
 }
-// Method Definition Index: 52620
+// Method Definition Index: 52665
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkCastImpactPoint_m534E712F4656D60604CA4C8A122B6F6ECAF62944 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -3264,7 +3269,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkCastImpactPoint
 		return;
 	}
 }
-// Method Definition Index: 52621
+// Method Definition Index: 52666
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkCastImpactAge_mF098996528034BBF19C383D74088E126AB21F264 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	float G_B3_0 = 0.0f;
@@ -3299,7 +3304,7 @@ IL_0034:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52622
+// Method Definition Index: 52667
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_NetworkHasFish_m56C6688B678C0E755358ADBBF33F655F98217D9B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -3328,7 +3333,7 @@ IL_0014:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 52623
+// Method Definition Index: 52668
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_NetworkLureInWater_m7744CC47ABE298809FD53F04D1A2E427F6BCD843 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B4_0 = 0;
@@ -3364,7 +3369,7 @@ IL_001d:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 52624
+// Method Definition Index: 52669
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_NetworkIsReeling_m7B9290D96F2FC099929C8E85C9E9B9D2329FDDA6 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3459,7 +3464,7 @@ IL_0052:
 		return (bool)G_B8_0;
 	}
 }
-// Method Definition Index: 52625
+// Method Definition Index: 52670
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_NetworkLineKind_m1B1335CF23734C4C61E23B4D8D784B627BAE1219 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3583,7 +3588,7 @@ IL_006c:
 		return G_B14_0;
 	}
 }
-// Method Definition Index: 52626
+// Method Definition Index: 52671
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_NetworkLureVariant_m434EA33DBB51C3D80CB58D712695E20F320B796F (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3625,7 +3630,7 @@ IL_0021:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52627
+// Method Definition Index: 52672
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_get_NetworkLineEnd_m4D8075D2349070F41CAC67C38FEE1D89F4B86C40 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3685,7 +3690,7 @@ IL_003c:
 		return G_B4_0;
 	}
 }
-// Method Definition Index: 52628
+// Method Definition Index: 52673
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkReelTime_m37C28FEB1E6776062B5566072239F84F6C4D8630 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3694,7 +3699,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkReelTime_m37C2
 		return L_0;
 	}
 }
-// Method Definition Index: 52629
+// Method Definition Index: 52674
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkReelTime_m199AEB6AC1A60446F1AA7D116A226A28617CC421 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, float ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -3704,7 +3709,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkReelTime_m199AE
 		return;
 	}
 }
-// Method Definition Index: 52630
+// Method Definition Index: 52675
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkCastDuration_mD482409C6CD6FFB13C17B98BC9E7C50C0AE08715 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3715,7 +3720,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkCastDuration_m
 		return L_1;
 	}
 }
-// Method Definition Index: 52631
+// Method Definition Index: 52676
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkCastAge_mA96C4DAD6F7FBEA9440722681B9A482E71D18E4A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	float G_B3_0 = 0.0f;
@@ -3748,7 +3753,7 @@ IL_0026:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52632
+// Method Definition Index: 52677
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CastBiome_m65AAAE4D455AAFA521CD9F29BB903AD7B01320C1 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -3776,7 +3781,7 @@ IL_0011:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52633
+// Method Definition Index: 52678
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_get_CastLandingPoint_m9B182387F2EB0BEED1F8B2895747C53B56E86232 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3785,7 +3790,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_0;
 	}
 }
-// Method Definition Index: 52634
+// Method Definition Index: 52679
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_CastHitHotspot_m407DD03382B6CA050E4644A144A451694C2B019A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -3813,7 +3818,7 @@ IL_0018:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 52635
+// Method Definition Index: 52680
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_FragileWarningActive_m09BD6AF89ED640291BEF197100D1865BD870CDC9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -3914,7 +3919,7 @@ IL_0054:
 		return (bool)G_B11_0;
 	}
 }
-// Method Definition Index: 52636
+// Method Definition Index: 52681
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_FragileWarningFlashing_m643ED1CE4227280608365004E53256B26A5651D3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -3943,7 +3948,7 @@ IL_001b:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 52637
+// Method Definition Index: 52682
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_FragileFlashOn_m1F9CEE92D7602F341EED110EC5EB46F716C05B71 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3953,7 +3958,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_FragileFlashOn_m1F9CEE
 		return (bool)((!(((uint32_t)((int32_t)(il2cpp_codegen_cast_double_to_int<int32_t>(((float)il2cpp_codegen_multiply(L_0, (16.0f))))&1))) <= ((uint32_t)0)))? 1 : 0);
 	}
 }
-// Method Definition Index: 52638
+// Method Definition Index: 52683
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FishingInventory_t3C92A57027FBD7299361FA290855A8BAB3D35E44* FishingSystem_get_Inventory_m42AEC106DDAD665E53FE192C9B99DC36B3CBCFC6 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -3962,7 +3967,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FishingInventory_t3C92A57027FBD7299361FA29085
 		return L_0;
 	}
 }
-// Method Definition Index: 52639
+// Method Definition Index: 52684
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR AnglerProgression_t6E88BA02E89901DDFD199EFAAC4A4B8066A86C84* FishingSystem_get_Progression_m68D2BC5DF00CD674FF88C49F0664533D320B29AA (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4021,7 +4026,7 @@ IL_0028:
 		return G_B5_0;
 	}
 }
-// Method Definition Index: 52640
+// Method Definition Index: 52685
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_ProgressReel_mABB05EF84CE4E9051D73C75AA5B7707FB6C25086 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	float G_B3_0 = 0.0f;
@@ -4054,7 +4059,7 @@ IL_001b:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52641
+// Method Definition Index: 52686
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_get_IsSirenCalling_m31CF1B76E8D9431A230B0E5BCFB604CB007412FF (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4094,7 +4099,7 @@ IL_0023:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 52642
+// Method Definition Index: 52687
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B5_0 = 0;
@@ -4140,7 +4145,7 @@ IL_0022:
 		return (int32_t)(G_B5_0);
 	}
 }
-// Method Definition Index: 52643
+// Method Definition Index: 52688
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_ProgressDifficulty_m2C9A82C2C4925EC3D5F83C4772858A883AF2D900 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4161,7 +4166,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_ProgressDifficulty_m2
 		return L_3;
 	}
 }
-// Method Definition Index: 52644
+// Method Definition Index: 52689
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ApplyShopGear_mDFE2642F130352F99B11094867E07267F70A04A9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4392,7 +4397,7 @@ IL_0194:
 		return;
 	}
 }
-// Method Definition Index: 52645
+// Method Definition Index: 52690
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_get_NetworkHeldSpecies_m7A4DFA2FB6A0696D957313F9D9AE5A04D60C6812 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4455,7 +4460,7 @@ IL_0034:
 		return G_B6_0;
 	}
 }
-// Method Definition Index: 52646
+// Method Definition Index: 52691
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkHeldWeight_m3198F934B93F61CAAC3ED2C7BAF8C2552EB57EF3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	float G_B3_0 = 0.0f;
@@ -4486,7 +4491,7 @@ IL_001b:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52647
+// Method Definition Index: 52692
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_IsHolding_m0BBEF2A5E2E53B39CE64CA13E0590BCBD239A9FC (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, CaughtFishRecord_t11CE54F47C652436DF376C32048E11C30CF3920A* ___0_record, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4524,7 +4529,7 @@ IL_0018:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 52648
+// Method Definition Index: 52693
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PrepareForMenu_mDBA41043D30F0AA59EA3A9FBA29A179E35293CA6 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -4551,7 +4556,7 @@ IL_001e:
 		return;
 	}
 }
-// Method Definition Index: 52649
+// Method Definition Index: 52694
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_RefreshHandHud_m549078804D15D871EB16F0B4FC2765A507FC4CDC (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4738,7 +4743,7 @@ IL_00f7:
 		return;
 	}
 }
-// Method Definition Index: 52650
+// Method Definition Index: 52695
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ToggleRod_m8136534303DA5C86D72ABE795A039D7F8D1B6C7F (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -4787,7 +4792,7 @@ IL_0027:
 		return;
 	}
 }
-// Method Definition Index: 52651
+// Method Definition Index: 52696
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UnequipHands_m3C925E1C1C7FA3343A7412A31DD135C62A562711 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4831,7 +4836,7 @@ IL_0033:
 		return;
 	}
 }
-// Method Definition Index: 52652
+// Method Definition Index: 52697
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PrepareForWorldTravel_m6923E7E951CF6DAEAE7C17A9891436D94A5C8E28 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4871,7 +4876,7 @@ IL_002c:
 		return;
 	}
 }
-// Method Definition Index: 52653
+// Method Definition Index: 52698
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetShopWorld_m7B343197646DD6359FFDB87683252A39A0F2198F (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_shop, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -4908,7 +4913,7 @@ IL_001f:
 		return;
 	}
 }
-// Method Definition Index: 52654
+// Method Definition Index: 52699
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_Start_mED5E7093D3024710C3E50AB10CBB1D635BD8697D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5227,7 +5232,7 @@ IL_022a:
 		return;
 	}
 }
-// Method Definition Index: 52655
+// Method Definition Index: 52700
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnDisable_m4FF8D7BA8356F37869A144A6CF0C49EA0F7D9C27 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -5237,7 +5242,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnDisable_m4FF8D7BA8356F37
 		return;
 	}
 }
-// Method Definition Index: 52656
+// Method Definition Index: 52701
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnDestroy_m6E15E0A76C067BDFABFE735F3A2BF17C731ADD5A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5433,7 +5438,7 @@ IL_00ef:
 		return;
 	}
 }
-// Method Definition Index: 52657
+// Method Definition Index: 52702
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_Update_mF93EEF7003D75EC253FC7AF16947407CB7F14096 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6200,7 +6205,7 @@ IL_0334:
 		return;
 	}
 }
-// Method Definition Index: 52658
+// Method Definition Index: 52703
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_Configure_mF95859FF5D5F123823CE87E1671E4E0BB94BB6D7 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* ___0_camera, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_water, FishingInventory_t3C92A57027FBD7299361FA290855A8BAB3D35E44* ___2_fishingInventory, Canvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26* ___3_canvas, const RuntimeMethod* method) 
 {
 	{
@@ -6224,7 +6229,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_Configure_mF95859FF5D5F123
 		return;
 	}
 }
-// Method Definition Index: 52659
+// Method Definition Index: 52704
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnPlayerSwimming_m64AE5B0791067BB3C05E80E9BF7A94F624DBCA75 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -6249,7 +6254,7 @@ IL_0012:
 		return;
 	}
 }
-// Method Definition Index: 52660
+// Method Definition Index: 52705
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_MustStowForSwimming_mD441CB705E54DF46222BE852756555D09EB25356 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6356,7 +6361,7 @@ IL_0059:
 		return L_14;
 	}
 }
-// Method Definition Index: 52661
+// Method Definition Index: 52706
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_EquipRod_mC713FE5FC2059363562696C4187A9338029A3416 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6397,7 +6402,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_EquipRod_mC713FE5FC2059363
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_3 = V_0;
 		NullCheck(L_3);
 		bool L_4;
-		L_4 = BoatPassenger_get_Driving_m6CE76AA5E39700A1A6EDFDEB3281F6C9ADA35B85(L_3, NULL);
+		L_4 = BoatPassenger_get_Seated_mE7DA6F7E9B87D4ED10A9423C2EC58D8146D8CB38(L_3, NULL);
 		G_B3_0 = ((int32_t)(L_4));
 		goto IL_001a;
 	}
@@ -6559,7 +6564,7 @@ IL_0105:
 		return;
 	}
 }
-// Method Definition Index: 52662
+// Method Definition Index: 52707
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_HoldFish_m1E21E7ED698839667F0DB6B7CE374D874E9550A9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_inventoryIndex, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7054,7 +7059,7 @@ IL_02ac:
 		return;
 	}
 }
-// Method Definition Index: 52663
+// Method Definition Index: 52708
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GrantYellowfinPreviewOnce_m09F8D58CEB59B44AB6F08DB7100FC7A7EAB7C85B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7135,7 +7140,7 @@ IL_0058:
 		return;
 	}
 }
-// Method Definition Index: 52664
+// Method Definition Index: 52709
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GrantGoatfishPreviewOnce_m69607D0BB4D4F0B10A2FB4169518491A1BE2D757 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7224,7 +7229,7 @@ IL_006b:
 		return;
 	}
 }
-// Method Definition Index: 52665
+// Method Definition Index: 52710
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GrantRedSnapperPreviewOnce_m5D1C0750B74F3E0408C8F0C20552A726EB48BB65 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7305,7 +7310,7 @@ IL_0058:
 		return;
 	}
 }
-// Method Definition Index: 52666
+// Method Definition Index: 52711
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ResolveReferences_mC6590410FDD59A6438838CF9545EEC3D4EA03071 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7475,7 +7480,7 @@ IL_00bb:
 		return;
 	}
 }
-// Method Definition Index: 52667
+// Method Definition Index: 52712
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_InitializeFishingAudio_m4277C751445C27C69271858C2E27294EB82FD59D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7651,7 +7656,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_InitializeFishingAudio_m42
 		return;
 	}
 }
-// Method Definition Index: 52668
+// Method Definition Index: 52713
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_StartReelSound_m106543AD1A847583535684104DAF497A8357DD52 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7755,7 +7760,7 @@ IL_0072:
 		return;
 	}
 }
-// Method Definition Index: 52669
+// Method Definition Index: 52714
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_StopReelSound_m7A48D36E5E48E3D6C0BC49C3B698A8725C517D41 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -7782,7 +7787,7 @@ IL_001a:
 		return;
 	}
 }
-// Method Definition Index: 52670
+// Method Definition Index: 52715
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_StopLinePullSound_mBF09887698E61A39F9394B45FEEAD7DC8A134224 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -7868,7 +7873,7 @@ IL_006c:
 		return;
 	}
 }
-// Method Definition Index: 52671
+// Method Definition Index: 52716
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateLinePullSound_m25AFA84BE0813271AED4783F7321B1A12A9729EE (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8175,7 +8180,7 @@ IL_0130:
 		return;
 	}
 }
-// Method Definition Index: 52672
+// Method Definition Index: 52717
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CheckReelSound_m2456E6C077FDA8C6FB1368CE2ECBBE5EF1B8F246 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8393,7 +8398,7 @@ IL_00c5:
 		return;
 	}
 }
-// Method Definition Index: 52673
+// Method Definition Index: 52718
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnApplicationFocus_m56A0F921AD26CD22776A2D5A0979D947B0D60CB9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_focused, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -8423,7 +8428,7 @@ IL_0020:
 		return;
 	}
 }
-// Method Definition Index: 52674
+// Method Definition Index: 52719
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_OnApplicationPause_m0E08149DED313C1D917CBBF54763806FB6C65E51 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_paused, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -8453,7 +8458,7 @@ IL_001d:
 		return;
 	}
 }
-// Method Definition Index: 52675
+// Method Definition Index: 52720
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlayFishingSound_mA5A9D4A4AFB04C8BFA31D6D529EB7BEF827C13BD (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, AudioClip_t5D272C4EB4F2D3ED49F1C346DEA373CF6D585F20* ___0_clip, float ___1_volumeScale, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8513,7 +8518,7 @@ IL_002b:
 		return;
 	}
 }
-// Method Definition Index: 52676
+// Method Definition Index: 52721
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlaySkillFeedback_m640768B7099F25A834602EF48871B51B3C5D8EF9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8552,7 +8557,7 @@ IL_002f:
 		return;
 	}
 }
-// Method Definition Index: 52677
+// Method Definition Index: 52722
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlaySirensCallSound_m08A926FF03E288E55BB38F3B09A7607A5503D575 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -8563,7 +8568,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlaySirensCallSound_m08A92
 		return;
 	}
 }
-// Method Definition Index: 52678
+// Method Definition Index: 52723
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlayCatchSound_mD18B916A5AEF3B6C832C163AEFF8A42A8279294D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, float ___0_weightKg, const RuntimeMethod* method) 
 {
 	AudioClipU5BU5D_t916722468F7EDCFA833318C35CD7D41097D75D31* V_0 = NULL;
@@ -8640,7 +8645,7 @@ IL_003e:
 		return;
 	}
 }
-// Method Definition Index: 52679
+// Method Definition Index: 52724
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlayDragNotchSound_m124F6F618F2507160A6E5DE72A82C61A2C4533BA (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_notches, const RuntimeMethod* method) 
 {
 	{
@@ -8656,7 +8661,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_PlayDragNotchSound_m124F6F
 		return;
 	}
 }
-// Method Definition Index: 52680
+// Method Definition Index: 52725
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* FishingSystem_PlayDragNotches_m856796BB1569CD281ABCE0D0F0EA4EA54DB5B1B0 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_notches, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8680,7 +8685,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* FishingSystem_PlayDragNotches_
 		return L_2;
 	}
 }
-// Method Definition Index: 52681
+// Method Definition Index: 52726
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_HandleActionPressed_m4182E88C75E9A8EE186DB6429028E2E45A3F243A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8916,7 +8921,7 @@ IL_0116:
 		return;
 	}
 }
-// Method Definition Index: 52682
+// Method Definition Index: 52727
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_TryCast_m6256C8D18B23C4B6EC461ACD11F8D6A08FBE936D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9106,7 +9111,7 @@ IL_013f:
 		return;
 	}
 }
-// Method Definition Index: 52683
+// Method Definition Index: 52728
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* FishingSystem_CastRoutine_m7A915DE00564D7673CFD00045FB6A26EAE36CAE5 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_target, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9130,7 +9135,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* FishingSystem_CastRoutine_m7A9
 		return L_2;
 	}
 }
-// Method Definition Index: 52684
+// Method Definition Index: 52729
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* FishingSystem_HotspotStatus_m9579DBBDD01586EC7C9EB3466658654E3EBF28BC (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9175,7 +9180,7 @@ IL_0042:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 52685
+// Method Definition Index: 52730
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollBaitSpecies_mA2962391243905EAC681FF98B20430CB1FBF3FB3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9196,7 +9201,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollBaitSpecies_mA29623
 		return L_3;
 	}
 }
-// Method Definition Index: 52686
+// Method Definition Index: 52731
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_BeginLureRetrieve_m0C661F46665B397CB5DCD3B781B9BC967EBE60A7 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -9302,7 +9307,7 @@ IL_008f:
 		return;
 	}
 }
-// Method Definition Index: 52687
+// Method Definition Index: 52732
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateWaiting_m4875E392CA3E3EF7A54E5F613885F7EAC01F6540 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_reeling, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9465,7 +9470,7 @@ IL_012d:
 		return;
 	}
 }
-// Method Definition Index: 52688
+// Method Definition Index: 52733
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_BeginBite_mD8ABF98125189353FB0276FF2761DFB3D0C60CF5 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9832,7 +9837,7 @@ IL_0246:
 		return;
 	}
 }
-// Method Definition Index: 52689
+// Method Definition Index: 52734
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateBite_m0278C06820D64108BC967FCEF0998D13A55C6418 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9909,7 +9914,7 @@ IL_0085:
 		return;
 	}
 }
-// Method Definition Index: 52690
+// Method Definition Index: 52735
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_StartFight_m2494864276237DB4821B1E67E67881CAC412BCBF (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10136,7 +10141,7 @@ IL_018f:
 		return;
 	}
 }
-// Method Definition Index: 52691
+// Method Definition Index: 52736
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateFight_m1E61851DD0DEE42BA3276E70344B3E0DFDEDC36B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_reeling, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11680,7 +11685,7 @@ IL_08ef:
 		return;
 	}
 }
-// Method Definition Index: 52692
+// Method Definition Index: 52737
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CatchFish_m43F15819DB8DD056AA065816B2F568C5B3878A6C (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_shoreCatch, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12099,7 +12104,7 @@ IL_01eb:
 		return;
 	}
 }
-// Method Definition Index: 52693
+// Method Definition Index: 52738
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapLine_m8A0D72C7F2FAC3881A9C0B6259CED1152F48DB31 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, String_t* ___0_message, const RuntimeMethod* method) 
 {
 	{
@@ -12113,7 +12118,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapLine_m8A0D72C7F2FAC388
 		return;
 	}
 }
-// Method Definition Index: 52694
+// Method Definition Index: 52739
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FailFishing_m2371A02AE61678B0684F93DB676E0E48C7229D24 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, String_t* ___0_message, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12144,7 +12149,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FailFishing_m2371A02AE6167
 		return;
 	}
 }
-// Method Definition Index: 52695
+// Method Definition Index: 52740
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CancelFishing_mDFBF01E5F436C4E3D0568E92487FF4134A930046 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12262,7 +12267,7 @@ IL_0096:
 		return;
 	}
 }
-// Method Definition Index: 52696
+// Method Definition Index: 52741
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CancelCastMode_m25336AD2435D7D764634E622F4682EA0CB641A36 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12299,7 +12304,7 @@ IL_001f:
 		return;
 	}
 }
-// Method Definition Index: 52697
+// Method Definition Index: 52742
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_RefreshCastRange_mA2F2D162BAC9D7E79317956B77BBFA19009600BF (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12360,7 +12365,7 @@ IL_002c:
 		return;
 	}
 }
-// Method Definition Index: 52698
+// Method Definition Index: 52743
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_ProjectCastPoint_mE59F1F7449ADA5E643FE5558930B7803A1359679 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, float ___0_power, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12458,7 +12463,7 @@ IL_0097:
 		return L_24;
 	}
 }
-// Method Definition Index: 52699
+// Method Definition Index: 52744
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_CanLandCast_m60DC6BB6293E514D76E25DF9D89A613513593037 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_target, bool ___1_checkFlight, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12662,9 +12667,15 @@ IL_00ca:
 		return L_33;
 	}
 }
-// Method Definition Index: 52700
+// Method Definition Index: 52745
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_IsValidFishingWater_m326A5381305273A1F7B355FA324293467E34B708 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_worldPosition, const RuntimeMethod* method) 
 {
+	static bool s_Il2CppMethodInitialized;
+	if (!s_Il2CppMethodInitialized)
+	{
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
+		s_Il2CppMethodInitialized = true;
+	}
 	float V_0 = 0.0f;
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_1;
 	memset((&V_1), 0, sizeof(V_1));
@@ -12673,75 +12684,97 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_IsValidFishingWater_m326A5
 	bool V_3 = false;
 	bool V_4 = false;
 	bool V_5 = false;
-	int32_t G_B9_0 = 0;
+	int32_t G_B3_0 = 0;
+	int32_t G_B12_0 = 0;
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1756>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1757>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1758>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1759>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_0 = ___0_worldPosition;
-		float L_1 = __this->___minimumFishingDepth;
-		bool L_2;
-		L_2 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_0, L_1, NULL);
-		V_3 = (bool)((((int32_t)L_2) == ((int32_t)0))? 1 : 0);
-		bool L_3 = V_3;
-		if (!L_3)
+		il2cpp_codegen_runtime_class_init_inline(SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
+		bool L_1;
+		L_1 = SnapperRockFishObstacles_SurfacePointClear_mE563DE6EDCE39E6E6AFD3AB764C531DB90271050(L_0, (0.400000006f), NULL);
+		if (!L_1)
 		{
-			goto IL_001e;
+			goto IL_0020;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1760>
-		V_4 = (bool)0;
-		goto IL_00d1;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___0_worldPosition;
+		float L_3 = __this->___minimumFishingDepth;
+		bool L_4;
+		L_4 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_2, L_3, NULL);
+		G_B3_0 = ((((int32_t)L_4) == ((int32_t)0))? 1 : 0);
+		goto IL_0021;
 	}
 
-IL_001e:
+IL_0020:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1763>
+		G_B3_0 = 1;
+	}
+
+IL_0021:
+	{
+		V_3 = (bool)G_B3_0;
+		bool L_5 = V_3;
+		if (!L_5)
+		{
+			goto IL_002e;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1761>
+		V_4 = (bool)0;
+		goto IL_00e1;
+	}
+
+IL_002e:
+	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1764>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1765>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1766>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1767>
-		float L_4 = __this->___deepWaterSafetyRadius;
-		float L_5;
-		L_5 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0f), L_4, NULL);
-		V_0 = L_5;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1769>
-		float L_6 = V_0;
-		V_5 = (bool)((((int32_t)((!(((float)L_6) <= ((float)(0.0f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_7 = V_5;
-		if (!L_7)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1768>
+		float L_6 = __this->___deepWaterSafetyRadius;
+		float L_7;
+		L_7 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0f), L_6, NULL);
+		V_0 = L_7;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1770>
+		float L_8 = V_0;
+		V_5 = (bool)((((int32_t)((!(((float)L_8) <= ((float)(0.0f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_9 = V_5;
+		if (!L_9)
 		{
-			goto IL_0048;
+			goto IL_0058;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1770>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1771>
 		V_4 = (bool)1;
-		goto IL_00d1;
+		goto IL_00e1;
 	}
 
-IL_0048:
+IL_0058:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1772>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1773>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1774>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8;
-		L_8 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
-		float L_9 = V_0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1775>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10;
-		L_10 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_8, L_9, NULL);
-		V_1 = L_10;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1776>
+		L_10 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
+		float L_11 = V_0;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12;
+		L_12 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_10, L_11, NULL);
+		V_1 = L_12;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1777>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1778>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_11;
-		L_11 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
-		float L_12 = V_0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1779>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13;
-		L_13 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_11, L_12, NULL);
-		V_2 = L_13;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1780>
+		L_13 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
+		float L_14 = V_0;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
+		L_15 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_13, L_14, NULL);
+		V_2 = L_15;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1781>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1782>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1783>
@@ -12758,75 +12791,76 @@ IL_0048:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1794>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1795>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1796>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___0_worldPosition;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15 = V_1;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16;
-		L_16 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_14, L_15, NULL);
-		float L_17 = __this->___minimumFishingDepth;
-		bool L_18;
-		L_18 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_16, ((float)il2cpp_codegen_multiply(L_17, (0.850000024f))), NULL);
-		if (!L_18)
-		{
-			goto IL_00cc;
-		}
-	}
-	{
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_19 = ___0_worldPosition;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = V_1;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21;
-		L_21 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_19, L_20, NULL);
-		float L_22 = __this->___minimumFishingDepth;
-		bool L_23;
-		L_23 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_21, ((float)il2cpp_codegen_multiply(L_22, (0.850000024f))), NULL);
-		if (!L_23)
-		{
-			goto IL_00cc;
-		}
-	}
-	{
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = ___0_worldPosition;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25 = V_2;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26;
-		L_26 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_24, L_25, NULL);
-		float L_27 = __this->___minimumFishingDepth;
-		bool L_28;
-		L_28 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_26, ((float)il2cpp_codegen_multiply(L_27, (0.850000024f))), NULL);
-		if (!L_28)
-		{
-			goto IL_00cc;
-		}
-	}
-	{
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_29 = ___0_worldPosition;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30 = V_2;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_31;
-		L_31 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_29, L_30, NULL);
-		float L_32 = __this->___minimumFishingDepth;
-		bool L_33;
-		L_33 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_31, ((float)il2cpp_codegen_multiply(L_32, (0.850000024f))), NULL);
-		G_B9_0 = ((int32_t)(L_33));
-		goto IL_00cd;
-	}
-
-IL_00cc:
-	{
-		G_B9_0 = 0;
-	}
-
-IL_00cd:
-	{
-		V_4 = (bool)G_B9_0;
-		goto IL_00d1;
-	}
-
-IL_00d1:
-	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1797>
-		bool L_34 = V_4;
-		return L_34;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = ___0_worldPosition;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_17 = V_1;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18;
+		L_18 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_16, L_17, NULL);
+		float L_19 = __this->___minimumFishingDepth;
+		bool L_20;
+		L_20 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_18, ((float)il2cpp_codegen_multiply(L_19, (0.850000024f))), NULL);
+		if (!L_20)
+		{
+			goto IL_00dc;
+		}
+	}
+	{
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = ___0_worldPosition;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22 = V_1;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23;
+		L_23 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_21, L_22, NULL);
+		float L_24 = __this->___minimumFishingDepth;
+		bool L_25;
+		L_25 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_23, ((float)il2cpp_codegen_multiply(L_24, (0.850000024f))), NULL);
+		if (!L_25)
+		{
+			goto IL_00dc;
+		}
+	}
+	{
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = ___0_worldPosition;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_2;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_28;
+		L_28 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_26, L_27, NULL);
+		float L_29 = __this->___minimumFishingDepth;
+		bool L_30;
+		L_30 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_28, ((float)il2cpp_codegen_multiply(L_29, (0.850000024f))), NULL);
+		if (!L_30)
+		{
+			goto IL_00dc;
+		}
+	}
+	{
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_31 = ___0_worldPosition;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_32 = V_2;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_33;
+		L_33 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_31, L_32, NULL);
+		float L_34 = __this->___minimumFishingDepth;
+		bool L_35;
+		L_35 = FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559(__this, L_33, ((float)il2cpp_codegen_multiply(L_34, (0.850000024f))), NULL);
+		G_B12_0 = ((int32_t)(L_35));
+		goto IL_00dd;
+	}
+
+IL_00dc:
+	{
+		G_B12_0 = 0;
+	}
+
+IL_00dd:
+	{
+		V_4 = (bool)G_B12_0;
+		goto IL_00e1;
+	}
+
+IL_00e1:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1798>
+		bool L_36 = V_4;
+		return L_36;
 	}
 }
-// Method Definition Index: 52701
+// Method Definition Index: 52746
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_HasFishingDepth_m82D860A3A53ABBB0DA5A64C273569BA76F490559 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_worldPosition, float ___1_requiredDepth, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12845,7 +12879,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_HasFishingDepth_m82D860A3A
 	bool V_6 = false;
 	int32_t G_B7_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1803>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1804>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_0 = __this->___terrain;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -12858,23 +12892,23 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_HasFishingDepth_m82D860A3A
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1804>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1805>
 		V_5 = (bool)1;
 		goto IL_00d4;
 	}
 
 IL_001b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1806>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1807>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1808>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_3 = __this->___terrain;
 		NullCheck(L_3);
 		TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* L_4;
 		L_4 = Terrain_get_terrainData_m3B6C1D89471A4E1C60FC19C168DB37A011B924FD(L_3, NULL);
 		V_0 = L_4;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1809>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1810>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1811>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1812>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = ___0_worldPosition;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_6 = __this->___terrain;
 		NullCheck(L_6);
@@ -12886,10 +12920,10 @@ IL_001b:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9;
 		L_9 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_5, L_8, NULL);
 		V_1 = L_9;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1815>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1816>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1817>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1818>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1819>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = V_1;
 		float L_11 = L_10.___x;
 		if ((((float)L_11) < ((float)(0.0f))))
@@ -12945,18 +12979,18 @@ IL_0081:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1820>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1821>
 		V_5 = (bool)1;
 		goto IL_00d4;
 	}
 
 IL_008d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1823>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1824>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1825>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1826>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1827>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1828>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_25 = __this->___terrain;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = ___0_worldPosition;
 		NullCheck(L_25);
@@ -12971,23 +13005,23 @@ IL_008d:
 		L_30 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_29, NULL);
 		float L_31 = L_30.___y;
 		V_2 = ((float)il2cpp_codegen_add(L_27, L_31));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1829>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1830>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1831>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1832>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1833>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_32 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_33 = ___0_worldPosition;
 		NullCheck(L_32);
 		float L_34;
 		L_34 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_32, L_33, NULL);
 		V_3 = L_34;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1834>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1835>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1836>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1837>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1838>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1839>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1840>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1841>
 		float L_35 = V_3;
 		float L_36 = V_2;
 		float L_37 = ___1_requiredDepth;
@@ -12999,12 +13033,12 @@ IL_008d:
 
 IL_00d4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1841>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1842>
 		bool L_39 = V_5;
 		return L_39;
 	}
 }
-// Method Definition Index: 52702
+// Method Definition Index: 52747
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetEffectiveFightDifficulty_m155760B165487701259FCA956E91A66D30FA3072 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 ___0_species, float ___1_weightKg, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13030,11 +13064,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetEffectiveFightDifficul
 	float G_B14_0 = 0.0f;
 	float G_B14_1 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1847>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1848>
 		FishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD* L_0;
 		L_0 = Component_GetComponent_TisFishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD_mBFAFCA6A610648462FDFE14BE95444F21E48B11A(__this, Component_GetComponent_TisFishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD_mBFAFCA6A610648462FDFE14BE95444F21E48B11A_RuntimeMethod_var);
 		V_0 = L_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1848>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1849>
 		FishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD* L_1 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_2;
@@ -13061,7 +13095,7 @@ IL_0018:
 IL_001e:
 	{
 		V_1 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1849>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1850>
 		FishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD* L_5 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_6;
@@ -13095,7 +13129,7 @@ IL_0038:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1850>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1851>
 		FishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD* L_10 = V_0;
 		NullCheck(L_10);
 		float L_11;
@@ -13105,12 +13139,12 @@ IL_0038:
 
 IL_0044:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1851>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1852>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1853>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1854>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1855>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1856>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1857>
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_12 = ___0_species;
 		float L_13 = L_12.___MinWeightKg;
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_14 = ___0_species;
@@ -13119,13 +13153,13 @@ IL_0044:
 		float L_17;
 		L_17 = Mathf_InverseLerp_mBD7EC6A7173CE082226077E1557D5BC2D2AE0D9D_inline(L_13, L_15, L_16, NULL);
 		V_2 = L_17;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1858>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1859>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1860>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1861>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1862>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1863>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1864>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1865>
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_18 = ___0_species;
 		float L_19 = L_18.___Difficulty;
 		bool L_20 = __this->___pondCast;
@@ -13182,12 +13216,12 @@ IL_0097:
 
 IL_009c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1865>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1866>
 		float L_25 = V_4;
 		return L_25;
 	}
 }
-// Method Definition Index: 52703
+// Method Definition Index: 52748
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollTemperament_m8BFFBEDE7400F2047031CFB0F24CCA4D2BE20A63 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_speciesId, float ___1_weightKg, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -13200,7 +13234,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollTemperament_m8BFFBE
 	bool V_7 = false;
 	bool V_8 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1871>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1872>
 		float L_0;
 		L_0 = Random_get_value_m2CEA87FADF5222EF9E13D32695F15E2BA282E24B(NULL);
 		V_5 = (bool)((((float)L_0) < ((float)(0.150000006f)))? 1 : 0);
@@ -13211,40 +13245,40 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollTemperament_m8BFFBE
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1871>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1872>
 		V_6 = 3;
 		goto IL_0063;
 	}
 
 IL_0018:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1872>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1873>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1874>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1875>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1876>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1877>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1878>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1879>
 		int32_t L_2 = ___0_speciesId;
 		float L_3 = ___1_weightKg;
 		FishingSystem_GetTemperamentWeights_m7256C134E7B2943A657B300C3B11C3ADB4C60CB6(__this, L_2, L_3, (&V_0), (&V_1), (&V_2), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1880>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1881>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1882>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1883>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1884>
 		float L_4 = V_0;
 		float L_5 = V_1;
 		float L_6 = V_2;
 		V_3 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(L_4, L_5)), L_6));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1885>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1886>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1887>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1888>
 		float L_7;
 		L_7 = Random_get_value_m2CEA87FADF5222EF9E13D32695F15E2BA282E24B(NULL);
 		float L_8 = V_3;
 		V_4 = ((float)il2cpp_codegen_multiply(L_7, L_8));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1889>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1890>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1891>
 		float L_9 = V_4;
 		float L_10 = V_0;
 		V_7 = (bool)((((float)L_9) < ((float)L_10))? 1 : 0);
@@ -13255,21 +13289,21 @@ IL_0018:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1892>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1893>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1894>
 		V_6 = 0;
 		goto IL_0063;
 	}
 
 IL_0047:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1896>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1897>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1898>
 		float L_12 = V_4;
 		float L_13 = V_0;
 		V_4 = ((float)il2cpp_codegen_subtract(L_12, L_13));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1899>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1900>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1901>
 		float L_14 = V_4;
 		float L_15 = V_1;
 		V_8 = (bool)((((float)L_14) < ((float)L_15))? 1 : 0);
@@ -13280,28 +13314,28 @@ IL_0047:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1902>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1903>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1904>
 		V_6 = 1;
 		goto IL_0063;
 	}
 
 IL_005e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1906>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1907>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1908>
 		V_6 = 2;
 		goto IL_0063;
 	}
 
 IL_0063:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1908>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1909>
 		int32_t L_17 = V_6;
 		return L_17;
 	}
 }
-// Method Definition Index: 52704
+// Method Definition Index: 52749
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollDifferentTemperament_mDB375EC252F52C8B1C9A2A148C7649105BF85415 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_speciesId, float ___1_weightKg, int32_t ___2_current, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -13313,24 +13347,24 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t FishingSystem_RollDifferentTemperamen
 	bool V_6 = false;
 	int32_t G_B12_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1915>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1916>
 		V_0 = 0;
 		goto IL_0024;
 	}
 
 IL_0005:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1919>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1920>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1921>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1922>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1923>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1924>
 		int32_t L_0 = ___0_speciesId;
 		float L_1 = ___1_weightKg;
 		int32_t L_2;
 		L_2 = FishingSystem_RollTemperament_m8BFFBEDE7400F2047031CFB0F24CCA4D2BE20A63(__this, L_0, L_1, NULL);
 		V_1 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1925>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1926>
 		int32_t L_3 = V_1;
 		int32_t L_4 = ___2_current;
 		V_2 = (bool)((((int32_t)((((int32_t)L_3) == ((int32_t)L_4))? 1 : 0)) == ((int32_t)0))? 1 : 0);
@@ -13341,7 +13375,7 @@ IL_0005:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1927>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1928>
 		int32_t L_6 = V_1;
 		V_3 = L_6;
 		goto IL_005f;
@@ -13349,14 +13383,14 @@ IL_0005:
 
 IL_001f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1917>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1918>
 		int32_t L_7 = V_0;
 		V_0 = ((int32_t)il2cpp_codegen_add(L_7, 1));
 	}
 
 IL_0024:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1916>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1917>
 		int32_t L_8 = V_0;
 		V_4 = (bool)((((int32_t)L_8) < ((int32_t)5))? 1 : 0);
 		bool L_9 = V_4;
@@ -13366,8 +13400,8 @@ IL_0024:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1932>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1933>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1934>
 		int32_t L_10 = ___2_current;
 		V_5 = (bool)((((int32_t)L_10) == ((int32_t)0))? 1 : 0);
 		bool L_11 = V_5;
@@ -13377,16 +13411,16 @@ IL_0024:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1935>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1936>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1937>
 		V_3 = 1;
 		goto IL_005f;
 	}
 
 IL_003d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1939>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1940>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1941>
 		int32_t L_12 = ___2_current;
 		V_6 = (bool)((((int32_t)L_12) == ((int32_t)2))? 1 : 0);
 		bool L_13 = V_6;
@@ -13396,18 +13430,18 @@ IL_003d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1942>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1943>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1944>
 		V_3 = 1;
 		goto IL_005f;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1946>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1947>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1948>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1949>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1950>
 		float L_14;
 		L_14 = Random_get_value_m2CEA87FADF5222EF9E13D32695F15E2BA282E24B(NULL);
 		if ((((float)L_14) < ((float)(0.5f))))
@@ -13433,12 +13467,12 @@ IL_005c:
 
 IL_005f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1950>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1951>
 		int32_t L_15 = V_3;
 		return L_15;
 	}
 }
-// Method Definition Index: 52705
+// Method Definition Index: 52750
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GetTemperamentWeights_m7256C134E7B2943A657B300C3B11C3ADB4C60CB6 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, int32_t ___0_speciesId, float ___1_weightKg, float* ___2_calm, float* ___3_irritated, float* ___4_angry, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13454,7 +13488,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GetTemperamentWeights_m725
 	int32_t V_3 = 0;
 	int32_t V_4 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1961>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1962>
 		int32_t L_0 = ___0_speciesId;
 		V_4 = L_0;
 		int32_t L_1 = V_4;
@@ -13498,126 +13532,126 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_GetTemperamentWeights_m725
 
 IL_0030:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1964>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1965>
 		float* L_3 = ___2_calm;
 		*((float*)L_3) = (float)(0.219999999f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1965>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1966>
 		float* L_4 = ___3_irritated;
 		*((float*)L_4) = (float)(0.479999989f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1966>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1967>
 		float* L_5 = ___4_angry;
 		*((float*)L_5) = (float)(0.300000012f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1967>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1968>
 		goto IL_00e2;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1970>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1971>
 		float* L_6 = ___2_calm;
 		*((float*)L_6) = (float)(0.0799999982f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1971>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1972>
 		float* L_7 = ___3_irritated;
 		*((float*)L_7) = (float)(0.280000001f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1972>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1973>
 		float* L_8 = ___4_angry;
 		*((float*)L_8) = (float)(0.639999986f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1973>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1974>
 		goto IL_00e2;
 	}
 
 IL_0065:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1976>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1977>
 		float* L_9 = ___2_calm;
 		*((float*)L_9) = (float)(0.639999986f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1977>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1978>
 		float* L_10 = ___3_irritated;
 		*((float*)L_10) = (float)(0.330000013f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1978>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1979>
 		float* L_11 = ___4_angry;
 		*((float*)L_11) = (float)(0.0299999993f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1979>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1980>
 		goto IL_00e2;
 	}
 
 IL_007e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1982>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1983>
 		float* L_12 = ___2_calm;
 		*((float*)L_12) = (float)(0.680000007f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1983>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1984>
 		float* L_13 = ___3_irritated;
 		*((float*)L_13) = (float)(0.289999992f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1984>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1985>
 		float* L_14 = ___4_angry;
 		*((float*)L_14) = (float)(0.0299999993f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1985>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1986>
 		goto IL_00e2;
 	}
 
 IL_0097:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1988>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1989>
 		float* L_15 = ___2_calm;
 		*((float*)L_15) = (float)(0.280000001f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1989>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1990>
 		float* L_16 = ___3_irritated;
 		*((float*)L_16) = (float)(0.449999988f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1990>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1991>
 		float* L_17 = ___4_angry;
 		*((float*)L_17) = (float)(0.270000011f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1991>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1992>
 		goto IL_00e2;
 	}
 
 IL_00b0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1994>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1995>
 		float* L_18 = ___2_calm;
 		*((float*)L_18) = (float)(0.419999987f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1995>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1996>
 		float* L_19 = ___3_irritated;
 		*((float*)L_19) = (float)(0.430000007f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1996>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1997>
 		float* L_20 = ___4_angry;
 		*((float*)L_20) = (float)(0.150000006f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1997>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:1998>
 		goto IL_00e2;
 	}
 
 IL_00c9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2000>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2001>
 		float* L_21 = ___2_calm;
 		*((float*)L_21) = (float)(0.699999988f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2001>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2002>
 		float* L_22 = ___3_irritated;
 		*((float*)L_22) = (float)(0.270000011f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2002>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2003>
 		float* L_23 = ___4_angry;
 		*((float*)L_23) = (float)(0.0299999993f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2003>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2004>
 		goto IL_00e2;
 	}
 
 IL_00e2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2006>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2007>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2008>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2009>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2010>
 		int32_t L_24 = ___0_speciesId;
 		il2cpp_codegen_runtime_class_init_inline(FishCatalog_tCC13D73E633C11CDEF74E4949C14CDFD48095211_il2cpp_TypeInfo_var);
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_25;
 		L_25 = FishCatalog_Get_m95E36D6B6A041EA777A08B9BC505C630973F43B9(L_24, NULL);
 		V_0 = L_25;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2011>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2012>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2013>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2014>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2015>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2016>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2017>
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_26 = V_0;
 		float L_27 = L_26.___MinWeightKg;
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_28 = V_0;
@@ -13626,26 +13660,26 @@ IL_00e2:
 		float L_31;
 		L_31 = Mathf_InverseLerp_mBD7EC6A7173CE082226077E1557D5BC2D2AE0D9D_inline(L_27, L_29, L_30, NULL);
 		V_1 = L_31;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2020>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2021>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2022>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2023>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2024>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2025>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2026>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2027>
 		float L_32 = V_1;
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_33 = V_0;
 		float L_34 = L_33.___Difficulty;
 		float L_35;
 		L_35 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.0799999982f), (0.239999995f), L_34, NULL);
 		V_2 = ((float)il2cpp_codegen_multiply(L_32, L_35));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2028>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2029>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2030>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2031>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2032>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2033>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2034>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2035>
 		float* L_36 = ___2_calm;
 		float* L_37 = ___2_calm;
 		float L_38 = *((float*)L_37);
@@ -13653,13 +13687,13 @@ IL_00e2:
 		float L_40;
 		L_40 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0500000007f), ((float)il2cpp_codegen_subtract(L_38, ((float)il2cpp_codegen_multiply(L_39, (0.720000029f))))), NULL);
 		*((float*)L_36) = (float)L_40;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2036>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2037>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2038>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2039>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2040>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2041>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2042>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2043>
 		float* L_41 = ___3_irritated;
 		float* L_42 = ___3_irritated;
 		float L_43 = *((float*)L_42);
@@ -13667,12 +13701,12 @@ IL_00e2:
 		float L_45;
 		L_45 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0799999982f), ((float)il2cpp_codegen_subtract(L_43, ((float)il2cpp_codegen_multiply(L_44, (0.280000001f))))), NULL);
 		*((float*)L_41) = (float)L_45;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2044>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2045>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2046>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2047>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2048>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2049>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2050>
 		float* L_46 = ___4_angry;
 		float* L_47 = ___4_angry;
 		float L_48 = *((float*)L_47);
@@ -13680,18 +13714,18 @@ IL_00e2:
 		float L_50;
 		L_50 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0199999996f), ((float)il2cpp_codegen_add(L_48, L_49)), NULL);
 		*((float*)L_46) = (float)L_50;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2050>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2051>
 		return;
 	}
 }
-// Method Definition Index: 52706
+// Method Definition Index: 52751
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetTemperamentTensionMultiplier_mDB9909880895B17607C706779CB9C267E2F28E56 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
 	int32_t V_1 = 0;
 	float V_2 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2054>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2055>
 		int32_t L_0;
 		L_0 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_1 = L_0;
@@ -13721,40 +13755,40 @@ IL_000f:
 
 IL_0015:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2057>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2058>
 		V_2 = (0.550000012f);
 		goto IL_002d;
 	}
 
 IL_001d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2060>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2061>
 		V_2 = (2.0f);
 		goto IL_002d;
 	}
 
 IL_0025:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2063>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2064>
 		V_2 = (1.0f);
 		goto IL_002d;
 	}
 
 IL_002d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2065>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2066>
 		float L_4 = V_2;
 		return L_4;
 	}
 }
-// Method Definition Index: 52707
+// Method Definition Index: 52752
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetTemperamentResistanceMultiplier_mF240F6CD87C1019870AED373CC63AE0B219A7ED6 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
 	int32_t V_1 = 0;
 	float V_2 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2069>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2070>
 		int32_t L_0;
 		L_0 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_1 = L_0;
@@ -13784,33 +13818,33 @@ IL_000f:
 
 IL_0015:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2072>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2073>
 		V_2 = (0.819999993f);
 		goto IL_002d;
 	}
 
 IL_001d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2075>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2076>
 		V_2 = (1.27999997f);
 		goto IL_002d;
 	}
 
 IL_0025:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2078>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2079>
 		V_2 = (1.0f);
 		goto IL_002d;
 	}
 
 IL_002d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2080>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2081>
 		float L_4 = V_2;
 		return L_4;
 	}
 }
-// Method Definition Index: 52708
+// Method Definition Index: 52753
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* FishingSystem_GetTemperamentName_m6AAD8B81209C16FD7046DA31F71B9899E5E4D2D4 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13829,7 +13863,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* FishingSystem_GetTemperamentName_m6
 	int32_t V_2 = 0;
 	int32_t V_3 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2084>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2085>
 		bool L_0 = __this->___fishUnconscious;
 		V_0 = L_0;
 		bool L_1 = V_0;
@@ -13839,14 +13873,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR String_t* FishingSystem_GetTemperamentName_m6
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2085>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2086>
 		V_1 = _stringLiteralA91C5224D03390E70DDE77DB69639CA369A38DD5;
 		goto IL_0064;
 	}
 
 IL_0013:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2087>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2088>
 		int32_t L_2;
 		L_2 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_3 = L_2;
@@ -13887,47 +13921,47 @@ IL_0013:
 
 IL_003c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2090>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2091>
 		V_1 = _stringLiteralC157C1A9C23BBDAC0F92AC4C772B1BB57B4F6C96;
 		goto IL_0064;
 	}
 
 IL_0044:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2092>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2093>
 		V_1 = _stringLiteral767E1076B58315226162901BE8470AD586EE4020;
 		goto IL_0064;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2094>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2095>
 		V_1 = _stringLiteral169F3D8EEDFC10FB238B118DC3595A078D0EBC21;
 		goto IL_0064;
 	}
 
 IL_0054:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2097>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2098>
 		V_1 = _stringLiteral41CA6529AEDAE267C2DB04902FF218BE42F2F147;
 		goto IL_0064;
 	}
 
 IL_005c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2100>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2101>
 		V_1 = _stringLiteral5FD30421F1A64C6F0E9E3604D3267CE0B608DE66;
 		goto IL_0064;
 	}
 
 IL_0064:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2103>
 		String_t* L_5 = V_1;
 		return L_5;
 	}
 }
-// Method Definition Index: 52709
+// Method Definition Index: 52754
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C1F FishingSystem_GetTemperamentColor_mC65BD04A5D8A6513EBD038DE348BEFA8B0475E16 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -13936,7 +13970,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C
 	int32_t V_2 = 0;
 	int32_t V_3 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2107>
 		bool L_0 = __this->___fishUnconscious;
 		V_0 = L_0;
 		bool L_1 = V_0;
@@ -13946,13 +13980,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2108>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2109>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2110>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2111>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2112>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2113>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2114>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2115>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_2;
 		memset((&L_2), 0, sizeof(L_2));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_2), (0.340000004f), (0.560000002f), (0.720000029f), (0.939999998f), NULL);
@@ -13962,7 +13996,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C
 
 IL_002b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2118>
 		int32_t L_3;
 		L_3 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_3 = L_3;
@@ -13995,7 +14029,7 @@ IL_002b:
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2120>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2121>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_6;
 		memset((&L_6), 0, sizeof(L_6));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_6), (0.550000012f), (0.159999996f), (0.779999971f), (0.959999979f), NULL);
@@ -14005,13 +14039,13 @@ IL_004c:
 
 IL_0068:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2122>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2123>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2124>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2125>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2126>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2127>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2128>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2129>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_7;
 		memset((&L_7), 0, sizeof(L_7));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_7), (0.180000007f), (0.779999971f), (0.300000012f), (0.920000017f), NULL);
@@ -14021,13 +14055,13 @@ IL_0068:
 
 IL_0084:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2131>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2132>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2133>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2134>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2135>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2136>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2137>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2138>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_8;
 		memset((&L_8), 0, sizeof(L_8));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_8), (0.939999998f), (0.159999996f), (0.100000001f), (0.939999998f), NULL);
@@ -14037,13 +14071,13 @@ IL_0084:
 
 IL_00a0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2140>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2141>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2142>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2143>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2144>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2145>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2146>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2147>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_9;
 		memset((&L_9), 0, sizeof(L_9));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_9), (0.620000005f), (0.430000007f), (0.0350000001f), (0.939999998f), NULL);
@@ -14053,12 +14087,12 @@ IL_00a0:
 
 IL_00bc:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2148>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2149>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_10 = V_1;
 		return L_10;
 	}
 }
-// Method Definition Index: 52710
+// Method Definition Index: 52755
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateFightBobber_m13D3B365E985EF2DA3CB7B0DBB7A569A38030FC5 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, float ___0_effectiveDifficulty, bool ___1_reeling, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14128,8 +14162,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateFightBobber_m13D3B36
 	int32_t G_B49_0 = 0;
 	FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* G_B49_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2154>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2155>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2156>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -14163,14 +14197,14 @@ IL_0020:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2157>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2158>
 		goto IL_0446;
 	}
 
 IL_002c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2160>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2161>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2162>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = __this->___bobber;
 		NullCheck(L_5);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6;
@@ -14179,9 +14213,9 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7;
 		L_7 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_6, NULL);
 		V_0 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2163>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2164>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2165>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2166>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = V_0;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_9;
 		L_9 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
@@ -14191,10 +14225,10 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_11;
 		L_11 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_8, L_10, NULL);
 		V_1 = L_11;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2168>
 		(&V_1)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2169>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2171>
 		float L_12;
 		L_12 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_1), NULL);
 		V_15 = (bool)((((float)L_12) < ((float)(0.00100000005f)))? 1 : 0);
@@ -14205,16 +14239,16 @@ IL_002c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2172>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2173>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2174>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = __this->___fightTravelDirection;
 		V_1 = L_14;
 	}
 
 IL_0078:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2176>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2178>
 		float L_15;
 		L_15 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_1), NULL);
 		V_16 = (bool)((((float)L_15) < ((float)(0.00100000005f)))? 1 : 0);
@@ -14225,11 +14259,11 @@ IL_0078:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2179>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2180>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2181>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2182>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2183>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2184>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_17 = __this->___playerCamera;
 		NullCheck(L_17);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_18;
@@ -14246,11 +14280,11 @@ IL_0078:
 
 IL_00a9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2186>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2187>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2188>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2189>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2190>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2191>
 		float L_22;
 		L_22 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_1), NULL);
 		if ((((float)L_22) > ((float)(0.00100000005f))))
@@ -14275,11 +14309,11 @@ IL_00be:
 IL_00c5:
 	{
 		V_1 = G_B12_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2192>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2193>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2194>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2195>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2197>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25;
 		L_25 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = V_1;
@@ -14289,7 +14323,6 @@ IL_00c5:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_28;
 		L_28 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_17), NULL);
 		V_2 = L_28;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2198>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2199>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2200>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2201>
@@ -14299,6 +14332,7 @@ IL_00c5:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2205>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2206>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2208>
 		float L_29 = __this->___fightTime;
 		float L_30 = ___0_effectiveDifficulty;
 		float L_31;
@@ -14307,20 +14341,19 @@ IL_00c5:
 		float L_33;
 		L_33 = sinf(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_29, L_31)), L_32)));
 		V_3 = L_33;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2209>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2210>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2211>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2212>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2213>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2214>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2216>
 		float L_34 = __this->___fightTime;
 		float L_35 = __this->___fightMovePhase;
 		float L_36;
 		L_36 = sinf(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_34, (2.1500001f))), ((float)il2cpp_codegen_multiply(L_35, (0.629999995f))))));
 		float L_37 = __this->___surgeAmount;
 		V_4 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_36, L_37)), (0.340000004f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2217>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2218>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2219>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2220>
@@ -14329,6 +14362,7 @@ IL_00c5:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2223>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2224>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2225>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2226>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_39 = V_2;
 		float L_40 = V_3;
@@ -14341,7 +14375,7 @@ IL_00c5:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_44;
 		L_44 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_17), NULL);
 		V_5 = L_44;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2229>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2230>
 		int32_t L_45;
 		L_45 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_19 = L_45;
@@ -14371,31 +14405,30 @@ IL_015f:
 
 IL_0166:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2232>
-		V_6 = (0.703703701f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2233>
+		V_6 = (0.703703701f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2234>
 		goto IL_0181;
 	}
 
 IL_016f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2236>
-		V_6 = (1.29629624f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2237>
+		V_6 = (1.29629624f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2238>
 		goto IL_0181;
 	}
 
 IL_0178:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2240>
-		V_6 = (1.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2241>
+		V_6 = (1.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2242>
 		goto IL_0181;
 	}
 
 IL_0181:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2244>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2245>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2246>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2247>
@@ -14404,6 +14437,7 @@ IL_0181:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2250>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2251>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2252>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2253>
 		float L_49 = __this->___initialEscapeBurstTimer;
 		if ((((float)L_49) > ((float)(0.0f))))
 		{
@@ -14426,7 +14460,6 @@ IL_0195:
 IL_01b0:
 	{
 		V_7 = G_B22_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2254>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2255>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2256>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2257>
@@ -14435,6 +14468,7 @@ IL_01b0:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2260>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2261>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2262>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2263>
 		int32_t L_52 = __this->___hookedSpeciesId;
 		float L_53 = ___0_effectiveDifficulty;
 		il2cpp_codegen_runtime_class_init_inline(FishingTuning_t87B7E154FC150869E5D8E0A8510286E88D57AFE2_il2cpp_TypeInfo_var);
@@ -14448,7 +14482,7 @@ IL_01b0:
 		float L_58 = V_7;
 		float L_59 = __this->___surgeAmount;
 		V_8 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_54, L_56)), L_57)), L_58)), ((float)il2cpp_codegen_add((1.0f), ((float)il2cpp_codegen_multiply(L_59, (0.280000001f)))))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2266>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2267>
 		int32_t L_60;
 		L_60 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_20 = (bool)((((int32_t)L_60) == ((int32_t)3))? 1 : 0);
@@ -14459,7 +14493,7 @@ IL_01b0:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2268>
 		int32_t L_62 = __this->___hookedSpeciesId;
 		float L_63 = ___0_effectiveDifficulty;
 		il2cpp_codegen_runtime_class_init_inline(FishingTuning_t87B7E154FC150869E5D8E0A8510286E88D57AFE2_il2cpp_TypeInfo_var);
@@ -14470,15 +14504,15 @@ IL_01b0:
 
 IL_0208:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2268>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2269>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2270>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2271>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_65 = V_5;
 		float L_66 = V_8;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_67;
 		L_67 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_65, L_66, NULL);
 		V_9 = L_67;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2272>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2273>
 		bool L_68 = ___1_reeling;
 		V_21 = L_68;
 		bool L_69 = V_21;
@@ -14488,9 +14522,9 @@ IL_0208:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2274>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2275>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2276>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2277>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_70;
 		L_70 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
 		NullCheck(L_70);
@@ -14500,10 +14534,10 @@ IL_0208:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_73;
 		L_73 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_71, L_72, NULL);
 		V_22 = L_73;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2278>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2279>
 		(&V_22)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2280>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2281>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2282>
 		float L_74;
 		L_74 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_22), NULL);
 		V_23 = (bool)((((float)L_74) > ((float)(0.00100000005f)))? 1 : 0);
@@ -14514,9 +14548,9 @@ IL_0208:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2283>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2284>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_22), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2287>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2288>
 		int32_t L_76;
 		L_76 = FishingSystem_get_ActiveTemperament_mBD3AD92738DAE00D5246E6D13E57BCCDF3315D54(__this, NULL);
 		V_28 = L_76;
@@ -14546,31 +14580,30 @@ IL_026c:
 
 IL_0273:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2290>
-		V_24 = (1.04999995f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2291>
+		V_24 = (1.04999995f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2292>
 		goto IL_028e;
 	}
 
 IL_027c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2294>
-		V_24 = (0.479999989f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2295>
+		V_24 = (0.479999989f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2296>
 		goto IL_028e;
 	}
 
 IL_0285:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2298>
-		V_24 = (0.720000029f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2299>
+		V_24 = (0.720000029f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2300>
 		goto IL_028e;
 	}
 
 IL_028e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2305>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2306>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2307>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2308>
@@ -14578,6 +14611,7 @@ IL_028e:
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2310>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2311>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2312>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2313>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_80 = V_9;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_81 = V_1;
 		float L_82;
@@ -14585,18 +14619,18 @@ IL_028e:
 		float L_83;
 		L_83 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0f), L_82, NULL);
 		V_25 = L_83;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2314>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2315>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2316>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2317>
 		float L_84 = V_25;
 		float L_85 = V_24;
 		float L_86 = __this->___reelPower;
 		float L_87;
 		L_87 = FishingSystem_get_ProgressReel_mABB05EF84CE4E9051D73C75AA5B7707FB6C25086(__this, NULL);
 		V_26 = ((float)il2cpp_codegen_add(L_84, ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_85, L_86)), L_87))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2318>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2319>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2320>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2321>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_88 = V_9;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_89 = V_22;
 		float L_90 = V_26;
@@ -14613,7 +14647,7 @@ IL_02ca:
 
 IL_02cb:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2324>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2325>
 		bool L_93;
 		L_93 = FishingSystem_get_IsSirenCalling_m31CF1B76E8D9431A230B0E5BCFB604CB007412FF(__this, NULL);
 		V_29 = L_93;
@@ -14624,7 +14658,7 @@ IL_02cb:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2329>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2330>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_95;
 		L_95 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
 		NullCheck(L_95);
@@ -14634,10 +14668,10 @@ IL_02cb:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_98;
 		L_98 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_96, L_97, NULL);
 		V_30 = L_98;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2330>
-		(&V_30)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2331>
+		(&V_30)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2332>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2333>
 		float L_99;
 		L_99 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_30), NULL);
 		if ((((float)L_99) > ((float)(9.99999975E-05f))))
@@ -14668,8 +14702,8 @@ IL_031d:
 
 IL_0320:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2334>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2335>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2336>
 		float L_103;
 		L_103 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_9), NULL);
 		V_31 = (bool)((((float)L_103) < ((float)(0.00100000005f)))? 1 : 0);
@@ -14680,29 +14714,29 @@ IL_0320:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2337>
-		FishingSystem_SnapCurrentBobberToSurface_m21C55BAB405698D6A591F1154446FCFBA178581D(__this, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2338>
+		FishingSystem_SnapCurrentBobberToSurface_m21C55BAB405698D6A591F1154446FCFBA178581D(__this, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2339>
 		goto IL_0446;
 	}
 
 IL_0341:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2341>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2342>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2343>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_105;
 		L_105 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_9), NULL);
 		V_10 = L_105;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2344>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2345>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2346>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2347>
 		float L_106;
 		L_106 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_9), NULL);
 		float L_107;
 		L_107 = Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865(NULL);
 		V_11 = ((float)il2cpp_codegen_multiply(L_106, L_107));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2348>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2349>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2350>
 		bool L_108 = ___1_reeling;
 		if (L_108)
 		{
@@ -14724,13 +14758,13 @@ IL_0367:
 IL_0368:
 	{
 		V_12 = (bool)G_B45_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2351>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2352>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2353>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2354>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2355>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2356>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2357>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2358>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_110 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_111 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_112 = V_1;
@@ -14746,8 +14780,8 @@ IL_0368:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2359>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2360>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2361>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_117 = __this->___bobber;
 		NullCheck(L_117);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_118;
@@ -14755,7 +14789,7 @@ IL_0368:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_119 = V_13;
 		NullCheck(L_118);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_118, L_119, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2364>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2365>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_120 = V_0;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_121;
 		L_121 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
@@ -14765,7 +14799,7 @@ IL_0368:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_123;
 		L_123 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_120, L_122, NULL);
 		V_33 = L_123;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2365>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2366>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_124 = V_13;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_125;
 		L_125 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
@@ -14775,13 +14809,13 @@ IL_0368:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_127;
 		L_127 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_124, L_126, NULL);
 		V_34 = L_127;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2366>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2367>
 		float L_128 = (0.0f);
 		V_35 = L_128;
 		(&V_34)->___y = L_128;
 		float L_129 = V_35;
 		(&V_33)->___y = L_129;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2367>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2368>
 		bool L_130 = ___1_reeling;
 		if (L_130)
 		{
@@ -14810,8 +14844,8 @@ IL_03f3:
 	{
 		NullCheck(G_B49_1);
 		G_B49_1->___fishPulledLineThisFrame = (bool)G_B49_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2369>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2370>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2371>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_133 = V_5;
 		__this->___fightTravelDirection = L_133;
 		goto IL_0430;
@@ -14819,19 +14853,19 @@ IL_03f3:
 
 IL_0403:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2374>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2375>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2376>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2377>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2378>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2379>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_134 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_135 = V_0;
 		NullCheck(L_134);
 		float L_136;
 		L_136 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_134, L_135, NULL);
 		(&V_0)->___y = ((float)il2cpp_codegen_subtract(L_136, (0.0799999982f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2380>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2381>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2382>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_137 = __this->___bobber;
 		NullCheck(L_137);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_138;
@@ -14843,8 +14877,8 @@ IL_0403:
 
 IL_0430:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2384>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2385>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2386>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_140 = __this->___bobber;
 		NullCheck(L_140);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_141;
@@ -14857,11 +14891,11 @@ IL_0430:
 
 IL_0446:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2386>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2387>
 		return;
 	}
 }
-// Method Definition Index: 52711
+// Method Definition Index: 52756
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryMoveBobberInValidWater_mB7BDF8CF60C01176CA75DBE6E40338DA324D7331 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_current, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_desiredDirection, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_away, float ___3_distance, bool ___4_requireAway, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___5_next, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14892,12 +14926,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryMoveBobberInValidWater_
 	bool V_17 = false;
 	bool V_18 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2396>
-		(&___1_desiredDirection)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2397>
+		(&___1_desiredDirection)->___y = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2398>
 		(&___2_away)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2399>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2400>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2401>
 		float L_0;
 		L_0 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&___1_desiredDirection), NULL);
 		V_1 = (bool)((((float)L_0) < ((float)(0.00100000005f)))? 1 : 0);
@@ -14908,16 +14942,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryMoveBobberInValidWater_
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2402>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2403>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2404>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___2_away;
 		___1_desiredDirection = L_2;
 	}
 
 IL_0030:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2406>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2407>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2408>
 		float L_3;
 		L_3 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&___2_away), NULL);
 		V_2 = (bool)((((float)L_3) < ((float)(0.00100000005f)))? 1 : 0);
@@ -14928,39 +14962,39 @@ IL_0030:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2409>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2410>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2411>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = ___1_desiredDirection;
 		___2_away = L_5;
 	}
 
 IL_0047:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2413>
-		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&___1_desiredDirection), NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2414>
+		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&___1_desiredDirection), NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2415>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&___2_away), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2416>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2417>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2418>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2419>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2420>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2421>
 		float L_6 = ___3_distance;
 		float L_7;
 		L_7 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0f), L_6, NULL);
 		V_0 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2425>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2426>
 		V_3 = 0;
 		goto IL_00d0;
 	}
 
 IL_0068:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2430>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2431>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2432>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2433>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2434>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2435>
 		float L_8 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_9 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveStepScales;
@@ -14969,19 +15003,19 @@ IL_0068:
 		int32_t L_11 = L_10;
 		float L_12 = (L_9)->GetAt(static_cast<il2cpp_array_size_t>(L_11));
 		V_4 = ((float)il2cpp_codegen_multiply(L_8, L_12));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2436>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2437>
 		V_5 = 0;
 		goto IL_00ba;
 	}
 
 IL_0079:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2440>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2441>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2442>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2443>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2444>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2445>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2446>
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_13 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveAngles;
 		int32_t L_14 = V_5;
@@ -14996,13 +15030,13 @@ IL_0079:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20;
 		L_20 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_18, L_19, NULL);
 		V_6 = L_20;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2447>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2448>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2449>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2450>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2451>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2452>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2453>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2454>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = ___0_current;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22 = V_6;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = ___2_away;
@@ -15019,21 +15053,21 @@ IL_0079:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2455>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2456>
 		V_8 = (bool)1;
 		goto IL_0174;
 	}
 
 IL_00b3:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2438>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2439>
 		int32_t L_29 = V_5;
 		V_5 = ((int32_t)il2cpp_codegen_add(L_29, 1));
 	}
 
 IL_00ba:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2437>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2438>
 		int32_t L_30 = V_5;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_31 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveAngles;
@@ -15046,15 +15080,15 @@ IL_00ba:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2428>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2429>
 		int32_t L_33 = V_3;
 		V_3 = ((int32_t)il2cpp_codegen_add(L_33, 1));
 	}
 
 IL_00d0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2426>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2427>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2428>
 		int32_t L_34 = V_3;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_35 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveStepScales;
@@ -15067,7 +15101,7 @@ IL_00d0:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2464>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2465>
 		bool L_37 = ___4_requireAway;
 		V_11 = L_37;
 		bool L_38 = V_11;
@@ -15077,18 +15111,18 @@ IL_00d0:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2466>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2467>
 		V_12 = 0;
 		goto IL_0155;
 	}
 
 IL_00ee:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2471>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2472>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2473>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2474>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2475>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2476>
 		float L_39 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_40 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveStepScales;
@@ -15097,19 +15131,19 @@ IL_00ee:
 		int32_t L_42 = L_41;
 		float L_43 = (L_40)->GetAt(static_cast<il2cpp_array_size_t>(L_42));
 		V_13 = ((float)il2cpp_codegen_multiply(L_39, L_43));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2477>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2478>
 		V_14 = 0;
 		goto IL_013d;
 	}
 
 IL_0100:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2481>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2482>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2483>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2484>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2485>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2486>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2487>
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_44 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveAngles;
 		int32_t L_45 = V_14;
@@ -15124,13 +15158,13 @@ IL_0100:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_51;
 		L_51 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_49, L_50, NULL);
 		V_15 = L_51;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2488>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2489>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2490>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2491>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2492>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2493>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2494>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2495>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_52 = ___0_current;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_53 = V_15;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_54 = ___2_away;
@@ -15146,21 +15180,21 @@ IL_0100:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2496>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2497>
 		V_8 = (bool)1;
 		goto IL_0174;
 	}
 
 IL_0136:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2479>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2480>
 		int32_t L_59 = V_14;
 		V_14 = ((int32_t)il2cpp_codegen_add(L_59, 1));
 	}
 
 IL_013d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2478>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2479>
 		int32_t L_60 = V_14;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_61 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveAngles;
@@ -15173,15 +15207,15 @@ IL_013d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2469>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2470>
 		int32_t L_63 = V_12;
 		V_12 = ((int32_t)il2cpp_codegen_add(L_63, 1));
 	}
 
 IL_0155:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2467>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2468>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2469>
 		int32_t L_64 = V_12;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_65 = ((FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_StaticFields*)il2cpp_codegen_static_fields_for(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var))->___FightMoveStepScales;
@@ -15198,29 +15232,30 @@ IL_0155:
 
 IL_0167:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2502>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2503>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_67 = ___5_next;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_68 = ___0_current;
 		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_67 = L_68;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2503>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2504>
 		V_8 = (bool)0;
 		goto IL_0174;
 	}
 
 IL_0174:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2504>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2505>
 		bool L_69 = V_8;
 		return L_69;
 	}
 }
-// Method Definition Index: 52712
+// Method Definition Index: 52757
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryValidateFightMove_m7037FEB6DF59AD5A23EDF14B295D917897A6EEE3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_current, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_direction, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_away, float ___3_distance, bool ___4_requireAway, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___5_next, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
 	if (!s_Il2CppMethodInitialized)
 	{
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
 		s_Il2CppMethodInitialized = true;
 	}
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -15231,13 +15266,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryValidateFightMove_m7037
 	bool V_4 = false;
 	int32_t G_B3_0 = 0;
 	int32_t G_B8_0 = 0;
-	int32_t G_B13_0 = 0;
+	int32_t G_B14_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2514>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2515>
 		(&___1_direction)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2516>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2517>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2518>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2519>
 		float L_0;
 		L_0 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&___1_direction), NULL);
 		if ((((float)L_0) < ((float)(0.00100000005f))))
@@ -15266,25 +15301,25 @@ IL_002a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2520>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2521>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_3 = ___5_next;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4 = ___0_current;
 		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_3 = L_4;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2521>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2522>
 		V_2 = (bool)0;
-		goto IL_00ce;
+		goto IL_00dc;
 	}
 
 IL_003e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2524>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2525>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&___1_direction), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2528>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2529>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2530>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2531>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2532>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2533>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2534>
 		bool L_5 = ___4_requireAway;
 		if (!L_5)
 		{
@@ -15315,21 +15350,21 @@ IL_005b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2535>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2536>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_10 = ___5_next;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_11 = ___0_current;
 		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_10 = L_11;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2536>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2537>
 		V_2 = (bool)0;
-		goto IL_00ce;
+		goto IL_00dc;
 	}
 
 IL_006c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2539>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2540>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2541>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2542>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2543>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12 = ___0_current;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13 = ___1_direction;
 		float L_14 = ___3_distance;
@@ -15338,19 +15373,20 @@ IL_006c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16;
 		L_16 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_12, L_15, NULL);
 		V_0 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2544>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2545>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2546>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2547>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2548>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2549>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_17 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = V_0;
 		NullCheck(L_17);
 		float L_19;
 		L_19 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_17, L_18, NULL);
 		(&V_0)->___y = ((float)il2cpp_codegen_subtract(L_19, (0.0799999982f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2550>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2551>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2552>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2553>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = ___0_current;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
@@ -15358,60 +15394,71 @@ IL_006c:
 		L_22 = MarinaDockExtensionRuntime_WaterSegmentClear_m3072096FBD2B0B320691F4C97DB76DE4909A3579(L_20, L_21, (0.25f), NULL);
 		if (!L_22)
 		{
-			goto IL_00ae;
+			goto IL_00bc;
 		}
 	}
 	{
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_0;
-		bool L_24;
-		L_24 = FishingSystem_IsValidFishingWater_m326A5381305273A1F7B355FA324293467E34B708(__this, L_23, NULL);
-		G_B13_0 = ((((int32_t)L_24) == ((int32_t)0))? 1 : 0);
-		goto IL_00af;
-	}
-
-IL_00ae:
-	{
-		G_B13_0 = 1;
-	}
-
-IL_00af:
-	{
-		V_4 = (bool)G_B13_0;
-		bool L_25 = V_4;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = ___0_current;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_0;
+		il2cpp_codegen_runtime_class_init_inline(SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
+		bool L_25;
+		L_25 = SnapperRockFishObstacles_SurfaceSegmentClear_mD7BE98564371989EB79A6517F6C0942080CDC588(L_23, L_24, (0.400000006f), NULL);
 		if (!L_25)
 		{
-			goto IL_00c2;
+			goto IL_00bc;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2553>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_26 = ___5_next;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = ___0_current;
-		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_26 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2554>
-		V_2 = (bool)0;
-		goto IL_00ce;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = V_0;
+		bool L_27;
+		L_27 = FishingSystem_IsValidFishingWater_m326A5381305273A1F7B355FA324293467E34B708(__this, L_26, NULL);
+		G_B14_0 = ((((int32_t)L_27) == ((int32_t)0))? 1 : 0);
+		goto IL_00bd;
 	}
 
-IL_00c2:
+IL_00bc:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2557>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_28 = ___5_next;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_29 = V_0;
-		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_28 = L_29;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2558>
-		V_2 = (bool)1;
-		goto IL_00ce;
+		G_B14_0 = 1;
 	}
 
-IL_00ce:
+IL_00bd:
+	{
+		V_4 = (bool)G_B14_0;
+		bool L_28 = V_4;
+		if (!L_28)
+		{
+			goto IL_00d0;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2555>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_29 = ___5_next;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30 = ___0_current;
+		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_29 = L_30;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2556>
+		V_2 = (bool)0;
+		goto IL_00dc;
+	}
+
+IL_00d0:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2559>
-		bool L_30 = V_2;
-		return L_30;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_31 = ___5_next;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_32 = V_0;
+		*(Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)L_31 = L_32;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2560>
+		V_2 = (bool)1;
+		goto IL_00dc;
+	}
+
+IL_00dc:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2561>
+		bool L_33 = V_2;
+		return L_33;
 	}
 }
-// Method Definition Index: 52713
+// Method Definition Index: 52758
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetCurrentLineDistance_mE6AAF47CBACB8E923CB20159AE2C6ABD9DCD4E4A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15424,8 +15471,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetCurrentLineDistance_mE
 	float V_1 = 0.0f;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2563>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2564>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2565>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2566>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = __this->___rodTip;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -15459,18 +15506,18 @@ IL_001e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2566>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2568>
 		V_1 = (0.0f);
 		goto IL_0044;
 	}
 
 IL_002b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2569>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2570>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2571>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2572>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2573>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2574>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2575>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_5 = __this->___rodTip;
 		NullCheck(L_5);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6;
@@ -15485,12 +15532,12 @@ IL_002b:
 
 IL_0044:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2574>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2576>
 		float L_9 = V_1;
 		return L_9;
 	}
 }
-// Method Definition Index: 52714
+// Method Definition Index: 52759
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetRemainingCatchDistance_m6222C793D10EBB2299226AA61B5A3514273A73E7 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15504,7 +15551,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetRemainingCatchDistance
 	bool V_1 = false;
 	float V_2 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2578>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2580>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -15517,16 +15564,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetRemainingCatchDistance
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2579>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2581>
 		V_2 = (0.0f);
 		goto IL_0056;
 	}
 
 IL_0019:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2581>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2582>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2583>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2584>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2585>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_3;
 		L_3 = FishingSystem_GetLineTargetPosition_m518A3E3A549EBBEB38799F25C69413EA2F2D263A(__this, NULL);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_4;
@@ -15537,14 +15584,14 @@ IL_0019:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6;
 		L_6 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_3, L_5, NULL);
 		V_0 = L_6;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2585>
-		(&V_0)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2587>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2588>
+		(&V_0)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2589>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2590>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2591>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2592>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2593>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2594>
 		float L_7;
 		L_7 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_0), NULL);
 		float L_8;
@@ -15555,18 +15602,19 @@ IL_0019:
 
 IL_0056:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2593>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2595>
 		float L_9 = V_2;
 		return L_9;
 	}
 }
-// Method Definition Index: 52715
+// Method Definition Index: 52760
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateUnconsciousBobber_mB3F153F2D0E88789C413025873C17D523E194133 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
 	if (!s_Il2CppMethodInitialized)
 	{
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteralEA9D88F004EED128A754D77D3EFBBE4153E89F13);
 		s_Il2CppMethodInitialized = true;
 	}
@@ -15587,10 +15635,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateUnconsciousBobber_mB
 	bool V_9 = false;
 	bool V_10 = false;
 	bool V_11 = false;
+	bool V_12 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2597>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2598>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2599>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2600>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -15624,14 +15673,14 @@ IL_0020:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2600>
-		goto IL_0160;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2602>
+		goto IL_0183;
 	}
 
 IL_002c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2603>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2604>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2605>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2606>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = __this->___bobber;
 		NullCheck(L_5);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6;
@@ -15640,14 +15689,14 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7;
 		L_7 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_6, NULL);
 		V_0 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2606>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2607>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2608>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2609>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8;
 		L_8 = FishingSystem_GetLineTargetPosition_m518A3E3A549EBBEB38799F25C69413EA2F2D263A(__this, NULL);
 		V_1 = L_8;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2609>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2610>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2611>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2612>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2613>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_9;
 		L_9 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
 		NullCheck(L_9);
@@ -15657,10 +15706,10 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12;
 		L_12 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_10, L_11, NULL);
 		V_2 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2613>
-		(&V_2)->___y = (0.0f);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2615>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2616>
+		(&V_2)->___y = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2617>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2618>
 		float L_13;
 		L_13 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_2), NULL);
 		V_9 = (bool)((((float)L_13) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -15671,24 +15720,24 @@ IL_002c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2618>
-		goto IL_0160;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2620>
+		goto IL_0183;
 	}
 
 IL_007c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2621>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2622>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2623>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2624>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
 		L_15 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_2), NULL);
 		V_3 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2624>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2625>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2626>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2627>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2628>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2629>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2630>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2631>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2632>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_17 = V_3;
 		float L_18 = __this->___reelPower;
@@ -15701,111 +15750,133 @@ IL_007c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22;
 		L_22 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_16, L_21, NULL);
 		V_4 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2632>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2633>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2634>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2635>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2636>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_4;
-		bool L_24;
-		L_24 = FishingSystem_TryGetTerrainWaterDepth_mA56A811FD74B6E6E4966596AF2010BBC9468A5DC(__this, L_23, (&V_5), (&V_6), (&V_7), NULL);
-		V_10 = L_24;
-		bool L_25 = V_10;
-		if (!L_25)
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_0;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_4;
+		il2cpp_codegen_runtime_class_init_inline(SnapperRockFishObstacles_tD4B203989440395FACFD9A0ACBC6A0AF0AF3D0CF_il2cpp_TypeInfo_var);
+		bool L_25;
+		L_25 = SnapperRockFishObstacles_SurfaceSegmentClear_mD7BE98564371989EB79A6517F6C0942080CDC588(L_23, L_24, (0.400000006f), NULL);
+		V_10 = (bool)((((int32_t)L_25) == ((int32_t)0))? 1 : 0);
+		bool L_26 = V_10;
+		if (!L_26)
 		{
-			goto IL_0129;
+			goto IL_00ce;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2638>
-		float L_26 = V_7;
-		V_11 = (bool)((((int32_t)((!(((float)L_26) <= ((float)(0.0799999982f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_27 = V_11;
-		if (!L_27)
+		__this->___fishOnShore = (bool)1;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2639>
+		goto IL_0183;
+	}
+
+IL_00ce:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2641>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2642>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2643>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2644>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2645>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_4;
+		bool L_28;
+		L_28 = FishingSystem_TryGetTerrainWaterDepth_mA56A811FD74B6E6E4966596AF2010BBC9468A5DC(__this, L_27, (&V_5), (&V_6), (&V_7), NULL);
+		V_11 = L_28;
+		bool L_29 = V_11;
+		if (!L_29)
 		{
-			goto IL_0117;
+			goto IL_014c;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2640>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2641>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2642>
-		float L_28 = V_5;
-		(&V_4)->___y = ((float)il2cpp_codegen_add(L_28, (0.0700000003f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2644>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2645>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_29 = __this->___bobber;
-		NullCheck(L_29);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_30;
-		L_30 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_29, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_31 = V_4;
-		NullCheck(L_30);
-		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_30, L_31, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2647>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2648>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_32 = V_4;
-		__this->___castPoint = L_32;
+		float L_30 = V_7;
+		V_12 = (bool)((((int32_t)((!(((float)L_30) <= ((float)(0.0799999982f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_31 = V_12;
+		if (!L_31)
+		{
+			goto IL_013a;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2649>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2650>
-		__this->___fishOnShore = (bool)1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2652>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2651>
+		float L_32 = V_5;
+		(&V_4)->___y = ((float)il2cpp_codegen_add(L_32, (0.0700000003f)));
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2653>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2654>
-		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_33 = __this->___hud;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_33 = __this->___bobber;
 		NullCheck(L_33);
-		FishingHUD_SetStatus_mAB8B9CF2261BEAC67DA74CA65AEB4CE11162D572(L_33, _stringLiteralEA9D88F004EED128A754D77D3EFBBE4153E89F13, NULL);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_34;
+		L_34 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_33, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_35 = V_4;
+		NullCheck(L_34);
+		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_34, L_35, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2656>
-		goto IL_0160;
-	}
-
-IL_0117:
-	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2657>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36 = V_4;
+		__this->___castPoint = L_36;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2659>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2660>
+		__this->___fishOnShore = (bool)1;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2661>
-		float L_34 = V_6;
-		(&V_4)->___y = ((float)il2cpp_codegen_add(L_34, (0.0299999993f)));
-		goto IL_0145;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2662>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2663>
+		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_37 = __this->___hud;
+		NullCheck(L_37);
+		FishingHUD_SetStatus_mAB8B9CF2261BEAC67DA74CA65AEB4CE11162D572(L_37, _stringLiteralEA9D88F004EED128A754D77D3EFBBE4153E89F13, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2665>
+		goto IL_0183;
 	}
 
-IL_0129:
+IL_013a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2665>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2666>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2667>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2668>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2669>
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_35 = __this->___oceanWater;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36 = V_4;
-		NullCheck(L_35);
-		float L_37;
-		L_37 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_35, L_36, NULL);
-		(&V_4)->___y = ((float)il2cpp_codegen_add(L_37, (0.0299999993f)));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2670>
+		float L_38 = V_6;
+		(&V_4)->___y = ((float)il2cpp_codegen_add(L_38, (0.0299999993f)));
+		goto IL_0168;
 	}
 
-IL_0145:
+IL_014c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2672>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2673>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_38 = __this->___bobber;
-		NullCheck(L_38);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_39;
-		L_39 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_38, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_40 = V_4;
-		NullCheck(L_39);
-		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_39, L_40, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2674>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2675>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2676>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_41 = V_4;
-		__this->___castPoint = L_41;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2677>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2678>
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_39 = __this->___oceanWater;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_40 = V_4;
+		NullCheck(L_39);
+		float L_41;
+		L_41 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_39, L_40, NULL);
+		(&V_4)->___y = ((float)il2cpp_codegen_add(L_41, (0.0299999993f)));
 	}
 
-IL_0160:
+IL_0168:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2677>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2681>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2682>
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_42 = __this->___bobber;
+		NullCheck(L_42);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_43;
+		L_43 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_42, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_44 = V_4;
+		NullCheck(L_43);
+		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_43, L_44, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2684>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2685>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_45 = V_4;
+		__this->___castPoint = L_45;
+	}
+
+IL_0183:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2686>
 		return;
 	}
 }
-// Method Definition Index: 52716
+// Method Definition Index: 52761
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapCurrentBobberToSurface_m21C55BAB405698D6A591F1154446FCFBA178581D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15819,9 +15890,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapCurrentBobberToSurface
 	bool V_1 = false;
 	int32_t G_B4_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2681>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2682>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2683>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2690>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2691>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2692>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -15862,14 +15933,14 @@ IL_0025:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2685>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2694>
 		goto IL_006f;
 	}
 
 IL_002c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2688>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2689>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2697>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2698>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_6 = __this->___bobber;
 		NullCheck(L_6);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_7;
@@ -15878,19 +15949,19 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8;
 		L_8 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_7, NULL);
 		V_0 = L_8;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2691>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2692>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2693>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2694>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2695>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2700>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2701>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2702>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2703>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2704>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_9 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = V_0;
 		NullCheck(L_9);
 		float L_11;
 		L_11 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_9, L_10, NULL);
 		(&V_0)->___y = ((float)il2cpp_codegen_add(L_11, (0.0299999993f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2697>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2698>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2706>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2707>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_12 = __this->___bobber;
 		NullCheck(L_12);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_13;
@@ -15898,19 +15969,19 @@ IL_002c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = V_0;
 		NullCheck(L_13);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_13, L_14, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2700>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2701>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2709>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2710>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15 = V_0;
 		__this->___castPoint = L_15;
 	}
 
 IL_006f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2702>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2711>
 		return;
 	}
 }
-// Method Definition Index: 52717
+// Method Definition Index: 52762
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateStunnedBobber_m925907D3AA35AD9F2EFB848D05659109CEF4859B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_reeling, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15931,7 +16002,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateStunnedBobber_m92590
 	bool V_6 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2706>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2715>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -15965,13 +16036,13 @@ IL_0020:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2706>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2715>
 		goto IL_00d8;
 	}
 
 IL_0029:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2707>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2716>
 		bool L_5 = ___0_reeling;
 		V_1 = L_5;
 		bool L_6 = V_1;
@@ -15981,7 +16052,7 @@ IL_0029:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2709>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2718>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_7 = __this->___bobber;
 		NullCheck(L_7);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_8;
@@ -15990,7 +16061,7 @@ IL_0029:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9;
 		L_9 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_8, NULL);
 		V_2 = L_9;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2710>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2719>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_10;
 		L_10 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
 		NullCheck(L_10);
@@ -16000,9 +16071,9 @@ IL_0029:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13;
 		L_13 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_11, L_12, NULL);
 		V_3 = L_13;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2711>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2720>
 		(&V_3)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2712>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2721>
 		float L_14 = __this->___reelPower;
 		float L_15;
 		L_15 = FishingSystem_get_ProgressReel_mABB05EF84CE4E9051D73C75AA5B7707FB6C25086(__this, NULL);
@@ -16015,7 +16086,7 @@ IL_0029:
 		float L_19;
 		L_19 = Mathf_Min_m747CA71A9483CDB394B13BD0AD048EE17E48FFE4_inline(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply((0.720000029f), L_14)), L_15)), L_16)), L_18, NULL);
 		V_4 = L_19;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2713>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2722>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = V_2;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21;
 		L_21 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_3), NULL);
@@ -16034,7 +16105,7 @@ IL_0029:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2714>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2723>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_27 = __this->___bobber;
 		NullCheck(L_27);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_28;
@@ -16050,17 +16121,17 @@ IL_00d0:
 
 IL_00d1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2716>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2725>
 		FishingSystem_SnapCurrentBobberToSurface_m21C55BAB405698D6A591F1154446FCFBA178581D(__this, NULL);
 	}
 
 IL_00d8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2717>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2726>
 		return;
 	}
 }
-// Method Definition Index: 52718
+// Method Definition Index: 52763
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryGetTerrainWaterDepth_mA56A811FD74B6E6E4966596AF2010BBC9468A5DC (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_worldPosition, float* ___1_ground, float* ___2_water, float* ___3_depth, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16077,10 +16148,10 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryGetTerrainWaterDepth_mA
 	bool V_4 = false;
 	int32_t G_B7_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2725>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2726>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2727>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2728>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2734>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2735>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2736>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2737>
 		float* L_0 = ___2_water;
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_1 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2 = ___0_worldPosition;
@@ -16088,17 +16159,17 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryGetTerrainWaterDepth_mA
 		float L_3;
 		L_3 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_1, L_2, NULL);
 		*((float*)L_0) = (float)L_3;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2730>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2731>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2732>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2739>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2740>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2741>
 		float* L_4 = ___1_ground;
 		float* L_5 = ___2_water;
 		float L_6 = *((float*)L_5);
 		*((float*)L_4) = (float)((float)il2cpp_codegen_subtract(L_6, (1000.0f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2734>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2743>
 		float* L_7 = ___3_depth;
 		*((float*)L_7) = (float)(1000.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2736>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2745>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_8 = __this->___terrain;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_9;
@@ -16111,23 +16182,23 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool FishingSystem_TryGetTerrainWaterDepth_mA
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2737>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2746>
 		V_3 = (bool)0;
 		goto IL_00d9;
 	}
 
 IL_0038:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2739>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2740>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2748>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2749>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_11 = __this->___terrain;
 		NullCheck(L_11);
 		TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* L_12;
 		L_12 = Terrain_get_terrainData_m3B6C1D89471A4E1C60FC19C168DB37A011B924FD(L_11, NULL);
 		V_0 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2742>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2743>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2744>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2751>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2752>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2753>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13 = ___0_worldPosition;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_14 = __this->___terrain;
 		NullCheck(L_14);
@@ -16139,10 +16210,10 @@ IL_0038:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_17;
 		L_17 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_13, L_16, NULL);
 		V_1 = L_17;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2746>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2747>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2748>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2749>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2755>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2756>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2757>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2758>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = V_1;
 		float L_19 = L_18.___x;
 		if ((((float)L_19) < ((float)(0.0f))))
@@ -16198,18 +16269,18 @@ IL_009e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2751>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2760>
 		V_3 = (bool)0;
 		goto IL_00d9;
 	}
 
 IL_00a9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2754>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2755>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2756>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2757>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2758>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2763>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2764>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2765>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2766>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2767>
 		float* L_33 = ___1_ground;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_34 = __this->___terrain;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_35 = ___0_worldPosition;
@@ -16225,28 +16296,28 @@ IL_00a9:
 		L_39 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_38, NULL);
 		float L_40 = L_39.___y;
 		*((float*)L_33) = (float)((float)il2cpp_codegen_add(L_36, L_40));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2760>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2761>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2762>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2769>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2770>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2771>
 		float* L_41 = ___3_depth;
 		float* L_42 = ___2_water;
 		float L_43 = *((float*)L_42);
 		float* L_44 = ___1_ground;
 		float L_45 = *((float*)L_44);
 		*((float*)L_41) = (float)((float)il2cpp_codegen_subtract(L_43, L_45));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2764>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2773>
 		V_3 = (bool)1;
 		goto IL_00d9;
 	}
 
 IL_00d9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2765>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2774>
 		bool L_46 = V_3;
 		return L_46;
 	}
 }
-// Method Definition Index: 52719
+// Method Definition Index: 52764
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapBobberToSurface_mDC9B68AA66C8B3866CF3AA611311314F1C6435E4 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16260,8 +16331,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SnapBobberToSurface_mDC9B6
 	bool V_1 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2769>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2770>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2778>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2779>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -16295,32 +16366,32 @@ IL_0020:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2772>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2781>
 		goto IL_007f;
 	}
 
 IL_0027:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2775>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2776>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2784>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2785>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = __this->___castPoint;
 		V_0 = L_5;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2778>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2779>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2780>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2781>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2782>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2787>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2788>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2789>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2790>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2791>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_6 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7 = __this->___castPoint;
 		NullCheck(L_6);
 		float L_8;
 		L_8 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_6, L_7, NULL);
 		(&V_0)->___y = ((float)il2cpp_codegen_add(L_8, (0.0599999987f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2784>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2785>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2786>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2787>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2788>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2793>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2794>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2795>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2796>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2797>
 		float* L_9 = (float*)(&(&V_0)->___y);
 		float* L_10 = L_9;
 		float L_11 = *((float*)L_10);
@@ -16329,8 +16400,8 @@ IL_0027:
 		float L_13;
 		L_13 = sinf(((float)il2cpp_codegen_multiply(L_12, (2.5f))));
 		*((float*)L_10) = (float)((float)il2cpp_codegen_add(L_11, ((float)il2cpp_codegen_multiply(L_13, (0.0350000001f)))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2790>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2791>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2799>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2800>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_14 = __this->___bobber;
 		NullCheck(L_14);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_15;
@@ -16342,11 +16413,11 @@ IL_0027:
 
 IL_007f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2792>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2801>
 		return;
 	}
 }
-// Method Definition Index: 52720
+// Method Definition Index: 52765
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateLineAndBobber_mEF64FFB5ACEFD810F8567D9C854B371E1D226C67 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16359,10 +16430,10 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateLineAndBobber_mEF64F
 	bool V_1 = false;
 	int32_t G_B5_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2796>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2797>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2798>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2799>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2805>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2806>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2807>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2808>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_0 = __this->___fishingLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -16416,7 +16487,7 @@ IL_003b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2801>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2810>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_9 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_10;
@@ -16429,9 +16500,9 @@ IL_003b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2803>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2804>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2805>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2812>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2813>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2814>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_12 = __this->___bobberIndicatorRoot;
 		NullCheck(L_12);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_12, (bool)0, NULL);
@@ -16439,25 +16510,25 @@ IL_003b:
 
 IL_005f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2808>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2817>
 		goto IL_006f;
 	}
 
 IL_0061:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2811>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2820>
 		FishingSystem_SetLinePositions_mCE5B4F1C70D9F96734837DFD9D630CFCF992FDB3(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2812>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2821>
 		FishingSystem_UpdateBobberIndicator_mE9DAC5250E06A70D30057817AF698D124AEF0EF9(__this, NULL);
 	}
 
 IL_006f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2813>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2822>
 		return;
 	}
 }
-// Method Definition Index: 52721
+// Method Definition Index: 52766
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateBobberIndicator_m4CE31B6C877CF7F04540F526FAE5FCE0EE7FE5A1 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16506,7 +16577,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateBobberIndicator_m4CE
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 V_9;
 	memset((&V_9), 0, sizeof(V_9));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2817>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2826>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -16519,7 +16590,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateBobberIndicator_m4CE
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2817>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2826>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_3 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_3, NULL);
@@ -16527,7 +16598,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateBobberIndicator_m4CE
 
 IL_001f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2818>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2827>
 		Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191* L_4 = __this->___fishStatusTextures;
 		V_8 = (bool)((((RuntimeObject*)(Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191*)L_4) == ((RuntimeObject*)(RuntimeObject*)NULL))? 1 : 0);
 		bool L_5 = V_8;
@@ -16537,20 +16608,20 @@ IL_001f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2820>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2829>
 		Texture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4* L_6;
 		L_6 = Resources_Load_TisTexture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4_mBEC87DD291ED9662B46356519E0723C0ABB12877(_stringLiteral8628273E3D8FF77BE0F5E5587DD48ED6CFAE8206, Resources_Load_TisTexture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4_mBEC87DD291ED9662B46356519E0723C0ABB12877_RuntimeMethod_var);
 		__this->___stunnedStatusTexture = L_6;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___stunnedStatusTexture), (void*)L_6);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2821>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2822>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2823>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2824>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2825>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2826>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2827>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2828>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2829>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2830>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2831>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2832>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2833>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2834>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2835>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2836>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2837>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2838>
 		Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191* L_7 = (Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191*)(Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191*)SZArrayNew(Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191_il2cpp_TypeInfo_var, (uint32_t)6);
 		Texture2DU5BU5D_t05332F1E3F7D4493E304C702201F9BE4F9236191* L_8 = L_7;
 		Texture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4* L_9;
@@ -16588,7 +16659,7 @@ IL_001f:
 
 IL_009a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2832>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2841>
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_20 = (TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)SZArrayNew(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB_il2cpp_TypeInfo_var, (uint32_t)1);
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_21 = L_20;
 		RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B L_22 = { reinterpret_cast<intptr_t> (RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_0_0_0_var) };
@@ -16602,7 +16673,7 @@ IL_009a:
 		GameObject__ctor_m721D643351E55308EA4F5F41B67D5446D11C61F0(L_24, _stringLiteral8B7C548EF6E6B20DF833A232734A359C5A1A013D, L_21, NULL);
 		__this->___bobberIndicatorRoot = L_24;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___bobberIndicatorRoot), (void*)L_24);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2833>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2842>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_25 = __this->___bobberIndicatorRoot;
 		NullCheck(L_25);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_26;
@@ -16613,14 +16684,14 @@ IL_009a:
 		L_28 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_27, NULL);
 		NullCheck(L_26);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_26, L_28, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2834>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2843>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_29 = __this->___bobberIndicatorRoot;
 		NullCheck(L_29);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_30;
 		L_30 = GameObject_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m1592DCB5AA07291F73A76006F0913A64DFB8A9C4(L_29, GameObject_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m1592DCB5AA07291F73A76006F0913A64DFB8A9C4_RuntimeMethod_var);
 		__this->___bobberIndicatorRect = L_30;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___bobberIndicatorRect), (void*)L_30);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2835>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2844>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_31 = __this->___bobberIndicatorRect;
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_32 = __this->___bobberIndicatorRect;
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&V_9), (0.5f), (0.5f), NULL);
@@ -16630,21 +16701,21 @@ IL_009a:
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_34 = V_9;
 		NullCheck(L_31);
 		RectTransform_set_anchorMin_m931442ABE3368D6D4309F43DF1D64AB64B0F52E3(L_31, L_34, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2836>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2845>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_35 = __this->___bobberIndicatorRect;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_36;
 		memset((&L_36), 0, sizeof(L_36));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_36), (0.5f), (0.5f), NULL);
 		NullCheck(L_35);
 		RectTransform_set_pivot_m79D0177D383D432A93C2615F1932B739B1C6E146(L_35, L_36, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2838>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2847>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_37 = __this->___bobberIndicatorRect;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_38;
 		memset((&L_38), 0, sizeof(L_38));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_38), (128.0f), (128.0f), NULL);
 		NullCheck(L_37);
 		RectTransform_set_sizeDelta_mC9A980EA6036E6725EF24CEDF3EE80A9B2B50EE5(L_37, L_38, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2840>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2849>
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_39 = (TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)SZArrayNew(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB_il2cpp_TypeInfo_var, (uint32_t)2);
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_40 = L_39;
 		RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B L_41 = { reinterpret_cast<intptr_t> (RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_0_0_0_var) };
@@ -16663,7 +16734,7 @@ IL_009a:
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_46 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m721D643351E55308EA4F5F41B67D5446D11C61F0(L_46, _stringLiteral9EB5008FEC841B49B0CD615FF399A02E71870E5E, L_43, NULL);
 		V_0 = L_46;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2841>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2850>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_47 = V_0;
 		NullCheck(L_47);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_48;
@@ -16674,36 +16745,36 @@ IL_009a:
 		L_50 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_49, NULL);
 		NullCheck(L_48);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_48, L_50, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2842>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2851>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_51 = V_0;
 		NullCheck(L_51);
 		RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* L_52;
 		L_52 = GameObject_GetComponent_TisRawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179_m51636C7F3481A344AA96C18C0C1471F72CEE7A3E(L_51, GameObject_GetComponent_TisRawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179_m51636C7F3481A344AA96C18C0C1471F72CEE7A3E_RuntimeMethod_var);
 		__this->___bobberStatusIcon = L_52;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___bobberStatusIcon), (void*)L_52);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2843>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2852>
 		RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* L_53 = __this->___bobberStatusIcon;
 		NullCheck(L_53);
 		VirtualActionInvoker1< bool >::Invoke(25, L_53, (bool)0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2844>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2853>
 		RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* L_54 = __this->___bobberStatusIcon;
 		NullCheck(L_54);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_55;
 		L_55 = Graphic_get_rectTransform_mF4752E8934267D630810E84CE02CDFB81EB1FD6D(L_54, NULL);
 		V_1 = L_55;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2845>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2854>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_56 = V_1;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_57;
 		L_57 = Vector2_get_zero_m32506C40EC2EE7D5D4410BF40D3EE683A3D5F32C_inline(NULL);
 		NullCheck(L_56);
 		RectTransform_set_anchorMin_m931442ABE3368D6D4309F43DF1D64AB64B0F52E3(L_56, L_57, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2846>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2855>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_58 = V_1;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_59;
 		L_59 = Vector2_get_one_m9097EB8DC23C26118A591AF16702796C3EF51DFB_inline(NULL);
 		NullCheck(L_58);
 		RectTransform_set_anchorMax_m52829ABEDD229ABD3DA20BCA676FA1DCA4A39B7D(L_58, L_59, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2847>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2856>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_60 = V_1;
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_61 = V_1;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_62;
@@ -16715,7 +16786,7 @@ IL_009a:
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_64 = V_9;
 		NullCheck(L_60);
 		RectTransform_set_offsetMin_m07F38B4105C7CA9CC9FBDC9ED0DB008602880AB9(L_60, L_64, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2849>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2858>
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_65 = (TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)SZArrayNew(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB_il2cpp_TypeInfo_var, (uint32_t)3);
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_66 = L_65;
 		RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B L_67 = { reinterpret_cast<intptr_t> (RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_0_0_0_var) };
@@ -16741,7 +16812,7 @@ IL_009a:
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_75 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m721D643351E55308EA4F5F41B67D5446D11C61F0(L_75, _stringLiteral7B58BF9C18E46D86D31F4AEC7006608419E3DF93, L_72, NULL);
 		V_2 = L_75;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2850>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2859>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_76 = V_2;
 		NullCheck(L_76);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_77;
@@ -16752,48 +16823,48 @@ IL_009a:
 		L_79 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_78, NULL);
 		NullCheck(L_77);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_77, L_79, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2851>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2860>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_80 = V_2;
 		NullCheck(L_80);
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_81;
 		L_81 = GameObject_GetComponent_TisText_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62_mBE6B722369FF149589D3D42A6A8435A9C5045B3F(L_80, GameObject_GetComponent_TisText_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62_mBE6B722369FF149589D3D42A6A8435A9C5045B3F_RuntimeMethod_var);
 		__this->___bobberIndicatorText = L_81;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___bobberIndicatorText), (void*)L_81);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2852>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2861>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_82 = __this->___bobberIndicatorText;
 		Font_tC95270EA3198038970422D78B74A7F2E218A96B6* L_83;
 		L_83 = Resources_GetBuiltinResource_TisFont_tC95270EA3198038970422D78B74A7F2E218A96B6_m3B4545F25A016D36D9AE93723A3449804A127D73(_stringLiteral91EABC919E48AAD7331BDBE21DBB8D4C623A4A25, Resources_GetBuiltinResource_TisFont_tC95270EA3198038970422D78B74A7F2E218A96B6_m3B4545F25A016D36D9AE93723A3449804A127D73_RuntimeMethod_var);
 		NullCheck(L_82);
 		Text_set_font_mA0D2999281A72029A5BC7294A886C5674F07DC5F(L_82, L_83, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2853>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2862>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_84 = __this->___bobberIndicatorText;
 		NullCheck(L_84);
 		Text_set_fontSize_m426338B0A2CDA58609028FFD471EF5F2C9F364D4(L_84, ((int32_t)26), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2854>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2863>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_85 = __this->___bobberIndicatorText;
 		NullCheck(L_85);
 		Text_set_fontStyle_m5ABEF66BFC88E7E0A950E2817E4978FF472F6C1D(L_85, 1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2855>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2864>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_86 = __this->___bobberIndicatorText;
 		NullCheck(L_86);
 		Text_set_alignment_m9FAD6C1C270FA28C610AB1E07414FBF96403157A(L_86, 3, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2856>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2865>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_87 = __this->___bobberIndicatorText;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_88;
 		L_88 = Color_get_white_m068F5AF879B0FCA584E3693F762EA41BB65532C6_inline(NULL);
 		NullCheck(L_87);
 		VirtualActionInvoker1< Color_tD001788D726C3A7F1379BEED0260B9591F440C1F >::Invoke(23, L_87, L_88);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2857>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2866>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_89 = __this->___bobberIndicatorText;
 		NullCheck(L_89);
 		VirtualActionInvoker1< bool >::Invoke(25, L_89, (bool)0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2858>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2867>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_90 = __this->___bobberIndicatorText;
 		NullCheck(L_90);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_91;
 		L_91 = Graphic_get_rectTransform_mF4752E8934267D630810E84CE02CDFB81EB1FD6D(L_90, NULL);
 		V_3 = L_91;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2859>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2868>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_92 = V_3;
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_93 = V_3;
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&V_9), (0.5f), (0.5f), NULL);
@@ -16803,55 +16874,55 @@ IL_009a:
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_95 = V_9;
 		NullCheck(L_92);
 		RectTransform_set_anchorMin_m931442ABE3368D6D4309F43DF1D64AB64B0F52E3(L_92, L_95, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2860>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2869>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_96 = V_3;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_97;
 		memset((&L_97), 0, sizeof(L_97));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_97), (0.0f), (0.5f), NULL);
 		NullCheck(L_96);
 		RectTransform_set_pivot_m79D0177D383D432A93C2615F1932B739B1C6E146(L_96, L_97, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2861>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2870>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_98 = V_3;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_99;
 		memset((&L_99), 0, sizeof(L_99));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_99), (72.0f), (0.0f), NULL);
 		NullCheck(L_98);
 		RectTransform_set_anchoredPosition_mF903ACE04F6959B1CD67E2B94FABC0263068F965(L_98, L_99, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2862>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2871>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_100 = V_3;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_101;
 		memset((&L_101), 0, sizeof(L_101));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_101), (220.0f), (80.0f), NULL);
 		NullCheck(L_100);
 		RectTransform_set_sizeDelta_mC9A980EA6036E6725EF24CEDF3EE80A9B2B50EE5(L_100, L_101, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2863>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2872>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_102 = V_2;
 		NullCheck(L_102);
 		Outline_t9CF146E077DC65F441EDEC463AA6710374108084* L_103;
 		L_103 = GameObject_GetComponent_TisOutline_t9CF146E077DC65F441EDEC463AA6710374108084_m6D5945F67389F974428609CD4470D9AD976C00E6(L_102, GameObject_GetComponent_TisOutline_t9CF146E077DC65F441EDEC463AA6710374108084_m6D5945F67389F974428609CD4470D9AD976C00E6_RuntimeMethod_var);
 		V_4 = L_103;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2864>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2873>
 		Outline_t9CF146E077DC65F441EDEC463AA6710374108084* L_104 = V_4;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_105;
 		L_105 = Color_get_black_mB50217951591A045844C61E7FF31EEE3FEF16737_inline(NULL);
 		NullCheck(L_104);
 		Shadow_set_effectColor_mCCC5DB6B7D09C5DEE0C677DEB3B9B0C578F05AF1(L_104, L_105, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2865>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2874>
 		Outline_t9CF146E077DC65F441EDEC463AA6710374108084* L_106 = V_4;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_107;
 		memset((&L_107), 0, sizeof(L_107));
 		Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline((&L_107), (2.0f), (-2.0f), NULL);
 		NullCheck(L_106);
 		Shadow_set_effectDistance_m5E7B565C41CF2A8C84EC98319ACBF5C8E1FE47DA(L_106, L_107, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2866>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2875>
 		Outline_t9CF146E077DC65F441EDEC463AA6710374108084* L_108 = V_4;
 		NullCheck(L_108);
 		Shadow_set_useGraphicAlpha_m70CCAE5D643B2373A5ADC8BD04031D3CBF0AF722(L_108, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2868>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2877>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_109 = __this->___bobberIndicatorText;
 		il2cpp_codegen_runtime_class_init_inline(FishingHudTheme_tAAB2C38387F451283746F0D1407AA6043E58B7A5_il2cpp_TypeInfo_var);
 		FishingHudTheme_Distance_m7C84A78794D7324FE221F116C749596241580651(L_109, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2870>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2879>
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_110 = (TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB*)SZArrayNew(TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB_il2cpp_TypeInfo_var, (uint32_t)2);
 		TypeU5BU5D_t97234E1129B564EB38B8D85CAC2AD8B5B9522FFB* L_111 = L_110;
 		RuntimeTypeHandle_t332A452B8B6179E4469B69525D0FE82A88030F7B L_112 = { reinterpret_cast<intptr_t> (RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_0_0_0_var) };
@@ -16870,7 +16941,7 @@ IL_009a:
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_117 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m721D643351E55308EA4F5F41B67D5446D11C61F0(L_117, _stringLiteral8B8BF2429D692BF8A81F5866E8616453733D5AEE, L_114, NULL);
 		V_5 = L_117;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2871>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2880>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_118 = V_5;
 		NullCheck(L_118);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_119;
@@ -16881,25 +16952,25 @@ IL_009a:
 		L_121 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_120, NULL);
 		NullCheck(L_119);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_119, L_121, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2872>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2881>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_122 = V_5;
 		NullCheck(L_122);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_123;
 		L_123 = GameObject_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m1592DCB5AA07291F73A76006F0913A64DFB8A9C4(L_122, GameObject_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m1592DCB5AA07291F73A76006F0913A64DFB8A9C4_RuntimeMethod_var);
 		V_6 = L_123;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2873>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2882>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_124 = V_6;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_125;
 		L_125 = Vector2_get_zero_m32506C40EC2EE7D5D4410BF40D3EE683A3D5F32C_inline(NULL);
 		NullCheck(L_124);
 		RectTransform_set_anchorMin_m931442ABE3368D6D4309F43DF1D64AB64B0F52E3(L_124, L_125, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2874>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2883>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_126 = V_6;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_127;
 		L_127 = Vector2_get_one_m9097EB8DC23C26118A591AF16702796C3EF51DFB_inline(NULL);
 		NullCheck(L_126);
 		RectTransform_set_anchorMax_m52829ABEDD229ABD3DA20BCA676FA1DCA4A39B7D(L_126, L_127, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2875>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2884>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_128 = V_6;
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_129 = V_6;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_130;
@@ -16911,33 +16982,33 @@ IL_009a:
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_132 = V_9;
 		NullCheck(L_128);
 		RectTransform_set_offsetMin_m07F38B4105C7CA9CC9FBDC9ED0DB008602880AB9(L_128, L_132, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2876>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2885>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_133 = V_5;
 		NullCheck(L_133);
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_134;
 		L_134 = GameObject_GetComponent_TisFishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C_mA702F7BBD7FFBE70E21B98D0AAB9309279E5A811(L_133, GameObject_GetComponent_TisFishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C_mA702F7BBD7FFBE70E21B98D0AAB9309279E5A811_RuntimeMethod_var);
 		__this->___fragileOutline = L_134;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___fragileOutline), (void*)L_134);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2877>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2886>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_135 = __this->___fragileOutline;
 		NullCheck(L_135);
 		VirtualActionInvoker1< bool >::Invoke(25, L_135, (bool)0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2878>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2887>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_136 = __this->___fragileOutline;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_137;
 		memset((&L_137), 0, sizeof(L_137));
 		Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline((&L_137), (1.0f), (0.0399999991f), (0.0250000004f), (1.0f), NULL);
 		NullCheck(L_136);
 		VirtualActionInvoker1< Color_tD001788D726C3A7F1379BEED0260B9591F440C1F >::Invoke(23, L_136, L_137);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2879>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2888>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_138 = __this->___bobberIndicatorRoot;
 		NullCheck(L_138);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_138, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2880>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2889>
 		return;
 	}
 }
-// Method Definition Index: 52722
+// Method Definition Index: 52767
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateBobberIndicator_mE9DAC5250E06A70D30057817AF698D124AEF0EF9 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17019,16 +17090,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateBobberIndicator_mE9D
 	float G_B69_0 = 0.0f;
 	RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* G_B69_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2884>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2885>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2886>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2887>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2888>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2889>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2890>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2891>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2892>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2893>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2894>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2895>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2896>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2897>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2898>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2899>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2900>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2901>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2902>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -17116,7 +17187,7 @@ IL_0069:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2895>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2904>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_15 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_16;
@@ -17129,9 +17200,9 @@ IL_0069:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2897>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2898>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2899>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2906>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2907>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2908>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_18 = __this->___bobberIndicatorRoot;
 		NullCheck(L_18);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_18, (bool)0, NULL);
@@ -17139,17 +17210,17 @@ IL_0069:
 
 IL_0091:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2902>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2911>
 		goto IL_040f;
 	}
 
 IL_0096:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2905>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2906>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2907>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2908>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2909>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2914>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2915>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2916>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2917>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2918>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_19 = __this->___playerCamera;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20;
 		L_20 = FishingSystem_GetLineTargetPosition_m518A3E3A549EBBEB38799F25C69413EA2F2D263A(__this, NULL);
@@ -17162,7 +17233,7 @@ IL_0096:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
 		L_24 = FishingThirdPersonView_WorldToScreenPoint_m9AAB80CB706EE407028A080373745253D31FE793(L_19, L_23, NULL);
 		V_0 = L_24;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2911>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2920>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25 = V_0;
 		float L_26 = L_25.___z;
 		V_11 = (bool)((((int32_t)((!(((float)L_26) <= ((float)(0.0f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
@@ -17173,31 +17244,31 @@ IL_0096:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2913>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2914>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2915>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2922>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2923>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2924>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_28 = __this->___bobberIndicatorRoot;
 		NullCheck(L_28);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_28, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2917>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2926>
 		goto IL_040f;
 	}
 
 IL_00e5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2920>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2921>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2922>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2929>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2930>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2931>
 		Canvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26* L_29 = __this->___gameplayCanvas;
 		NullCheck(L_29);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_30;
 		L_30 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_29, NULL);
 		V_1 = ((RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5*)IsInstSealed((RuntimeObject*)L_30, RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_il2cpp_TypeInfo_var));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2924>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2925>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2926>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2927>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2928>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2933>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2934>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2935>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2936>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2937>
 		Canvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26* L_31 = __this->___gameplayCanvas;
 		NullCheck(L_31);
 		int32_t L_32;
@@ -17224,12 +17295,12 @@ IL_0110:
 IL_0111:
 	{
 		V_2 = G_B18_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2930>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2931>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2932>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2933>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2934>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2935>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2939>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2940>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2941>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2942>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2943>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2944>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_35 = V_1;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_36;
@@ -17267,25 +17338,25 @@ IL_0130:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2937>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2938>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2939>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2946>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2947>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2948>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_43 = __this->___bobberIndicatorRoot;
 		NullCheck(L_43);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_43, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2941>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2950>
 		goto IL_040f;
 	}
 
 IL_0149:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2944>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2945>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2946>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2953>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2954>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2955>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_44 = __this->___bobberIndicatorRoot;
 		NullCheck(L_44);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_44, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2948>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2957>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_45 = __this->___bobberIndicatorRect;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_46 = V_3;
 		Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 L_47;
@@ -17295,7 +17366,7 @@ IL_0149:
 		L_48 = Vector2_op_Addition_m8136742CE6EE33BA4EB81C5F584678455917D2AE_inline(L_46, L_47, NULL);
 		NullCheck(L_45);
 		RectTransform_set_anchoredPosition_mF903ACE04F6959B1CD67E2B94FABC0263068F965(L_45, L_48, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2950>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2959>
 		int32_t L_49 = __this->___state;
 		if ((((int32_t)L_49) == ((int32_t)4)))
 		{
@@ -17316,10 +17387,10 @@ IL_018b:
 IL_018c:
 	{
 		V_4 = (bool)G_B26_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2951>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2960>
 		bool L_51 = V_4;
 		V_5 = L_51;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2952>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2961>
 		RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* L_52 = __this->___bobberStatusIcon;
 		NullCheck(L_52);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_53;
@@ -17327,7 +17398,7 @@ IL_018c:
 		bool L_54 = V_5;
 		NullCheck(L_53);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_53, L_54, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2953>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2962>
 		bool L_55 = V_5;
 		V_13 = L_55;
 		bool L_56 = V_13;
@@ -17337,9 +17408,9 @@ IL_018c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2954>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2955>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2956>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2963>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2964>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2965>
 		RawImage_tFF12F7DB574FBDC1863CF607C7A12A5D9F8D6179* L_57 = __this->___bobberStatusIcon;
 		bool L_58;
 		L_58 = FishingSystem_get_IsSkillStunned_mDBDDB7FE610A287E6B4D90233615A8155EABC84B(__this, NULL);
@@ -17417,7 +17488,7 @@ IL_01e9:
 
 IL_01ef:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2958>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2967>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_67 = __this->___fragileOutline;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_68;
@@ -17430,8 +17501,8 @@ IL_01ef:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2960>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2961>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2969>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2970>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_70 = __this->___fragileOutline;
 		bool L_71;
 		L_71 = FishingSystem_get_IsSkillStunned_mDBDDB7FE610A287E6B4D90233615A8155EABC84B(__this, NULL);
@@ -17484,7 +17555,7 @@ IL_023a:
 	{
 		NullCheck(G_B42_1);
 		FishingStatusOutline_set_Progress_m943A2FDA8D67A7A1B65D71397A9AB090AAC2466C(G_B42_1, G_B42_0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2962>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2971>
 		bool L_75;
 		L_75 = FishingSystem_get_IsSkillStunned_mDBDDB7FE610A287E6B4D90233615A8155EABC84B(__this, NULL);
 		V_15 = L_75;
@@ -17495,19 +17566,19 @@ IL_023a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2964>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2973>
 		float L_77 = __this->___skillStunUntil;
 		float L_78;
 		L_78 = Time_get_time_m3A271BB1B20041144AC5B7863B71AB1F0150374B(NULL);
 		float L_79;
 		L_79 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_subtract((3.0f), ((float)il2cpp_codegen_subtract(L_77, L_78)))), (0.0f), (3.0f), NULL);
 		V_16 = L_79;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2966>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2975>
 		float L_80 = V_16;
 		float L_81 = V_16;
 		float L_82 = V_16;
 		V_17 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply((2.0f), L_80)), ((float)(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply((4.0f), L_81)), L_82))/(3.0f)))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2967>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2976>
 		float L_83 = V_17;
 		float L_84;
 		L_84 = sinf(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_83, (3.14159274f))), (2.0f))));
@@ -17529,7 +17600,7 @@ IL_02b0:
 IL_02b5:
 	{
 		V_18 = G_B46_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2968>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2977>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_85 = __this->___fragileOutline;
 		float L_86 = V_18;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_87;
@@ -17542,8 +17613,8 @@ IL_02b5:
 
 IL_02dc:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2970>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2971>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2979>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2980>
 		FishingStatusOutline_t1FD95383D256FD6C47DF72EE0A083515D31A976C* L_88 = __this->___fragileOutline;
 		bool L_89;
 		L_89 = FishingSystem_get_FragileWarningFlashing_m643ED1CE4227280608365004E53256B26A5651D3(__this, NULL);
@@ -17595,11 +17666,11 @@ IL_0318:
 
 IL_0319:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2974>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2983>
 		float L_93;
 		L_93 = FishingSystem_GetCurrentLineDistance_mE6AAF47CBACB8E923CB20159AE2C6ABD9DCD4E4A(__this, NULL);
 		V_6 = L_93;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2975>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2984>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_94 = __this->___bobberIndicatorText;
 		String_t* L_95;
 		L_95 = Single_ToString_m3F2C4433B6ADFA5ED8E3F14ED19CD23014E5179D((&V_6), _stringLiteralC008E503687BA2A627379D4E257787AEA3506830, NULL);
@@ -17607,7 +17678,7 @@ IL_0319:
 		L_96 = String_Concat_m9E3155FB84015C823606188F53B47CB44C444991(L_95, _stringLiteralE1D1CF376CC1D978E40044D6CA8997BA86618511, NULL);
 		NullCheck(L_94);
 		VirtualActionInvoker1< String_t* >::Invoke(75, L_94, L_96);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2976>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2985>
 		bool L_97 = V_4;
 		if (!L_97)
 		{
@@ -17629,7 +17700,7 @@ IL_035c:
 IL_035d:
 	{
 		V_7 = (bool)G_B56_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2977>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2986>
 		bool L_100 = V_4;
 		if (!L_100)
 		{
@@ -17663,11 +17734,11 @@ IL_037e:
 IL_037f:
 	{
 		V_8 = (bool)G_B60_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2978>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2979>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2980>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2981>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2982>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2987>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2988>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2989>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2990>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2991>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_105 = __this->___bobberIndicatorText;
 		bool L_106 = V_8;
 		if (L_106)
@@ -17735,8 +17806,8 @@ IL_03de:
 	{
 		NullCheck(G_B66_1);
 		VirtualActionInvoker1< Color_tD001788D726C3A7F1379BEED0260B9591F440C1F >::Invoke(23, G_B66_1, G_B66_0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2983>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2984>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2992>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2993>
 		Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* L_117 = __this->___bobberIndicatorText;
 		NullCheck(L_117);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_118;
@@ -17772,18 +17843,18 @@ IL_03ff:
 
 IL_040f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2985>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2994>
 		return;
 	}
 }
-// Method Definition Index: 52723
+// Method Definition Index: 52768
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetLinePositions_mCE5B4F1C70D9F96734837DFD9D630CFCF992FDB3 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2989>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2990>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2991>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2992>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2998>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2999>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3000>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3001>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_0 = __this->___fishingLine;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_1 = __this->___rodTip;
 		NullCheck(L_1);
@@ -17791,20 +17862,20 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetLinePositions_mCE5B4F1C
 		L_2 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_1, NULL);
 		NullCheck(L_0);
 		LineRenderer_SetPosition_m84C4AD9ADC6AC62B33DB4D7E4C9F066DFF8440C1(L_0, 0, L_2, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2994>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2995>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2996>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2997>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3003>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3004>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3005>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_3 = __this->___fishingLine;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_4;
 		L_4 = FishingSystem_GetLineTargetPosition_m518A3E3A549EBBEB38799F25C69413EA2F2D263A(__this, NULL);
 		NullCheck(L_3);
 		LineRenderer_SetPosition_m84C4AD9ADC6AC62B33DB4D7E4C9F066DFF8440C1(L_3, 1, L_4, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:2998>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3007>
 		return;
 	}
 }
-// Method Definition Index: 52724
+// Method Definition Index: 52769
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ResetLine_mB7881D87CCDF17355D1D45219313F1E286CDB17B (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17820,15 +17891,15 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ResetLine_mB7881D87CCDF173
 	bool V_4 = false;
 	bool V_5 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3002>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3011>
 		__this->___skillStunUntil = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3003>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3012>
 		FishingSystem_StopReelSound_m7A48D36E5E48E3D6C0BC49C3B698A8725C517D41(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3004>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3013>
 		FishingSystem_StopLinePullSound_mBF09887698E61A39F9394B45FEEAD7DC8A134224(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3005>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3014>
 		__this->___fishPulledLineThisFrame = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_0 = __this->___hud;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -17841,19 +17912,19 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ResetLine_mB7881D87CCDF173
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_3 = __this->___hud;
 		NullCheck(L_3);
 		FishingHUD_SetCastPower_m8C8E84FEF178B789C32C4130340FADEB4FE19293(L_3, (bool)0, (0.0f), (0.0f), (BooleanU5BU5D_tD317D27C31DB892BE79FAE3AEBC0B3FFB73DE9B4*)NULL, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_4 = __this->___hud;
 		NullCheck(L_4);
 		FishingHUD_SetCastCancel_m291C7B1240D4D265ECF73A5FBDD646B4DD03203D(L_4, (bool)0, (Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07*)NULL, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_5 = __this->___hud;
 		NullCheck(L_5);
 		FishingHUD_SetActionInteractable_m326FD4D1FFCF47B8D1B4319ECBCFE5690F583414(L_5, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_6 = __this->___hud;
 		NullCheck(L_6);
 		FishingHUD_SetCastAvailable_mA0D4205B1B42033986A99E00CFBC4B9159738FE0(L_6, (bool)0, NULL);
@@ -17861,9 +17932,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ResetLine_mB7881D87CCDF173
 
 IL_0074:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3007>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3016>
 		__this->___castHintTimer = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3008>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3017>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_7 = __this->___rodView;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_8;
@@ -17876,7 +17947,7 @@ IL_0074:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3008>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3017>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_10 = __this->___rodView;
 		NullCheck(L_10);
 		FishingRodView_ResetMotion_m5EE2F5AB653C4F67D08C9A74AE50808857609C76(L_10, NULL);
@@ -17884,7 +17955,7 @@ IL_0074:
 
 IL_009b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3009>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3018>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_11 = __this->___fishingLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_12;
@@ -17897,7 +17968,7 @@ IL_009b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3010>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3019>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_14 = __this->___fishingLine;
 		NullCheck(L_14);
 		Renderer_set_enabled_m015E6D7B825528A31182F267234CC6A925F71DA8(L_14, (bool)0, NULL);
@@ -17905,7 +17976,7 @@ IL_009b:
 
 IL_00b8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3012>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3021>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_15 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_16;
@@ -17918,7 +17989,7 @@ IL_00b8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3013>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3022>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_18 = __this->___bobber;
 		NullCheck(L_18);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_18, (bool)0, NULL);
@@ -17926,7 +17997,7 @@ IL_00b8:
 
 IL_00d5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3015>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3024>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_19 = __this->___bobberIndicatorRoot;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_20;
@@ -17939,7 +18010,7 @@ IL_00d5:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3016>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3025>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_22 = __this->___bobberIndicatorRoot;
 		NullCheck(L_22);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_22, (bool)0, NULL);
@@ -17947,9 +18018,9 @@ IL_00d5:
 
 IL_00f4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3018>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3027>
 		FishingSystem_ClearUnconsciousFishVisual_m30AA2AF217A9BAB4A228997A5B4B12E24A98D792(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3020>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3029>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_23 = __this->___rodView;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_24;
@@ -17962,9 +18033,9 @@ IL_00f4:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3022>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3023>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3024>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3031>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3032>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3033>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_26 = __this->___rodView;
 		float L_27;
 		L_27 = Time_get_deltaTime_mC3195000401F0FD167DD2F948FD2BC58330D0865(NULL);
@@ -17974,11 +18045,11 @@ IL_00f4:
 
 IL_0120:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3026>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3035>
 		return;
 	}
 }
-// Method Definition Index: 52725
+// Method Definition Index: 52770
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m799281BDFE58543ED3192DC40C98CDDF6990DDF1 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18000,18 +18071,18 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* V_3 = NULL;
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* V_4 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3031>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3032>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3033>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3034>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3040>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3041>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3042>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3043>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_0, _stringLiteralCD2D71EAEEB462753A47F5505AD344F507032BB4, NULL);
 		__this->___rodRoot = L_0;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___rodRoot), (void*)L_0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3036>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3037>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3038>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3039>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3045>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3046>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3047>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3048>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_1 = __this->___rodRoot;
 		NullCheck(L_1);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_2;
@@ -18022,12 +18093,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_4 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_3, NULL);
 		NullCheck(L_2);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_2, L_4, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3041>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3042>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3043>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3044>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3045>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3046>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3050>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3051>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3052>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3053>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3054>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3055>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = __this->___rodRoot;
 		NullCheck(L_5);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6;
@@ -18037,12 +18108,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_7), (0.439999998f), (-0.430000007f), (0.779999971f), NULL);
 		NullCheck(L_6);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_6, L_7, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3048>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3049>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3050>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3051>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3052>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3053>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3057>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3058>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3059>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3060>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3061>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3062>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_8 = __this->___rodRoot;
 		NullCheck(L_8);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_9;
@@ -18051,21 +18122,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_10 = Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline((67.0f), (-6.0f), (11.0f), NULL);
 		NullCheck(L_9);
 		Transform_set_localRotation_mAB4A011D134BA58AB780BECC0025CA65F16185FA(L_9, L_10, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3055>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3056>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3057>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3058>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3059>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3060>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3061>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3062>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3063>
-		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_11;
-		memset((&L_11), 0, sizeof(L_11));
-		Color__ctor_mCD6889CDE39F18704CD6EA8E2EFBFA48BA3E13B0_inline((&L_11), (0.25f), (0.159999996f), (0.0700000003f), NULL);
-		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_12;
-		L_12 = FishingSystem_CreateMaterial_mD4409B4E2A9E7E3A2B60FBD1682D7FCFB30FE1D1(__this, L_11, (0.219999999f), NULL);
-		V_0 = L_12;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3064>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3065>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3066>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3067>
@@ -18074,28 +18131,42 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3070>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3071>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3072>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3073>
+		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_11;
+		memset((&L_11), 0, sizeof(L_11));
+		Color__ctor_mCD6889CDE39F18704CD6EA8E2EFBFA48BA3E13B0_inline((&L_11), (0.25f), (0.159999996f), (0.0700000003f), NULL);
+		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_12;
+		L_12 = FishingSystem_CreateMaterial_mD4409B4E2A9E7E3A2B60FBD1682D7FCFB30FE1D1(__this, L_11, (0.219999999f), NULL);
+		V_0 = L_12;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3074>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3075>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3076>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3077>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3078>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3079>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3080>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3081>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3082>
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_13;
 		memset((&L_13), 0, sizeof(L_13));
 		Color__ctor_mCD6889CDE39F18704CD6EA8E2EFBFA48BA3E13B0_inline((&L_13), (0.159999996f), (0.360000014f), (0.419999987f), NULL);
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_14;
 		L_14 = FishingSystem_CreateMaterial_mD4409B4E2A9E7E3A2B60FBD1682D7FCFB30FE1D1(__this, L_13, (0.519999981f), NULL);
 		V_1 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3075>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3076>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3077>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3078>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3084>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3085>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3086>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3087>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_15;
 		L_15 = GameObject_CreatePrimitive_m13C0A691E679A83DD595913200A1DD9A906EB47B(2, NULL);
 		V_2 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3080>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3089>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_16 = V_2;
 		NullCheck(L_16);
 		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_16, _stringLiteral209C3292F11E8A7FAA59586CD7EE2B4440724482, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3081>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3082>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3083>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3084>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3090>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3091>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3092>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3093>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_17 = V_2;
 		NullCheck(L_17);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_18;
@@ -18106,12 +18177,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_20 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_19, NULL);
 		NullCheck(L_18);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_18, L_20, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3086>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3087>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3088>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3089>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3090>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3091>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3095>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3096>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3097>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3098>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3099>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3100>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_21 = V_2;
 		NullCheck(L_21);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_22;
@@ -18121,12 +18192,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_23), (0.0f), (0.600000024f), (0.0f), NULL);
 		NullCheck(L_22);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_22, L_23, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3093>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3094>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3095>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3096>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3097>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3098>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3103>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3104>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3105>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3107>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_24 = V_2;
 		NullCheck(L_24);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_25;
@@ -18136,9 +18207,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_26), (0.0179999992f), (0.600000024f), (0.0179999992f), NULL);
 		NullCheck(L_25);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_25, L_26, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3100>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3101>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3109>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3110>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3111>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_27 = V_2;
 		NullCheck(L_27);
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_28;
@@ -18146,30 +18217,30 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_29 = V_0;
 		NullCheck(L_28);
 		Renderer_set_sharedMaterial_m5E842F9A06CFB7B77656EB319881CB4B3E8E4288(L_28, L_29, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3104>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3105>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3113>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3114>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3115>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_30 = V_2;
 		NullCheck(L_30);
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_31;
 		L_31 = GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597(L_30, GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597_RuntimeMethod_var);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_31, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3108>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3109>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3110>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3111>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3118>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3120>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_32;
 		L_32 = GameObject_CreatePrimitive_m13C0A691E679A83DD595913200A1DD9A906EB47B(2, NULL);
 		V_3 = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3113>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3122>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_33 = V_3;
 		NullCheck(L_33);
 		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_33, _stringLiteral666F6650771E9EBBD42CC7EEEC2B37ACE20AC9CF, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3114>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3115>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3116>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3124>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3125>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3126>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_34 = V_3;
 		NullCheck(L_34);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_35;
@@ -18180,12 +18251,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_37 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_36, NULL);
 		NullCheck(L_35);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_35, L_37, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3119>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3120>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3121>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3122>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3123>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3124>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3128>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3129>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3132>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3133>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_38 = V_3;
 		NullCheck(L_38);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_39;
@@ -18195,12 +18266,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_40), (0.0599999987f), (0.180000007f), (0.0f), NULL);
 		NullCheck(L_39);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_39, L_40, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3126>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3127>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3128>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3129>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3130>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3137>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3138>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3139>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3140>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_41 = V_3;
 		NullCheck(L_41);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_42;
@@ -18209,12 +18280,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_43 = Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline((90.0f), (0.0f), (0.0f), NULL);
 		NullCheck(L_42);
 		Transform_set_localRotation_mAB4A011D134BA58AB780BECC0025CA65F16185FA(L_42, L_43, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3133>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3134>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3135>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3136>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3137>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3138>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3142>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3143>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3144>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3145>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3146>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3147>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_44 = V_3;
 		NullCheck(L_44);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_45;
@@ -18224,9 +18295,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_46), (0.100000001f), (0.0350000001f), (0.100000001f), NULL);
 		NullCheck(L_45);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_45, L_46, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3140>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3141>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3142>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3149>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3150>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3151>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_47 = V_3;
 		NullCheck(L_47);
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_48;
@@ -18234,23 +18305,23 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_49 = V_1;
 		NullCheck(L_48);
 		Renderer_set_sharedMaterial_m5E842F9A06CFB7B77656EB319881CB4B3E8E4288(L_48, L_49, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3144>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3145>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3146>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3153>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3155>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_50 = V_3;
 		NullCheck(L_50);
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_51;
 		L_51 = GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597(L_50, GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597_RuntimeMethod_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_51, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3148>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3149>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3157>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3158>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_52 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_52, _stringLiteral477512D749742EAB0246DB7AD4AA0EA716D5B911, NULL);
 		V_4 = L_52;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3151>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3152>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3153>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3160>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3161>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3162>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3163>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_53 = V_4;
 		NullCheck(L_53);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_54;
@@ -18261,12 +18332,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		L_56 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_55, NULL);
 		NullCheck(L_54);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_54, L_56, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3156>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3157>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3158>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3159>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3160>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3161>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3165>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3166>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3168>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3169>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3170>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_57 = V_4;
 		NullCheck(L_57);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_58;
@@ -18276,18 +18347,18 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreatePlaceholderRod_m7992
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_59), (0.0f), (1.22000003f), (0.0f), NULL);
 		NullCheck(L_58);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_58, L_59, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3172>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_60 = V_4;
 		NullCheck(L_60);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_61;
 		L_61 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_60, NULL);
 		__this->___rodTip = L_61;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___rodTip), (void*)L_61);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3165>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3174>
 		return;
 	}
 }
-// Method Definition Index: 52726
+// Method Definition Index: 52771
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FitRodToControls_mCC780784E6F6696E3EE9F5257A71D566EEFAE033 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18387,9 +18458,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FitRodToControls_mCC780784
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 G_B27_4;
 	memset((&G_B27_4), 0, sizeof(G_B27_4));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3179>
 		Canvas_ForceUpdateCanvases_m6ECDBC5E85ADA3301BB20611753C45769F15EB51(NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3180>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___rodRoot;
 		NullCheck(L_0);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_1;
@@ -18398,7 +18469,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FitRodToControls_mCC780784
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_2;
 		L_2 = Transform_Find_m3087032B0E1C5B96A2D2C27020BAEAE2DA08F932(L_1, _stringLiteralE98798854C73DBDCFE1E7A8027B65BAD5EE22617, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3180>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_3 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -18411,22 +18482,22 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_FitRodToControls_mCC780784
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3180>
 		goto IL_032f;
 	}
 
 IL_002f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3172>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3181>
 		int32_t L_6;
 		L_6 = Screen_get_height_m01A3102DE71EE1FBEA51D09D6B0261CF864FE8F9(NULL);
 		V_1 = ((float)il2cpp_codegen_multiply(((float)L_6), (0.219999999f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3173>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3182>
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		MobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E* L_7;
 		L_7 = Object_FindFirstObjectByType_TisMobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E_m927CEFCDCC2BEF398BE9CF5BA4B2230958705215(Object_FindFirstObjectByType_TisMobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E_m927CEFCDCC2BEF398BE9CF5BA4B2230958705215_RuntimeMethod_var);
 		V_2 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3174>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3183>
 		MobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E* L_8 = V_2;
 		bool L_9;
 		L_9 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_8, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
@@ -18438,27 +18509,27 @@ IL_002f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3185>
 		MobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E* L_11 = V_2;
 		NullCheck(L_11);
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_12;
 		L_12 = Component_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m0640480E7E38BB88B0D1F6AD59E697C8EE6AAFA4(L_11, Component_GetComponent_TisRectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5_m0640480E7E38BB88B0D1F6AD59E697C8EE6AAFA4_RuntimeMethod_var);
 		V_7 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3185>
 		MobileJoystick_tDE048223C1BFDED3495BF43D55785604E942F03E* L_13 = V_2;
 		NullCheck(L_13);
 		Canvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26* L_14;
 		L_14 = Component_GetComponentInParent_TisCanvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26_m5FB554DD7C0F662DAB84C0F292B221CAE3F0A5B3(L_13, Component_GetComponentInParent_TisCanvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26_m5FB554DD7C0F662DAB84C0F292B221CAE3F0A5B3_RuntimeMethod_var);
 		V_8 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
 		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_15 = (Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C*)(Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C*)SZArrayNew(Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C_il2cpp_TypeInfo_var, (uint32_t)4);
 		V_9 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
 		RectTransform_t6C5DA5E41A89E0F488B001E45E58963480E543A5* L_16 = V_7;
 		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_17 = V_9;
 		NullCheck(L_16);
 		RectTransform_GetWorldCorners_m6E15303C3B065B2F65E0A7F0E0217695564C2E09(L_16, L_17, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3178>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3187>
 		Canvas_t2DB4CEFDFF732884866C83F11ABF75F5AE8FFB26* L_18 = V_8;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_19;
@@ -18497,7 +18568,7 @@ IL_0088:
 IL_008f:
 	{
 		V_10 = G_B7_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3179>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3188>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_24 = V_10;
 		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_25 = V_9;
 		NullCheck(L_25);
@@ -18520,13 +18591,13 @@ IL_008f:
 
 IL_00b6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3181>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3190>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_35 = V_0;
 		NullCheck(L_35);
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_36;
 		L_36 = Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7(L_35, Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7_RuntimeMethod_var);
 		V_3 = L_36;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3181>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3190>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_37 = V_3;
 		NullCheck(L_37);
 		V_11 = (bool)((((int32_t)(((RuntimeArray*)L_37)->max_length)) == ((int32_t)0))? 1 : 0);
@@ -18537,20 +18608,20 @@ IL_00b6:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3181>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3190>
 		goto IL_032f;
 	}
 
 IL_00cd:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3182>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
 		V_12 = 0;
 		goto IL_028d;
 	}
 
 IL_00d5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_39 = V_3;
 		NullCheck(L_39);
 		int32_t L_40 = 0;
@@ -18559,7 +18630,7 @@ IL_00d5:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_42;
 		L_42 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_41, NULL);
 		V_13 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_43 = V_3;
 		V_17 = L_43;
 		V_18 = 0;
@@ -18568,14 +18639,14 @@ IL_00d5:
 
 IL_00e9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_44 = V_17;
 		int32_t L_45 = V_18;
 		NullCheck(L_44);
 		int32_t L_46 = L_45;
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_47 = (L_44)->GetAt(static_cast<il2cpp_array_size_t>(L_46));
 		V_19 = L_47;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_48 = V_19;
 		NullCheck(L_48);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_49;
@@ -18587,7 +18658,7 @@ IL_00e9:
 
 IL_0105:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
 		int32_t L_51 = V_18;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_52 = V_17;
 		NullCheck(L_52);
@@ -18597,7 +18668,7 @@ IL_0105:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3185>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3194>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_53 = __this->___rodRoot;
 		NullCheck(L_53);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_54;
@@ -18627,7 +18698,7 @@ IL_0105:
 		L_65 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_56, L_64, NULL);
 		NullCheck(L_55);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_55, L_65, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3195>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_66 = V_3;
 		NullCheck(L_66);
 		int32_t L_67 = 0;
@@ -18636,7 +18707,7 @@ IL_0105:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_69;
 		L_69 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_68, NULL);
 		V_13 = L_69;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3195>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_70 = V_3;
 		V_20 = L_70;
 		V_21 = 0;
@@ -18645,14 +18716,14 @@ IL_0105:
 
 IL_017d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3195>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_71 = V_20;
 		int32_t L_72 = V_21;
 		NullCheck(L_71);
 		int32_t L_73 = L_72;
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_74 = (L_71)->GetAt(static_cast<il2cpp_array_size_t>(L_73));
 		V_22 = L_74;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3195>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_75 = V_22;
 		NullCheck(L_75);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_76;
@@ -18664,7 +18735,7 @@ IL_017d:
 
 IL_0199:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3195>
 		int32_t L_78 = V_21;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_79 = V_20;
 		NullCheck(L_79);
@@ -18674,18 +18745,18 @@ IL_0199:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3187>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3196>
 		V_14 = (std::numeric_limits<float>::infinity());
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3187>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3196>
 		V_15 = (-std::numeric_limits<float>::infinity());
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3197>
 		V_23 = 0;
 		goto IL_0226;
 	}
 
 IL_01b4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3190>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3199>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_80;
 		L_80 = Bounds_get_center_m5B05F81CB835EB6DD8628FDA24B638F477984DC3_inline((&V_13), NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_81;
@@ -18788,7 +18859,7 @@ IL_01e3:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_87;
 		L_87 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(G_B27_4, L_86, NULL);
 		V_24 = L_87;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3200>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_88 = __this->___playerCamera;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_89 = V_24;
 		NullCheck(L_88);
@@ -18796,26 +18867,26 @@ IL_01e3:
 		L_90 = Camera_WorldToScreenPoint_m26B4C8945C3B5731F1CC5944CFD96BF17126BAA3(L_88, L_89, NULL);
 		float L_91 = L_90.___y;
 		V_25 = L_91;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3200>
 		float L_92 = V_14;
 		float L_93 = V_25;
 		float L_94;
 		L_94 = Mathf_Min_m747CA71A9483CDB394B13BD0AD048EE17E48FFE4_inline(L_92, L_93, NULL);
 		V_14 = L_94;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3200>
 		float L_95 = V_15;
 		float L_96 = V_25;
 		float L_97;
 		L_97 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_95, L_96, NULL);
 		V_15 = L_97;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3197>
 		int32_t L_98 = V_23;
 		V_23 = ((int32_t)il2cpp_codegen_add(L_98, 1));
 	}
 
 IL_0226:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3197>
 		int32_t L_99 = V_23;
 		V_26 = (bool)((((int32_t)L_99) < ((int32_t)8))? 1 : 0);
 		bool L_100 = V_26;
@@ -18825,7 +18896,7 @@ IL_0226:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3193>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3202>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_101 = __this->___rodRoot;
 		NullCheck(L_101);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_102;
@@ -18842,7 +18913,7 @@ IL_0226:
 		float L_109;
 		L_109 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)(((float)il2cpp_codegen_multiply(L_104, L_105))/L_108)), (0.349999994f), (4.0f), NULL);
 		V_16 = L_109;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3194>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3203>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_110 = __this->___rodRoot;
 		NullCheck(L_110);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_111;
@@ -18854,14 +18925,14 @@ IL_0226:
 		L_114 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_112, L_113, NULL);
 		NullCheck(L_111);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_111, L_114, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3182>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
 		int32_t L_115 = V_12;
 		V_12 = ((int32_t)il2cpp_codegen_add(L_115, 1));
 	}
 
 IL_028d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3182>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3191>
 		int32_t L_116 = V_12;
 		V_27 = (bool)((((int32_t)L_116) < ((int32_t)4))? 1 : 0);
 		bool L_117 = V_27;
@@ -18871,7 +18942,7 @@ IL_028d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3198>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3207>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_118 = V_3;
 		NullCheck(L_118);
 		int32_t L_119 = 0;
@@ -18880,7 +18951,7 @@ IL_028d:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_121;
 		L_121 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_120, NULL);
 		V_4 = L_121;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3208>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_122 = V_3;
 		V_28 = L_122;
 		V_29 = 0;
@@ -18889,14 +18960,14 @@ IL_028d:
 
 IL_02ae:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3208>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_123 = V_28;
 		int32_t L_124 = V_29;
 		NullCheck(L_123);
 		int32_t L_125 = L_124;
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_126 = (L_123)->GetAt(static_cast<il2cpp_array_size_t>(L_125));
 		V_30 = L_126;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3208>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_127 = V_30;
 		NullCheck(L_127);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_128;
@@ -18908,7 +18979,7 @@ IL_02ae:
 
 IL_02ca:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3208>
 		int32_t L_130 = V_29;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_131 = V_28;
 		NullCheck(L_131);
@@ -18918,8 +18989,8 @@ IL_02ca:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3200>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3209>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3210>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_132 = __this->___rodRoot;
 		NullCheck(L_132);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_133;
@@ -18953,11 +19024,11 @@ IL_02ca:
 
 IL_032f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3202>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3211>
 		return;
 	}
 }
-// Method Definition Index: 52727
+// Method Definition Index: 52772
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateRodAndLine_m21A9150020014858D7D54D2E8649F95F512DFE85 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18996,11 +19067,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateRodAndLine_m21A91500
 	FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* G_B3_0 = NULL;
 	int32_t G_B6_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3206>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3215>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0;
 		L_0 = Resources_Load_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_m496A3B1B60A28F5E0397043974B848C9157B625A(_stringLiteralE1F3E2FA714E6403D43C32A8608E4BD6F38AD283, Resources_Load_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_m496A3B1B60A28F5E0397043974B848C9157B625A_RuntimeMethod_var);
 		V_0 = L_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3216>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_1 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_2;
@@ -19027,7 +19098,7 @@ IL_0018:
 IL_001e:
 	{
 		V_1 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3217>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_5 = V_1;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_6;
@@ -19064,7 +19135,7 @@ IL_0037:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3210>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3219>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_11 = V_0;
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_12 = __this->___playerCamera;
 		NullCheck(L_12);
@@ -19075,11 +19146,11 @@ IL_0037:
 		L_14 = Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6(L_11, L_13, (bool)0, Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6_RuntimeMethod_var);
 		__this->___rodRoot = L_14;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___rodRoot), (void*)L_14);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3211>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3220>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_15 = __this->___rodRoot;
 		NullCheck(L_15);
 		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_15, _stringLiteralCD2D71EAEEB462753A47F5505AD344F507032BB4, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3212>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3221>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_16 = __this->___rodRoot;
 		NullCheck(L_16);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_17;
@@ -19089,7 +19160,7 @@ IL_0037:
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_18), (0.379999995f), (-0.180000007f), (0.479999989f), NULL);
 		NullCheck(L_17);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_17, L_18, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3213>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3222>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_19 = __this->___rodRoot;
 		NullCheck(L_19);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_20;
@@ -19098,7 +19169,7 @@ IL_0037:
 		L_21 = Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline((40.0f), (-6.0f), (-4.0f), NULL);
 		NullCheck(L_20);
 		Transform_set_localRotation_mAB4A011D134BA58AB780BECC0025CA65F16185FA(L_20, L_21, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3214>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3223>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_22 = __this->___rodRoot;
 		NullCheck(L_22);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_23;
@@ -19109,23 +19180,23 @@ IL_0037:
 		L_25 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_24, (2.0f), NULL);
 		NullCheck(L_23);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_23, L_25, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3224>
 		__this->___rodFitPending = (bool)1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3216>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3225>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_26 = __this->___rodRoot;
 		NullCheck(L_26);
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_27;
 		L_27 = GameObject_GetComponent_TisFishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853_m4B3A5577945B470B9230A100FB83EBD5CD9501E3(L_26, GameObject_GetComponent_TisFishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853_m4B3A5577945B470B9230A100FB83EBD5CD9501E3_RuntimeMethod_var);
 		__this->___rodView = L_27;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___rodView), (void*)L_27);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3217>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3226>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_28 = __this->___rodView;
 		NullCheck(L_28);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_29;
 		L_29 = FishingRodView_get_RodTip_m3ADC92CD1C95255C7D3E59A3E05C72C0743BED9A_inline(L_28, NULL);
 		__this->___rodTip = L_29;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___rodTip), (void*)L_29);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3218>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3227>
 		FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* L_30 = __this->___rodView;
 		NullCheck(L_30);
 		FishingRodView_InitializePose_m44295AE0113893452BE821744D5DF4B6E740BE8A(L_30, NULL);
@@ -19134,47 +19205,47 @@ IL_0037:
 
 IL_010c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3222>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3231>
 		il2cpp_codegen_runtime_class_init_inline(Debug_t8394C7EEAECA3689C2C9B9DE9C7166D73596276F_il2cpp_TypeInfo_var);
 		Debug_LogWarning_m33EF1B897E0C7C6FF538989610BFAFFEF4628CA9(_stringLiteral36549292D9D4A37E73784CE60E371455E0935CF3, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3223>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3232>
 		FishingSystem_CreatePlaceholderRod_m799281BDFE58543ED3192DC40C98CDDF6990DDF1(__this, NULL);
 	}
 
 IL_0120:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3226>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3227>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3235>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3236>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_31 = __this->___rodRoot;
 		NullCheck(L_31);
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_32;
 		L_32 = GameObject_AddComponent_TisLineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D_mF8C0D953BCBFDD5A01A09ADB67EB04F0D677A056(L_31, GameObject_AddComponent_TisLineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D_mF8C0D953BCBFDD5A01A09ADB67EB04F0D677A056_RuntimeMethod_var);
 		__this->___fishingLine = L_32;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___fishingLine), (void*)L_32);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3229>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3238>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_33 = __this->___fishingLine;
 		NullCheck(L_33);
 		LineRenderer_set_useWorldSpace_m0204DB2541CC37DC4DC15DA15FD5A66EDC507CE8(L_33, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3230>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3239>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_34 = __this->___fishingLine;
 		NullCheck(L_34);
 		LineRenderer_set_positionCount_m2001FB4044053895ECBE897AB833284F3300B205(L_34, 2, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3231>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3240>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_35 = __this->___fishingLine;
 		NullCheck(L_35);
 		LineRenderer_set_startWidth_m3899722E198D636DB216CB61C980214707069F4A(L_35, (0.00800000038f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3232>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3241>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_36 = __this->___fishingLine;
 		NullCheck(L_36);
 		LineRenderer_set_endWidth_mC7260401655C8BE1CBDFB832009295C89613F81D(L_36, (0.00400000019f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3234>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3235>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3236>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3237>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3243>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3244>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3245>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3246>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_37;
 		L_37 = Resources_Load_TisShader_tADC867D36B7876EE22427FAA2CE485105F4EE692_m378804064185FA25C41237187B3CCEA095C05946(_stringLiteral341784A084F5FC3ECAC4A941C3F9F8BFBFC97031, Resources_Load_TisShader_tADC867D36B7876EE22427FAA2CE485105F4EE692_m378804064185FA25C41237187B3CCEA095C05946_RuntimeMethod_var);
 		V_2 = L_37;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3239>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3248>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_38 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_39;
@@ -19187,26 +19258,26 @@ IL_0120:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3241>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3242>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3243>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3252>
 		il2cpp_codegen_runtime_class_init_inline(Debug_t8394C7EEAECA3689C2C9B9DE9C7166D73596276F_il2cpp_TypeInfo_var);
 		Debug_LogError_mB00B2B4468EF3CAF041B038D840820FB84C924B2(_stringLiteral783E5CCC580E1DD9903903197A05EB0DA4F51780, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3245>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3254>
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(__this, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3246>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3255>
 		goto IL_02d0;
 	}
 
 IL_019e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3249>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3259>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_41 = V_2;
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_42 = (Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3*)il2cpp_codegen_object_new(Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3_il2cpp_TypeInfo_var);
 		Material__ctor_m7FDF47105D66D19591BE505A0C42B0F90D88C9BF(L_42, L_41, NULL);
 		V_3 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3252>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3261>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_43 = V_3;
 		NullCheck(L_43);
 		bool L_44;
@@ -19219,15 +19290,15 @@ IL_019e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3254>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3255>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3256>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3257>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3258>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3259>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3260>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3261>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3262>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3263>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3264>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3265>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3266>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3268>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3269>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3270>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3271>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_46 = V_3;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_47;
 		memset((&L_47), 0, sizeof(L_47));
@@ -19239,7 +19310,7 @@ IL_019e:
 
 IL_01df:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3264>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3273>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_48 = V_3;
 		NullCheck(L_48);
 		bool L_49;
@@ -19252,13 +19323,13 @@ IL_01df:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3266>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3267>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3268>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3269>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3270>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3271>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3272>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3275>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3276>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3277>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3278>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3279>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3280>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3281>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_51 = V_3;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_52;
 		memset((&L_52), 0, sizeof(L_52));
@@ -19269,30 +19340,30 @@ IL_01df:
 
 IL_0212:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3275>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3276>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3284>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3285>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_53 = __this->___fishingLine;
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_54 = V_3;
 		NullCheck(L_53);
 		Renderer_set_material_m21E88977071E0A914D62F3D9CFF0193B3117C45A(L_53, L_54, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3278>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3287>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_55 = __this->___fishingLine;
 		NullCheck(L_55);
 		Renderer_set_enabled_m015E6D7B825528A31182F267234CC6A925F71DA8(L_55, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3280>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3281>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3282>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3283>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3289>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3290>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3291>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3292>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_56;
 		L_56 = GameObject_CreatePrimitive_m13C0A691E679A83DD595913200A1DD9A906EB47B(0, NULL);
 		__this->___bobber = L_56;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___bobber), (void*)L_56);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3285>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3294>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_57 = __this->___bobber;
 		NullCheck(L_57);
 		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_57, _stringLiteralCCBA751D68DE796CF3E0AB91A945B831D6089301, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3287>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3288>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3296>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3297>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_58 = __this->___bobber;
 		NullCheck(L_58);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_59;
@@ -19303,16 +19374,16 @@ IL_0212:
 		L_61 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_60, (0.159999996f), NULL);
 		NullCheck(L_59);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_59, L_61, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3290>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3291>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3292>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3293>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3294>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3295>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3296>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3297>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3298>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3299>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3300>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3301>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3302>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3303>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3304>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3305>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3306>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3307>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3308>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_62 = __this->___bobber;
 		NullCheck(L_62);
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_63;
@@ -19324,14 +19395,14 @@ IL_0212:
 		L_65 = FishingSystem_CreateMaterial_mD4409B4E2A9E7E3A2B60FBD1682D7FCFB30FE1D1(__this, L_64, (0.349999994f), NULL);
 		NullCheck(L_63);
 		Renderer_set_sharedMaterial_m5E842F9A06CFB7B77656EB319881CB4B3E8E4288(L_63, L_65, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3301>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3302>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3310>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3311>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_66 = __this->___bobber;
 		NullCheck(L_66);
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_67;
 		L_67 = GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597(L_66, GameObject_GetComponent_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m4CB0FC4E59CE6C91F1106739EF364208A63E2597_RuntimeMethod_var);
 		V_4 = L_67;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3304>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3313>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_68 = V_4;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_69;
@@ -19344,7 +19415,7 @@ IL_0212:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3305>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3314>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_71 = V_4;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_71, NULL);
@@ -19352,21 +19423,21 @@ IL_0212:
 
 IL_02bc:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3307>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3316>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_72 = __this->___bobber;
 		NullCheck(L_72);
 		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_72, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3309>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3318>
 		FishingSystem_CreateBobberIndicator_m4CE31B6C877CF7F04540F526FAE5FCE0EE7FE5A1(__this, NULL);
 	}
 
 IL_02d0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3310>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3319>
 		return;
 	}
 }
-// Method Definition Index: 52728
+// Method Definition Index: 52773
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateHeldFishAnchor_m9335CBA72C3E050247E40945CABC5E6AFD471FFA (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19379,17 +19450,17 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateHeldFishAnchor_m9335
 	}
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* V_0 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3314>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3315>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3316>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3317>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3323>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3324>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3325>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3326>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_0, _stringLiteralEE810E22B5043AB1E94273C8F956C03549924181, NULL);
 		V_0 = L_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3319>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3320>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3321>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3322>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3328>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3329>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3330>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3331>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_1 = V_0;
 		NullCheck(L_1);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_2;
@@ -19400,12 +19471,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateHeldFishAnchor_m9335
 		L_4 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_3, NULL);
 		NullCheck(L_2);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_2, L_4, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3324>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3325>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3326>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3327>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3328>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3329>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3333>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3334>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3335>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3336>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3337>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3338>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = V_0;
 		NullCheck(L_5);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6;
@@ -19415,26 +19486,26 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_CreateHeldFishAnchor_m9335
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_7), (0.579999983f), (0.5f), (0.649999976f), NULL);
 		NullCheck(L_6);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_6, L_7, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3331>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3332>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3340>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3341>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_8 = V_0;
 		NullCheck(L_8);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_9;
 		L_9 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_8, NULL);
 		__this->___heldFishAnchor = L_9;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldFishAnchor), (void*)L_9);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3333>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3342>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_10 = __this->___playerCamera;
 		NullCheck(L_10);
 		CharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A* L_11;
 		L_11 = Component_GetComponentInParent_TisCharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A_m397CE83D3F0BA105E68C33389BAE8A9B35B592CA(L_10, Component_GetComponentInParent_TisCharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A_m397CE83D3F0BA105E68C33389BAE8A9B35B592CA_RuntimeMethod_var);
 		__this->___heldFishPlayerController = L_11;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldFishPlayerController), (void*)L_11);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3334>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3343>
 		return;
 	}
 }
-// Method Definition Index: 52729
+// Method Definition Index: 52774
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateHeldFishAnimation_m28B18EC39CA66FAF84773F48B1E90989C5EB979D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19468,7 +19539,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateHeldFishAnimation_m2
 	float G_B8_2 = 0.0f;
 	int32_t G_B13_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3338>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3347>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -19481,27 +19552,27 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateHeldFishAnimation_m2
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3339>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3348>
 		goto IL_0150;
 	}
 
 IL_0018:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3341>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3342>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3343>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3350>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3351>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3352>
 		float L_3;
 		L_3 = Time_get_time_m3A271BB1B20041144AC5B7863B71AB1F0150374B(NULL);
 		float L_4 = __this->___heldFishFlopOffset;
 		V_0 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_3, (5.80000019f))), L_4));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3345>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3354>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = __this->___heldFishVisual;
 		NullCheck(L_5);
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_6;
 		L_6 = GameObject_GetComponent_TisCaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C_m37A42B444E5990334FA2FEADD046E39D92707FEB(L_5, GameObject_GetComponent_TisCaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C_m37A42B444E5990334FA2FEADD046E39D92707FEB_RuntimeMethod_var);
 		V_1 = L_6;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3346>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3347>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3355>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3356>
 		CharacterController_t847C1A2719F60547D7D6077B648D6CE2D1EF3A6A* L_7 = __this->___heldFishPlayerController;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_8;
@@ -19530,10 +19601,10 @@ IL_004c:
 IL_0057:
 	{
 		V_2 = G_B5_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3349>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3358>
 		(&V_2)->___y = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3350>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3351>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3359>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3360>
 		float L_12 = __this->___heldFishMovementSwing;
 		float L_13;
 		L_13 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_2), NULL);
@@ -19542,9 +19613,9 @@ IL_0057:
 		float L_15;
 		L_15 = CaughtFishFlop_SmoothHeldMovement_m76C1CAACE1A4BB2E4DBC2D5153D0253634ADA179(L_12, L_13, L_14, NULL);
 		__this->___heldFishMovementSwing = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3352>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3353>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3354>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3361>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3362>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3363>
 		float L_16 = V_0;
 		float L_17 = __this->___heldFishMovementSwing;
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_18 = V_1;
@@ -19581,7 +19652,7 @@ IL_0098:
 IL_009e:
 	{
 		CaughtFishFlop_EvaluateHeldSway_m504F5E775532E5B0A18D707C3B9FDC3B5481E549(G_B8_2, G_B8_1, G_B8_0, (&V_3), (&V_4), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3355>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3364>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_22 = __this->___heldHookPoint;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_23;
@@ -19594,7 +19665,7 @@ IL_009e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3356>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3365>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_25 = __this->___heldHookPoint;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = __this->___heldMouthRestLocalPosition;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_3;
@@ -19606,7 +19677,7 @@ IL_009e:
 
 IL_00d2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3357>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3366>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_29 = __this->___heldFishVisual;
 		NullCheck(L_29);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_30;
@@ -19617,8 +19688,8 @@ IL_00d2:
 		L_33 = Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline(L_31, L_32, NULL);
 		NullCheck(L_30);
 		Transform_set_localRotation_mAB4A011D134BA58AB780BECC0025CA65F16185FA(L_30, L_33, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3359>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3360>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3368>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3369>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_34 = __this->___heldHookPoint;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_35;
@@ -19652,9 +19723,9 @@ IL_010d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3362>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3363>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3364>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3371>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3372>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3373>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_39 = __this->___heldHookPoint;
 		NullCheck(L_39);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_40;
@@ -19666,8 +19737,8 @@ IL_010d:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_43;
 		L_43 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_40, L_42, NULL);
 		V_8 = L_43;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3366>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3367>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3375>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3376>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_44 = __this->___heldFishVisual;
 		NullCheck(L_44);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_45;
@@ -19685,11 +19756,11 @@ IL_010d:
 
 IL_0150:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3371>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3380>
 		return;
 	}
 }
-// Method Definition Index: 52730
+// Method Definition Index: 52775
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_LateUpdate_m0B94066D5C1126BB00912C4A5DF25E9901EE92D0 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19708,9 +19779,9 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_LateUpdate_m0B94066D5C1126
 	bool G_B4_1 = false;
 	FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* G_B4_2 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3376>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3385>
 		FishingSystem_UpdateBobberIndicator_mE9DAC5250E06A70D30057817AF698D124AEF0EF9(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3377>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3386>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_0 = __this->___hud;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -19723,7 +19794,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_LateUpdate_m0B94066D5C1126
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3377>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3386>
 		FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* L_3 = __this->___hud;
 		bool L_4;
 		L_4 = FishingSystem_get_FragileWarningActive_m09BD6AF89ED640291BEF197100D1865BD870CDC9(__this, NULL);
@@ -19762,11 +19833,11 @@ IL_0035:
 
 IL_003b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3378>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3387>
 		FishingSystem_CheckReelSound_m2456E6C077FDA8C6FB1368CE2ECBBE5EF1B8F246(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3379>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3388>
 		FishingSystem_UpdateLinePullSound_m25AFA84BE0813271AED4783F7321B1A12A9729EE(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3380>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3389>
 		bool L_7 = __this->___rodFitPending;
 		V_1 = L_7;
 		bool L_8 = V_1;
@@ -19776,21 +19847,21 @@ IL_003b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3380>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3389>
 		__this->___rodFitPending = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3380>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3389>
 		FishingSystem_FitRodToControls_mCC780784E6F6696E3EE9F5257A71D566EEFAE033(__this, NULL);
 	}
 
 IL_0063:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3381>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3390>
 		FishingSystem_UpdateHeldCatchLine_m30CCB18A6E0215865162A61CDEE54EF93AD462FC(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3382>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3391>
 		return;
 	}
 }
-// Method Definition Index: 52731
+// Method Definition Index: 52776
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateHeldCatchLine_m30CCB18A6E0215865162A61CDEE54EF93AD462FC (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19810,8 +19881,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateHeldCatchLine_m30CCB
 	memset((&V_4), 0, sizeof(V_4));
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3386>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3387>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3395>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3396>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_0 = __this->___heldCatchLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -19845,25 +19916,25 @@ IL_001e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3389>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3398>
 		goto IL_0075;
 	}
 
 IL_0025:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3392>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3393>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3401>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3402>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5;
 		L_5 = FishingSystem_GetHeldCatchLineTop_mBB27D17182DC4ADB3F3C6441297E26B95D126D09(__this, NULL);
 		V_0 = L_5;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3395>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3396>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3404>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3405>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6 = __this->___heldFishMouthMarker;
 		NullCheck(L_6);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7;
 		L_7 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_6, NULL);
 		V_1 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3399>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3408>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10 = V_0;
@@ -19877,18 +19948,18 @@ IL_0025:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14;
 		L_14 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_8, L_13, NULL);
 		V_2 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3401>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3402>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3403>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3404>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3410>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3411>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3412>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3413>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_15 = __this->___heldCatchLine;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = V_0;
 		NullCheck(L_15);
 		LineRenderer_SetPosition_m84C4AD9ADC6AC62B33DB4D7E4C9F066DFF8440C1(L_15, 0, L_16, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3406>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3407>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3408>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3409>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3415>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3416>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3417>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3418>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_17 = __this->___heldCatchLine;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = V_2;
 		NullCheck(L_17);
@@ -19897,11 +19968,11 @@ IL_0025:
 
 IL_0075:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3410>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3419>
 		return;
 	}
 }
-// Method Definition Index: 52732
+// Method Definition Index: 52777
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetupHookedCatchPresentation_mA01A1ACA2A03C0AF1633AFC2D131C259BF7FC48E (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19945,7 +20016,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetupHookedCatchPresentati
 	Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* G_B19_0 = NULL;
 	Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* G_B19_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3414>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3423>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -19958,13 +20029,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetupHookedCatchPresentati
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3415>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3424>
 		goto IL_033a;
 	}
 
 IL_0018:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3418>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3427>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_3 = __this->___heldHookVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -19977,20 +20048,20 @@ IL_0018:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3420>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3421>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3422>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3429>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3430>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3431>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_6 = __this->___heldHookVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_6, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3424>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3433>
 		__this->___heldHookVisual = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldHookVisual), (void*)(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL);
 	}
 
 IL_003f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3427>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3436>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_7 = __this->___heldCatchLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_8;
@@ -20003,25 +20074,25 @@ IL_003f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3429>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3430>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3431>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3438>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3439>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3440>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_10 = __this->___heldCatchLine;
 		NullCheck(L_10);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_11;
 		L_11 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_10, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_11, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3433>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3442>
 		__this->___heldCatchLine = (LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldCatchLine), (void*)(LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D*)NULL);
 	}
 
 IL_006b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3436>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3437>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3438>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3445>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3446>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3447>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_12 = __this->___heldHookPoint;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_13;
@@ -20059,33 +20130,33 @@ IL_0092:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3440>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3441>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3442>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3449>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3450>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3451>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_19 = __this->___heldHookPoint;
 		NullCheck(L_19);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_20;
 		L_20 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_19, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_20, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3444>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3453>
 		__this->___heldHookPoint = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldHookPoint), (void*)(Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL);
 	}
 
 IL_00b2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3447>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3448>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3449>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3450>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3456>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3457>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3458>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3459>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_21 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_21, _stringLiteralA949F3B5436547E0228E1618AB29F04141E7CBC6, NULL);
 		V_0 = L_21;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3452>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3453>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3454>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3455>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3461>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3462>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3463>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3464>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_22 = V_0;
 		NullCheck(L_22);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_23;
@@ -20093,12 +20164,12 @@ IL_00b2:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_24 = __this->___heldFishAnchor;
 		NullCheck(L_23);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_23, L_24, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3457>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3458>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3459>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3460>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3461>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3462>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3466>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3467>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3468>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3469>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3470>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3471>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_25 = V_0;
 		NullCheck(L_25);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_26;
@@ -20108,25 +20179,25 @@ IL_00b2:
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_27), (0.0f), (0.0350000001f), (0.0f), NULL);
 		NullCheck(L_26);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_26, L_27, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3464>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3465>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3473>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3474>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_28 = V_0;
 		NullCheck(L_28);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_29;
 		L_29 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_28, NULL);
 		__this->___heldHookPoint = L_29;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldHookPoint), (void*)L_29);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3467>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3468>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3469>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3470>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3476>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3477>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3478>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3479>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_30 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_30, _stringLiteralFCACB39475AAEFA40152A3696BAF69B92A76B2B9, NULL);
 		V_1 = L_30;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3472>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3473>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3474>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3475>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3481>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3482>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3483>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3484>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_31 = V_1;
 		NullCheck(L_31);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_32;
@@ -20134,36 +20205,36 @@ IL_00b2:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_33 = __this->___heldFishAnchor;
 		NullCheck(L_32);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_32, L_33, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3477>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3478>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3486>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3487>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_34 = V_1;
 		NullCheck(L_34);
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_35;
 		L_35 = GameObject_AddComponent_TisLineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D_mF8C0D953BCBFDD5A01A09ADB67EB04F0D677A056(L_34, GameObject_AddComponent_TisLineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D_mF8C0D953BCBFDD5A01A09ADB67EB04F0D677A056_RuntimeMethod_var);
 		__this->___heldCatchLine = L_35;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldCatchLine), (void*)L_35);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3480>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3489>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_36 = __this->___heldCatchLine;
 		NullCheck(L_36);
 		LineRenderer_set_useWorldSpace_m0204DB2541CC37DC4DC15DA15FD5A66EDC507CE8(L_36, (bool)1, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3481>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3490>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_37 = __this->___heldCatchLine;
 		NullCheck(L_37);
 		LineRenderer_set_positionCount_m2001FB4044053895ECBE897AB833284F3300B205(L_37, 2, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3482>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3491>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_38 = __this->___heldCatchLine;
 		NullCheck(L_38);
 		LineRenderer_set_startWidth_m3899722E198D636DB216CB61C980214707069F4A(L_38, (0.00150000001f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3483>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3492>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_39 = __this->___heldCatchLine;
 		NullCheck(L_39);
 		LineRenderer_set_endWidth_mC7260401655C8BE1CBDFB832009295C89613F81D(L_39, (0.00100000005f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3484>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3493>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_40 = __this->___heldCatchLine;
 		NullCheck(L_40);
 		LineRenderer_set_numCapVertices_m282860FE8AD17ABE5CC07C0DB44371C1CF668E84(L_40, 6, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3486>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3487>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3495>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3496>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_41 = __this->___fishingLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_42;
@@ -20200,8 +20271,8 @@ IL_0191:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3489>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3490>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3498>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3499>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_47 = __this->___heldCatchLine;
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_48 = __this->___fishingLine;
 		NullCheck(L_48);
@@ -20213,8 +20284,8 @@ IL_0191:
 
 IL_01b0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3493>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3494>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3502>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3503>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_50 = __this->___heldFishVisual;
 		NullCheck(L_50);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_51;
@@ -20223,16 +20294,16 @@ IL_01b0:
 		L_52 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
 		NullCheck(L_51);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_51, L_52, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3497>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3498>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3499>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3500>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3501>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3502>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3503>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3504>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3505>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3506>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3507>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3508>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3509>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3510>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3511>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3512>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3513>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3514>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3515>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_53;
 		L_53 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_54;
@@ -20242,8 +20313,8 @@ IL_01b0:
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_56;
 		L_56 = Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline(L_54, L_55, NULL);
 		__this->___heldFishBaseRotation = L_56;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3508>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3509>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3517>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3518>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_57 = __this->___heldFishVisual;
 		NullCheck(L_57);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_58;
@@ -20251,20 +20322,20 @@ IL_01b0:
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_59 = __this->___heldFishBaseRotation;
 		NullCheck(L_58);
 		Transform_set_localRotation_mAB4A011D134BA58AB780BECC0025CA65F16185FA(L_58, L_59, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3511>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3512>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3513>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3514>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3520>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3521>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3522>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3523>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_60 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_61;
 		L_61 = FishingSystem_FindFishMouthLocalPosition_m4727D9747A512394AD4EAF245A7780250F5E9E5F(L_60, NULL);
 		V_2 = L_61;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3516>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3517>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3518>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3519>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3520>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3525>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3526>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3527>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3528>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3529>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_62 = __this->___heldFishVisual;
 		NullCheck(L_62);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_63;
@@ -20274,11 +20345,11 @@ IL_01b0:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_65;
 		L_65 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_63, L_64, NULL);
 		V_3 = L_65;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3522>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3523>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3524>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3525>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3526>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3531>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3532>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3533>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3534>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3535>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_66 = __this->___heldFishVisual;
 		NullCheck(L_66);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_67;
@@ -20286,19 +20357,19 @@ IL_01b0:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_68;
 		L_68 = FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4(L_67, _stringLiteral2A4A4EA1D542F24C140452BA1A66AC18985A27CE, NULL);
 		V_4 = L_68;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3528>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3529>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3530>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3531>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3537>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3538>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3539>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3540>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_69 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_69, _stringLiteralA8DE2C1004A6DDDA2EA77D85EF2EF19B5A689C3C, NULL);
 		V_5 = L_69;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3533>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3534>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3535>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3536>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3537>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3538>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3542>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3543>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3544>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3545>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3546>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3547>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_70 = V_5;
 		NullCheck(L_70);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_71;
@@ -20335,8 +20406,8 @@ IL_026c:
 	{
 		NullCheck(G_B19_1);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(G_B19_1, G_B19_0, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3540>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3541>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3549>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3550>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_77 = V_5;
 		NullCheck(L_77);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_78;
@@ -20344,35 +20415,35 @@ IL_026c:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_79 = V_3;
 		NullCheck(L_78);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_78, L_79, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3543>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3544>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3552>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3553>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_80 = V_5;
 		NullCheck(L_80);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_81;
 		L_81 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_80, NULL);
 		__this->___heldFishMouthMarker = L_81;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldFishMouthMarker), (void*)L_81);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3546>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3547>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3555>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3556>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_82;
 		L_82 = FishingSystem_GetHeldCatchMouthTargetWorld_m9B2EE53933F5316FE17FB051CD4BFFB29021EBDA(__this, NULL);
 		V_6 = L_82;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3549>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3550>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3558>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3559>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_83 = __this->___heldHookPoint;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_84 = V_6;
 		NullCheck(L_83);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_83, L_84, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3552>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3553>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3561>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3562>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_85 = __this->___heldHookPoint;
 		NullCheck(L_85);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_86;
 		L_86 = Transform_get_localPosition_mA9C86B990DF0685EA1061A120218993FDCC60A95(L_85, NULL);
 		__this->___heldMouthRestLocalPosition = L_86;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3555>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3556>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3557>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3564>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3565>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3566>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_87 = __this->___heldFishVisual;
 		NullCheck(L_87);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_88;
@@ -20392,20 +20463,20 @@ IL_026c:
 		L_95 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_90, L_94, NULL);
 		NullCheck(L_89);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_89, L_95, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3561>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3562>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3570>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3571>
 		__this->___heldCatchLineTopViewportX = (0.720000029f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3564>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3573>
 		FishingSystem_UpdateHeldCatchLine_m30CCB18A6E0215865162A61CDEE54EF93AD462FC(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3566>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3567>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3568>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3575>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3576>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3577>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_96 = __this->___heldFishVisual;
 		NullCheck(L_96);
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_97;
 		L_97 = GameObject_GetComponent_TisCaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C_m37A42B444E5990334FA2FEADD046E39D92707FEB(L_96, GameObject_GetComponent_TisCaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C_m37A42B444E5990334FA2FEADD046E39D92707FEB_RuntimeMethod_var);
 		V_7 = L_97;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3570>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3579>
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_98 = V_7;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_99;
@@ -20418,9 +20489,9 @@ IL_026c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3572>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3573>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3574>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3581>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3582>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3583>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_101 = __this->___heldFishVisual;
 		NullCheck(L_101);
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_102;
@@ -20430,16 +20501,16 @@ IL_026c:
 
 IL_031f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3577>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3586>
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_103 = V_7;
 		NullCheck(L_103);
 		CaughtFishFlop_ConfigurePlayerHeld_m1B742971C40B10DF97F2C386C3826D196A859B0E(L_103, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3578>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3579>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3580>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3581>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3582>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3583>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3587>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3588>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3589>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3590>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3591>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3592>
 		CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* L_104 = V_7;
 		Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07* L_105 = (Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07*)il2cpp_codegen_object_new(Action_tD00B0A84D7945E50C2DFFC28EFEE6ED44ED2AD07_il2cpp_TypeInfo_var);
 		Action__ctor_mBDC7B0B4A3F583B64C2896F01BDED360772F67DC(L_105, __this, (intptr_t)((void*)FishingSystem_U3CSetupHookedCatchPresentationU3Eb__291_0_mC8675E001D211F2EFA94FC2607FF7B2677A30588_RuntimeMethod_var), NULL);
@@ -20450,11 +20521,11 @@ IL_031f:
 
 IL_033a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3584>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3593>
 		return;
 	}
 }
-// Method Definition Index: 52733
+// Method Definition Index: 52778
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_GetHeldCatchMouthTargetWorld_m9B2EE53933F5316FE17FB051CD4BFFB29021EBDA (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20474,7 +20545,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 G_B4_0;
 	memset((&G_B4_0), 0, sizeof(G_B4_0));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3588>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3597>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_0 = __this->___playerCamera;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -20487,10 +20558,10 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3590>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3591>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3592>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3593>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3599>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3600>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3601>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3602>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_3 = __this->___heldFishAnchor;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -20527,10 +20598,10 @@ IL_0038:
 
 IL_003b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3599>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3600>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3608>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3609>
 		V_0 = (0.649999976f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3602>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3611>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_9 = __this->___heldFishAnchor;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_10;
@@ -20543,10 +20614,10 @@ IL_003b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3604>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3605>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3606>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3607>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3613>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3614>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3615>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3616>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_12 = __this->___playerCamera;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_13 = __this->___heldFishAnchor;
 		NullCheck(L_13);
@@ -20556,8 +20627,8 @@ IL_003b:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
 		L_15 = Camera_WorldToViewportPoint_m285523443225EDA79BBEF9C9EDD76B99CFED054B(L_12, L_14, NULL);
 		V_4 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3609>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3610>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3618>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3619>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = V_4;
 		float L_17 = L_16.___z;
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_18 = __this->___playerCamera;
@@ -20572,8 +20643,8 @@ IL_003b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3612>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3613>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3621>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3622>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = V_4;
 		float L_22 = L_21.___z;
 		V_0 = L_22;
@@ -20585,14 +20656,14 @@ IL_008e:
 
 IL_008f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3617>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3618>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3619>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3620>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3621>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3622>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3623>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3624>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3626>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3627>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3628>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3629>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3630>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3631>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3632>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3633>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_23 = __this->___playerCamera;
 		float L_24 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25;
@@ -20607,12 +20678,12 @@ IL_008f:
 
 IL_00ad:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3625>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3634>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_2;
 		return L_27;
 	}
 }
-// Method Definition Index: 52734
+// Method Definition Index: 52779
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_GetHeldCatchLineTop_mBB27D17182DC4ADB3F3C6441297E26B95D126D09 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20636,7 +20707,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 G_B11_0;
 	memset((&G_B11_0), 0, sizeof(G_B11_0));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3629>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3638>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_0 = __this->___playerCamera;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -20649,12 +20720,12 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3631>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3632>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3633>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3634>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3635>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3636>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3640>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3641>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3642>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3643>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3644>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3645>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_3 = __this->___heldHookPoint;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -20703,12 +20774,12 @@ IL_0060:
 
 IL_0067:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3639>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3640>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3641>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3642>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3643>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3644>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3648>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3649>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3650>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3651>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3652>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3653>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_15 = __this->___heldFishMouthMarker;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_16;
@@ -20764,22 +20835,22 @@ IL_009d:
 IL_00a8:
 	{
 		V_0 = G_B11_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3646>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3647>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3648>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3649>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3655>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3656>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3657>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3658>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_25 = __this->___playerCamera;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_26 = V_0;
 		NullCheck(L_25);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27;
 		L_27 = Camera_WorldToViewportPoint_m285523443225EDA79BBEF9C9EDD76B99CFED054B(L_25, L_26, NULL);
 		V_1 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3651>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3652>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3653>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3654>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3655>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3656>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3660>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3661>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3662>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3663>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3664>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3665>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_28 = __this->___playerCamera;
 		NullCheck(L_28);
 		float L_29;
@@ -20789,14 +20860,14 @@ IL_00a8:
 		float L_32;
 		L_32 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(((float)il2cpp_codegen_add(L_29, (0.0500000007f))), L_31, NULL);
 		V_2 = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3660>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3661>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3662>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3663>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3664>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3665>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3666>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3667>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3669>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3670>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3671>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3672>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3673>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3674>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3675>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3676>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_33 = __this->___playerCamera;
 		float L_34 = __this->___heldCatchLineTopViewportX;
 		float L_35 = V_2;
@@ -20812,12 +20883,12 @@ IL_00a8:
 
 IL_00f3:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3668>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3677>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38 = V_4;
 		return L_38;
 	}
 }
-// Method Definition Index: 52735
+// Method Definition Index: 52780
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_FindFishMouthLocalPosition_m4727D9747A512394AD4EAF245A7780250F5E9E5F (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_fish, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20867,7 +20938,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 	float G_B19_0 = 0.0f;
 	float G_B22_0 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3673>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3682>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = ___0_fish;
 		NullCheck(L_0);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_1;
@@ -20876,7 +20947,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_2;
 		L_2 = FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4(L_1, _stringLiteral07CBDF205939F8DA0BDE81F8142DC367A707D57C, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3674>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3683>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_3 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -20889,7 +20960,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3674>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3683>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_6 = ___0_fish;
 		NullCheck(L_6);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_7;
@@ -20907,11 +20978,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 
 IL_0037:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3675>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3676>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3677>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3678>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3679>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3684>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3685>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3686>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3687>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3688>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_11 = ___0_fish;
 		NullCheck(L_11);
 		RedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B* L_12;
@@ -20970,7 +21041,7 @@ IL_006f:
 IL_0070:
 	{
 		V_1 = (bool)G_B7_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3681>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3690>
 		bool L_23 = V_1;
 		V_7 = L_23;
 		bool L_24 = V_7;
@@ -20980,11 +21051,11 @@ IL_0070:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3683>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3684>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3685>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3686>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3687>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3692>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3693>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3694>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3695>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3696>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_25 = ___0_fish;
 		NullCheck(L_25);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_26;
@@ -20993,11 +21064,11 @@ IL_0070:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_27;
 		L_27 = FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4(L_26, _stringLiteral2A4A4EA1D542F24C140452BA1A66AC18985A27CE, NULL);
 		V_8 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3689>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3690>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3691>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3692>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3693>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3698>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3699>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3700>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3701>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3702>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_28 = ___0_fish;
 		NullCheck(L_28);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_29;
@@ -21005,8 +21076,8 @@ IL_0070:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_30;
 		L_30 = FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4(L_29, _stringLiteralC9A2A00CFB93A110044FF1882B029B249FC4D151, NULL);
 		V_9 = L_30;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3695>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3696>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3704>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3705>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_31 = V_8;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_32;
@@ -21040,9 +21111,9 @@ IL_00b5:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3698>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3699>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3700>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3707>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3708>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3709>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_36 = V_8;
 		NullCheck(L_36);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_37;
@@ -21054,13 +21125,13 @@ IL_00b5:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_40;
 		L_40 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_37, L_39, NULL);
 		V_11 = L_40;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3702>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3703>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3711>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3712>
 		float L_41;
 		L_41 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_11), NULL);
 		V_12 = L_41;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3705>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3706>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3714>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3715>
 		float L_42 = V_12;
 		V_13 = (bool)((((float)L_42) > ((float)(9.99999975E-05f)))? 1 : 0);
 		bool L_43 = V_13;
@@ -21070,8 +21141,8 @@ IL_00b5:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3708>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3709>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3717>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3718>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_44 = ___0_fish;
 		NullCheck(L_44);
 		MackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F* L_45;
@@ -21080,8 +21151,8 @@ IL_00b5:
 		bool L_46;
 		L_46 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_45, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
 		V_14 = L_46;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3711>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3712>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3720>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3721>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_47 = ___0_fish;
 		NullCheck(L_47);
 		YellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E* L_48;
@@ -21089,16 +21160,16 @@ IL_00b5:
 		bool L_49;
 		L_49 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_48, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
 		V_15 = L_49;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3714>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3715>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3716>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3723>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3724>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3725>
 		bool L_50 = V_14;
 		bool L_51 = V_15;
 		V_16 = (bool)((int32_t)((int32_t)L_50|(int32_t)L_51));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3718>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3719>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3720>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3721>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3727>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3728>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3729>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3730>
 		bool L_52 = V_16;
 		if (L_52)
 		{
@@ -21118,10 +21189,10 @@ IL_011e:
 IL_0123:
 	{
 		V_17 = G_B16_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3723>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3724>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3725>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3726>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3732>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3733>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3734>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3735>
 		bool L_53 = V_16;
 		if (L_53)
 		{
@@ -21141,10 +21212,10 @@ IL_0130:
 IL_0135:
 	{
 		V_18 = G_B19_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3728>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3729>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3730>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3731>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3737>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3738>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3739>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3740>
 		bool L_54 = V_16;
 		if (L_54)
 		{
@@ -21164,15 +21235,15 @@ IL_0142:
 IL_0147:
 	{
 		V_19 = G_B22_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3733>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3734>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3735>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3736>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3737>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3738>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3739>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3740>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3741>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3742>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3743>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3744>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3745>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3746>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3747>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3748>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3749>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3750>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_55 = V_8;
 		NullCheck(L_55);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_56;
@@ -21190,11 +21261,11 @@ IL_0147:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_64;
 		L_64 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_56, L_63, NULL);
 		V_20 = L_64;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3743>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3744>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3745>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3746>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3747>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3752>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3753>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3754>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3755>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3756>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_65 = ___0_fish;
 		NullCheck(L_65);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_66;
@@ -21217,20 +21288,20 @@ IL_0183:
 
 IL_0184:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3754>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3755>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3756>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3757>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3763>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3764>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3765>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3766>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_69 = ___0_fish;
 		il2cpp_codegen_runtime_class_init_inline(FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52_il2cpp_TypeInfo_var);
 		float L_70;
 		L_70 = FishingSystem_FindFrontmostLocalZ_m065ECACF28D09D1D829CFECFD2EA7F384EC6A560(L_69, NULL);
 		V_2 = L_70;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3759>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3760>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3761>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3762>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3763>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3768>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3769>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3770>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3771>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3772>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_71 = ___0_fish;
 		NullCheck(L_71);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_72;
@@ -21238,15 +21309,15 @@ IL_0184:
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_73;
 		L_73 = FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4(L_72, _stringLiteral2A4A4EA1D542F24C140452BA1A66AC18985A27CE, NULL);
 		V_3 = L_73;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3765>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3766>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3767>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3768>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3774>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3775>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3776>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3777>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_74 = ___0_fish;
 		float L_75;
 		L_75 = FishingSystem_GetFishMouthInset_mFE7CE52D9F8D14C1A500B2AD03EA454B0B9618BD(L_74, NULL);
 		V_4 = L_75;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3770>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3779>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_76 = V_3;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_77;
@@ -21259,11 +21330,11 @@ IL_0184:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3772>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3773>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3774>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3775>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3776>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3781>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3782>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3783>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3784>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3785>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_79 = ___0_fish;
 		NullCheck(L_79);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_80;
@@ -21276,13 +21347,13 @@ IL_0184:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_83;
 		L_83 = Transform_InverseTransformPoint_m18CD395144D9C78F30E15A5B82B6670E792DBA5D(L_80, L_82, NULL);
 		V_22 = L_83;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3778>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3779>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3780>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3781>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3782>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3783>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3784>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3787>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3788>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3789>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3790>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3791>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3792>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3793>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_84 = V_22;
 		float L_85 = L_84.___x;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_86 = V_22;
@@ -21298,13 +21369,13 @@ IL_0184:
 
 IL_01e0:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3787>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3788>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3789>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3790>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3791>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3792>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3793>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3796>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3797>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3798>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3799>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3800>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3801>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3802>
 		float L_91 = V_2;
 		float L_92 = V_4;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_93;
@@ -21316,12 +21387,12 @@ IL_01e0:
 
 IL_01f7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3794>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3803>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_94 = V_6;
 		return L_94;
 	}
 }
-// Method Definition Index: 52736
+// Method Definition Index: 52781
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetFishMouthInset_mFE7CE52D9F8D14C1A500B2AD03EA454B0B9618BD (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_fish, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21345,16 +21416,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetFishMouthInset_mFE7CE5
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_9;
 	memset((&V_9), 0, sizeof(V_9));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3799>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3800>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3801>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3802>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3808>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3809>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3810>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3811>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = ___0_fish;
 		NullCheck(L_0);
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_1;
 		L_1 = GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2(L_0, (bool)1, GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2_RuntimeMethod_var);
 		V_0 = L_1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3804>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3813>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_2 = V_0;
 		NullCheck(L_2);
 		V_5 = (bool)((((int32_t)(((RuntimeArray*)L_2)->max_length)) == ((int32_t)0))? 1 : 0);
@@ -21365,15 +21436,15 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_GetFishMouthInset_mFE7CE5
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3805>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3814>
 		V_6 = (0.0350000001f);
 		goto IL_00f3;
 	}
 
 IL_0020:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3807>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3808>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3816>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3817>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_4 = V_0;
 		NullCheck(L_4);
 		int32_t L_5 = 0;
@@ -21382,16 +21453,16 @@ IL_0020:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_7;
 		L_7 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_6, NULL);
 		V_1 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3810>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3819>
 		V_7 = 1;
 		goto IL_0047;
 	}
 
 IL_002e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3814>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3815>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3816>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3823>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3824>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3825>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_8 = V_0;
 		int32_t L_9 = V_7;
 		NullCheck(L_8);
@@ -21401,14 +21472,14 @@ IL_002e:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_12;
 		L_12 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_11, NULL);
 		Bounds_Encapsulate_m7C70C382B9380A8C962074C78E189B53CE8F7A22_inline((&V_1), L_12, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3812>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3821>
 		int32_t L_13 = V_7;
 		V_7 = ((int32_t)il2cpp_codegen_add(L_13, 1));
 	}
 
 IL_0047:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3811>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3820>
 		int32_t L_14 = V_7;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_15 = V_0;
 		NullCheck(L_15);
@@ -21420,13 +21491,13 @@ IL_0047:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3819>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3820>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3821>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3822>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3823>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3824>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3825>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3828>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3829>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3830>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3831>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3832>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3833>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3834>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_17 = ___0_fish;
 		NullCheck(L_17);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_18;
@@ -21453,13 +21524,13 @@ IL_0047:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27;
 		L_27 = Transform_InverseTransformPoint_m18CD395144D9C78F30E15A5B82B6670E792DBA5D(L_18, L_26, NULL);
 		V_2 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3827>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3828>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3829>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3830>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3831>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3832>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3833>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3836>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3837>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3838>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3839>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3840>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3841>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3842>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_28 = ___0_fish;
 		NullCheck(L_28);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_29;
@@ -21486,11 +21557,11 @@ IL_0047:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38;
 		L_38 = Transform_InverseTransformPoint_m18CD395144D9C78F30E15A5B82B6670E792DBA5D(L_29, L_37, NULL);
 		V_3 = L_38;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3835>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3836>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3837>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3838>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3839>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3844>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3845>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3846>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3847>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3848>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_39 = V_2;
 		float L_40 = L_39.___z;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_41 = V_3;
@@ -21498,13 +21569,13 @@ IL_0047:
 		float L_43;
 		L_43 = fabsf(((float)il2cpp_codegen_subtract(L_40, L_42)));
 		V_4 = L_43;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3841>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3842>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3843>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3844>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3845>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3846>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3847>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3850>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3851>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3852>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3853>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3854>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3855>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3856>
 		float L_44 = V_4;
 		float L_45;
 		L_45 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_multiply(L_44, (0.0299999993f))), (0.0149999997f), (0.0450000018f), NULL);
@@ -21514,12 +21585,12 @@ IL_0047:
 
 IL_00f3:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3848>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3857>
 		float L_46 = V_6;
 		return L_46;
 	}
 }
-// Method Definition Index: 52737
+// Method Definition Index: 52782
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 FishingSystem_GetLineTargetPosition_m518A3E3A549EBBEB38799F25C69413EA2F2D263A (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21536,8 +21607,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 G_B10_0;
 	memset((&G_B10_0), 0, sizeof(G_B10_0));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3852>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3853>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3861>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3862>
 		bool L_0 = __this->___fishUnconscious;
 		if (!L_0)
 		{
@@ -21568,8 +21639,8 @@ IL_0018:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3855>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3856>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3864>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3865>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_4 = __this->___unconsciousFishMouthMarker;
 		NullCheck(L_4);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5;
@@ -21580,7 +21651,7 @@ IL_0018:
 
 IL_002b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3859>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3868>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_6 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_7;
@@ -21593,8 +21664,8 @@ IL_002b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3861>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3862>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3870>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3871>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_9 = __this->___bobber;
 		NullCheck(L_9);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_10;
@@ -21608,10 +21679,10 @@ IL_002b:
 
 IL_004f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3865>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3866>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3867>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3868>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3874>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3875>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3876>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3877>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_12 = __this->___rodTip;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_13;
@@ -21648,12 +21719,12 @@ IL_0075:
 
 IL_0078:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3869>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3878>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = V_1;
 		return L_18;
 	}
 }
-// Method Definition Index: 52738
+// Method Definition Index: 52783
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetBobberVisible_m13C81273B4134B42C975BC5A2222D395A4F8D075 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, bool ___0_visible, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21668,7 +21739,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetBobberVisible_m13C81273
 	int32_t V_2 = 0;
 	bool V_3 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3874>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3883>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___bobber;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -21681,30 +21752,30 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_SetBobberVisible_m13C81273
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3875>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3884>
 		goto IL_003e;
 	}
 
 IL_0013:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3877>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3878>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3879>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3880>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3886>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3887>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3888>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3889>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_3 = __this->___bobber;
 		NullCheck(L_3);
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_4;
 		L_4 = GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2(L_3, (bool)1, GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2_RuntimeMethod_var);
 		V_0 = L_4;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3882>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3891>
 		V_2 = 0;
 		goto IL_0034;
 	}
 
 IL_0024:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3886>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3887>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3895>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3896>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_5 = V_0;
 		int32_t L_6 = V_2;
 		NullCheck(L_5);
@@ -21713,14 +21784,14 @@ IL_0024:
 		bool L_9 = ___0_visible;
 		NullCheck(L_8);
 		Renderer_set_enabled_m015E6D7B825528A31182F267234CC6A925F71DA8(L_8, L_9, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3884>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3893>
 		int32_t L_10 = V_2;
 		V_2 = ((int32_t)il2cpp_codegen_add(L_10, 1));
 	}
 
 IL_0034:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3883>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3892>
 		int32_t L_11 = V_2;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_12 = V_0;
 		NullCheck(L_12);
@@ -21734,11 +21805,11 @@ IL_0034:
 
 IL_003e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3889>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3898>
 		return;
 	}
 }
-// Method Definition Index: 52739
+// Method Definition Index: 52784
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_FindFrontmostLocalZ_m065ECACF28D09D1D829CFECFD2EA7F384EC6A560 (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_fish, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21781,38 +21852,38 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float FishingSystem_FindFrontmostLocalZ_m065E
 	float V_23 = 0.0f;
 	int32_t G_B6_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3894>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3895>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3896>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3897>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3903>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3904>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3905>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3906>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = ___0_fish;
 		NullCheck(L_0);
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_1;
 		L_1 = GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2(L_0, (bool)1, GameObject_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_mB17EF84B788D0B2A40AC0A670404F8967B5384E2_RuntimeMethod_var);
 		V_0 = L_1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3899>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3900>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3908>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3909>
 		V_1 = (-std::numeric_limits<float>::infinity());
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3902>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3911>
 		V_2 = 0;
 		goto IL_0142;
 	}
 
 IL_0016:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3906>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3907>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3915>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3916>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_2 = V_0;
 		int32_t L_3 = V_2;
 		NullCheck(L_2);
 		int32_t L_4 = L_3;
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_5 = (L_2)->GetAt(static_cast<il2cpp_array_size_t>(L_4));
 		V_3 = L_5;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3912>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3913>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3921>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3922>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_6 = V_3;
 		V_6 = ((SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E*)IsInstClass((RuntimeObject*)L_6, SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E_il2cpp_TypeInfo_var));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3915>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3924>
 		SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E* L_7 = V_6;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_8;
@@ -21825,15 +21896,15 @@ IL_0016:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3917>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3918>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3926>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3927>
 		SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E* L_10 = V_6;
 		NullCheck(L_10);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_11;
 		L_11 = Renderer_get_localBounds_m8E3CDFEBF18132DB1CAB0825CC1CB8CD0E123894(L_10, NULL);
 		V_4 = L_11;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3920>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3921>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3929>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3930>
 		SkinnedMeshRenderer_t020C4E8648EA1C4C6BA5C41502919B387E7E1C2E* L_12 = V_6;
 		NullCheck(L_12);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_13;
@@ -21844,15 +21915,15 @@ IL_0016:
 
 IL_0047:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3925>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3926>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3934>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3935>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_14 = V_3;
 		NullCheck(L_14);
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_15;
 		L_15 = Component_GetComponent_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mB82F66059DFB5715DD85BDED1D90BC03A6C9E623(L_14, Component_GetComponent_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mB82F66059DFB5715DD85BDED1D90BC03A6C9E623_RuntimeMethod_var);
 		V_10 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3928>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3929>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3937>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3938>
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_16 = V_10;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_17;
@@ -21889,14 +21960,14 @@ IL_006a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3931>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3940>
 		goto IL_013e;
 	}
 
 IL_0076:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3934>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3935>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3943>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3944>
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_22 = V_10;
 		NullCheck(L_22);
 		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_23;
@@ -21905,8 +21976,8 @@ IL_0076:
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_24;
 		L_24 = Mesh_get_bounds_m9E3A46226824676703990270A722A89A4860A100(L_23, NULL);
 		V_4 = L_24;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3937>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3938>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3946>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3947>
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_25 = V_10;
 		NullCheck(L_25);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_26;
@@ -21916,47 +21987,47 @@ IL_0076:
 
 IL_008e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3941>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3942>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3950>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3951>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27;
 		L_27 = Bounds_get_center_m5B05F81CB835EB6DD8628FDA24B638F477984DC3_inline((&V_4), NULL);
 		V_7 = L_27;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3944>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3945>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3953>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3954>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_28;
 		L_28 = Bounds_get_extents_mFE6DC407FCE2341BE2C750CB554055D211281D25_inline((&V_4), NULL);
 		V_8 = L_28;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3947>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3956>
 		V_12 = (-1);
 		goto IL_012c;
 	}
 
 IL_00a8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3951>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3960>
 		V_13 = (-1);
 		goto IL_0117;
 	}
 
 IL_00ae:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3955>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3964>
 		V_14 = (-1);
 		goto IL_0102;
 	}
 
 IL_00b4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3959>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3960>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3961>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3962>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3963>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3964>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3965>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3966>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3967>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3968>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3969>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3970>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3971>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3972>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3973>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3974>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3975>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3976>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3977>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_29 = V_7;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30 = V_8;
 		int32_t L_31 = V_12;
@@ -21970,22 +22041,22 @@ IL_00b4:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36;
 		L_36 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_29, L_35, NULL);
 		V_15 = L_36;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3970>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3971>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3972>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3973>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3979>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3980>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3981>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3982>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_37 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38 = V_15;
 		NullCheck(L_37);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_39;
 		L_39 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_37, L_38, NULL);
 		V_16 = L_39;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3975>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3976>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3977>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3978>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3979>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3980>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3984>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3985>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3986>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3987>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3988>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3989>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_40 = ___0_fish;
 		NullCheck(L_40);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_41;
@@ -21996,24 +22067,24 @@ IL_00b4:
 		L_43 = Transform_InverseTransformPoint_m18CD395144D9C78F30E15A5B82B6670E792DBA5D(L_41, L_42, NULL);
 		float L_44 = L_43.___z;
 		V_17 = L_44;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3982>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3983>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3984>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3985>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3986>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3991>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3992>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3993>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3994>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3995>
 		float L_45 = V_1;
 		float L_46 = V_17;
 		float L_47;
 		L_47 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_45, L_46, NULL);
 		V_1 = L_47;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3957>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3966>
 		int32_t L_48 = V_14;
 		V_14 = ((int32_t)il2cpp_codegen_add(L_48, 2));
 	}
 
 IL_0102:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3956>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3965>
 		int32_t L_49 = V_14;
 		V_18 = (bool)((((int32_t)((((int32_t)L_49) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_50 = V_18;
@@ -22023,14 +22094,14 @@ IL_0102:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3953>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3962>
 		int32_t L_51 = V_13;
 		V_13 = ((int32_t)il2cpp_codegen_add(L_51, 2));
 	}
 
 IL_0117:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3952>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3961>
 		int32_t L_52 = V_13;
 		V_19 = (bool)((((int32_t)((((int32_t)L_52) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_53 = V_19;
@@ -22040,14 +22111,14 @@ IL_0117:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3949>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3958>
 		int32_t L_54 = V_12;
 		V_12 = ((int32_t)il2cpp_codegen_add(L_54, 2));
 	}
 
 IL_012c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3948>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3957>
 		int32_t L_55 = V_12;
 		V_20 = (bool)((((int32_t)((((int32_t)L_55) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_56 = V_20;
@@ -22061,14 +22132,14 @@ IL_012c:
 
 IL_013e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3904>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3913>
 		int32_t L_57 = V_2;
 		V_2 = ((int32_t)il2cpp_codegen_add(L_57, 1));
 	}
 
 IL_0142:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3903>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3912>
 		int32_t L_58 = V_2;
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_59 = V_0;
 		NullCheck(L_59);
@@ -22080,8 +22151,8 @@ IL_0142:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3992>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3993>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4001>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4002>
 		float L_61 = V_1;
 		bool L_62;
 		L_62 = Single_IsNegativeInfinity_mF5BAFC9DDA617A086F698FE180BB0D1FA03D7F18_inline(L_61, NULL);
@@ -22093,14 +22164,14 @@ IL_0142:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3995>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4004>
 		V_23 = (0.460000008f);
 		goto IL_016c;
 	}
 
 IL_0167:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3998>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4007>
 		float L_64 = V_1;
 		V_23 = L_64;
 		goto IL_016c;
@@ -22108,12 +22179,12 @@ IL_0167:
 
 IL_016c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3999>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4008>
 		float L_65 = V_23;
 		return L_65;
 	}
 }
-// Method Definition Index: 52740
+// Method Definition Index: 52785
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* FishingSystem_FindDeepChildByName_m3699A5F0B6469AEDA1B137EA15F2A36192CF8FF4 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, String_t* ___1_childName, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22130,7 +22201,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99
 	bool V_4 = false;
 	bool V_5 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4005>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4014>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = ___0_root;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -22143,31 +22214,31 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4006>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4015>
 		V_2 = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		goto IL_004d;
 	}
 
 IL_0010:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4008>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4009>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4010>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4011>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4017>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4018>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4019>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4020>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_3 = ___0_root;
 		NullCheck(L_3);
 		TransformU5BU5D_tBB9C5F5686CAE82E3D97D43DF0F3D68ABF75EC24* L_4;
 		L_4 = Component_GetComponentsInChildren_TisTransform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1_mD80D5A6BA73EE3066CFCE2345C3F4B9FC2E28837(L_3, (bool)1, Component_GetComponentsInChildren_TisTransform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1_mD80D5A6BA73EE3066CFCE2345C3F4B9FC2E28837_RuntimeMethod_var);
 		V_0 = L_4;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4013>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4022>
 		V_3 = 0;
 		goto IL_003d;
 	}
 
 IL_001c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4017>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4018>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4026>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4027>
 		TransformU5BU5D_tBB9C5F5686CAE82E3D97D43DF0F3D68ABF75EC24* L_5 = V_0;
 		int32_t L_6 = V_3;
 		NullCheck(L_5);
@@ -22187,7 +22258,7 @@ IL_001c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4020>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4029>
 		TransformU5BU5D_tBB9C5F5686CAE82E3D97D43DF0F3D68ABF75EC24* L_13 = V_0;
 		int32_t L_14 = V_3;
 		NullCheck(L_13);
@@ -22199,14 +22270,14 @@ IL_001c:
 
 IL_0038:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4015>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4024>
 		int32_t L_17 = V_3;
 		V_3 = ((int32_t)il2cpp_codegen_add(L_17, 1));
 	}
 
 IL_003d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4014>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4023>
 		int32_t L_18 = V_3;
 		TransformU5BU5D_tBB9C5F5686CAE82E3D97D43DF0F3D68ABF75EC24* L_19 = V_0;
 		NullCheck(L_19);
@@ -22218,19 +22289,19 @@ IL_003d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4024>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4033>
 		V_2 = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		goto IL_004d;
 	}
 
 IL_004d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4025>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4034>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_21 = V_2;
 		return L_21;
 	}
 }
-// Method Definition Index: 52741
+// Method Definition Index: 52786
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearHeldFish_m29135F507AFCBC55D7F409DF32E55DD23404C46F (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22245,10 +22316,10 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearHeldFish_m29135F507AF
 	bool V_3 = false;
 	int32_t G_B9_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4029>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4038>
 		__this->___heldRecord = (CaughtFishRecord_t11CE54F47C652436DF376C32048E11C30CF3920A*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldRecord), (void*)(CaughtFishRecord_t11CE54F47C652436DF376C32048E11C30CF3920A*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4030>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4039>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -22261,20 +22332,20 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearHeldFish_m29135F507AF
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4032>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4033>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4034>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4041>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4042>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4043>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_3 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_3, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4036>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4045>
 		__this->___heldFishVisual = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldFishVisual), (void*)(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL);
 	}
 
 IL_002d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4039>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4048>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_4 = __this->___heldHookVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_5;
@@ -22287,20 +22358,20 @@ IL_002d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4041>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4042>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4043>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4050>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4051>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4052>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_7 = __this->___heldHookVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_7, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4045>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4054>
 		__this->___heldHookVisual = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldHookVisual), (void*)(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL);
 	}
 
 IL_0052:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4048>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4057>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_8 = __this->___heldCatchLine;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_9;
@@ -22313,25 +22384,25 @@ IL_0052:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4050>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4051>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4052>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4059>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4060>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4061>
 		LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D* L_11 = __this->___heldCatchLine;
 		NullCheck(L_11);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_12;
 		L_12 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_11, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_12, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4054>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4063>
 		__this->___heldCatchLine = (LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldCatchLine), (void*)(LineRenderer_tEFEF960672DB69CB14B6D181FAE6292F0CF8B63D*)NULL);
 	}
 
 IL_007c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4057>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4058>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4059>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4066>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4067>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4068>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_13 = __this->___heldHookPoint;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_14;
@@ -22369,9 +22440,9 @@ IL_00a3:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4061>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4062>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4063>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4070>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4071>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4072>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_20 = __this->___heldHookPoint;
 		NullCheck(L_20);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_21;
@@ -22382,17 +22453,17 @@ IL_00a3:
 
 IL_00ba:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4066>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4075>
 		__this->___heldHookPoint = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldHookPoint), (void*)(Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4067>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4076>
 		__this->___heldFishMouthMarker = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___heldFishMouthMarker), (void*)(Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4068>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4077>
 		return;
 	}
 }
-// Method Definition Index: 52742
+// Method Definition Index: 52787
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_EnsureUnconsciousFishVisual_m27D93ED11311D920733DEEDFDCDFFACCB4820C24 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22432,7 +22503,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_EnsureUnconsciousFishVisua
 	bool V_16 = false;
 	bool V_17 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4072>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4081>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___unconsciousFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -22445,24 +22516,24 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_EnsureUnconsciousFishVisua
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4073>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4082>
 		goto IL_01ba;
 	}
 
 IL_0018:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4075>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4076>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4077>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4078>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4079>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4080>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4081>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4082>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4083>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4084>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4085>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4086>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4087>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4088>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4089>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4090>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4091>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4092>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4093>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4094>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4095>
 		int32_t L_3 = __this->___hookedSpeciesId;
 		il2cpp_codegen_runtime_class_init_inline(FishCatalog_tCC13D73E633C11CDEF74E4949C14CDFD48095211_il2cpp_TypeInfo_var);
 		FishSpeciesDefinition_tAF5B557D3B7CFA983A46E30F0345B4214DFB4104 L_4;
@@ -22476,7 +22547,7 @@ IL_0018:
 		L_9 = FishWorldSize_Create_mC0FC54CD0894525457F274F193F7C5D34D9F8985(L_6, (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL, L_7, L_8, NULL);
 		__this->___unconsciousFishVisual = L_9;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___unconsciousFishVisual), (void*)L_9);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4088>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4097>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_10 = __this->___unconsciousFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_11;
@@ -22489,16 +22560,16 @@ IL_0018:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4089>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4098>
 		goto IL_01ba;
 	}
 
 IL_0061:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4092>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4093>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4094>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4095>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4101>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4103>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4104>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_13 = __this->___unconsciousFishVisual;
 		NullCheck(L_13);
 		AnimatorU5BU5D_tC96418EE48F8DA017567CAE0235488C27640E759* L_14;
@@ -22510,14 +22581,14 @@ IL_0061:
 
 IL_0075:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4091>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4100>
 		AnimatorU5BU5D_tC96418EE48F8DA017567CAE0235488C27640E759* L_15 = V_9;
 		int32_t L_16 = V_10;
 		NullCheck(L_15);
 		int32_t L_17 = L_16;
 		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_18 = (L_15)->GetAt(static_cast<il2cpp_array_size_t>(L_17));
 		V_11 = L_18;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4097>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4106>
 		Animator_t8A52E42AE54F76681838FE9E632683EF3952E883* L_19 = V_11;
 		NullCheck(L_19);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_19, (bool)0, NULL);
@@ -22527,7 +22598,7 @@ IL_0075:
 
 IL_008d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4092>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4101>
 		int32_t L_21 = V_10;
 		AnimatorU5BU5D_tC96418EE48F8DA017567CAE0235488C27640E759* L_22 = V_9;
 		NullCheck(L_22);
@@ -22537,15 +22608,15 @@ IL_008d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4100>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4101>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4102>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4109>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4110>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4111>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_23 = __this->___unconsciousFishVisual;
 		NullCheck(L_23);
 		HeroFishAnimator_tE35AD8387A1AABD6D09BA43858DD8FDC79EC9C75* L_24;
 		L_24 = GameObject_GetComponent_TisHeroFishAnimator_tE35AD8387A1AABD6D09BA43858DD8FDC79EC9C75_m588A8273C9BA2301C147BF044A6D2DB4CB06341E(L_23, GameObject_GetComponent_TisHeroFishAnimator_tE35AD8387A1AABD6D09BA43858DD8FDC79EC9C75_m588A8273C9BA2301C147BF044A6D2DB4CB06341E_RuntimeMethod_var);
 		V_0 = L_24;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4104>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4113>
 		HeroFishAnimator_tE35AD8387A1AABD6D09BA43858DD8FDC79EC9C75* L_25 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_26;
@@ -22558,7 +22629,7 @@ IL_008d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4105>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4114>
 		HeroFishAnimator_tE35AD8387A1AABD6D09BA43858DD8FDC79EC9C75* L_28 = V_0;
 		NullCheck(L_28);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_28, (bool)0, NULL);
@@ -22566,15 +22637,15 @@ IL_008d:
 
 IL_00b6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4107>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4108>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4109>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4116>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4118>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_29 = __this->___unconsciousFishVisual;
 		NullCheck(L_29);
 		YellowfinTunaPresentation_t0E8268106CFA24EE02C57ABE280F708058772CDF* L_30;
 		L_30 = GameObject_GetComponent_TisYellowfinTunaPresentation_t0E8268106CFA24EE02C57ABE280F708058772CDF_mCF2B2EDBBC8A6A313898C57FDD0735DCE9D64C93(L_29, GameObject_GetComponent_TisYellowfinTunaPresentation_t0E8268106CFA24EE02C57ABE280F708058772CDF_mCF2B2EDBBC8A6A313898C57FDD0735DCE9D64C93_RuntimeMethod_var);
 		V_1 = L_30;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4111>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4120>
 		YellowfinTunaPresentation_t0E8268106CFA24EE02C57ABE280F708058772CDF* L_31 = V_1;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_32;
@@ -22587,7 +22658,7 @@ IL_00b6:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4112>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4121>
 		YellowfinTunaPresentation_t0E8268106CFA24EE02C57ABE280F708058772CDF* L_34 = V_1;
 		NullCheck(L_34);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_34, (bool)0, NULL);
@@ -22595,15 +22666,15 @@ IL_00b6:
 
 IL_00d7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4114>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4115>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4116>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4124>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4125>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_35 = __this->___unconsciousFishVisual;
 		NullCheck(L_35);
 		GoatfishPresentation_t3397AA49DEC586E4FA189201CDA7AB9849B3741A* L_36;
 		L_36 = GameObject_GetComponent_TisGoatfishPresentation_t3397AA49DEC586E4FA189201CDA7AB9849B3741A_mE9D7E0CECDD64662AA2D9E2528AC999AEE023A98(L_35, GameObject_GetComponent_TisGoatfishPresentation_t3397AA49DEC586E4FA189201CDA7AB9849B3741A_mE9D7E0CECDD64662AA2D9E2528AC999AEE023A98_RuntimeMethod_var);
 		V_2 = L_36;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4118>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4127>
 		GoatfishPresentation_t3397AA49DEC586E4FA189201CDA7AB9849B3741A* L_37 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_38;
@@ -22616,7 +22687,7 @@ IL_00d7:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4128>
 		GoatfishPresentation_t3397AA49DEC586E4FA189201CDA7AB9849B3741A* L_40 = V_2;
 		NullCheck(L_40);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_40, (bool)0, NULL);
@@ -22624,15 +22695,15 @@ IL_00d7:
 
 IL_00f8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4121>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4122>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4132>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_41 = __this->___unconsciousFishVisual;
 		NullCheck(L_41);
 		RedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B* L_42;
 		L_42 = GameObject_GetComponent_TisRedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B_mF71000801DC0CE26165ED2B42A13C8BB9890D4A0(L_41, GameObject_GetComponent_TisRedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B_mF71000801DC0CE26165ED2B42A13C8BB9890D4A0_RuntimeMethod_var);
 		V_3 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4125>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4134>
 		RedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B* L_43 = V_3;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_44;
@@ -22645,7 +22716,7 @@ IL_00f8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4126>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4135>
 		RedSnapperPresentation_t3719631A827A9EA1088DD7F77A21991B1B8ADB6B* L_46 = V_3;
 		NullCheck(L_46);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_46, (bool)0, NULL);
@@ -22653,15 +22724,15 @@ IL_00f8:
 
 IL_0119:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4128>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4129>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4137>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4138>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4139>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_47 = __this->___unconsciousFishVisual;
 		NullCheck(L_47);
 		MackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F* L_48;
 		L_48 = GameObject_GetComponent_TisMackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F_m4DC38A25A6BECAA6AEA86D562B495201F1ED9F54(L_47, GameObject_GetComponent_TisMackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F_m4DC38A25A6BECAA6AEA86D562B495201F1ED9F54_RuntimeMethod_var);
 		V_4 = L_48;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4132>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4141>
 		MackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F* L_49 = V_4;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_50;
@@ -22674,7 +22745,7 @@ IL_0119:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4133>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4142>
 		MackerelPresentation_tB4938A2957EF669A18ECFABFE52DBECB5700FF5F* L_52 = V_4;
 		NullCheck(L_52);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_52, (bool)0, NULL);
@@ -22682,15 +22753,15 @@ IL_0119:
 
 IL_013d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4135>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4136>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4137>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4144>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4145>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4146>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_53 = __this->___unconsciousFishVisual;
 		NullCheck(L_53);
 		YellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E* L_54;
 		L_54 = GameObject_GetComponent_TisYellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E_m4E1F6AA98FD97401544452AF34F86640B3A22455(L_53, GameObject_GetComponent_TisYellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E_m4E1F6AA98FD97401544452AF34F86640B3A22455_RuntimeMethod_var);
 		V_5 = L_54;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4139>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4148>
 		YellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E* L_55 = V_5;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_56;
@@ -22703,7 +22774,7 @@ IL_013d:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4140>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4149>
 		YellowtailPresentation_tD82DACA288B2B47C7331AC3E9B9A243E15D4027E* L_58 = V_5;
 		NullCheck(L_58);
 		Behaviour_set_enabled_mF1DCFE60EB09E0529FE9476CA804A3AA2D72B16A(L_58, (bool)0, NULL);
@@ -22711,17 +22782,17 @@ IL_013d:
 
 IL_0161:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4142>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4143>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4144>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4145>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4151>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4152>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4153>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4154>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_59 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
 		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_59, _stringLiteral8E2A9855B68D10D78735D0197758A637488D2D29, NULL);
 		V_6 = L_59;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4147>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4148>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4149>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4150>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4156>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4157>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4158>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4159>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_60 = V_6;
 		NullCheck(L_60);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_61;
@@ -22732,10 +22803,10 @@ IL_0161:
 		L_63 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_62, NULL);
 		NullCheck(L_61);
 		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_61, L_63, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4152>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4153>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4154>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4155>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4161>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4162>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4164>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_64 = V_6;
 		NullCheck(L_64);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_65;
@@ -22746,27 +22817,27 @@ IL_0161:
 		L_67 = FishingSystem_FindFishMouthLocalPosition_m4727D9747A512394AD4EAF245A7780250F5E9E5F(L_66, NULL);
 		NullCheck(L_65);
 		Transform_set_localPosition_mDE1C997F7D79C0885210B7732B4BA50EE7D73134(L_65, L_67, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4157>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4158>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4166>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4167>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_68 = V_6;
 		NullCheck(L_68);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_69;
 		L_69 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_68, NULL);
 		__this->___unconsciousFishMouthMarker = L_69;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___unconsciousFishMouthMarker), (void*)L_69);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4160>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4169>
 		FishingSystem_SetBobberVisible_m13C81273B4134B42C975BC5A2222D395A4F8D075(__this, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4162>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4171>
 		FishingSystem_UpdateUnconsciousFishVisual_m2F7FA0F9D1F3D4622555741CCE9FE80D2C30691D(__this, NULL);
 	}
 
 IL_01ba:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4172>
 		return;
 	}
 }
-// Method Definition Index: 52743
+// Method Definition Index: 52788
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateUnconsciousFishVisual_m2F7FA0F9D1F3D4622555741CCE9FE80D2C30691D (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22797,8 +22868,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_UpdateUnconsciousFishVisua
 	bool V_14 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4167>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4168>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4177>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___unconsciousFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -22832,14 +22903,14 @@ IL_001e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4179>
 		goto IL_01ed;
 	}
 
 IL_002a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4173>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4174>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4182>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4183>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_5 = __this->___bobber;
 		NullCheck(L_5);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_6;
@@ -22848,14 +22919,14 @@ IL_002a:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7;
 		L_7 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_6, NULL);
 		V_0 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4176>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4185>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4186>
 		V_1 = (0.349999994f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4179>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4180>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4181>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4182>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4183>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4189>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4190>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4192>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_8 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10;
@@ -22869,11 +22940,11 @@ IL_002a:
 		float L_14;
 		L_14 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_8, L_13, NULL);
 		V_2 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4185>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4186>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4187>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4188>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4189>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4194>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4195>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4197>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4198>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_15 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_17;
@@ -22887,11 +22958,11 @@ IL_002a:
 		float L_21;
 		L_21 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_15, L_20, NULL);
 		V_3 = L_21;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4191>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4192>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4193>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4194>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4195>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4200>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4202>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4203>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4204>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_22 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
@@ -22905,11 +22976,11 @@ IL_002a:
 		float L_28;
 		L_28 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_22, L_27, NULL);
 		V_4 = L_28;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4197>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4198>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4199>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4200>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4206>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4209>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4210>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_29 = __this->___oceanWater;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_31;
@@ -22923,37 +22994,37 @@ IL_002a:
 		float L_35;
 		L_35 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_29, L_34, NULL);
 		V_5 = L_35;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4203>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4204>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4205>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4206>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4207>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4208>
-		float L_36 = V_1;
-		float L_37 = V_3;
-		float L_38 = V_2;
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&V_6), ((float)il2cpp_codegen_multiply(L_36, (2.0f))), ((float)il2cpp_codegen_subtract(L_37, L_38)), (0.0f), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4210>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4211>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4212>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4213>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4214>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4216>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4217>
+		float L_36 = V_1;
+		float L_37 = V_3;
+		float L_38 = V_2;
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&V_6), ((float)il2cpp_codegen_multiply(L_36, (2.0f))), ((float)il2cpp_codegen_subtract(L_37, L_38)), (0.0f), NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4219>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4220>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4221>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4222>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4223>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4224>
 		float L_39 = V_5;
 		float L_40 = V_4;
 		float L_41 = V_1;
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&V_7), (0.0f), ((float)il2cpp_codegen_subtract(L_39, L_40)), ((float)il2cpp_codegen_multiply(L_41, (2.0f))), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4217>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4218>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4219>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4220>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4221>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4226>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4227>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4228>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4229>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4230>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_42 = V_7;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_43 = V_6;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_44;
 		L_44 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_42, L_43, NULL);
 		V_8 = L_44;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4223>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4232>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_45 = V_8;
 		float L_46 = L_45.___y;
 		V_11 = (bool)((((float)L_46) < ((float)(0.0f)))? 1 : 0);
@@ -22964,8 +23035,8 @@ IL_002a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4225>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4226>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4235>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_48 = V_8;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_49;
 		L_49 = Vector3_op_UnaryNegation_m5450829F333BD2A88AF9A592C4EE331661225915_inline(L_48, NULL);
@@ -22974,8 +23045,8 @@ IL_002a:
 
 IL_010f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4229>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4230>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4238>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4239>
 		float L_50;
 		L_50 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_8), NULL);
 		V_12 = (bool)((((float)L_50) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -22986,8 +23057,8 @@ IL_010f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4232>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4233>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4241>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4242>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_52;
 		L_52 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		V_8 = L_52;
@@ -22995,20 +23066,20 @@ IL_010f:
 
 IL_012c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4236>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4245>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_8), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4238>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4239>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4240>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4241>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4242>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4247>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4248>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4249>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4251>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_53 = __this->___fightTravelDirection;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_54 = V_8;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_55;
 		L_55 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_53, L_54, NULL);
 		V_9 = L_55;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4244>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4245>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4253>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4254>
 		float L_56;
 		L_56 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_9), NULL);
 		V_13 = (bool)((((float)L_56) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -23019,11 +23090,11 @@ IL_012c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4247>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4248>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4249>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4250>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4256>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4257>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4259>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4260>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_58 = __this->___playerCamera;
 		NullCheck(L_58);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_59;
@@ -23039,8 +23110,8 @@ IL_012c:
 
 IL_0172:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4254>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4255>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4263>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4264>
 		float L_63;
 		L_63 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_9), NULL);
 		V_14 = (bool)((((float)L_63) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -23051,8 +23122,8 @@ IL_0172:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4257>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4266>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4267>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_65;
 		L_65 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
 		V_9 = L_65;
@@ -23060,11 +23131,11 @@ IL_0172:
 
 IL_018f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4261>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4270>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_9), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4263>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4264>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4265>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4272>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4273>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4274>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_66 = __this->___unconsciousFishVisual;
 		NullCheck(L_66);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_67;
@@ -23077,16 +23148,16 @@ IL_018f:
 		L_71 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_68, L_70, NULL);
 		NullCheck(L_67);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_67, L_71, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4267>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4268>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4269>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4270>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4271>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4272>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4273>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4274>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4275>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4276>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4277>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4278>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4279>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4280>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4281>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4282>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4283>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4284>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4285>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_72 = __this->___unconsciousFishVisual;
 		NullCheck(L_72);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_73;
@@ -23105,11 +23176,11 @@ IL_018f:
 
 IL_01ed:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4277>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4286>
 		return;
 	}
 }
-// Method Definition Index: 52744
+// Method Definition Index: 52789
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearUnconsciousFishVisual_m30AA2AF217A9BAB4A228997A5B4B12E24A98D792 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23120,7 +23191,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearUnconsciousFishVisual
 	}
 	bool V_0 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4281>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4290>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___unconsciousFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -23133,33 +23204,33 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_ClearUnconsciousFishVisual
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4282>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4291>
 		goto IL_002d;
 	}
 
 IL_0013:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4284>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4285>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4286>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4293>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4294>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4295>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_3 = __this->___unconsciousFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_3, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4288>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4297>
 		__this->___unconsciousFishVisual = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___unconsciousFishVisual), (void*)(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4289>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4298>
 		__this->___unconsciousFishMouthMarker = (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___unconsciousFishMouthMarker), (void*)(Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)NULL);
 	}
 
 IL_002d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4290>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4299>
 		return;
 	}
 }
-// Method Definition Index: 52745
+// Method Definition Index: 52790
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* FishingSystem_CreateMaterial_mD4409B4E2A9E7E3A2B60FBD1682D7FCFB30FE1D1 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ___0_color, float ___1_smoothness, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23184,14 +23255,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Material_t18053F08F347D0DCA5E1140EC7EC4533DD8
 	bool V_5 = false;
 	bool V_6 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4296>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4297>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4298>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4299>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4305>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4306>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4307>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4308>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_0;
 		L_0 = Resources_Load_TisShader_tADC867D36B7876EE22427FAA2CE485105F4EE692_m378804064185FA25C41237187B3CCEA095C05946(_stringLiteral0A6BAF2FDD9B7F528D7FBF345F05B5F52E51BBF9, Resources_Load_TisShader_tADC867D36B7876EE22427FAA2CE485105F4EE692_m378804064185FA25C41237187B3CCEA095C05946_RuntimeMethod_var);
 		V_0 = L_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4301>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4310>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_1 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_2;
@@ -23204,25 +23275,25 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Material_t18053F08F347D0DCA5E1140EC7EC4533DD8
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4303>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4304>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4305>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4312>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4313>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4314>
 		il2cpp_codegen_runtime_class_init_inline(Debug_t8394C7EEAECA3689C2C9B9DE9C7166D73596276F_il2cpp_TypeInfo_var);
 		Debug_LogError_mB00B2B4468EF3CAF041B038D840820FB84C924B2(_stringLiteral91E82EEB47D85E37070AE85DFFCFC8CAB36D72C9, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4307>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4316>
 		V_3 = (Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3*)NULL;
 		goto IL_0094;
 	}
 
 IL_0027:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4310>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4311>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4319>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4320>
 		Shader_tADC867D36B7876EE22427FAA2CE485105F4EE692* L_4 = V_0;
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_5 = (Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3*)il2cpp_codegen_object_new(Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3_il2cpp_TypeInfo_var);
 		Material__ctor_m7FDF47105D66D19591BE505A0C42B0F90D88C9BF(L_5, L_4, NULL);
 		V_1 = L_5;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4313>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4322>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_6 = V_1;
 		NullCheck(L_6);
 		bool L_7;
@@ -23235,10 +23306,10 @@ IL_0027:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4315>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4316>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4317>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4318>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4324>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4325>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4326>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4327>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_9 = V_1;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_10 = ___0_color;
 		NullCheck(L_9);
@@ -23248,7 +23319,7 @@ IL_0027:
 
 IL_0050:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4320>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4329>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_11 = V_1;
 		NullCheck(L_11);
 		bool L_12;
@@ -23261,10 +23332,10 @@ IL_0050:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4322>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4323>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4324>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4325>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4331>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4332>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4333>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4334>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_14 = V_1;
 		Color_tD001788D726C3A7F1379BEED0260B9591F440C1F L_15 = ___0_color;
 		NullCheck(L_14);
@@ -23273,7 +23344,7 @@ IL_0050:
 
 IL_0070:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4328>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4337>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_16 = V_1;
 		NullCheck(L_16);
 		bool L_17;
@@ -23286,10 +23357,10 @@ IL_0070:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4330>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4331>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4332>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4333>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4339>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4340>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4341>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4342>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_19 = V_1;
 		float L_20 = ___1_smoothness;
 		NullCheck(L_19);
@@ -23298,7 +23369,7 @@ IL_0070:
 
 IL_0090:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4336>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4345>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_21 = V_1;
 		V_3 = L_21;
 		goto IL_0094;
@@ -23306,12 +23377,12 @@ IL_0090:
 
 IL_0094:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4337>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:4346>
 		Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* L_22 = V_3;
 		return L_22;
 	}
 }
-// Method Definition Index: 52746
+// Method Definition Index: 52791
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem__ctor_m486C51BC97C0EB9912ED9093B2FFAA54413B3BB2 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23374,7 +23445,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem__ctor_m486C51BC97C0EB9912E
 		return;
 	}
 }
-// Method Definition Index: 52747
+// Method Definition Index: 52792
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem__cctor_mE4A995FC0C8667510179A9C7EAC84D4F8887CF3E (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23423,7 +23494,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem__cctor_mE4A995FC0C86675101
 		return;
 	}
 }
-// Method Definition Index: 52748
+// Method Definition Index: 52793
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_U3CSetupHookedCatchPresentationU3Eb__291_0_mC8675E001D211F2EFA94FC2607FF7B2677A30588 (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23435,7 +23506,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void FishingSystem_U3CSetupHookedCatchPresent
 	bool V_0 = false;
 	int32_t G_B4_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3580>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3589>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_0 = __this->___heldFishVisual;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -23479,7 +23550,7 @@ IL_002c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3581>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3590>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_7 = __this->___heldFishVisual;
 		NullCheck(L_7);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_8;
@@ -23506,16 +23577,16 @@ IL_002c:
 
 IL_0067:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3582>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3591>
 		FishingSystem_UpdateHeldCatchLine_m30CCB18A6E0215865162A61CDEE54EF93AD462FC(__this, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3583>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Fishing/FishingSystem.cs:3592>
 		return;
 	}
 }
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-// Method Definition Index: 52254
+// Method Definition Index: 52299
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FishingBurstDamageRuntime_get_SelectedDrag_mB7641AAB9EB68E73A982CF929B82CE14072C2290_inline (FishingBurstDamageRuntime_tE753AF36DB6C909A65BD4788E59887F10A846AD3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23524,7 +23595,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FishingBurstDamageRuntime
 		return L_0;
 	}
 }
-// Method Definition Index: 45695
+// Method Definition Index: 45699
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline (float ___0_a, float ___1_b, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -23563,7 +23634,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 45692
+// Method Definition Index: 45696
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Min_m747CA71A9483CDB394B13BD0AD048EE17E48FFE4_inline (float ___0_a, float ___1_b, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -23602,7 +23673,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 53940
+// Method Definition Index: 54021
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mBDC1D92F3F5EDADB9541EC73FF7F8703DD71E20F_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23618,7 +23689,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mB
 		return L_0;
 	}
 }
-// Method Definition Index: 53271
+// Method Definition Index: 53346
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingTournament_get_ModalOpen_mAD30C694E4D87E01E72B6385CFAEDBB6616178FA_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23634,7 +23705,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingTournament_get_ModalO
 		return L_0;
 	}
 }
-// Method Definition Index: 52407
+// Method Definition Index: 52452
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR FishingActionButton_t8ACC764692F25FF2A4F4EDFE2F3AAF6919C37445* FishingHUD_get_ActionInput_m6072A76DF25B991C65542F4EFE89887122FF149B_inline (FishingHUD_t7E3FA152B7F371A31E020330C0C28552A2670DD3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23643,7 +23714,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR FishingActionButton_t8ACC764692F2
 		return L_0;
 	}
 }
-// Method Definition Index: 52214
+// Method Definition Index: 52259
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingActionButton_get_IsHeld_m0B53FEE780EC25B9020CEAEEDAF16EA4EAFD1793_inline (FishingActionButton_t8ACC764692F25FF2A4F4EDFE2F3AAF6919C37445* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23652,7 +23723,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingActionButton_get_IsHe
 		return L_0;
 	}
 }
-// Method Definition Index: 53879
+// Method Definition Index: 53960
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2D35CAC8CAB598BA36BE* ShopProgress_get_Data_m6914FA1ED3EA9895ACBBE372A50A8EAC377B5643_inline (ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23661,7 +23732,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2
 		return L_0;
 	}
 }
-// Method Definition Index: 52245
+// Method Definition Index: 52290
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingBurstDamageRuntime_get_SirenSeconds_m2F372C8BB0CF43526DC44DA93888A4B5AC565C2E_inline (FishingBurstDamageRuntime_tE753AF36DB6C909A65BD4788E59887F10A846AD3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23670,7 +23741,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingBurstDamageRuntime_g
 		return L_0;
 	}
 }
-// Method Definition Index: 45460
+// Method Definition Index: 45464
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C1F Color_get_white_m068F5AF879B0FCA584E3693F762EA41BB65532C6_inline (const RuntimeMethod* method) 
 {
 	{
@@ -23681,7 +23752,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED02
 		return L_0;
 	}
 }
-// Method Definition Index: 45432
+// Method Definition Index: 45436
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Color__ctor_mCD6889CDE39F18704CD6EA8E2EFBFA48BA3E13B0_inline (Color_tD001788D726C3A7F1379BEED0260B9591F440C1F* __this, float ___0_r, float ___1_g, float ___2_b, const RuntimeMethod* method) 
 {
 	{
@@ -23700,7 +23771,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Color__ctor_mCD6889CDE39F187
 		return;
 	}
 }
-// Method Definition Index: 45443
+// Method Definition Index: 45447
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C1F Color_Lerp_mE79F87889843ECDC188E4CB5B5E1F1B2256E5EBE_inline (Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ___0_a, Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ___1_b, float ___2_t, const RuntimeMethod* method) 
 {
 	Color_tD001788D726C3A7F1379BEED0260B9591F440C1F V_0;
@@ -23759,7 +23830,7 @@ IL_0089:
 		return L_31;
 	}
 }
-// Method Definition Index: 52490
+// Method Definition Index: 52535
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR RuntimeObject* FishingInventory_get_Fish_mE5863D77CB28C4C8C8D76BD017FA1472D5B2D6CB_inline (FishingInventory_t3C92A57027FBD7299361FA290855A8BAB3D35E44* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23768,7 +23839,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR RuntimeObject* FishingInventory_g
 		return L_0;
 	}
 }
-// Method Definition Index: 52628
+// Method Definition Index: 52673
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkReelTime_m37C28FEB1E6776062B5566072239F84F6C4D8630_inline (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23777,7 +23848,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingSystem_get_NetworkRe
 		return L_0;
 	}
 }
-// Method Definition Index: 52629
+// Method Definition Index: 52674
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkReelTime_m199AEB6AC1A60446F1AA7D116A226A28617CC421_inline (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, float ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -23787,16 +23858,16 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void FishingSystem_set_NetworkRee
 		return;
 	}
 }
-// Method Definition Index: 53375
+// Method Definition Index: 53452
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FirstPersonController_get_IsSwimming_mF8C2EFF10BE5315091906EE7B6E56FD844367B38_inline (FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* __this, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Player/FirstPersonController.cs:68>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Player/FirstPersonController.cs:78>
 		bool L_0 = __this->___U3CIsSwimmingU3Ek__BackingField;
 		return L_0;
 	}
 }
-// Method Definition Index: 52524
+// Method Definition Index: 52569
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingLoopAudio_get_IsPlaying_mBE53BA04B7F4A0084C4D18B9E167EBF79B6DCF94_inline (FishingLoopAudio_tC36883ACC950A8297E547785732783F03189B78B* __this, const RuntimeMethod* method) 
 {
 	{
@@ -23805,7 +23876,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingLoopAudio_get_IsPlayi
 		return L_0;
 	}
 }
-// Method Definition Index: 45711
+// Method Definition Index: 45715
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_Clamp_m4DC36EEFDBE5F07C16249DA568023C5ECCFF0E7B_inline (int32_t ___0_value, int32_t ___1_min, int32_t ___2_max, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -23862,7 +23933,7 @@ IL_001d:
 		return L_9;
 	}
 }
-// Method Definition Index: 45614
+// Method Definition Index: 45618
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -23889,7 +23960,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_12;
 	}
 }
-// Method Definition Index: 45609
+// Method Definition Index: 45613
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23904,7 +23975,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 45592
+// Method Definition Index: 45596
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_vector, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_planeNormal, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23983,7 +24054,7 @@ IL_006f:
 		return L_23;
 	}
 }
-// Method Definition Index: 45598
+// Method Definition Index: 45602
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24006,7 +24077,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_magnitude_mF0D6
 		return ((float)L_6);
 	}
 }
-// Method Definition Index: 45708
+// Method Definition Index: 45712
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_RoundToInt_m60F8B66CF27F1FA75AA219342BD184B75771EB4B_inline (float ___0_f, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24033,7 +24104,7 @@ IL_000c:
 		return L_2;
 	}
 }
-// Method Definition Index: 45572
+// Method Definition Index: 45576
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Lerp_m3A906D0530A94FAABB94F0F905E84D99BE85C3F8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, float ___2_t, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24086,7 +24157,7 @@ IL_0064:
 		return L_24;
 	}
 }
-// Method Definition Index: 53045
+// Method Definition Index: 53103
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR IslandExpansionWorld_t6B5AB41C4D814CF6162EEB66726B1A861AEAAA81* IslandExpansionWorld_get_Active_m92C198B2E42C8C25B9B33FDF02B64F8ED27DFB8E_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24101,7 +24172,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR IslandExpansionWorld_t6B5AB41C4D8
 		return L_0;
 	}
 }
-// Method Definition Index: 53063
+// Method Definition Index: 53121
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool IslandExpansionWorld_get_Ready_m2EF5B6E0F211593865BBA9A8C2D538CFB65DDA53_inline (IslandExpansionWorld_t6B5AB41C4D814CF6162EEB66726B1A861AEAAA81* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24110,7 +24181,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool IslandExpansionWorld_get_Rea
 		return L_0;
 	}
 }
-// Method Definition Index: 52573
+// Method Definition Index: 52618
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingRules_get_OffshoreFactor_m4F82D40901DE9F27E7D6F5C7C896BB43C18F4439_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24126,7 +24197,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingRules_get_OffshoreFa
 		return L_0;
 	}
 }
-// Method Definition Index: 45723
+// Method Definition Index: 45727
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_InverseLerp_mBD7EC6A7173CE082226077E1557D5BC2D2AE0D9D_inline (float ___0_a, float ___1_b, float ___2_value, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -24168,7 +24239,7 @@ IL_0023:
 		return L_8;
 	}
 }
-// Method Definition Index: 45713
+// Method Definition Index: 45717
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline (float ___0_a, float ___1_b, float ___2_t, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -24191,7 +24262,7 @@ IL_0010:
 		return L_5;
 	}
 }
-// Method Definition Index: 45600
+// Method Definition Index: 45604
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24205,7 +24276,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_get_sqrMagnitude_m4
 		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3)))), ((float)il2cpp_codegen_multiply(L_4, L_5))));
 	}
 }
-// Method Definition Index: 45607
+// Method Definition Index: 45611
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24220,7 +24291,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 45589
+// Method Definition Index: 45593
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24230,7 +24301,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 45715
+// Method Definition Index: 45719
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline (float ___0_current, float ___1_target, float ___2_maxDelta, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -24276,7 +24347,7 @@ IL_0026:
 		return L_11;
 	}
 }
-// Method Definition Index: 52241
+// Method Definition Index: 52286
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingBurstDamageRuntime_get_ImmortalitySeconds_m7CFF8901168055F36EAD3EE036BB99AEC282A3F7_inline (FishingBurstDamageRuntime_tE753AF36DB6C909A65BD4788E59887F10A846AD3* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24285,7 +24356,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingBurstDamageRuntime_g
 		return L_0;
 	}
 }
-// Method Definition Index: 45707
+// Method Definition Index: 45711
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_FloorToInt_m2A39AE881CAEE6B6A4B3BFEF9CA1ED40625F5AB7_inline (float ___0_f, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24312,7 +24383,7 @@ IL_000c:
 		return L_2;
 	}
 }
-// Method Definition Index: 45694
+// Method Definition Index: 45698
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_Min_m888083F74FF5655778F0403BB5E9608BEFDEA8CB_inline (int32_t ___0_a, int32_t ___1_b, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -24351,7 +24422,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 45712
+// Method Definition Index: 45716
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline (float ___0_value, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -24405,7 +24476,7 @@ IL_002d:
 		return L_5;
 	}
 }
-// Method Definition Index: 52615
+// Method Definition Index: 52660
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CastSequence_m9E7E4CDD3B37B94815F96560C33DC672E032192A_inline (FishingSystem_t2E3724956B45E155A63923C95E1113537CB74F52* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24414,7 +24485,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t FishingSystem_get_CastSeq
 		return L_0;
 	}
 }
-// Method Definition Index: 45616
+// Method Definition Index: 45620
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, float ___1_d, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24438,7 +24509,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_9;
 	}
 }
-// Method Definition Index: 45613
+// Method Definition Index: 45617
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24465,7 +24536,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_12;
 	}
 }
-// Method Definition Index: 53502
+// Method Definition Index: 53582
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ReefZone_tC974D4F46AC04C70F8C0668DB01ADFE69BE49A5F* ReefZone_get_Active_m75ED0B4C601016F06F6E3A7AA51058C9E336046E_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24480,7 +24551,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ReefZone_tC974D4F46AC04C70F8C0668
 		return L_0;
 	}
 }
-// Method Definition Index: 45612
+// Method Definition Index: 45616
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24495,7 +24566,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 52278
+// Method Definition Index: 52323
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingCastQualityRuntime_get_OriginalWeight_m47D479E73F3C832ABF3C591A4340597234EDFE26_inline (FishingCastQualityRuntime_tE1506B020E1C7B8391D48848A2163F8B3D5364CD* __this, const RuntimeMethod* method) 
 {
 	{
@@ -24504,7 +24575,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float FishingCastQualityRuntime_g
 		return L_0;
 	}
 }
-// Method Definition Index: 45431
+// Method Definition Index: 45435
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Color__ctor_m3786F0D6E510D9CFA544523A955870BD2A514C8C_inline (Color_tD001788D726C3A7F1379BEED0260B9591F440C1F* __this, float ___0_r, float ___1_g, float ___2_b, float ___3_a, const RuntimeMethod* method) 
 {
 	{
@@ -24524,7 +24595,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Color__ctor_m3786F0D6E510D9C
 		return;
 	}
 }
-// Method Definition Index: 45580
+// Method Definition Index: 45584
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24563,7 +24634,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_24;
 	}
 }
-// Method Definition Index: 45588
+// Method Definition Index: 45592
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -24614,7 +24685,7 @@ IL_0065:
 		return;
 	}
 }
-// Method Definition Index: 45590
+// Method Definition Index: 45594
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_rhs, const RuntimeMethod* method) 
 {
 	{
@@ -24634,7 +24705,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_mBB86BB940AA0A3
 		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11))));
 	}
 }
-// Method Definition Index: 45605
+// Method Definition Index: 45609
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24649,7 +24720,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 45639
+// Method Definition Index: 45643
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_AngleAxis_mF37022977B297E63AA70D69EA1C4C922FF22CC80_inline (float ___0_angle, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_axis, const RuntimeMethod* method) 
 {
 	{
@@ -24660,7 +24731,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_1;
 	}
 }
-// Method Definition Index: 45596
+// Method Definition Index: 45600
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Distance_m2314DB9B8BD01157E013DF87BEA557375C7F9FF9_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24713,7 +24784,7 @@ IL_0040:
 		return L_19;
 	}
 }
-// Method Definition Index: 45615
+// Method Definition Index: 45619
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_op_UnaryNegation_m5450829F333BD2A88AF9A592C4EE331661225915_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24734,7 +24805,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_6;
 	}
 }
-// Method Definition Index: 45738
+// Method Definition Index: 45742
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector2__ctor_m9525B79969AFFE3254B303A40997A56DEEB6F548_inline (Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7* __this, float ___0_x, float ___1_y, const RuntimeMethod* method) 
 {
 	{
@@ -24748,7 +24819,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector2__ctor_m9525B79969AFF
 		return;
 	}
 }
-// Method Definition Index: 45769
+// Method Definition Index: 45773
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 Vector2_get_zero_m32506C40EC2EE7D5D4410BF40D3EE683A3D5F32C_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24763,7 +24834,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2D
 		return L_0;
 	}
 }
-// Method Definition Index: 45770
+// Method Definition Index: 45774
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 Vector2_get_one_m9097EB8DC23C26118A591AF16702796C3EF51DFB_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24778,7 +24849,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2D
 		return L_0;
 	}
 }
-// Method Definition Index: 45451
+// Method Definition Index: 45455
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C1F Color_get_black_mB50217951591A045844C61E7FF31EEE3FEF16737_inline (const RuntimeMethod* method) 
 {
 	{
@@ -24789,7 +24860,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED02
 		return L_0;
 	}
 }
-// Method Definition Index: 45767
+// Method Definition Index: 45771
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 Vector2_op_Implicit_mE8EBEE9291F11BB02F062D6E000F4798968CBD96_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_v, const RuntimeMethod* method) 
 {
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 V_0;
@@ -24807,7 +24878,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2D
 		return L_4;
 	}
 }
-// Method Definition Index: 45757
+// Method Definition Index: 45761
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 Vector2_op_Addition_m8136742CE6EE33BA4EB81C5F584678455917D2AE_inline (Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___0_a, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___1_b, const RuntimeMethod* method) 
 {
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 V_0;
@@ -24829,7 +24900,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector2_t1FD6F485C871E832B347AB2D
 		return L_8;
 	}
 }
-// Method Definition Index: 45710
+// Method Definition Index: 45714
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline (float ___0_value, float ___1_min, float ___2_max, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -24886,7 +24957,7 @@ IL_001d:
 		return L_9;
 	}
 }
-// Method Definition Index: 45459
+// Method Definition Index: 45463
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED0260B9591F440C1F Color_get_red_mA2E53E7173FDC97E68E335049AB0FAAEE43A844D_inline (const RuntimeMethod* method) 
 {
 	{
@@ -24897,7 +24968,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Color_tD001788D726C3A7F1379BEED02
 		return L_0;
 	}
 }
-// Method Definition Index: 45577
+// Method Definition Index: 45581
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* __this, float ___0_x, float ___1_y, float ___2_z, const RuntimeMethod* method) 
 {
 	{
@@ -24914,7 +24985,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3__ctor_m376936E6B999E
 		return;
 	}
 }
-// Method Definition Index: 45655
+// Method Definition Index: 45659
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline (float ___0_x, float ___1_y, float ___2_z, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -24933,7 +25004,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_3;
 	}
 }
-// Method Definition Index: 45753
+// Method Definition Index: 45757
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector2_Distance_mBACBB1609E1894D68F882D86A93519E311810C89_inline (Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___0_a, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___1_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25019,7 +25090,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 45579
+// Method Definition Index: 45583
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Scale_m7C3CD199271902D5C00CBF35CD230DEB62B68CAE_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_a, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_b, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -25046,7 +25117,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_12;
 	}
 }
-// Method Definition Index: 45606
+// Method Definition Index: 45610
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_get_one_mC9B289F1E15C42C597180C9FE6FB492495B51D02_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25061,7 +25132,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 52555
+// Method Definition Index: 52600
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* FishingRodView_get_RodTip_m3ADC92CD1C95255C7D3E59A3E05C72C0743BED9A_inline (FishingRodView_t0398935C302B9CCEB343645D9520F1F4E5F2A853* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25070,7 +25141,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A
 		return L_0;
 	}
 }
-// Method Definition Index: 52175
+// Method Definition Index: 52220
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float CaughtFishFlop_get_SwingBoost_m1935F54972E594DD45FAFA1B32E14FEDA4A58E5A_inline (CaughtFishFlop_t967DFE85F8FFDA7EF376FB19C8B5734F56CB073C* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25079,7 +25150,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float CaughtFishFlop_get_SwingBoo
 		return L_0;
 	}
 }
-// Method Definition Index: 45645
+// Method Definition Index: 45649
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_op_Multiply_mCB375FCCC12A2EC8F9EB824A1BFB4453B58C2012_inline (Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___0_lhs, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rhs, const RuntimeMethod* method) 
 {
 	Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 V_0;
@@ -25168,7 +25239,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool Single_IsNegativeInfinity_mF
 		return (bool)((((float)L_0) == ((float)(-std::numeric_limits<float>::infinity())))? 1 : 0);
 	}
 }
-// Method Definition Index: 45641
+// Method Definition Index: 45645
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_upwards, const RuntimeMethod* method) 
 {
 	{
@@ -25178,7 +25249,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_0;
 	}
 }
-// Method Definition Index: 45644
+// Method Definition Index: 45648
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 Quaternion_get_identity_m7E701AE095ED10FD5EA0B50ABCFDE2EEFF2173A5_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25193,7 +25264,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_0;
 	}
 }
-// Method Definition Index: 45591
+// Method Definition Index: 45595
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_m9B5EBE36643126708DB3F444C59C11FA30803DBB_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_rhs, const RuntimeMethod* method) 
 {
 	{
@@ -25213,7 +25284,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector3_Dot_m9B5EBE36643126
 		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_1, L_3)), ((float)il2cpp_codegen_multiply(L_5, L_7)))), ((float)il2cpp_codegen_multiply(L_9, L_11))));
 	}
 }
-// Method Definition Index: 45587
+// Method Definition Index: 45591
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Normalize_m1DE89849FE2019B6AA0031306896F3B800849399_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_value, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25280,7 +25351,7 @@ IL_0050:
 		return L_14;
 	}
 }
-// Method Definition Index: 45709
+// Method Definition Index: 45713
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Mathf_Sign_m42EE1F0BC041AF14F89DED7F762BE996E2C50D8A_inline (float ___0_f, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -25402,7 +25473,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Bounds_Encapsulate_m96221CB8
 		return;
 	}
 }
-// Method Definition Index: 45602
+// Method Definition Index: 45606
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Min_m8E66B8A553166603505B72F5011ED9E0A2CB1413_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_rhs, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
@@ -25435,7 +25506,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_15;
 	}
 }
-// Method Definition Index: 45604
+// Method Definition Index: 45608
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 Vector3_Max_m60E53C4131016B84E7E592A8D950DADA96F526EC_inline (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___0_lhs, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* ___1_rhs, const RuntimeMethod* method) 
 {
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 V_0;
