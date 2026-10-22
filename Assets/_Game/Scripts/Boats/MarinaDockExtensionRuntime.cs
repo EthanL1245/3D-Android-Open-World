@@ -103,11 +103,14 @@ public sealed class MarinaDockExtensionRuntime : MonoBehaviour
     {
         Vector3 origin=marina.position;
         // Include visible scenery without colliders (e.g. foliage), and cache it once.
+        // Baked foam is presentation only. Its expanded wave/culling bounds are
+        // not solid scenery and must never block or reposition the marina.
         var scenery=new List<Renderer>();
         foreach(var renderer in FindObjectsByType<Renderer>(FindObjectsSortMode.None))
         {
             if(!renderer.enabled || !renderer.gameObject.activeInHierarchy || renderer.transform.IsChildOf(marina) ||
-               renderer.GetComponentInParent<OceanWater>()!=null || renderer.GetComponentInParent<FirstPersonController>()!=null ||
+               renderer.GetComponentInParent<OceanWater>()!=null || renderer.GetComponentInParent<ShorelineFoam>()!=null ||
+               renderer.GetComponentInParent<FirstPersonController>()!=null ||
                renderer.GetComponentInParent<AmbientFishAgent>()!=null || renderer.GetComponentInParent<BoatController>()!=null)continue;
             if((renderer.bounds.center-origin).sqrMagnitude<100f*100f)scenery.Add(renderer);
         }
