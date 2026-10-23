@@ -13,26 +13,28 @@ public sealed partial class FishingTournament : MonoBehaviour
     [Serializable] public sealed class Entry
     {
         public string id,name,status;
-        public int points,catches;
-        public float biggestKg;
+        public int points,catches,biggestSpecies;
+        public float biggestKg,totalKg;
     }
     [Serializable] public sealed class View
     {
-        public string id,phase,islandName,speciesName,winnerId,winnerName,biggestName,reason;
-        public int island,wager,pool,species;
+        public string id,phase,islandName,speciesName,winnerId,winnerName,biggestName,reason,mode;
+        public int island,wager,pool,species,biggestSpecies;
         public float inviteSeconds,startSeconds,secondsLeft,biggestKg;
         public double serverTime;
         public Entry[] entries;
     }
     [Serializable] public sealed class Command
     {
-        public string op,id,ticket;
+        public string op,id,ticket,mode;
         public int island,wager,balance,species,cast;
         public float kg;
     }
     [Serializable] private sealed class Request {public FishingMultiplayer.Pose pose;public Command tournament;}
     [Serializable] private sealed class ReceiptRequest {public string ticket;public bool cancelMissing=true;}
-    [Serializable] private sealed class Response {public bool ok,ready,refund;public string error;public int payout;public View tournament;}
+    [Serializable] private sealed class CatchListRequest {public string id,player;}
+    [Serializable] private sealed class CatchDetail {public int species;public string name;public float kg;}
+    [Serializable] private sealed class Response {public bool ok,ready,refund;public string error,player;public int payout;public float totalKg;public CatchDetail[] catches;public View tournament;}
     public static bool ModalOpen {get;private set;}
     private FishingMultiplayer session;
     private FirstPersonController controls;
@@ -50,7 +52,7 @@ public sealed partial class FishingTournament : MonoBehaviour
     private readonly List<GameObject> modalControls=new List<GameObject>();
     private readonly Queue<Command> commands=new Queue<Command>();
     private bool sending,recovering,wasConnected;
-    private string inFlightTicket="",screen="";
+    private string inFlightTicket="",screen="",selectedMode="species",teleportedTournamentId="";
     private int selectedIsland;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -86,10 +88,22 @@ public sealed partial class FishingTournament : MonoBehaviour
         current=view;receivedAt=Time.realtimeSinceStartup;
         if(canvas==null)return;
         var me=Mine();
+        // The server owns the start; all joined total-weight entrants arrive at
+        // the existing Suncrest dock before fishing begins. Retry if travel was busy.
+        if(view.mode=="weight" && (view.phase=="countdown" || view.phase=="running") &&
+           me?.status=="joined" && teleportedTournamentId!=view.id)
+        {
+            var travel=ShopDimensionManager.Instance;
+            if(travel!=null && !travel.Traveling)
+            {
+                travel.TravelIsland(0);
+                teleportedTournamentId=view.id;
+            }
+        }
         if(view.phase=="inviting" && shownInvite!=view.id && me!=null && me.status!="joined")
         {shownInvite=view.id;ShowInvitation();}
         if(view.phase=="countdown" && announcement!=view.id)
-        {announcement=view.id;Open("announcement","TOURNAMENT TARGET");}
+        {announcement=view.id;Open("announcement",view.mode=="weight"?"TOTAL WEIGHT TOURNAMENT":"TOURNAMENT TARGET");}
         if(view.phase=="running" && (screen=="announcement"||screen=="invitation"||screen=="lobby"))Close();
         if((view.phase=="ended"||view.phase=="cancelled") && shownResult!=view.id)
         {shownResult=view.id;ShowResults();nextRecovery=0;}
@@ -99,14 +113,14 @@ public sealed partial class FishingTournament : MonoBehaviour
     }
     private Entry Mine()=>current?.entries==null || session==null?null:Array.Find(current.entries,e=>e.id==session.LocalId);
     private bool Unlocked(int island)=>progress!=null && progress.Data!=null && (island==0 ||
-        island==1&&progress.Data.brinebreakDiscovered || island==3&&progress.Data.bluewaterDiscovered || island==4&&progress.Data.snapperDiscovered);
+        island==1&&progress.Data.brinebreakDiscovered || island==2 || island==3&&progress.Data.bluewaterDiscovered || island==4&&progress.Data.snapperDiscovered);
     private void Update()
     {
         if(canvas==null || session==null)return;
         bool connected=session.Connected;
         if(wasConnected && !connected)
         {
-            current=null;shownInvite=shownResult=announcement="";Close();
+            current=null;shownInvite=shownResult=announcement=teleportedTournamentId="";Close();
             Notice("Disconnected. Saved wagers will settle or be refunded by the server.");nextRecovery=0;
         }
         wasConnected=connected;
@@ -117,8 +131,11 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(current!=null && (current.phase=="running" || current.phase=="countdown"))
         {
             float left=Mathf.Max(0,current.secondsLeft-elapsed);
-            hud.text=current.speciesName+" • "+current.islandName+"\n"+(current.phase=="countdown"?"Starts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-elapsed))+"s":
-                string.Format("{0}:{1:00} remaining • {2} points • Pool {3:N0}",(int)left/60,(int)left%60,Mine()?.points??0,current.pool));
+            hud.text=(current.mode=="weight"?"TOTAL WEIGHT":current.speciesName)+" • "+current.islandName+"\n"+
+                (current.phase=="countdown"?"Starts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-elapsed))+"s":
+                current.mode=="weight"
+                  ?string.Format("{0}:{1:00} remaining • {2:0.00} kg • Pool {3:N0}",(int)left/60,(int)left%60,Mine()?.totalKg??0,current.pool)
+                  :string.Format("{0}:{1:00} remaining • {2} points • Pool {3:N0}",(int)left/60,(int)left%60,Mine()?.points??0,current.pool));
             // Never let a missed polling response leave the start announcement blocking controls.
             if(screen=="announcement" && elapsed>=current.startSeconds)Close();
         }
@@ -132,7 +149,7 @@ public sealed partial class FishingTournament : MonoBehaviour
     public void ReportCatch(CaughtFishRecord fish,int island,int cast)
     {
         if(current==null || current.phase!="running" || Mine()?.status!="joined" || !session.Connected ||
-            island!=current.island || FishCatalog.CanonicalId(fish.speciesId)!=current.species)return;
+            island!=current.island || (current.mode!="weight" && FishCatalog.CanonicalId(fish.speciesId)!=current.species))return;
         commands.Enqueue(new Command{op="catch",id=current.id,island=island,species=FishCatalog.CanonicalId(fish.speciesId),cast=cast,kg=fish.weightKg});
     }
     private bool Reserve(string id,int amount,out TournamentWager entry)
@@ -203,18 +220,28 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(!session.Connected){Open("info","FISHING TOURNAMENTS");body.text="Open or join a multiplayer server from MENU / TRAVEL first.";return;}
         if(current!=null && (current.phase=="inviting" || current.phase=="countdown" || current.phase=="running")){ShowLobby();return;}
         if(!session.IsHost){Open("info","FISHING TOURNAMENTS");body.text="Only the server host needs to visit this stand.\nThey choose the island and entry fee; everyone receives an invitation.";return;}
-        Open("islands","CATCH A RANDOM SPECIES");body.text="Choose the tournament island.\nThe server reveals one random species after invitations close.";
+        Open("modes","CHOOSE TOURNAMENT FORMAT");
+        body.text="Choose a classic target-species tournament in any unlocked fishing biome, or a total-weight tournament at Suncrest Beach.";
+        ActionButton("TARGET SPECIES • CHOOSE BIOME",15,OpenSpeciesIslands);
+        ActionButton("SUNCREST • TOTAL FISH WEIGHT",-85,()=>ChooseWager(0,"weight"));
+    }
+    private void OpenSpeciesIslands()
+    {
+        Open("islands","CATCH A RANDOM SPECIES");
+        body.text="Choose the tournament biome.\nThe server reveals one random species after invitations close.";
         int row=0;
-        foreach(int island in new[]{0,4,1,3})
+        foreach(int island in new[]{0,4,1,3,2})
         {
             int choice=island;bool unlocked=Unlocked(choice);
             ActionButton(ReefCatalog.Zones[choice].name+(unlocked?"":" — LOCKED"),80-row*80,()=>ChooseWager(choice),unlocked);row++;
         }
     }
-    private void ChooseWager(int island)
+    private void ChooseWager(int island,string mode="species")
     {
-        selectedIsland=island;Open("wager","ENTRY FEE • "+ReefCatalog.Zones[island].name.ToUpperInvariant());
-        body.text="100 points per kg of the target species. Six minutes.\nWinner takes all. Ties: biggest catch, then first to reach the score.\nNo qualifying catches or cancelled match: full refunds.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins";
+        selectedIsland=island;selectedMode=mode;Open("wager","ENTRY FEE • "+ReefCatalog.Zones[island].name.ToUpperInvariant());
+        body.text=mode=="weight"
+            ?"All participating anglers teleport to Suncrest Beach at the start.\nCatch any Suncrest fish; most TOTAL KG after six minutes wins.\nTies: biggest catch, then earliest score. Winner takes all.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins"
+            :"100 points per kg of the target species. Six minutes.\nWinner takes all. Ties: biggest catch, then first to reach the score.\nNo qualifying catches or cancelled match: full refunds.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins";
         var input=Panel("Wager",modal.transform,new Vector2(0,10),new Vector2(500,65),new Color(.95f,.95f,.9f));FishingHudTheme.Panel(input,3);modalControls.Add(input);
         wagerInput=input.AddComponent<InputField>();var text=Label(input.transform,"",26,Vector2.zero,new Vector2(470,60));text.color=Color.white;text.alignment=TextAnchor.MiddleLeft;
         wagerInput.textComponent=text;wagerInput.contentType=InputField.ContentType.IntegerNumber;wagerInput.characterLimit=7;wagerInput.text="100";
@@ -225,7 +252,7 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(!session.IsHost || !Unlocked(selectedIsland) || !int.TryParse(wagerInput.text,out int amount)){Notice("Enter a whole coin amount.");return;}
         string id=Guid.NewGuid().ToString("N");
         if(!Reserve(id,amount,out var entry))return;
-        commands.Enqueue(new Command{op="create",id=id,ticket=entry.ticket,balance=entry.balance,island=selectedIsland,wager=amount});
+        commands.Enqueue(new Command{op="create",id=id,ticket=entry.ticket,balance=entry.balance,island=selectedIsland,wager=amount,mode=selectedMode});
         Open("info","SENDING INVITATIONS");body.text="Reserving your entry and inviting the room…";
     }
     private void ShowInvitation()
@@ -250,16 +277,19 @@ public sealed partial class FishingTournament : MonoBehaviour
     private void RefreshText()
     {
         if(current==null || body==null)return;
-        if(screen=="invitation")body.text=current.islandName+" • "+current.wager.ToString("N0")+" coins to join\nSix minutes • 100 points per kg • Winner takes all\n\n"+
-            (!Unlocked(current.island)?"You have not unlocked this island and cannot join.":progress.Data.coins<current.wager?"You do not have enough coins to join.":"Join to wager the entry fee, or decline.\nThe target species is revealed after everyone responds.");
+        if(screen=="invitation")body.text=current.islandName+" • "+current.wager.ToString("N0")+" coins to join\nSix minutes • "+(current.mode=="weight"?"MOST TOTAL FISH WEIGHT":"100 points per target-species kg")+" • Winner takes all\n\n"+
+            (!Unlocked(current.island)?"You have not unlocked this island and cannot join.":progress.Data.coins<current.wager?"You do not have enough coins to join.":current.mode=="weight"?"Join to compete, or decline.\nJoined players teleport to Suncrest Beach at match countdown.":"Join to wager the entry fee, or decline.\nThe target species is revealed after everyone responds.");
         else if(screen=="lobby")
         {
             body.rectTransform.anchoredPosition=new Vector2(0,40);body.rectTransform.sizeDelta=new Vector2(850,430);
-            var text=new StringBuilder(current.islandName+" • Pool "+current.pool.ToString("N0")+" coins\n\n");
+            var text=new StringBuilder((current.mode=="weight"?"TOTAL WEIGHT • ":"")+current.islandName+" • Pool "+current.pool.ToString("N0")+" coins\n\n");
             foreach(var e in current.entries??new Entry[0])text.AppendLine(e.name+" — "+e.status.ToUpperInvariant());
             text.Append("\nUnanswered invitations decline after 45 seconds.");body.text=text.ToString();
         }
-        else if(screen=="announcement")body.text="CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Other species do not score.\n\nStarts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-(Time.realtimeSinceStartup-receivedAt)))+" seconds";
+        else if(screen=="announcement")body.text=(current.mode=="weight"
+            ?"CATCH ANY SUNCREST FISH\n\nAll competitors are teleported to Suncrest Beach.\nMost total kilograms caught in six minutes wins. Only NEW casts in Suncrest waters score."
+            :"CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Other species do not score.")
+            +"\n\nStarts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-(Time.realtimeSinceStartup-receivedAt)))+" seconds";
         else if(screen=="results")
         {
             RefreshResults();
