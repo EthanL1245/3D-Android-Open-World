@@ -21,11 +21,14 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_EVEN_COVERAGE_V4";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_NEAR_ROCKS_V5";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     private const float AreaRadius = 150f;
     private const float MinimumRockClearance = .5f;
-    private const float GridCellSize = 6f;
+    private const float GridCellSize = 5f;
+    // Only the visible trunk/base needs stable terrain. A full palm crown
+    // does NOT have to sit inside a nearly-flat, dry 4m disk.
+    private const float GroundProbeRadius = .35f;
     private const int TargetPalms = 180;
     private const int TargetBushes = 400;
     private const int TargetGrass = 950;
@@ -154,78 +157,90 @@ public static class SuncrestSceneryScatterEditor
             return terrain.SampleHeight(point) + terrainOrigin.y;
         }
 
-        public bool DryLand(Vector3 point,float radius)
-        {
-            // The painted grass mask is deliberately NOT used. The old code's
-            // layer-name/alphamap test left the new beach entirely bare.
-            Vector2 offset = new Vector2(point.x-center.x,point.z-center.z);
-            float max = AreaRadius-radius;
-            if(max<=0f || offset.sqrMagnitude > max*max ||
-               !OnTerrain(point,radius+1f)) return false;
-            float u=(point.x-terrainOrigin.x)/terrainSize.x;
-            float v=(point.z-terrainOrigin.z)/terrainSize.z;
-            if(terrain.terrainData.GetSteepness(u,v)>55f) return false;
-            float ground=Height(point);
-            if(ground<water.BaseWaterLevel+.10f)return false;
+        public int noLandRejects,rockRejects,dockRejects,spacingRejects;
+        public int totalCandidates;
 
-            // Probes ensure none of the foliage footprint crosses into water.
-            // Trees, bushes and grass therefore stop at the shoreline.
-            for(int i=0;i<8;i++)
+        public bool DryLand(Vector3 point,float stemRadius)
+        {
+            // Test the ROOT, not the palm-crown footprint. The old 8-point
+            // ring / steepness restrictions filtered out nearly every patch
+            // around the mountain. These plants can be grounded onto slopes.
+            float edge=Mathf.Max(.1f,stemRadius);
+            Vector2 horizontal=new Vector2(point.x-center.x,point.z-center.z);
+            if(horizontal.sqrMagnitude>(AreaRadius-edge)*(AreaRadius-edge) ||
+               !OnTerrain(point,edge+.2f))
+                return false;
+            float sea=water.BaseWaterLevel;
+            float height=Height(point);
+            if(height<sea+.06f)return false;
+
+            // Root-width probes keep stems on land, but canopies are free
+            // to extend toward the shoreline or slope.
+            float testRadius=Mathf.Min(GroundProbeRadius,
+                Mathf.Max(.1f,stemRadius));
+            for(int i=0;i<4;i++)
             {
-                float angle=i*Mathf.PI*.25f;
-                Vector3 p=point+new Vector3(Mathf.Cos(angle)*radius,0f,
-                                               Mathf.Sin(angle)*radius);
-                if(!OnTerrain(p,.1f) ||
-                   Height(p)<water.BaseWaterLevel+.08f ||
-                   Mathf.Abs(Height(p)-ground)>radius*.65f+.45f) return false;
+                float angle=i*Mathf.PI*.5f;
+                Vector3 sample=point+new Vector3(Mathf.Cos(angle)*testRadius,
+                    0f,Mathf.Sin(angle)*testRadius);
+                if(!OnTerrain(sample,.05f) ||
+                   Height(sample)<sea+.03f) return false;
             }
             return true;
         }
 
         private bool TooCloseToRock(Vector3 point,float stemRadius,
-            float clearHeight)
+            float stemHeight)
         {
-            // Check only real rock geometry near the planting surface. The
-            // old ray from the TOP of an entire mountain projected every
-            // overhang onto the terrain, rejecting most of the island.
+            // Earlier versions traced DOWN from the top of every mountain
+            // and excluded the ground below its entire horizontal projection.
+            // Here, test only real rock surfaces within half a metre of
+            // the vertical STEM near the terrain. A mountain rising several
+            // metres overhead does not cast an artificial exclusion shadow.
             float ground=Height(point);
-            float minDistance=MinimumRockClearance+stemRadius;
-            float minSq=minDistance*minDistance;
-            Vector3 foot=new Vector3(point.x,ground,point.z);
-
+            float clearance=MinimumRockClearance+stemRadius;
+            float maxHeight=Mathf.Min(stemHeight,2.2f);
+            float distSq=clearance*clearance;
             for(int i=0;i<rockColliders.Count;i++)
             {
                 Collider c=rockColliders[i];
                 if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
                     continue;
-                Bounds b=c.bounds;
-                if(b.min.x>point.x+minDistance ||
-                   b.max.x<point.x-minDistance ||
-                   b.min.z>point.z+minDistance ||
-                   b.max.z<point.z-minDistance ||
-                   b.max.y<ground-.35f ||
-                   b.min.y>ground+clearHeight+minDistance)
+                Bounds bounds=c.bounds;
+                if(bounds.min.x>point.x+clearance ||
+                   bounds.max.x<point.x-clearance ||
+                   bounds.min.z>point.z+clearance ||
+                   bounds.max.z<point.z-clearance ||
+                   bounds.max.y<ground-.3f ||
+                   bounds.min.y>ground+maxHeight+clearance)
                     continue;
 
-                // True collider distance, allowing stems to within 0.5m
-                // of the rock surface rather than a radius-sized exclusion.
-                for(int h=0;h<4;h++)
+                // A single narrow trunk clearance allows growth directly
+                // beside rock faces, instead of discarding whole vegetation
+                // footprints. ClosestPoint uses the actual mesh collider.
+                for(int j=0;j<4;j++)
                 {
-                    float height=h==0?.2f:h==1?.8f:
-                        h==2?Mathf.Min(2f,clearHeight):clearHeight;
-                    Vector3 at=foot+Vector3.up*height;
-                    if((c.ClosestPoint(at)-at).sqrMagnitude<minSq)
+                    float h=j==0?.08f:j==1?.55f:
+                        j==2?1.15f:maxHeight;
+                    if(h>maxHeight)h=maxHeight;
+                    Vector3 baseSample=new Vector3(point.x,ground+h,point.z);
+                    Vector3 nearest=c.ClosestPoint(baseSample);
+                    if((nearest-baseSample).sqrMagnitude<distSq)
+                    {
+                        // Some buried meshes intersect terrain internally.
+                        // If the visible top of the rock at this XZ lies
+                        // BELOW the terrain, it must not block vegetation.
+                        RaycastHit topHit;
+                        float startY=bounds.max.y+.5f;
+                        bool hasTop=c.Raycast(new Ray(
+                            new Vector3(point.x,startY,point.z),
+                            Vector3.down),out topHit,
+                            Mathf.Max(1f,startY-ground+2f));
+                        if(hasTop && topHit.point.y<ground-.08f)
+                            continue;
                         return true;
+                    }
                 }
-
-                // Only reject a low overhead rock within the height of
-                // this plant, not distant high overhangs and cliff faces.
-                RaycastHit hit;
-                Vector3 from=foot+Vector3.up*(clearHeight+.1f);
-                if(c.Raycast(new Ray(from,Vector3.down),out hit,
-                             clearHeight+.45f) &&
-                   hit.point.y>=ground-.35f)
-                    return true;
             }
             return false;
         }
@@ -238,13 +253,19 @@ public static class SuncrestSceneryScatterEditor
             {
                 float required=radius+radii[i];
                 if((position-occupied[i]).sqrMagnitude < required*required)
+                {
+                    spacingRejects++;
                     return false;
+                }
             }
             for(int i=0;i<existingTrees.Count;i++)
             {
                 float min=radius+2f;
                 if((position-existingTrees[i]).sqrMagnitude<min*min)
+                {
+                    spacingRejects++;
                     return false;
+                }
             }
             if(marina!=null)
             {
@@ -252,7 +273,10 @@ public static class SuncrestSceneryScatterEditor
                 Vector3 local=marina.InverseTransformPoint(point);
                 if(Mathf.Abs(local.x)<radius+9f &&
                    local.z>-16f-radius && local.z<51f+radius)
+                {
+                    dockRejects++;
                     return false;
+                }
             }
             for(int i=0;i<marinaBounds.Count;i++)
             {
@@ -260,9 +284,18 @@ public static class SuncrestSceneryScatterEditor
                 if(point.x>=b.min.x-radius-3f &&
                    point.x<=b.max.x+radius+3f &&
                    point.z>=b.min.z-radius-3f &&
-                   point.z<=b.max.z+radius+3f) return false;
+                   point.z<=b.max.z+radius+3f)
+                {
+                    dockRejects++;
+                    return false;
+                }
             }
-            return !TooCloseToRock(point,stemRadius,clearHeight);
+            if(TooCloseToRock(point,stemRadius,clearHeight))
+            {
+                rockRejects++;
+                return false;
+            }
+            return true;
         }
 
         public void Claim(Vector3 point,float radius)
@@ -342,8 +375,14 @@ public static class SuncrestSceneryScatterEditor
             Vector3 point=s.Candidate();
             float scale=s.Rand(minScale,maxScale);
             float radius=footprintRadius*scale;
-            if(!s.DryLand(point,radius) ||
-               !s.Available(point,radius,stemRadius*scale,clearHeight*scale))
+            float stem=stemRadius*scale;
+            s.totalCandidates++;
+            if(!s.DryLand(point,stem))
+            {
+                s.noLandRejects++;
+                continue;
+            }
+            if(!s.Available(point,radius,stem,clearHeight*scale))
                 continue;
 
             GameObject plant=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
@@ -443,10 +482,15 @@ public static class SuncrestSceneryScatterEditor
             staged.name=GroupName;
             EditorSceneManager.MarkSceneDirty(scene);
             Physics.SyncTransforms();
-            Debug.Log("[SUNCREST FOLIAGE] Even 6m grid and 0.5m rock clearance: "+a+" palms / "+
-                b+" SeaGrape bushes / "+c+" grass clumps. NO beach rocks or "+
-                "limestone added. Saved rock transforms untouched. "+
-                "Group objects are individually editable; press Ctrl+S to save.");
+            Debug.Log("[SUNCREST FOLIAGE] V5: "+a+" palms / "+
+                b+" SeaGrape bushes / "+c+" grass clumps. Candidate attempts "+
+                scatter.totalCandidates+": unsuitable land "+scatter.noLandRejects+
+                ", rock clearance "+scatter.rockRejects+
+                ", marina/dock "+scatter.dockRejects+
+                ", plant spacing "+scatter.spacingRejects+
+                ". Used actual stem clearance of 0.5m from rock meshes, "+
+                "not crowns / mountain-height columns. No rocks generated. "+
+                "Save the scene with Ctrl+S.");
         }
         catch
         {
