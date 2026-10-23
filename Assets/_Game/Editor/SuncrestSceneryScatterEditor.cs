@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 /// Populates the NEW Suncrest Beach, up to 195 metres from the world-space centre
 /// of the artist's main Suncrest rock. Uses the ORIGINAL Palm / SeaGrape / Grass
 /// prefabs and seeded, stratified placement across the entire island.
+/// Extra palms are added BEFORE bushes/grass can occupy otherwise empty land.
 /// No terrain-paint dependency: any DRY, sufficiently level island terrain
 /// may receive vegetation, right up to the shoreline. The artist's rocks,
 /// their undersides, the marina/dock and existing vegetation are protected.
@@ -21,14 +22,15 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_EXPANDED_COVERAGE_V6";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_FILL_INTERIOR_V7";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     // Preserve the 150 m tree line that now follows the mountains.
     private const float AreaRadius = 150f;
     // The added planting pass can extend past that radius, but only on dry
     // land belonging to NEW Suncrest Beach around the main rock.
     private const float ExpandedRadius = 195f;
-    private const int ExtraPalms = 170;
+    private const int ExtraPalms = 210;
+    private const float FillGridStep = 7f;
     private const float MinimumRockClearance = .5f;
     private const float GridCellSize = 5f;
     // Only the visible trunk/base needs stable terrain. A full palm crown
@@ -66,6 +68,41 @@ public static class SuncrestSceneryScatterEditor
             existing.transform.Find(VersionMarker) != null) return;
         try { Generate(); }
         catch(Exception error) { Debug.LogError("[SUNCREST FOLIAGE] " + error); }
+    }
+
+    [MenuItem("Tools/Open World/Manual Scenery/Inspect Generated Suncrest Foliage")]
+    public static void InspectGenerated()
+    {
+        if(!Ready())
+        {
+            Debug.LogWarning("[SUNCREST FOLIAGE] Open PrototypeWorld in Edit Mode.");
+            return;
+        }
+        GameObject group=GameObject.Find(GroupName);
+        if(group==null)
+        {
+            Debug.LogWarning("[SUNCREST FOLIAGE] No generated foliage group "+
+                "in the scene. Run Rebuild NEW Suncrest Beach Foliage Only.");
+            return;
+        }
+        Transform palms=group.transform.Find("Palms - Individually Editable");
+        int baseline=0,extra=0;
+        if(palms!=null)
+            foreach(Transform tree in palms)
+            {
+                if(tree.name.StartsWith("Palm_Fill_",StringComparison.Ordinal))
+                    extra++;
+                else if(tree.name.StartsWith("Palm_",StringComparison.Ordinal))
+                    baseline++;
+            }
+        bool current=group.transform.Find(VersionMarker)!=null;
+        Debug.Log("[SUNCREST FOLIAGE INSPECT] V7 marker="+current+
+            ", original palms="+baseline+", new inland palms="+extra+
+            ". Selected group="+group.name+
+            ". Expand Palms - Individually Editable in the Hierarchy to "+
+            "locate each Palm_Fill_#### object.");
+        Selection.activeGameObject=group;
+        EditorGUIUtility.PingObject(group);
     }
 
     [MenuItem("Tools/Open World/Manual Scenery/Rebuild NEW Suncrest Beach Foliage Only")]
@@ -407,35 +444,50 @@ public static class SuncrestSceneryScatterEditor
     }
 
     /// <summary>
-    /// A second outward-growth pass on top of the EXISTING successful planting.
-    /// Keep every first-pass palm, SeaGrape and grass position unchanged.
-    /// Sample 7-58 m around established palms, including land beyond the old
-    /// 150 m circle, but never water, hand-placed rocks or the dock.
+    /// Fill the remaining inland clearings. Plant the additional palms
+    /// immediately AFTER the successful original palms but BEFORE shrubs
+    /// and grass. In V6 this pass ran after 1,350 shrubs/grass patches,
+    /// whose occupied-radius checks rejected new trees almost everywhere.
+    /// The independent, seeded 7 m stratified grid covers the whole dry
+    /// Suncrest island, not only points within 58 m of existing palms.
     /// </summary>
-    private static int ExtendPalmsFromExisting(Scatter s, GameObject prefab,
-        Transform palmGroup)
+    private static int FillRemainingPalmCoverage(Scatter s,GameObject prefab,
+        Transform palmGroup,out int usableCells)
     {
-        var anchors=new List<Vector2>();
-        foreach(Transform child in palmGroup)
-            if(child.name.StartsWith("Palm_",StringComparison.Ordinal))
-                anchors.Add(new Vector2(child.position.x,child.position.z));
-        if(anchors.Count==0)return 0;
-
-        // Independent RNG preserves the baseline tree, bush and grass positions.
-        var rng=new System.Random(77317);
-        int placed=0;
-        const int MaxAttempts=60000;
-        for(int attempt=0;attempt<MaxAttempts && placed<ExtraPalms;attempt++)
+        var cells=new List<Vector2>();
+        int range=Mathf.CeilToInt(ExpandedRadius/FillGridStep);
+        for(int x=-range;x<=range;x++)
+        for(int z=-range;z<=range;z++)
         {
-            Vector2 anchor=anchors[rng.Next(anchors.Count)];
-            float angle=(float)rng.NextDouble()*Mathf.PI*2f;
-            // Spread out over nearby dry clearings, not another narrow ring.
-            float distance=Mathf.Lerp(7f,58f,
-                Mathf.Sqrt((float)rng.NextDouble()));
+            Vector2 p=new Vector2((x+.5f)*FillGridStep,
+                (z+.5f)*FillGridStep);
+            if(p.sqrMagnitude<ExpandedRadius*ExpandedRadius)
+                cells.Add(p);
+        }
+
+        // Separate RNG keeps the first 180 palm placements exactly as
+        // before, and new random positions are repeatable between rebuilds.
+        var rng=new System.Random(77317);
+        for(int i=cells.Count-1;i>0;i--)
+        {
+            int j=rng.Next(i+1);
+            Vector2 v=cells[i];cells[i]=cells[j];cells[j]=v;
+        }
+
+        usableCells=0;
+        int placed=0;
+        // Use up to three attempts per cell to cover patches rejected only
+        // because their first jitter landed too close to rock/water.
+        for(int pass=0;pass<3 && placed<ExtraPalms;pass++)
+        for(int i=0;i<cells.Count && placed<ExtraPalms;i++)
+        {
+            Vector2 cell=cells[(i+pass*73)%cells.Count];
+            float jitter=FillGridStep*.47f;
             Vector3 point=new Vector3(
-                anchor.x+Mathf.Cos(angle)*distance,0f,
-                anchor.y+Mathf.Sin(angle)*distance);
-            float scale=Mathf.Lerp(.70f,1.2f,(float)rng.NextDouble());
+                s.center.x+cell.x+Mathf.Lerp(-jitter,jitter,(float)rng.NextDouble()),
+                0f,
+                s.center.z+cell.y+Mathf.Lerp(-jitter,jitter,(float)rng.NextDouble()));
+            float scale=Mathf.Lerp(.72f,1.12f,(float)rng.NextDouble());
             float canopyRadius=1.9f*scale;
             float trunkRadius=.30f*scale;
             s.totalCandidates++;
@@ -444,12 +496,13 @@ public static class SuncrestSceneryScatterEditor
                 s.noLandRejects++;
                 continue;
             }
+            usableCells++;
             if(!s.Available(point,canopyRadius,trunkRadius,3.5f*scale))
                 continue;
 
             GameObject tree=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            if(tree==null)throw new InvalidOperationException(
-                "Failed to instantiate the original Suncrest Palm prefab.");
+            if(tree==null)
+                throw new InvalidOperationException("Original Suncrest Palm prefab failed to instantiate.");
             tree.name="Palm_Fill_"+placed.ToString("D4");
             tree.transform.SetParent(palmGroup,false);
             tree.transform.SetPositionAndRotation(
@@ -528,17 +581,25 @@ public static class SuncrestSceneryScatterEditor
 
             int a=PlacePrefabs(scatter,palm,palms.transform,
                 "Palm",TargetPalms,30000,.7f,1.2f,1.9f,false,.30f,3.5f);
+            // Trees first! Reserve the open land for the new fill trees
+            // before bushes and grass claim thousands of ground patches.
+            int possibleFillSites;
+            int extra=FillRemainingPalmCoverage(scatter,palm,palms.transform,
+                out possibleFillSites);
             int b=PlacePrefabs(scatter,shrub,bushes.transform,
                 "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true,.23f,1.6f);
             int c=PlacePrefabs(scatter,grass,grasses.transform,
                 "Grass",TargetGrass,90000,.6f,1.6f,.34f,false,.10f,.8f);
-            // Add trees after the existing pass so ALL successful locations
-            // remain as they were and foliage expands across open land.
-            int extra=ExtendPalmsFromExisting(scatter,palm,palms.transform);
             if(a+b+c+extra==0)throw new InvalidOperationException(
                 "No valid dry island terrain was found near the main Suncrest rock. "+
                 "Check the terrain heights relative to the ocean.");
 
+            if(extra<25)
+                Debug.LogWarning("[SUNCREST FOLIAGE] Only "+extra+
+                    " of "+ExtraPalms+" interior palms were planted. "+
+                    "This usually means dry terrain or rock collider checks "+
+                    "are rejecting the remaining cells. Check the V7 "+
+                    "rejection counts instead of assuming they were placed.");
             var marker=new GameObject(VersionMarker);
             marker.transform.SetParent(staged.transform,false);
             if(old!=null)Undo.DestroyObjectImmediate(old);
@@ -546,8 +607,9 @@ public static class SuncrestSceneryScatterEditor
             staged.name=GroupName;
             EditorSceneManager.MarkSceneDirty(scene);
             Physics.SyncTransforms();
-            Debug.Log("[SUNCREST FOLIAGE] V6: "+(a+extra)+" palms ("+
-                a+" original + "+extra+" expanded-fill), "+
+            Debug.Log("[SUNCREST FOLIAGE] V7: "+(a+extra)+" palms ("+
+                a+" rock-edge + "+extra+" full-island fill, "+
+                possibleFillSites+" dry fill candidates), "+
                 b+" SeaGrape bushes / "+c+" grass clumps. Candidate attempts "+
                 scatter.totalCandidates+": unsuitable land "+scatter.noLandRejects+
                 ", rock clearance "+scatter.rockRejects+
