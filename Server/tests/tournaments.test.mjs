@@ -20,7 +20,7 @@ function setup(options={}) {
 }
 function catchFish(f,p,weight,cast=11,extra={}){
  p.pose.castSequence=cast;
- return f.game.action(p,{op:'catch',id:tid,cast,island:0,species:f.room.tournament.target.id,kg:weight,...extra});
+ return f.game.action(p,{op:'catch',id:tid,cast,island:0,species:f.room.tournament.target?.id??0,kg:weight,...extra});
 }
 test('only host creates; locked players and insufficient balances cannot wager',()=>{
  const f=setup();assert.throws(()=>f.game.action(f.guest,f.create),/Only the host/);
@@ -104,4 +104,48 @@ test('eight-player pool pays once, excluding a declined entry, and stays inside 
  assert.equal(view.pool,7000000);assert.equal(view.winnerId,'host');
  assert.equal(f.game.receipt({ticket:ht}).payout,7000000);
  assert.equal(f.game.view(f.room).entries.find(e=>e.id==='p7').status,'declined');
+});
+
+test('Deep Ocean is a valid species tournament biome',()=>{
+ const f=setup();
+ f.game.action(f.host,{...f.create,island:2});
+ const view=f.game.action(f.guest,f.joinGuest);
+ assert.equal(view.island,2);assert.equal(view.mode,'species');
+ assert(tournamentIslands[2].fish.some(species=>species.id===view.species));
+ f.setTime(6000);f.game.tick(f.room);
+ f.guest.pose.castSequence=11;
+ const landed=f.game.action(f.guest,{op:'catch',id:tid,cast:11,island:2,species:view.species,kg:1});
+ assert.equal(landed.entries.find(e=>e.id==='guest').catches,1);
+});
+test('100 percent Charm on top of hotspot max is accepted, but excessive weights are rejected',()=>{
+ const f=setup({random:()=>6}); // Suncrest Bigeye Tuna, 9 kg hotspot maximum.
+ f.start();
+ assert.equal(f.room.tournament.target.id,8);
+ catchFish(f,f.guest,17.99,11);
+ assert.throws(()=>catchFish(f,f.guest,18.02,12),/Invalid tournament catch/);
+ assert.equal(f.game.view(f.room).entries.find(e=>e.id==='guest').points,1799);
+});
+test('Suncrest total-weight tournament includes all local species and has private on-demand catch lists',()=>{
+ const f=setup();
+ assert.throws(()=>f.game.action(f.host,{...f.create,mode:'weight',island:2}),/Invalid tournament format/);
+ f.game.action(f.host,{...f.create,mode:'weight'});
+ let view=f.game.action(f.guest,f.joinGuest);
+ assert.equal(view.mode,'weight');assert.equal(view.species,-1);
+ f.setTime(6000);f.game.tick(f.room);
+ catchFish(f,f.guest,17.9,11,{species:8});
+ catchFish(f,f.guest,14,12,{species:3});
+ assert.throws(()=>catchFish(f,f.guest,2,13,{species:19}),/does not match/);
+ view=f.game.view(f.room);
+ const row=view.entries.find(e=>e.id==='guest');
+ assert.equal(row.catches,2);assert(Math.abs(row.totalKg-31.9)<1e-5);
+ assert.equal(row.points,3190);assert.equal(view.biggestSpecies,8);
+ assert(!JSON.stringify(view).includes('history')); // 10 Hz snapshots do not leak full lists.
+ assert.throws(()=>f.game.catches(f.host,{id:tid,player:f.guest.id}),/not available/);
+ f.setTime(366000);view=f.game.view(f.room);
+ assert.equal(view.winnerId,'guest');
+ const list=f.game.catches(f.host,{id:tid,player:f.guest.id});
+ assert.equal(list.catches.length,2);
+ assert.deepEqual(list.catches.map(c=>c.name),['Bigeye Tuna','Yellowtail']);
+ assert(Math.abs(list.totalKg-31.9)<1e-5);
+ assert.throws(()=>f.game.catches(f.host,{id:tid,player:'unknown'}),/not found/);
 });
