@@ -4,14 +4,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Collision for hand-placed Suncrest rocks and independently scattered beach rocks.
+/// Collision for hand-placed Suncrest rocks. Auto-generated scenery is foliage only.
 /// Uses existing mesh geometry (no box surrogates), without changing rock transforms.
 /// The original Suncrest main rock continues to use SuncrestMainRockCollision.
 /// </summary>
 public static class SuncrestPlacedRockCollision
 {
     public const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
-    public const string GeneratedName = "SUNCREST AUTO SCENERY - FOLIAGE AND BEACH ROCKS";
+    public const string GeneratedName = "SUNCREST AUTO SCENERY - FOLIAGE ONLY";
+    public const string LegacyGeneratedName = "SUNCREST AUTO SCENERY - FOLIAGE AND BEACH ROCKS";
     private static readonly List<Collider> Rocks = new List<Collider>(128);
     private static readonly HashSet<Collider> RockSet = new HashSet<Collider>();
     private static readonly Collider[] Overlaps = new Collider[128];
@@ -63,14 +64,10 @@ public static class SuncrestPlacedRockCollision
         }
         foreach (GameObject root in scene.GetRootGameObjects())
         {
-            if (root.name == GeneratedName)
-            {
-                Transform batch = root.transform.Find("Shore Rocks");
-                if (batch != null)
-                    foreach (Transform piece in batch)
-                        yield return piece.gameObject;
+            // Do not treat auto-generated beach stones (from an obsolete
+            // generation) as user-authored collision; the editor removes them.
+            if (root.name == GeneratedName || root.name == LegacyGeneratedName)
                 continue;
-            }
             if (root.name == "WorldDecor")
             {
                 Transform placed = root.transform.Find("Rocks");

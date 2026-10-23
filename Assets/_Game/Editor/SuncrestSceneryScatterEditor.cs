@@ -4,39 +4,45 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Restores the original Suncrest Palm/SeaGrape/Grass prefabs with the original
-/// reproducible angle + square-root-radius sampling, filtered by the *current*
-/// painted grass TerrainLayers. Scatters each imported Low Poly rock mesh as
-/// an INDEPENDENT GameObject across sand throughout the 150 m Suncrest area,
-/// plus up to 10 m offshore where water is at most 2 m deep.
-/// Protects all authored rocks, the entire marina/dock, and existing trees.
-/// No changes to terrain heights/alphamaps or any hand-placed object transforms.
+/// Populates the NEW Suncrest Beach, within 150 metres of the world-space centre
+/// of the artist's main Suncrest rock. Uses the ORIGINAL Palm / SeaGrape / Grass
+/// prefabs and seeded polar / square-root-radius random placement.
+/// No terrain-paint dependency: any DRY, sufficiently level island terrain
+/// may receive vegetation, right up to the shoreline. The artist's rocks,
+/// their undersides, the marina/dock and existing vegetation are protected.
+/// Never scatters limestone, beach stones or any other rocks.
 /// </summary>
 [InitializeOnLoad]
 public static class SuncrestSceneryScatterEditor
 {
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
-    private const string Base = "Assets/_Game/Reef/Generated/";
-    private const string LowPoly = "Assets/Manually Added Assets/Suncrest Beach Rock Pack Low Poly.fbx";
-    private const string BrownMaterial = "Assets/Manually Added Assets/Suncrest Beach Main Rock - Editable.mat";
-    private const float SuncrestRadius = 150f;
-    private const string VersionMarker = "SUNCREST_SCENERY_150M_V2";
-    private static readonly Collider[] Probe = new Collider[256];
+    private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
+    private const string VersionMarker = "SUNCREST_FOLIAGE_ONLY_V3";
+    private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
+    private const float AreaRadius = 150f;
+    private const int TargetPalms = 180;
+    private const int TargetBushes = 400;
+    private const int TargetGrass = 950;
+    private static bool generating;
 
     static SuncrestSceneryScatterEditor()
     {
         EditorApplication.delayCall += PopulateOnOpen;
-        EditorSceneManager.sceneOpened += (scene,mode) => EditorApplication.delayCall += PopulateOnOpen;
+        EditorSceneManager.sceneOpened += OnSceneOpened;
+    }
+
+    private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
+    {
+        EditorApplication.delayCall += PopulateOnOpen;
     }
 
     private static bool Ready()
     {
-        return !EditorApplication.isPlayingOrWillChangePlaymode &&
+        return !generating && !EditorApplication.isPlayingOrWillChangePlaymode &&
             !EditorApplication.isCompiling &&
             SceneManager.GetActiveScene().path == ScenePath;
     }
@@ -44,444 +50,372 @@ public static class SuncrestSceneryScatterEditor
     private static void PopulateOnOpen()
     {
         if (!Ready()) return;
-        GameObject old=GameObject.Find(GroupName);
-        if (old!=null && old.transform.Find(VersionMarker)!=null) return;
-        try { Generate(old!=null); }
-        catch(Exception e) { Debug.LogError("[SUNCREST SCENERY] "+e); }
+        GameObject existing = GameObject.Find(GroupName);
+        GameObject legacy = GameObject.Find(LegacyGroupName);
+        if (legacy == null && existing != null &&
+            existing.transform.Find(VersionMarker) != null) return;
+        try { Generate(); }
+        catch(Exception error) { Debug.LogError("[SUNCREST FOLIAGE] " + error); }
     }
 
-    [MenuItem("Tools/Open World/Manual Scenery/Rebuild Suncrest 150m Foliage and Sand Rocks")]
+    [MenuItem("Tools/Open World/Manual Scenery/Rebuild NEW Suncrest Beach Foliage Only")]
     public static void Rebuild()
     {
         if (!Ready())
         {
-            Debug.LogWarning("[SUNCREST SCENERY] Open PrototypeWorld in Edit Mode first.");
+            Debug.LogWarning("[SUNCREST FOLIAGE] Open PrototypeWorld in Edit Mode.");
             return;
         }
-        if (!EditorUtility.DisplayDialog("Rebuild Suncrest auto scenery",
-            "Replace ONLY the auto-generated Suncrest scenery in the main rock's 150 m area?\n\n" +
-            "Hand-placed rocks, existing trees, dock, marina and terrain remain untouched.\n" +
-            "This will replace any manual edits made inside the generated group.", "Regenerate", "Cancel"))
-            return;
-        try { Generate(true); }
-        catch(Exception e) { Debug.LogError("[SUNCREST SCENERY] "+e); }
+        if(!EditorUtility.DisplayDialog("Rebuild New Suncrest Beach foliage",
+            "Replace ONLY automatically generated Suncrest foliage, using dry terrain within " +
+            "150 m of the main Suncrest rock? The original palms, SeaGrape bushes and grass " +
+            "are distributed without regard to terrain texture. All hand-placed rocks, " +
+            "terrain, marina and user-placed scenery stay intact.\n\n" +
+            "Manually edited/deleted objects inside the generated foliage group will be replaced.",
+            "Rebuild foliage","Cancel")) return;
+        try { Generate(); }
+        catch(Exception error) { Debug.LogError("[SUNCREST FOLIAGE] " + error); }
     }
 
-    private sealed class Builder
+    private sealed class Scatter
     {
         public Terrain terrain;
-        public TerrainData data;
-        public ReefZone reef;
-        public float sea;
-        public float[,,] alpha;
-        public readonly List<int> grassLayers = new List<int>();
-        public readonly List<int> sandLayers = new List<int>();
-        public Vector3 origin, size, center;
-        public float radius; 
+        public OceanWater water;
+        public Vector3 center;
+        public Vector3 terrainOrigin;
+        public Vector3 terrainSize;
         public Transform marina;
-        public readonly List<Collider> protectedRocks = new List<Collider>();
-        public readonly List<Bounds> dockBounds = new List<Bounds>();
+        public readonly List<Collider> rockColliders = new List<Collider>();
+        public readonly List<Bounds> marinaBounds = new List<Bounds>();
+        public readonly List<Vector2> existingTrees = new List<Vector2>();
         public readonly List<Vector2> occupied = new List<Vector2>();
-        public readonly List<float> spacing = new List<float>();
-        public readonly List<Vector2> existingTreePositions = new List<Vector2>();
-        public readonly System.Random rng = new System.Random(73191);
+        public readonly List<float> radii = new List<float>();
+        public readonly System.Random random = new System.Random(73191);
 
-        public float Rand(float min,float max)
-        { return Mathf.Lerp(min,max,(float)rng.NextDouble()); }
-
-        public Vector3 Candidate(bool rocks)
+        public float Rand(float low, float high)
         {
-            // Reproduce the original fixed-seed polar/sqrt-radius distribution.
-            // Unlike the old elliptical sampling, this is truly within 150 m
-            // of the rendered center of the newly placed Suncrest main rock.
-            float angle=Rand(0f,Mathf.PI*2f);
-            float distance=radius*Mathf.Sqrt(Rand(rocks ? 0f : .015f,
-                                                     rocks ? 1f : .98f));
-            return new Vector3(center.x+Mathf.Cos(angle)*distance,0f,
-                center.z+Mathf.Sin(angle)*distance);
+            return Mathf.Lerp(low,high,(float)random.NextDouble());
         }
 
-        public bool InsideSuncrest(Vector3 p,float footprint)
+        public Vector3 Candidate()
         {
-            Vector2 delta=new Vector2(p.x-center.x,p.z-center.z);
-            float edge=Mathf.Max(0f,radius-footprint);
-            return delta.sqrMagnitude<=edge*edge;
+            // Same fixed-seed / polar angle / sqrt radius approach as
+            // SuncrestReefSetup.BuildScenery; unbiased area coverage.
+            float angle = Rand(0f,Mathf.PI*2f);
+            float radius = AreaRadius*Mathf.Sqrt(Rand(.015f,.98f));
+            return center + new Vector3(Mathf.Cos(angle)*radius,0f,
+                                        Mathf.Sin(angle)*radius);
         }
 
-        public bool InsideTerrain(Vector3 p,float padding)
+        public bool OnTerrain(Vector3 point, float margin)
         {
-            return p.x>=origin.x+padding && p.z>=origin.z+padding &&
-                   p.x<=origin.x+size.x-padding && p.z<=origin.z+size.z-padding;
+            return point.x >= terrainOrigin.x+margin &&
+                   point.z >= terrainOrigin.z+margin &&
+                   point.x <= terrainOrigin.x+terrainSize.x-margin &&
+                   point.z <= terrainOrigin.z+terrainSize.z-margin;
         }
 
-        public float Height(Vector3 p)
+        public float Height(Vector3 point)
         {
-            return terrain.SampleHeight(p)+origin.y;
+            return terrain.SampleHeight(point) + terrainOrigin.y;
         }
 
-        private float Paint(Vector3 p,bool isGrass)
+        public bool DryLand(Vector3 point,float radius)
         {
-            if(!InsideTerrain(p,0f))return 0f;
-            List<int> indices=isGrass?grassLayers:sandLayers;
-            float u=(p.x-origin.x)/size.x, v=(p.z-origin.z)/size.z;
-            int x=Mathf.Clamp(Mathf.RoundToInt(u*(data.alphamapWidth-1)),0,data.alphamapWidth-1);
-            int z=Mathf.Clamp(Mathf.RoundToInt(v*(data.alphamapHeight-1)),0,data.alphamapHeight-1);
-            float weight=0f;
-            for(int i=0;i<indices.Count;i++)weight+=alpha[z,x,indices[i]];
-            return Mathf.Clamp01(weight);
-        }
+            // The painted grass mask is deliberately NOT used. The old code's
+            // layer-name/alphamap test left the new beach entirely bare.
+            Vector2 offset = new Vector2(point.x-center.x,point.z-center.z);
+            float max = AreaRadius-radius;
+            if(max<=0f || offset.sqrMagnitude > max*max ||
+               !OnTerrain(point,radius+1f)) return false;
+            float u=(point.x-terrainOrigin.x)/terrainSize.x;
+            float v=(point.z-terrainOrigin.z)/terrainSize.z;
+            if(terrain.terrainData.GetSteepness(u,v)>45f) return false;
+            float ground=Height(point);
+            if(ground<water.BaseWaterLevel+.10f)return false;
 
-        private bool SafeSurface(Vector3 p,float footprint,float slopeMax)
-        {
-            if(!InsideTerrain(p,footprint+1f))return false;
-            float u=(p.x-origin.x)/size.x, v=(p.z-origin.z)/size.z;
-            if(data.GetSteepness(u,v)>slopeMax)return false;
-            float h=Height(p);
-            // The old bush/rock grounding used eight slope-footprint probes.
+            // Probes ensure none of the foliage footprint crosses into water.
+            // Trees, bushes and grass therefore stop at the shoreline.
             for(int i=0;i<8;i++)
             {
-                float a=i*Mathf.PI*.25f;
-                Vector3 sample=p+new Vector3(Mathf.Cos(a)*footprint,0f,
-                                               Mathf.Sin(a)*footprint);
-                if(!InsideTerrain(sample,.1f) ||
-                   Mathf.Abs(Height(sample)-h)>footprint*.48f+.2f)return false;
+                float angle=i*Mathf.PI*.25f;
+                Vector3 p=point+new Vector3(Mathf.Cos(angle)*radius,0f,
+                                               Mathf.Sin(angle)*radius);
+                if(!OnTerrain(p,.1f) ||
+                   Height(p)<water.BaseWaterLevel+.08f ||
+                   Mathf.Abs(Height(p)-ground)>radius*.65f+.45f) return false;
             }
             return true;
         }
 
-        public bool Grass(Vector3 p,float footprint)
+        private bool IntersectsRockColumn(Vector3 point, float radius)
         {
-            if(!InsideSuncrest(p,footprint) || !SafeSurface(p,footprint,34f) || Paint(p,true)<.52f)return false;
-            if(Height(p)<sea+.20f)return false;
-            for(int i=0;i<4;i++)
+            // Check the actual collider triangles, not enormous AABBs
+            // surrounding rock overhangs and caves. Test the ground position,
+            // sides of the plant's footprint, and rays vertically from both
+            // above and below to reject foliage ON or UNDER artist meshes.
+            for(int k=0;k<9;k++)
             {
-                float a=i*Mathf.PI*.5f;
-                if(Paint(p+new Vector3(Mathf.Cos(a)*footprint,0f,
-                   Mathf.Sin(a)*footprint),true)<.37f) return false;
-            }
-            return true;
-        }
+                float angle=(k-1)*Mathf.PI*.25f;
+                Vector3 p=k==0?point:point+new Vector3(
+                    Mathf.Cos(angle)*radius*.85f,0f,
+                    Mathf.Sin(angle)*radius*.85f);
+                float floor=Height(p);
+                Vector3 nearGround=new Vector3(p.x,floor+.32f,p.z);
 
-        private bool Within10mOfDryLand(Vector3 p)
-        {
-            // Applies ONLY to underwater/offshore sand. Dry sand may appear
-            // anywhere on the island, not just its outer shoreline.
-            for(int distance=1;distance<=10;distance++)
-            for(int i=0;i<16;i++)
-            {
-                float a=i*Mathf.PI/8f;
-                Vector3 sample=p+new Vector3(Mathf.Cos(a)*distance,0f,
-                    Mathf.Sin(a)*distance);
-                if(InsideTerrain(sample,.1f) && Height(sample)>=sea+.05f)
-                    return true;
+                for(int i=0;i<rockColliders.Count;i++)
+                {
+                    Collider c=rockColliders[i];
+                    if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
+                        continue;
+                    Bounds b=c.bounds;
+                    if(p.x<b.min.x-.10f || p.x>b.max.x+.10f ||
+                       p.z<b.min.z-.10f || p.z>b.max.z+.10f ||
+                       b.max.y<floor-.65f) continue;
+
+                    Vector3 nearest=c.ClosestPoint(nearGround);
+                    if((nearest-nearGround).sqrMagnitude<.65f*.65f)
+                        return true;
+
+                    RaycastHit hit;
+                    Vector3 top=new Vector3(p.x,b.max.y+1f,p.z);
+                    float rayLength=Mathf.Max(1f,b.max.y-floor+2f);
+                    if(c.Raycast(new Ray(top,Vector3.down),out hit,rayLength) &&
+                       hit.point.y>=floor-.35f)
+                        return true;
+
+                    if(c.Raycast(new Ray(new Vector3(p.x,floor+.05f,p.z),
+                                           Vector3.up),
+                                 out hit,rayLength))
+                        return true;
+                }
             }
             return false;
         }
 
-        public bool SandArea(Vector3 p,float footprint)
+        public bool Available(Vector3 point,float radius)
         {
-            if(!InsideSuncrest(p,footprint) ||
-               !SafeSurface(p,footprint,27f) || Paint(p,false)<.55f)
-                return false;
-            float elevation=Height(p)-sea;
-            if(elevation < -2f) return false;
+            Vector2 position=new Vector2(point.x,point.z);
+            for(int i=0;i<occupied.Count;i++)
+            {
+                float required=radius+radii[i];
+                if((position-occupied[i]).sqrMagnitude < required*required)
+                    return false;
+            }
+            for(int i=0;i<existingTrees.Count;i++)
+            {
+                float min=radius+2f;
+                if((position-existingTrees[i]).sqrMagnitude<min*min)
+                    return false;
+            }
+            if(marina!=null)
+            {
+                // Extend the avoidance envelope to the dock built at runtime.
+                Vector3 local=marina.InverseTransformPoint(point);
+                if(Mathf.Abs(local.x)<radius+9f &&
+                   local.z>-16f-radius && local.z<51f+radius)
+                    return false;
+            }
+            for(int i=0;i<marinaBounds.Count;i++)
+            {
+                Bounds b=marinaBounds[i];
+                if(point.x>=b.min.x-radius-3f &&
+                   point.x<=b.max.x+radius+3f &&
+                   point.z>=b.min.z-radius-3f &&
+                   point.z<=b.max.z+radius+3f) return false;
+            }
+            return !IntersectsRockColumn(point,radius);
+        }
+
+        public void Claim(Vector3 point,float radius)
+        {
+            occupied.Add(new Vector2(point.x,point.z));
+            radii.Add(radius);
+        }
+
+        public float LowestGround(Vector3 point,float footprint)
+        {
+            float lowest=Height(point);
             for(int i=0;i<8;i++)
             {
                 float a=i*Mathf.PI*.25f;
-                Vector3 sample=p+new Vector3(Mathf.Cos(a)*footprint,0f,
-                    Mathf.Sin(a)*footprint);
-                if(Paint(sample,false)<.40f || Height(sample)<sea-2f)
-                    return false;
+                lowest=Mathf.Min(lowest,Height(point+new Vector3(
+                    Mathf.Cos(a)*footprint,0f,Mathf.Sin(a)*footprint)));
             }
-            return elevation>=0f || Within10mOfDryLand(p);
-        }
-
-        public bool Available(Vector3 p,float radius)
-        {
-            Vector2 at=new Vector2(p.x,p.z);
-            for(int i=0;i<occupied.Count;i++)
-            {
-                float min=radius+spacing[i];
-                if((at-occupied[i]).sqrMagnitude<min*min)return false;
-            }
-            for(int i=0;i<existingTreePositions.Count;i++)
-                if((at-existingTreePositions[i]).sqrMagnitude<
-                    (radius+2.2f)*(radius+2.2f))return false;
-            if(marina!=null)
-            {
-                // The authored pier extends at runtime (up to 42 m from
-                // MarinaShop), so reserve its entire future approach as well.
-                Vector3 local=marina.InverseTransformPoint(p);
-                if(Mathf.Abs(local.x)<radius+9f &&
-                   local.z> -16f-radius && local.z<51f+radius)
-                    return false;
-            }
-            for(int i=0;i<dockBounds.Count;i++)
-            {
-                Bounds b=dockBounds[i];
-                if(p.x>=b.min.x-radius-4f && p.x<=b.max.x+radius+4f &&
-                   p.z>=b.min.z-radius-4f && p.z<=b.max.z+radius+4f) return false;
-            }
-            // Test the true collider shapes, not only enormous AABBs from
-            // imported overhangs/caves. Include side probes for wide plants.
-            for(int i=0;i<9;i++)
-            {
-                float a=(i-1)*Mathf.PI*.25f;
-                Vector3 s=p+(i==0?Vector3.zero:new Vector3(
-                    Mathf.Cos(a)*radius*.9f,0,Mathf.Sin(a)*radius*.9f));
-                Vector3 test=new Vector3(s.x,Height(s)+.8f,s.z);
-                for(int k=0;k<protectedRocks.Count;k++)
-                {
-                    Collider collider=protectedRocks[k];
-                    if(collider==null || !collider.enabled)continue;
-                    Bounds box=collider.bounds;
-                    if(box.min.x>test.x+radius || box.max.x<test.x-radius ||
-                       box.min.z>test.z+radius || box.max.z<test.z-radius ||
-                       box.min.y>test.y+radius || box.max.y<test.y-radius)continue;
-                    if((collider.ClosestPoint(test)-test).sqrMagnitude<
-                        (radius*.78f)*(radius*.78f))return false;
-                    RaycastHit hit;
-                    if(collider.Raycast(new Ray(new Vector3(s.x,box.max.y+2f,s.z),
-                        Vector3.down),out hit,Mathf.Max(4f,box.size.y+4f)) &&
-                        hit.point.y>Height(s)+.20f)return false;
-                }
-            }
-            return true;
-        }
-
-        public void Claim(Vector3 p,float radius)
-        {
-            occupied.Add(new Vector2(p.x,p.z));
-            spacing.Add(radius);
-        }
-
-        public float LowerFootprint(Vector3 p,float footprint)
-        {
-            float min=Height(p);
-            for(int i=0;i<8;i++)
-            {
-                float angle=i*Mathf.PI*.25f;
-                Vector3 s=p+new Vector3(Mathf.Cos(angle)*footprint,0f,
-                    Mathf.Sin(angle)*footprint);
-                min=Mathf.Min(min,Height(s));
-            }
-            return min;
+            return lowest;
         }
     }
 
-    private static void AddExisting(Builder b,Scene scene)
+    private static void FindProtectedGeometry(Scatter s,Scene scene)
     {
         SuncrestMainRockCollision.EnsureColliders(scene);
         SuncrestPlacedRockCollision.EnsureColliders(scene);
         Physics.SyncTransforms();
-        var main=SuncrestMainRockCollision.FindRock(scene);
-        if(main!=null)foreach(Collider c in main.GetComponentsInChildren<Collider>(true))
-            if(c.enabled && !c.isTrigger && c.gameObject.activeInHierarchy)
-                b.protectedRocks.Add(c);
-        foreach(GameObject piece in SuncrestPlacedRockCollision.PlacedRocks(scene))
-        foreach(Collider c in piece.GetComponentsInChildren<Collider>(true))
-            if(c.enabled && !c.isTrigger && c.gameObject.activeInHierarchy)
-                b.protectedRocks.Add(c);
+        var unique=new HashSet<Collider>();
 
-        GameObject marina=GameObject.Find("MarinaShop");
-        b.marina=marina!=null?marina.transform:null;
-        if(marina!=null)foreach(Renderer ren in marina.GetComponentsInChildren<Renderer>(true))
-            if(ren.enabled) b.dockBounds.Add(ren.bounds);
-        GameObject worldDecor=GameObject.Find("WorldDecor");
-        if(worldDecor!=null)
+        GameObject main=SuncrestMainRockCollision.FindRock(scene);
+        if(main!=null)
+            foreach(Collider c in main.GetComponentsInChildren<Collider>(true))
+                if(c!=null && c.enabled && !c.isTrigger &&
+                    c.gameObject.activeInHierarchy && unique.Add(c))
+                    s.rockColliders.Add(c);
+
+        foreach(GameObject rock in SuncrestPlacedRockCollision.PlacedRocks(scene))
+            foreach(Collider c in rock.GetComponentsInChildren<Collider>(true))
+                if(c!=null && c.enabled && !c.isTrigger &&
+                    c.gameObject.activeInHierarchy && unique.Add(c))
+                    s.rockColliders.Add(c);
+
+        // Also guard any other active meshes explicitly placed by the artist
+        // under the "DO NOT MODIFY" group, even if their names omit "rock".
+        GameObject authored=GameObject.Find(
+            "USER PLACED SCENERY - DO NOT MODIFY BY CODE");
+        if(authored!=null)
+            foreach(Collider c in authored.GetComponentsInChildren<Collider>(true))
+                if(c!=null && c.enabled && !c.isTrigger &&
+                    c.gameObject.activeInHierarchy && unique.Add(c))
+                    s.rockColliders.Add(c);
+
+        GameObject dock=GameObject.Find("MarinaShop");
+        s.marina=dock!=null?dock.transform:null;
+        if(dock!=null)
+            foreach(Renderer r in dock.GetComponentsInChildren<Renderer>(true))
+                if(r!=null && r.enabled && r.gameObject.activeInHierarchy)
+                    s.marinaBounds.Add(r.bounds);
+
+        GameObject decor=GameObject.Find("WorldDecor");
+        if(decor!=null && decor.activeInHierarchy)
         {
-            Transform trees=worldDecor.transform.Find("Trees");
-            if(trees!=null)foreach(Transform tree in trees)
-                b.existingTreePositions.Add(new Vector2(tree.position.x,tree.position.z));
+            Transform trees=decor.transform.Find("Trees");
+            if(trees!=null)
+                foreach(Transform tree in trees)
+                    if(tree.gameObject.activeInHierarchy)
+                        s.existingTrees.Add(new Vector2(tree.position.x,tree.position.z));
         }
     }
 
-    private static int ScatterPrefab(Builder b,GameObject prefab,Transform parent,
-        string prefix,int target,int maxAttempts,float minScale,float maxScale,
-        float radius,bool shrub)
+    private static int PlacePrefabs(Scatter s,GameObject prefab,Transform group,
+        string prefix,int goal,int tries,float minScale,float maxScale,
+        float footprintRadius,bool shrub)
     {
-        if(prefab==null)return 0;
-        int added=0;
-        for(int attempt=0;attempt<maxAttempts && added<target;attempt++)
+        int placed=0;
+        for(int attempt=0;attempt<tries && placed<goal;attempt++)
         {
-            Vector3 p=b.Candidate(false);
-            float scale=b.Rand(minScale,maxScale);
-            float footprint=radius*scale;
-            if(!b.Grass(p,footprint) || !b.Available(p,footprint))continue;
+            Vector3 point=s.Candidate();
+            float scale=s.Rand(minScale,maxScale);
+            float radius=footprintRadius*scale;
+            if(!s.DryLand(point,radius) || !s.Available(point,radius))
+                continue;
+
             GameObject plant=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            plant.name=prefix+"_"+added.ToString("D3");
-            plant.transform.SetParent(parent,true);
+            if(plant==null)throw new InvalidOperationException(
+                "Failed to instantiate original Suncrest prefab: "+prefab.name);
+            plant.name=prefix+"_"+placed.ToString("D4");
+            plant.transform.SetParent(group,false);
             plant.transform.SetPositionAndRotation(
-                new Vector3(p.x,shrub?b.LowerFootprint(p,footprint)-.10f*scale:b.Height(p),
-                    p.z),
-                Quaternion.Euler(0f,b.Rand(0f,360f),0f));
+                new Vector3(point.x,
+                    shrub?s.LowestGround(point,radius)-.10f*scale:s.Height(point),
+                    point.z),Quaternion.Euler(0f,s.Rand(0f,360f),0f));
             plant.transform.localScale=Vector3.one*scale;
-            b.Claim(p,shrub?footprint:Mathf.Max(.32f,footprint*.65f));
-            added++;
+            s.Claim(point,shrub?radius:Mathf.Max(.25f,radius*.7f));
+            placed++;
         }
-        return added;
+        return placed;
     }
 
-    private static int ScatterIndividualLowPolyRocks(Builder b,Transform parent)
+    private static void Generate()
     {
-        GameObject model=AssetDatabase.LoadAssetAtPath<GameObject>(LowPoly);
-        if(model==null)throw new InvalidOperationException("Missing low-poly rock pack: "+LowPoly);
-        MeshFilter[] parts=model.GetComponentsInChildren<MeshFilter>(true);
-        var meshes=new List<MeshFilter>();
-        foreach(MeshFilter filter in parts)
-            if(filter!=null && filter.sharedMesh!=null && filter.sharedMesh.vertexCount>=3)
-                meshes.Add(filter);
-        if(meshes.Count==0)throw new InvalidOperationException(
-            "Rock pack has no individually selectable meshes. No sand rocks were placed.");
-        Material brown=AssetDatabase.LoadAssetAtPath<Material>(BrownMaterial);
-
-        int added=0;
-        for(int attempt=0;attempt<24000 && added<160;attempt++)
-        {
-            Vector3 p=b.Candidate(true);
-            MeshFilter piece=meshes[b.rng.Next(meshes.Count)];
-            Mesh mesh=piece.sharedMesh;
-            Bounds meshBox=mesh.bounds;
-            float width=Mathf.Max(meshBox.size.x,meshBox.size.z);
-            if(width<.0001f)continue;
-
-            // Each MeshFilter is an independent rock object, never the whole FBX.
-            float diameter=b.Rand(.85f,2.5f);
-            float scale=diameter/width;
-            float angle=b.Rand(0f,360f);
-            Quaternion rotation=Quaternion.Euler(0f,0f,angle);
-            float rad=angle*Mathf.Deg2Rad;
-            // Z rotation changes X and Y extents. Account for both when
-            // excluding protected authored geometry and grounding the mesh.
-            float halfX=(Mathf.Abs(Mathf.Cos(rad))*meshBox.extents.x+
-                         Mathf.Abs(Mathf.Sin(rad))*meshBox.extents.y)*scale;
-            float halfZ=meshBox.extents.z*scale;
-            float radius=Mathf.Sqrt(halfX*halfX+halfZ*halfZ);
-            if(!b.SandArea(p,radius) || !b.Available(p,radius+.35f))continue;
-            float halfY=(Mathf.Abs(Mathf.Sin(rad))*meshBox.extents.x+
-                         Mathf.Abs(Mathf.Cos(rad))*meshBox.extents.y)*scale;
-
-            GameObject rock=new GameObject("LowPolyBeachRock_"+added.ToString("D3")+
-                "_"+piece.gameObject.name);
-            rock.transform.SetParent(parent,false);
-            rock.transform.position=new Vector3(p.x,
-                b.LowerFootprint(p,radius)+halfY-.04f,p.z);
-            rock.transform.rotation=rotation;
-            rock.transform.localScale=Vector3.one*scale;
-
-            GameObject visual=new GameObject("Mesh");
-            visual.transform.SetParent(rock.transform,false);
-            // Rotate around each source mesh's center. The full rotated
-            // bottom now lies against the sand, even at large Z angles.
-            visual.transform.localPosition=-meshBox.center;
-            MeshFilter mf=visual.AddComponent<MeshFilter>();mf.sharedMesh=mesh;
-            MeshRenderer mr=visual.AddComponent<MeshRenderer>();
-            MeshRenderer sourceRenderer=piece.GetComponent<MeshRenderer>();
-            if(sourceRenderer!=null)mr.sharedMaterials=sourceRenderer.sharedMaterials;
-            if(mr.sharedMaterial==null && brown!=null)mr.sharedMaterial=brown;
-            mr.shadowCastingMode=ShadowCastingMode.Off;
-            MeshCollider collider=visual.AddComponent<MeshCollider>();
-            collider.sharedMesh=mesh;collider.convex=false;collider.isTrigger=false;
-            b.Claim(p,radius+.35f);
-            added++;
-        }
-        return added;
-    }
-
-    private static void Generate(bool replace)
-    {
-        Scene scene=SceneManager.GetActiveScene();
-        if(scene.path!=ScenePath)return;
-        GameObject existing=GameObject.Find(GroupName);
-        if(existing!=null && !replace)return;
-
-        ReefZone reef=UnityEngine.Object.FindFirstObjectByType<ReefZone>();
-        Terrain terrain=reef!=null?reef.GetComponentInChildren<Terrain>(true):null;
-        if(terrain==null)terrain=Terrain.activeTerrain;
-        OceanWater ocean=UnityEngine.Object.FindFirstObjectByType<OceanWater>();
-        if(reef==null || terrain==null || terrain.terrainData==null || ocean==null)
-            throw new InvalidOperationException("Suncrest terrain, ReefZone or water is missing.");
-
-        GameObject palm=AssetDatabase.LoadAssetAtPath<GameObject>(Base+"Palm.prefab");
-        GameObject shrub=AssetDatabase.LoadAssetAtPath<GameObject>(Base+"SeaGrape.prefab");
-        GameObject grass=AssetDatabase.LoadAssetAtPath<GameObject>(Base+"Grass.prefab");
-        if(palm==null || shrub==null || grass==null ||
-           AssetDatabase.LoadAssetAtPath<GameObject>(LowPoly)==null)
-            throw new InvalidOperationException("Missing original foliage prefabs or low-poly rock pack.");
-
-        Builder b=new Builder();
-        b.terrain=terrain;b.data=terrain.terrainData;b.reef=reef;b.sea=ocean.BaseWaterLevel;
-        b.origin=terrain.transform.position;b.size=b.data.size;
-        GameObject mainRock=SuncrestMainRockCollision.FindRock(scene);
-        if(mainRock==null)throw new InvalidOperationException("Suncrest Beach Main Rock is missing.");
-        Renderer[] mainRenderers=mainRock.GetComponentsInChildren<Renderer>(true);
-        bool hasBounds=false;
-        Bounds mainBounds=new Bounds(mainRock.transform.position,Vector3.zero);
-        foreach(Renderer renderer in mainRenderers)
-        {
-            if(renderer==null || !renderer.enabled)continue;
-            if(!hasBounds){mainBounds=renderer.bounds;hasBounds=true;}
-            else mainBounds.Encapsulate(renderer.bounds);
-        }
-        if(!hasBounds)throw new InvalidOperationException("Suncrest main rock has no renderable mesh; cannot determine its center.");
-        b.center=mainBounds.center;
-        b.radius=SuncrestRadius;
-        int layers=b.data.alphamapLayers;
-        for(int i=0;i<layers;i++)
-        {
-            TerrainLayer layer=b.data.terrainLayers[i];
-            string label=layer!=null?layer.name.ToLowerInvariant():"";
-            if(label.Contains("grass")||label.Contains("meadow")) b.grassLayers.Add(i);
-            if(label.Contains("sand")||label.Contains("beach")) b.sandLayers.Add(i);
-        }
-        if(b.grassLayers.Count==0 || b.sandLayers.Count==0)
-            throw new InvalidOperationException("Couldn't locate named Grass/Meadow and Sand/Beach terrain paint layers. Nothing changed.");
-        b.alpha=b.data.GetAlphamaps(0,0,b.data.alphamapWidth,b.data.alphamapHeight);
-
-        // Stage the replacement before deleting the old generated scenery.
-        // Disabling the previous group excludes its colliders from placement.
-        if(existing!=null)existing.SetActive(false);
-        GameObject group=new GameObject(GroupName+" - BUILDING");
-        Undo.RegisterCreatedObjectUndo(group,"Generate Suncrest vegetation and sand rocks");
+        if(!Ready())return;
+        generating=true;
+        GameObject old=GameObject.Find(LegacyGroupName);
+        GameObject previous=GameObject.Find(GroupName);
+        GameObject staged=null;
         try
         {
-            AddExisting(b,scene);
-        }
-        catch
-        {
-            Undo.DestroyObjectImmediate(group);
-            if(existing!=null)existing.SetActive(true);
-            throw;
-        }
-        var palms=new GameObject("Palms");palms.transform.SetParent(group.transform,false);
-        var shrubs=new GameObject("SeaGrape Bushes");shrubs.transform.SetParent(group.transform,false);
-        var grasses=new GameObject("Grass");grasses.transform.SetParent(group.transform,false);
-        var rocks=new GameObject("Shore Rocks");rocks.transform.SetParent(group.transform,false);
-        try
-        {
-            int a=ScatterPrefab(b,palm,palms.transform,"Palm",70,2600,.7f,1.2f,1.9f,false);
-            int c=ScatterPrefab(b,shrub,shrubs.transform,"SeaGrape",95,2800,.7f,1.45f,.8f,true);
-            int d=ScatterPrefab(b,grass,grasses.transform,"Grass",220,3300,.6f,1.6f,.34f,false);
-            int e=ScatterIndividualLowPolyRocks(b,rocks.transform);
-            if(a+c+d+e==0)throw new InvalidOperationException(
-                "No matching coastal meadow or sand paint found within 150 m of the main rock.");
+            Scene scene=SceneManager.GetActiveScene();
+            ReefZone reef=UnityEngine.Object.FindFirstObjectByType<ReefZone>();
+            Terrain terrain=reef!=null?reef.GetComponentInChildren<Terrain>(true):null;
+            if(terrain==null)terrain=Terrain.activeTerrain;
+            OceanWater water=UnityEngine.Object.FindFirstObjectByType<OceanWater>();
+            GameObject main=SuncrestMainRockCollision.FindRock(scene);
+            if(terrain==null || terrain.terrainData==null || water==null || main==null)
+                throw new InvalidOperationException(
+                    "Missing active Suncrest Terrain, OceanWater or main Suncrest rock.");
+
+            GameObject palm=AssetDatabase.LoadAssetAtPath<GameObject>(
+                PrefabFolder+"Palm.prefab");
+            GameObject shrub=AssetDatabase.LoadAssetAtPath<GameObject>(
+                PrefabFolder+"SeaGrape.prefab");
+            GameObject grass=AssetDatabase.LoadAssetAtPath<GameObject>(
+                PrefabFolder+"Grass.prefab");
+            if(palm==null || shrub==null || grass==null)
+                throw new InvalidOperationException(
+                    "Missing one of the three ORIGINAL Suncrest foliage prefabs.");
+
+            // A renderer-bounds centroid follows the new hand-positioned main
+            // rock even when its imported prefab pivot is far from its mesh.
+            Bounds box=new Bounds(main.transform.position,Vector3.zero);
+            bool found=false;
+            foreach(Renderer r in main.GetComponentsInChildren<Renderer>(true))
+            {
+                if(r==null || !r.enabled)continue;
+                if(!found){box=r.bounds;found=true;}
+                else box.Encapsulate(r.bounds);
+            }
+            if(!found)throw new InvalidOperationException(
+                "Could not locate rendered bounds of Suncrest Beach Main Rock.");
+
+            Scatter scatter=new Scatter();
+            scatter.center=box.center;
+            scatter.terrain=terrain;
+            scatter.water=water;
+            scatter.terrainOrigin=terrain.transform.position;
+            scatter.terrainSize=terrain.terrainData.size;
+
+            if(old!=null)old.SetActive(false);
+            if(previous!=null)previous.SetActive(false);
+            staged=new GameObject(GroupName+" - BUILDING");
+            Undo.RegisterCreatedObjectUndo(staged,
+                "Populate new Suncrest Beach with original foliage");
+
+            FindProtectedGeometry(scatter,scene);
+            var palms=new GameObject("Palms - Individually Editable");
+            palms.transform.SetParent(staged.transform,false);
+            var bushes=new GameObject("SeaGrape Bushes - Individually Editable");
+            bushes.transform.SetParent(staged.transform,false);
+            var grasses=new GameObject("Grass - Individually Editable");
+            grasses.transform.SetParent(staged.transform,false);
+
+            int a=PlacePrefabs(scatter,palm,palms.transform,
+                "Palm",TargetPalms,30000,.7f,1.2f,1.9f,false);
+            int b=PlacePrefabs(scatter,shrub,bushes.transform,
+                "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true);
+            int c=PlacePrefabs(scatter,grass,grasses.transform,
+                "Grass",TargetGrass,90000,.6f,1.6f,.34f,false);
+            if(a+b+c==0)throw new InvalidOperationException(
+                "No valid dry island terrain was found within 150 m of the main rock. "+
+                "Check the terrain heights relative to the ocean.");
+
             var marker=new GameObject(VersionMarker);
-            marker.transform.SetParent(group.transform,false);
-            if(existing!=null)Undo.DestroyObjectImmediate(existing);
-            group.name=GroupName;
+            marker.transform.SetParent(staged.transform,false);
+            if(old!=null)Undo.DestroyObjectImmediate(old);
+            if(previous!=null)Undo.DestroyObjectImmediate(previous);
+            staged.name=GroupName;
             EditorSceneManager.MarkSceneDirty(scene);
             Physics.SyncTransforms();
-            Debug.Log("[SUNCREST SCENERY] Created "+a+" palms, "+c+" SeaGrape bushes, "+
-                d+" grass clumps, "+e+" individually movable low-poly sand rocks. "+
-                "Protected "+b.protectedRocks.Count+" authored-rock colliders and "+
-                b.dockBounds.Count+" marina renderers. Save PrototypeWorld (Ctrl+S).");
+            Debug.Log("[SUNCREST FOLIAGE] Placed "+a+" palms / "+
+                b+" SeaGrape bushes / "+c+" grass clumps. NO beach rocks or "+
+                "limestone added. Saved rock transforms untouched. "+
+                "Group objects are individually editable; press Ctrl+S to save.");
         }
         catch
         {
-            Undo.DestroyObjectImmediate(group);
-            if(existing!=null)existing.SetActive(true);
+            if(staged!=null)Undo.DestroyObjectImmediate(staged);
+            if(old!=null)old.SetActive(true);
+            if(previous!=null)previous.SetActive(true);
             throw;
         }
+        finally { generating=false; }
     }
 }
 #endif
