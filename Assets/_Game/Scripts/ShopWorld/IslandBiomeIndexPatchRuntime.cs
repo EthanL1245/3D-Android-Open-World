@@ -154,11 +154,12 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
 
         if (island)
         {
-            string teleportLabel = here ? "YOU ARE HERE" : fishingBusy ? "FISHING…" : "TELEPORT";
+            bool allowed = travel == null || travel.TournamentAllowsIsland(biome);
+            string teleportLabel = !allowed ? "TOURNAMENT LOCK" : here ? "YOU ARE HERE" : fishingBusy ? "FISHING…" : "TELEPORT";
             Button teleport = ButtonAt(card.transform, teleportLabel, () => TeleportToIsland(biome));
             Anchor(teleport.GetComponent<RectTransform>(), .735f, .55f, .975f, .88f, 0, 0, 0, 0);
             SetAvailable(teleport,
-                unlocked && worldReady && !here && !fishingBusy && travel != null && !travel.Traveling);
+                allowed && unlocked && worldReady && !here && !fishingBusy && travel != null && !travel.Traveling);
         }
 
         Button fishIndex = ButtonAt(card.transform, "FISH INDEX", () => OpenFishIndex(biome));
@@ -185,7 +186,7 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
 
     private void TeleportToIsland(int biome)
     {
-        if (IsFishingBusy() || travel == null || travel.Traveling) return;
+        if (IsFishingBusy() || travel == null || travel.Traveling || !travel.TournamentAllowsIsland(biome)) return;
         if (biome < 0 || biome >= ReefCatalog.Zones.Length || !ReefCatalog.Zones[biome].Unlocked) return;
         if (biome != 0 && biome != 1 && biome != 3 && biome != 4) return; // Deep Ocean intentionally has no teleport.
         if ((biome == 1 || biome == 3) && (IslandExpansionWorld.Active == null || !IslandExpansionWorld.Active.Ready)) return;
