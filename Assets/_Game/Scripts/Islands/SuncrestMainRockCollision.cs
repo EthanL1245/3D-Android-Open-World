@@ -152,44 +152,50 @@ public static class SuncrestMainRockCollision
         return count < Overlaps.Length;
     }
 
-    public static bool AmbientPointClear(Vector3 p, float r) { return PointClear(p, r); }
+    public static bool AmbientPointClear(Vector3 p, float r)
+    {
+        return PointClear(p,r) && SuncrestPlacedRockCollision.AmbientPointClear(p,r);
+    }
 
     public static bool AmbientSegmentClear(Vector3 a, Vector3 b, float r)
     {
-        if (!MayHit(a, b, r, Mathf.Min(a.y,b.y), Mathf.Max(a.y,b.y))) return true;
-        int steps = Mathf.Max(1, Mathf.CeilToInt(Vector3.Distance(a,b) / .35f));
-        for (int i = 1; i <= steps; i++)
-            if (!PointClear(Vector3.Lerp(a,b,(float)i/steps), r)) return false;
+        if (!SuncrestPlacedRockCollision.AmbientSegmentClear(a,b,r)) return false;
+        if (!MayHit(a,b,r,Mathf.Min(a.y,b.y),Mathf.Max(a.y,b.y))) return true;
+        int steps=Mathf.Max(1,Mathf.CeilToInt(Vector3.Distance(a,b)/.35f));
+        for(int i=1;i<=steps;i++)
+            if(!PointClear(Vector3.Lerp(a,b,(float)i/steps),r))return false;
         return true;
     }
 
     private static float SeaLevel()
     {
-        if (water == null) water = UnityEngine.Object.FindFirstObjectByType<OceanWater>();
-        return water != null ? water.BaseWaterLevel : 0f;
+        if(water==null)water=UnityEngine.Object.FindFirstObjectByType<OceanWater>();
+        return water!=null?water.BaseWaterLevel:0f;
     }
 
-    // Probe a submerged corridor rather than the bobber surface alone.
-    public static bool SurfacePointClear(Vector3 p, float r)
+    private static bool MainSurfacePointClear(Vector3 p,float r)
     {
-        float sea = SeaLevel();
-        if (!MayHit(p, p, r, sea-1.60f, sea-.30f)) return true;
-        p.y = sea-.30f;
-        if (!PointClear(p,r)) return false;
-        p.y = sea-.95f;
-        if (!PointClear(p,r)) return false;
-        p.y = sea-1.60f;
-        return PointClear(p,r);
+        float sea=SeaLevel();
+        if(!MayHit(p,p,r,sea-1.60f,sea-.30f))return true;
+        p.y=sea-.30f;if(!PointClear(p,r))return false;
+        p.y=sea-.95f;if(!PointClear(p,r))return false;
+        p.y=sea-1.60f;return PointClear(p,r);
     }
 
-    public static bool SurfaceSegmentClear(Vector3 a, Vector3 b, float r)
+    public static bool SurfacePointClear(Vector3 p,float r)
     {
-        float sea = SeaLevel();
-        if (!MayHit(a,b,r,sea-1.60f,sea-.30f)) return true;
-        Vector3 flat = b-a; flat.y = 0f;
-        int steps = Mathf.Max(1, Mathf.CeilToInt(flat.magnitude/.55f));
-        for (int i = 1; i <= steps; i++)
-            if (!SurfacePointClear(Vector3.Lerp(a,b,(float)i/steps),r)) return false;
+        return MainSurfacePointClear(p,r) && SuncrestPlacedRockCollision.SurfacePointClear(p,r);
+    }
+
+    public static bool SurfaceSegmentClear(Vector3 a,Vector3 b,float r)
+    {
+        if(!SuncrestPlacedRockCollision.SurfaceSegmentClear(a,b,r))return false;
+        float sea=SeaLevel();
+        if(!MayHit(a,b,r,sea-1.60f,sea-.30f))return true;
+        Vector3 flat=b-a;flat.y=0f;
+        int steps=Mathf.Max(1,Mathf.CeilToInt(flat.magnitude/.55f));
+        for(int i=1;i<=steps;i++)
+            if(!MainSurfacePointClear(Vector3.Lerp(a,b,(float)i/steps),r))return false;
         return true;
     }
 }

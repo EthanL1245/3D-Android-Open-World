@@ -34,7 +34,9 @@ public static class SuncrestMainRockCollisionEditor
     private static void AutoBake()
     {
         if (!CanBake()) return;
-        int added = Bake(SceneManager.GetActiveScene());
+        Scene scene = SceneManager.GetActiveScene();
+        int added = Bake(scene) + SuncrestPlacedRockCollision.EnsureColliders(scene);
+        if (added > 0) EditorSceneManager.MarkSceneDirty(scene);
         if (added > 0)
             Debug.Log("[SUNCREST ROCK] Added " + added +
                 " MeshColliders in Scene view. Ctrl+S saves them into PrototypeWorld.");
@@ -49,7 +51,8 @@ public static class SuncrestMainRockCollisionEditor
             return;
         }
         Scene scene = SceneManager.GetActiveScene();
-        int added = Bake(scene);
+        int added = Bake(scene) + SuncrestPlacedRockCollision.EnsureColliders(scene);
+        if (added > 0) EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene))
             throw new InvalidOperationException("Could not save Suncrest Main Rock colliders.");
         Debug.Log("[SUNCREST ROCK] Colliders saved in the scene (" +
