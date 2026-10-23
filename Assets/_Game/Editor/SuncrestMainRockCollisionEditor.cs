@@ -6,8 +6,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Adds precise, non-convex collision on the original imported Suncrest main
-/// rock mesh objects in Edit Mode. Saves only when explicitly using the menu
+/// Adds precise, non-convex collision on the replacement imported Suncrest main
+/// rock mesh objects in Edit Mode, without changing artist transforms. Saves only when explicitly using the menu
 /// command, so opening Unity never silently overwrites user scene edits.
 /// </summary>
 [InitializeOnLoad]

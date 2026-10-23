@@ -4,15 +4,15 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// Adds missing solid MeshColliders to the imported Suncrest Beach Main Rock and
+/// Adds missing solid MeshColliders to the imported Main Suncrest Beach Rock and
 /// uses them for player physics, ambient fish and surface/fighting fish.
 /// Never edits authored meshes, transforms, materials or other scenery.
 /// </summary>
 public static class SuncrestMainRockCollision
 {
     public const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
-    public const string RockName = "Suncrest Beach Main Rock";
-    public const string RockFbx = "Assets/Manually Added Assets/Suncrest Beach Main Rock.fbx";
+    public const string RockName = "Main Suncrest Beach Rock";
+    public const string RockFbx = "Assets/Manually Added Assets/Mountain_MeadowStone (1).fbx";
 
     private static readonly List<Collider> Rocks = new List<Collider>(16);
     private static readonly HashSet<Collider> RockSet = new HashSet<Collider>();

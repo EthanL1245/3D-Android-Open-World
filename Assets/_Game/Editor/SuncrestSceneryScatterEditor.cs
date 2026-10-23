@@ -67,8 +67,10 @@ public static class SuncrestSceneryScatterEditor
         if (!Ready()) return;
         GameObject existing = GameObject.Find(GroupName);
         GameObject legacy = GameObject.Find(LegacyGroupName);
-        if (legacy == null && existing != null &&
-            existing.transform.Find(VersionMarker) != null) return;
+        // The generated group has been extensively hand-edited. Never
+        // silently overwrite saved trees/grass on Unity scene open, even
+        // if a generation marker changes in a future update.
+        if (existing != null || legacy != null) return;
         try { Generate(); }
         catch(Exception error) { Debug.LogError("[SUNCREST FOLIAGE] " + error); }
     }
@@ -132,6 +134,8 @@ public static class SuncrestSceneryScatterEditor
         public Terrain terrain;
         public OceanWater water;
         public Vector3 center;
+        public Vector3 playerSpawn;
+        public bool hasPlayerSpawn;
         public Vector3 terrainOrigin;
         public Vector3 terrainSize;
         public Transform marina;
@@ -257,6 +261,14 @@ public static class SuncrestSceneryScatterEditor
             if(horizontal.sqrMagnitude>(ExpandedRadius-edge)*(ExpandedRadius-edge) ||
                !OnTerrain(point,edge+.2f))
                 return false;
+            // Respect the 10 m clear spawn zone even on an explicit manual
+            // rebuild. Only new generated placements are affected.
+            if(hasPlayerSpawn)
+            {
+                Vector2 spawnOffset=new Vector2(
+                    point.x-playerSpawn.x,point.z-playerSpawn.z);
+                if(spawnOffset.sqrMagnitude<100f)return false;
+            }
             float sea=water.BaseWaterLevel;
             float height=Height(point);
             if(height<sea+.06f)return false;
@@ -794,6 +806,13 @@ public static class SuncrestSceneryScatterEditor
 
             Scatter scatter=new Scatter();
             scatter.center=box.center;
+            GameObject spawn=GameObject.Find("SuncrestArrival");
+            if(spawn==null)spawn=GameObject.Find("Player");
+            if(spawn!=null)
+            {
+                scatter.playerSpawn=spawn.transform.position;
+                scatter.hasPlayerSpawn=true;
+            }
             scatter.terrain=terrain;
             scatter.water=water;
             scatter.terrainOrigin=terrain.transform.position;
