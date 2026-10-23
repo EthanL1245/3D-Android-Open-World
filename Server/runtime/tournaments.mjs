@@ -41,8 +41,8 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
     const previous={phase:t.phase,reason:t.reason,winnerId:t.winnerId,winnerName:t.winnerName,pool:t.pool};
     const previousReceipts=t.entries.filter(e=>e.ticket).map(e=>({...receipts.get(e.ticket)}));
     t.phase=cancel?'cancelled':'ended';t.reason=reason;
-    const ranked=t.entries.filter(e=>e.status==='joined').sort((a,b)=>b.points-a.points || b.biggestKg-a.biggestKg || a.scoreAt-b.scoreAt || a.order-b.order);
-    const winner=!cancel && ranked[0]?.points>0?ranked[0]:null;
+    const ranked=t.entries.filter(e=>e.status==='joined').sort((a,b)=>(t.mode==='weight'?b.totalKg-a.totalKg:b.points-a.points) || b.biggestKg-a.biggestKg || a.scoreAt-b.scoreAt || a.order-b.order);
+    const winner=!cancel && (t.mode==='weight'?ranked[0]?.totalKg>0:ranked[0]?.points>0)?ranked[0]:null;
     t.winnerId=winner?.id??'';t.winnerName=winner?.name??'';
     t.pool=ranked.length*t.wager;
     for(const e of ranked){const r=receipts.get(e.ticket);if(r && !r.ready){r.ready=true;r.refund=!winner;r.payout=winner?(e===winner?t.pool:0):r.amount;}}
@@ -57,7 +57,7 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
         const joined=t.entries.filter(e=>e.status==='joined');
         if(joined.length<2){finish(t,true,'At least two players must join. Entry fees refunded.');return;}
         const choices=tournamentIslands[t.island].fish;
-        t.target=choices[random(choices.length)];
+        t.target=t.mode==='weight'?null:choices[random(choices.length)];
         t.phase='countdown';t.startsAt=clock()+5000;t.endsAt=t.startsAt+360000;
       }
     }
@@ -69,13 +69,13 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
   }
   function view(room){
     tick(room);const t=room.tournament;if(!t)return null;
-    const rows=t.entries.map(({ticket,seen,...e})=>e).sort((a,b)=>b.points-a.points || b.biggestKg-a.biggestKg || a.scoreAt-b.scoreAt || a.order-b.order);
+    const rows=t.entries.map(({ticket,seen,history,...e})=>e).sort((a,b)=>(t.mode==='weight'?b.totalKg-a.totalKg:b.points-a.points) || b.biggestKg-a.biggestKg || a.scoreAt-b.scoreAt || a.order-b.order);
     const biggest=rows.filter(e=>e.status==='joined').sort((a,b)=>b.biggestKg-a.biggestKg || a.order-b.order)[0];
     return {serverTime:clock(),id:t.id,phase:t.phase,island:t.island,islandName:tournamentIslands[t.island].name,wager:t.wager,
-      pool:rows.filter(e=>e.status==='joined').length*t.wager,species:t.target?.id??-1,speciesName:t.target?.name??'',
+      pool:rows.filter(e=>e.status==='joined').length*t.wager,mode:t.mode,species:t.target?.id??-1,speciesName:t.mode==='weight'?'All species':t.target?.name??'',
       inviteSeconds:Math.max(0,(t.inviteEnds-clock())/1000),startSeconds:Math.max(0,((t.startsAt??0)-clock())/1000),
       secondsLeft:Math.max(0,((t.endsAt??0)-clock())/1000),entries:rows,winnerId:t.winnerId??'',winnerName:t.winnerName??'',
-      biggestName:biggest?.biggestKg>0?biggest.name:'',biggestKg:biggest?.biggestKg??0,reason:t.reason??''};
+      biggestName:biggest?.biggestKg>0?biggest.name:'',biggestKg:biggest?.biggestKg??0,biggestSpecies:biggest?.biggestKg>0?biggest.biggestSpecies:-1,reason:t.reason??''};
   }
   function action(p,c){
     if(!c || typeof c!=='object')fail('Missing tournament action.');
@@ -84,13 +84,14 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(p.id!==room.host)fail('Only the host can start a tournament.');
       if(t?.id===c.id && t.entries[0].ticket===c.ticket)return view(room);
       if(active(t))fail('A tournament is already in progress.');
-      if(!validId(c.id)||!Number.isInteger(c.island)||![0,1,3,4].includes(c.island))fail('Choose a fishing island.');
+      if(!validId(c.id)||!Number.isInteger(c.island)||![0,1,2,3,4].includes(c.island))fail('Choose a fishing biome.');
+      if(!['species','weight'].includes(c.mode??'species') || (c.mode==='weight' && c.island!==0))fail('Invalid tournament format.');
       if(!(p.pose.islandMask&(1<<c.island)))fail('You have not unlocked that island.');
       if(!Number.isInteger(c.wager)||c.wager<1||c.wager>1000000)fail('Wager must be 1 to 1,000,000 coins.');
       if(room.players.size<2)fail('At least two players must be in the room.');
-      t={id:c.id,island:c.island,wager:c.wager,phase:'inviting',inviteEnds:clock()+45000,entries:[]};
+      t={id:c.id,island:c.island,mode:c.mode??'species',wager:c.wager,phase:'inviting',inviteEnds:clock()+45000,entries:[]};
       for(const q of room.players.values())t.entries.push({id:q.id,name:q.name,status:q===p?'joined':(q.pose.islandMask&(1<<c.island))?'pending':'locked',
-        ticket:q===p?c.ticket:'',points:0,biggestKg:0,catches:0,scoreAt:0,order:t.entries.length,seen:new Set()});
+        ticket:q===p?c.ticket:'',points:0,totalKg:0,biggestKg:0,biggestSpecies:-1,catches:0,scoreAt:0,order:t.entries.length,seen:new Set(),history:[]});
       acceptEntry(t,p,c);room.tournament=t;return view(room);
     }
     if(!t || c.id!==t.id)fail('Tournament no longer available.');
@@ -106,9 +107,20 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(t.phase!=='running'||!e||e.status!=='joined')fail('Tournament is not accepting catches.');
       if(!Number.isInteger(c.cast)||c.cast<=e.startSequence||c.cast!==p.pose.castSequence)fail('Only new tournament casts count.');
       if(e.seen.has(c.cast))return view(room);
-      if(c.island!==t.island || c.species!==t.target.id || p.pose.world!==0)fail('This catch does not match the tournament.');
-      if(typeof c.kg!=='number'||!Number.isFinite(c.kg)||c.kg<=0||c.kg>t.target.maxKg+.01||e.catches>=120)fail('Invalid tournament catch.');
-      e.seen.add(c.cast);e.points+=Math.max(1,Math.round(c.kg*100));e.biggestKg=Math.max(e.biggestKg,c.kg);e.catches++;e.scoreAt=clock();
+      if(c.island!==t.island || p.pose.world!==0 || (t.mode==='species' && c.species!==t.target.id))
+        fail('This catch does not match the tournament.');
+      // Each species max already includes the 1.5x hotspot bonus. Charm can add
+      // another 100% on top; the old ceiling incorrectly rejected real record fish.
+      const species=t.mode==='weight'?tournamentIslands[t.island].fish.find(f=>f.id===c.species):t.target;
+      if(!species)fail('This catch does not match the tournament.');
+      if(typeof c.kg!=='number'||!Number.isFinite(c.kg)||c.kg<=0||c.kg>species.maxKg*2+.01||e.catches>=120)
+        fail('Invalid tournament catch.');
+      e.seen.add(c.cast);
+      e.totalKg+=c.kg;
+      e.points=t.mode==='weight'?Math.round(e.totalKg*100):e.points+Math.max(1,Math.round(c.kg*100));
+      if(c.kg>e.biggestKg){e.biggestKg=c.kg;e.biggestSpecies=c.species;}
+      e.history.push({species:c.species,name:species.name,kg:c.kg});
+      e.catches++;e.scoreAt=clock();
     } else if(c.op==='cancel'){
       if(p.id!==room.host || t.phase!=='inviting')fail('Only the host can cancel invitations.');
       finish(t,true,'The host cancelled. Entry fees refunded.');
@@ -124,6 +136,16 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(t.phase==='countdown' && t.entries.filter(e=>e.status==='joined').length<2)finish(t,true,'Not enough players remain. Entry fees refunded.');
     }
   }
+  // Return a single player's catches only on demand, so normal 10 Hz room
+  // snapshots do not repeatedly broadcast up to 960 detailed fish records.
+  function catches(p,c){
+    const t=p.room.tournament;
+    if(!t || !c || c.id!==t.id || !['ended','cancelled'].includes(t.phase))
+      fail('Tournament results are not available.');
+    const entry=t.entries.find(e=>e.id===c.player && e.status==='joined');
+    if(!entry)fail('Tournament player not found.');
+    return {ok:true,player:entry.name,totalKg:entry.totalKg,catches:entry.history};
+  }
   function receipt(c){
     if(!c || !validId(c.ticket))fail('Invalid wager receipt.');
     let r=receipts.get(c.ticket);
@@ -132,5 +154,5 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
     if(!r && c.cancelMissing===true){r={ticket:c.ticket,id:'',amount:0,ready:true,refund:true,payout:0};receipts.set(c.ticket,r);save();}
     return r?{ready:r.ready,refund:r.refund,payout:r.payout}:{ready:false,refund:false,payout:0};
   }
-  return {action,view,tick,leave,receipt};
+  return {action,view,tick,leave,receipt,catches};
 }
