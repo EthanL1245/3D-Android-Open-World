@@ -92,6 +92,19 @@ public sealed class ShopDimensionManager : MonoBehaviour
             if(target==null || target.spawn==null)
             { TravelError="Arrival point missing. Reinstall Shop World."; yield return SceneManager.UnloadSceneAsync(next); Traveling=false; controller.SetUIBlocked(false); yield break; }
         }
+        // An async Home load may have begun before the tournament countdown.
+        // If the travel lock activated during loading, unload that destination
+        // before moving the player, leaving them available for the forced
+        // Suncrest arrival on the next multiplayer tournament update.
+        if(destination!=0 && !TournamentAllowsDimension(destination))
+        {
+            yield return SceneManager.UnloadSceneAsync(next);
+            Traveling=false;
+            controller.SetUIBlocked(false);
+            var interruptedMenu=FindFirstObjectByType<ShopWorldHUD>();
+            if(interruptedMenu!=null && ShopWorldHUD.MenuOpen)interruptedMenu.Close();
+            yield break;
+        }
         if(previous==0)
         {
             returnPosition=transform.position; returnRotation=transform.rotation; hasReturn=true;
