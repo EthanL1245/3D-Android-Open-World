@@ -111,6 +111,14 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(view.phase=="inviting" && screen=="info" && me?.status=="joined")ShowLobby();
         RefreshText();
     }
+    // Active only for entrants in the Suncrest total-weight format. Other
+    // players and all classic tournament travel rules remain unchanged.
+    // The travel service uses this to block destinations even when invoked
+    // outside the visible MENU / TRAVEL buttons.
+    public bool SuncrestTravelRestricted => session!=null && session.Connected &&
+        current!=null && current.mode=="weight" &&
+        (current.phase=="countdown" || current.phase=="running") &&
+        Mine()?.status=="joined";
     private Entry Mine()=>current?.entries==null || session==null?null:Array.Find(current.entries,e=>e.id==session.LocalId);
     private bool Unlocked(int island)=>progress!=null && progress.Data!=null && (island==0 ||
         island==1&&progress.Data.brinebreakDiscovered || island==2 || island==3&&progress.Data.bluewaterDiscovered || island==4&&progress.Data.snapperDiscovered);
