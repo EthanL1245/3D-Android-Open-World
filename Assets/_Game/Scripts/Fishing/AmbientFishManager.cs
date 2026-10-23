@@ -96,6 +96,7 @@ public class AmbientFishManager : MonoBehaviour
         // alone cannot detect a submerged or overhanging rock.
         if(!SnapperRockFishObstacles.AmbientPointClear(position,clearance))return false;
         if(!BluewaterCayRockCollision.AmbientPointClear(position,clearance))return false;
+        if(!SuncrestMainRockCollision.AmbientPointClear(position,clearance))return false;
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
@@ -291,7 +292,8 @@ public class AmbientFishAgent : MonoBehaviour
         Vector3 recovered=transform.position+recoveryDirection*step;
         // Do not let the legacy stall-recovery mode tunnel through authored rocks.
         if(!SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance) ||
-            !BluewaterCayRockCollision.AmbientSegmentClear(transform.position,recovered,clearance))
+            !BluewaterCayRockCollision.AmbientSegmentClear(transform.position,recovered,clearance) ||
+            !SuncrestMainRockCollision.AmbientSegmentClear(transform.position,recovered,clearance))
         {
             EndRecovery();
             SetVisible(false);
