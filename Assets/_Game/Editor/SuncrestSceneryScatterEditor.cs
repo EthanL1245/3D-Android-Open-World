@@ -10,7 +10,8 @@ using UnityEngine.SceneManagement;
 /// Populates the NEW Suncrest Beach, up to 195 metres from the world-space centre
 /// of the artist's main Suncrest rock. Uses the ORIGINAL Palm / SeaGrape / Grass
 /// prefabs and seeded, stratified placement across the entire island.
-/// Extra palms are added BEFORE bushes/grass can occupy otherwise empty land.
+/// Seeds only near the main mountain and grows successive outward waves.
+/// Beach-tip palms from the prior layout are not retained.
 /// No terrain-paint dependency: any DRY, sufficiently level island terrain
 /// may receive vegetation, right up to the shoreline. The artist's rocks,
 /// their undersides, the marina/dock and existing vegetation are protected.
@@ -22,14 +23,16 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_FILL_INTERIOR_V7";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_MOUNTAIN_GROWTH_V8";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     // Preserve the 150 m tree line that now follows the mountains.
     private const float AreaRadius = 150f;
     // The added planting pass can extend past that radius, but only on dry
     // land belonging to NEW Suncrest Beach around the main rock.
     private const float ExpandedRadius = 195f;
-    private const int ExtraPalms = 210;
+    private const int ExtraPalms = 260;
+    private const float TreeSeparation = 6.2f;
+    private const float BaseDistance = 12f;
     private const float FillGridStep = 7f;
     private const float MinimumRockClearance = .5f;
     private const float GridCellSize = 5f;
@@ -90,17 +93,17 @@ public static class SuncrestSceneryScatterEditor
         if(palms!=null)
             foreach(Transform tree in palms)
             {
-                if(tree.name.StartsWith("Palm_Fill_",StringComparison.Ordinal))
+                if(tree.name.StartsWith("Palm_Grow_",StringComparison.Ordinal))
                     extra++;
-                else if(tree.name.StartsWith("Palm_",StringComparison.Ordinal))
+                else if(tree.name.StartsWith("Palm_Base_",StringComparison.Ordinal))
                     baseline++;
             }
         bool current=group.transform.Find(VersionMarker)!=null;
-        Debug.Log("[SUNCREST FOLIAGE INSPECT] V7 marker="+current+
+        Debug.Log("[SUNCREST FOLIAGE INSPECT] V8 marker="+current+
             ", original palms="+baseline+", new inland palms="+extra+
             ". Selected group="+group.name+
             ". Expand Palms - Individually Editable in the Hierarchy to "+
-            "locate each Palm_Fill_#### object.");
+            "locate each Palm_Base_#### and Palm_Grow_#### object.");
         Selection.activeGameObject=group;
         EditorGUIUtility.PingObject(group);
     }
@@ -140,6 +143,8 @@ public static class SuncrestSceneryScatterEditor
         public readonly System.Random random = new System.Random(73191);
         private readonly List<Vector2> candidateCells = new List<Vector2>();
         private int nextCell;
+        public readonly List<Vector3> treeSites = new List<Vector3>();
+        public readonly List<Collider> mainRockColliders = new List<Collider>();
 
         public float Rand(float low, float high)
         {
@@ -177,6 +182,16 @@ public static class SuncrestSceneryScatterEditor
 
         public Vector3 Candidate()
         {
+            // After trees have grown away from the mountain, grow the
+            // shrubs and grass around those trees (NOT at the outer tips).
+            if(treeSites.Count>0)
+            {
+                Vector3 t=treeSites[random.Next(treeSites.Count)];
+                float angle=Rand(0f,Mathf.PI*2f);
+                float d=Rand(1f,8f);
+                return t+new Vector3(Mathf.Cos(angle)*d,0f,
+                                     Mathf.Sin(angle)*d);
+            }
             if(candidateCells.Count==0)throw new InvalidOperationException(
                 "Suncrest foliage grid is empty.");
             if(nextCell==candidateCells.Count)ShuffleGrid();
@@ -184,6 +199,36 @@ public static class SuncrestSceneryScatterEditor
             return center+new Vector3(
                 cell.x+Rand(-GridCellSize*.48f,GridCellSize*.48f),0f,
                 cell.y+Rand(-GridCellSize*.48f,GridCellSize*.48f));
+        }
+
+        public bool TreeSpace(Vector3 p)
+        {
+            Vector2 v=new Vector2(p.x,p.z);
+            foreach(Vector3 q in treeSites)
+                if((v-new Vector2(q.x,q.z)).sqrMagnitude<
+                   TreeSeparation*TreeSeparation)return false;
+            return true;
+        }
+
+        public float MountainDistance(Vector3 point,out Vector2 away)
+        {
+            Vector3 here=new Vector3(point.x,Height(point)+1f,point.z);
+            float best=float.MaxValue;
+            Vector3 nearest=Vector3.zero;
+            foreach(Collider c in mainRockColliders)
+            {
+                if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
+                    continue;
+                Vector3 q=c.ClosestPoint(here);
+                float d=Vector3.Distance(q,here);
+                if(d<best){best=d;nearest=q;}
+            }
+            away=new Vector2(here.x-nearest.x,here.z-nearest.z);
+            if(away.sqrMagnitude<.01f)
+                away=new Vector2(point.x-center.x,point.z-center.z);
+            if(away.sqrMagnitude<.01f)away=Vector2.right;
+            away.Normalize();
+            return best;
         }
 
         public bool OnTerrain(Vector3 point, float margin)
@@ -371,7 +416,10 @@ public static class SuncrestSceneryScatterEditor
             foreach(Collider c in main.GetComponentsInChildren<Collider>(true))
                 if(c!=null && c.enabled && !c.isTrigger &&
                     c.gameObject.activeInHierarchy && unique.Add(c))
+                {
                     s.rockColliders.Add(c);
+                    s.mainRockColliders.Add(c);
+                }
 
         foreach(GameObject rock in SuncrestPlacedRockCollision.PlacedRocks(scene))
             foreach(Collider c in rock.GetComponentsInChildren<Collider>(true))
@@ -443,76 +491,152 @@ public static class SuncrestSceneryScatterEditor
         return placed;
     }
 
-    /// <summary>
-    /// Fill the remaining inland clearings. Plant the additional palms
-    /// immediately AFTER the successful original palms but BEFORE shrubs
-    /// and grass. In V6 this pass ran after 1,350 shrubs/grass patches,
-    /// whose occupied-radius checks rejected new trees almost everywhere.
-    /// The independent, seeded 7 m stratified grid covers the whole dry
-    /// Suncrest island, not only points within 58 m of existing palms.
-    /// </summary>
-    private static int FillRemainingPalmCoverage(Scatter s,GameObject prefab,
-        Transform palmGroup,out int usableCells)
+    private struct GrowthTip
     {
-        var cells=new List<Vector2>();
-        int range=Mathf.CeilToInt(ExpandedRadius/FillGridStep);
-        for(int x=-range;x<=range;x++)
-        for(int z=-range;z<=range;z++)
-        {
-            Vector2 p=new Vector2((x+.5f)*FillGridStep,
-                (z+.5f)*FillGridStep);
-            if(p.sqrMagnitude<ExpandedRadius*ExpandedRadius)
-                cells.Add(p);
-        }
+        public Vector3 pos;
+        public Vector2 outward;
+        public GrowthTip(Vector3 p,Vector2 d){pos=p;outward=d;}
+    }
 
-        // Separate RNG keeps the first 180 palm placements exactly as
-        // before, and new random positions are repeatable between rebuilds.
-        var rng=new System.Random(77317);
-        for(int i=cells.Count-1;i>0;i--)
+    private static bool AddPalm(Scatter s,GameObject prefab,Transform parent,
+        Vector3 position,float scale,string name)
+    {
+        float stem=.30f*scale,canopy=1.9f*scale;
+        s.totalCandidates++;
+        if(!s.DryLand(position,stem))
         {
-            int j=rng.Next(i+1);
-            Vector2 v=cells[i];cells[i]=cells[j];cells[j]=v;
+            s.noLandRejects++;return false;
         }
-
-        usableCells=0;
-        int placed=0;
-        // Use up to three attempts per cell to cover patches rejected only
-        // because their first jitter landed too close to rock/water.
-        for(int pass=0;pass<3 && placed<ExtraPalms;pass++)
-        for(int i=0;i<cells.Count && placed<ExtraPalms;i++)
+        if(!s.TreeSpace(position))
         {
-            Vector2 cell=cells[(i+pass*73)%cells.Count];
-            float jitter=FillGridStep*.47f;
-            Vector3 point=new Vector3(
-                s.center.x+cell.x+Mathf.Lerp(-jitter,jitter,(float)rng.NextDouble()),
-                0f,
-                s.center.z+cell.y+Mathf.Lerp(-jitter,jitter,(float)rng.NextDouble()));
-            float scale=Mathf.Lerp(.72f,1.12f,(float)rng.NextDouble());
-            float canopyRadius=1.9f*scale;
-            float trunkRadius=.30f*scale;
-            s.totalCandidates++;
-            if(!s.DryLand(point,trunkRadius))
+            s.spacingRejects++;return false;
+        }
+        if(!s.Available(position,canopy,stem,3.5f*scale))return false;
+        GameObject tree=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
+        if(tree==null)throw new InvalidOperationException("Palm prefab could not be instantiated.");
+        tree.name=name;
+        tree.transform.SetParent(parent,false);
+        tree.transform.SetPositionAndRotation(
+            new Vector3(position.x,s.Height(position),position.z),
+            Quaternion.Euler(0f,s.Rand(0f,360f),0f));
+        tree.transform.localScale=Vector3.one*scale;
+        s.Claim(position,Mathf.Max(.25f,canopy*.7f));
+        s.treeSites.Add(position);
+        return true;
+    }
+
+    private static int StartAtMountain(Scatter s,GameObject prefab,
+        Transform group,GameObject oldGroup)
+    {
+        int kept=0;
+        if(oldGroup!=null)
+        {
+            Transform palms=oldGroup.transform.Find("Palms - Individually Editable");
+            if(palms!=null)
             {
-                s.noLandRejects++;
-                continue;
+                var nearby=new List<Transform>();
+                foreach(Transform child in palms)
+                {
+                    Vector2 dir;
+                    if(s.MountainDistance(child.position,out dir)<=BaseDistance)
+                        nearby.Add(child);
+                }
+                nearby.Sort((a,b)=>string.CompareOrdinal(a.name,b.name));
+                foreach(Transform t in nearby)
+                {
+                    float size=Mathf.Clamp(t.lossyScale.x,.7f,1.3f);
+                    if(AddPalm(s,prefab,group,t.position,size,
+                        "Palm_Base_"+kept.ToString("D4")))kept++;
+                }
             }
-            usableCells++;
-            if(!s.Available(point,canopyRadius,trunkRadius,3.5f*scale))
-                continue;
-
-            GameObject tree=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
-            if(tree==null)
-                throw new InvalidOperationException("Original Suncrest Palm prefab failed to instantiate.");
-            tree.name="Palm_Fill_"+placed.ToString("D4");
-            tree.transform.SetParent(palmGroup,false);
-            tree.transform.SetPositionAndRotation(
-                new Vector3(point.x,s.Height(point),point.z),
-                Quaternion.Euler(0f,(float)rng.NextDouble()*360f,0f));
-            tree.transform.localScale=Vector3.one*scale;
-            s.Claim(point,Mathf.Max(.25f,canopyRadius*.7f));
-            placed++;
         }
-        return placed;
+        // If Unity did not save the previous autogenerated foliage, seed
+        // directly from suitable dry points NEXT TO the main mountain.
+        if(kept<24)
+        {
+            var rng=new System.Random(84197);
+            var sites=new List<Vector2>();
+            const float cell=4.5f;
+            int max=Mathf.CeilToInt(ExpandedRadius/cell);
+            for(int x=-max;x<=max;x++)
+            for(int z=-max;z<=max;z++)
+            {
+                Vector2 q=new Vector2((x+.5f)*cell,(z+.5f)*cell);
+                if(q.sqrMagnitude<ExpandedRadius*ExpandedRadius)
+                    sites.Add(q);
+            }
+            for(int i=sites.Count-1;i>0;i--)
+            {
+                int j=rng.Next(i+1);
+                Vector2 tmp=sites[i];sites[i]=sites[j];sites[j]=tmp;
+            }
+            foreach(Vector2 q in sites)
+            {
+                if(kept>=52)break;
+                Vector3 p=new Vector3(s.center.x+q.x,0f,s.center.z+q.y);
+                Vector2 away;
+                if(s.MountainDistance(p,out away)>BaseDistance)continue;
+                float scale=Mathf.Lerp(.7f,1.15f,(float)rng.NextDouble());
+                if(AddPalm(s,prefab,group,p,scale,
+                    "Palm_Base_"+kept.ToString("D4")))kept++;
+            }
+        }
+        return kept;
+    }
+
+    // Grow in breadth-first waves, each step 7-11m FROM the previous wave.
+    // Unlike the V7 full-island scatter, this cannot jump to beach tips and
+    // make dense outlying forests before the inner clearing is occupied.
+    private static int GrowFromMountain(Scatter s,GameObject prefab,
+        Transform group,out int waveCount)
+    {
+        var rng=new System.Random(100117);
+        var frontier=new List<GrowthTip>();
+        foreach(Vector3 p in s.treeSites)
+        {
+            Vector2 outward;
+            s.MountainDistance(p,out outward);
+            frontier.Add(new GrowthTip(p,outward));
+        }
+        int grown=0;waveCount=0;
+        for(int wave=0;wave<14 && grown<ExtraPalms && frontier.Count>0;wave++)
+        {
+            // Shuffle growth tips before every wave to avoid favoring one
+            // side of the mountain every time.
+            for(int i=frontier.Count-1;i>0;i--)
+            {
+                int j=rng.Next(i+1);
+                GrowthTip tmp=frontier[i];frontier[i]=frontier[j];frontier[j]=tmp;
+            }
+            var next=new List<GrowthTip>();
+            foreach(GrowthTip tip in frontier)
+            {
+                if(next.Count>=30 || grown>=ExtraPalms)break;
+                for(int attempt=0;attempt<16;attempt++)
+                {
+                    float angle=Mathf.Lerp(-105f,105f,
+                        (float)rng.NextDouble())*Mathf.Deg2Rad;
+                    float cs=Mathf.Cos(angle),sn=Mathf.Sin(angle);
+                    Vector2 heading=new Vector2(
+                        tip.outward.x*cs-tip.outward.y*sn,
+                        tip.outward.x*sn+tip.outward.y*cs);
+                    float step=Mathf.Lerp(7f,11f,
+                        (float)rng.NextDouble());
+                    Vector3 p=tip.pos+new Vector3(
+                        heading.x*step,0f,heading.y*step);
+                    float scale=Mathf.Lerp(.72f,1.16f,
+                        (float)rng.NextDouble());
+                    if(!AddPalm(s,prefab,group,p,scale,
+                        "Palm_Grow_"+grown.ToString("D4")))continue;
+                    next.Add(new GrowthTip(p,heading));
+                    grown++;
+                    break;
+                }
+            }
+            if(next.Count==0)break;
+            frontier=next;waveCount++;
+        }
+        return grown;
     }
 
     private static void Generate()
@@ -579,27 +703,34 @@ public static class SuncrestSceneryScatterEditor
             var grasses=new GameObject("Grass - Individually Editable");
             grasses.transform.SetParent(staged.transform,false);
 
-            int a=PlacePrefabs(scatter,palm,palms.transform,
-                "Palm",TargetPalms,30000,.7f,1.2f,1.9f,false,.30f,3.5f);
-            // Trees first! Reserve the open land for the new fill trees
-            // before bushes and grass claim thousands of ground patches.
-            int possibleFillSites;
-            int extra=FillRemainingPalmCoverage(scatter,palm,palms.transform,
-                out possibleFillSites);
+            // Old beach-tip clumps are NOT copied. Only palms physically
+            // near the main mountain survive, then successive waves grow
+            // outward across connected dry ground.
+            int baseCount=StartAtMountain(scatter,palm,palms.transform,
+                previous!=null?previous:old);
+            int waves;
+            int grown=GrowFromMountain(scatter,palm,palms.transform,out waves);
+            // Never silently replace the beach with sparse shoreline clumps
+            // again if mountain seeding / expansion fails in Unity.
+            if(baseCount<6 || grown<12)
+                throw new InvalidOperationException(
+                    "Mountain-growth failed: only "+baseCount+" base palms and "+
+                    grown+" outward palms. The previous generated foliage "+
+                    "was restored. Check that the active terrain and main "+
+                    "rock colliders match the visible Suncrest island.");
             int b=PlacePrefabs(scatter,shrub,bushes.transform,
                 "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true,.23f,1.6f);
             int c=PlacePrefabs(scatter,grass,grasses.transform,
                 "Grass",TargetGrass,90000,.6f,1.6f,.34f,false,.10f,.8f);
-            if(a+b+c+extra==0)throw new InvalidOperationException(
+            if(baseCount+b+c+grown==0)throw new InvalidOperationException(
                 "No valid dry island terrain was found near the main Suncrest rock. "+
                 "Check the terrain heights relative to the ocean.");
 
-            if(extra<25)
-                Debug.LogWarning("[SUNCREST FOLIAGE] Only "+extra+
-                    " of "+ExtraPalms+" interior palms were planted. "+
-                    "This usually means dry terrain or rock collider checks "+
-                    "are rejecting the remaining cells. Check the V7 "+
-                    "rejection counts instead of assuming they were placed.");
+            if(baseCount==0 || grown<40)
+                Debug.LogWarning("[SUNCREST FOLIAGE] V8 produced "+
+                    baseCount+" mountain seeds / "+grown+" outward palms. "+
+                    "Check whether the terrain and main rock MeshColliders "+
+                    "match the visible island; no beach-tip clumps were retained.");
             var marker=new GameObject(VersionMarker);
             marker.transform.SetParent(staged.transform,false);
             if(old!=null)Undo.DestroyObjectImmediate(old);
@@ -607,10 +738,22 @@ public static class SuncrestSceneryScatterEditor
             staged.name=GroupName;
             EditorSceneManager.MarkSceneDirty(scene);
             Physics.SyncTransforms();
-            Debug.Log("[SUNCREST FOLIAGE] V7: "+(a+extra)+" palms ("+
-                a+" rock-edge + "+extra+" full-island fill, "+
-                possibleFillSites+" dry fill candidates), "+
-                b+" SeaGrape bushes / "+c+" grass clumps. Candidate attempts "+
+            int interior=0;
+            float maxReach=0f;
+            foreach(Vector3 position in scatter.treeSites)
+            {
+                Vector2 direction;
+                float d=scatter.MountainDistance(position,out direction);
+                if(d>20f)interior++;
+                maxReach=Mathf.Max(maxReach,d);
+            }
+            Debug.Log("[SUNCREST FOLIAGE] V8: "+(baseCount+grown)+" palms ("+
+                baseCount+" mountain-base + "+grown+" outward-grown through "+
+                waves+" waves), "+interior+
+                " palms >20m from the main mountain, farthest reach "+
+                maxReach.ToString("F1")+"m, "+
+                b+" SeaGrape bushes / "+c+
+                " grass clumps. Candidate attempts "+
                 scatter.totalCandidates+": unsuitable land "+scatter.noLandRejects+
                 ", rock clearance "+scatter.rockRejects+
                 ", marina/dock "+scatter.dockRejects+
