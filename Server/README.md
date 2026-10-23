@@ -75,6 +75,23 @@ score, then joining order for an exact simultaneous tie. No qualifying catches
 means all entrants are refunded. Results show each entrant's points, the winner,
 and the biggest qualifying catch in kilograms; the top-right × closes the panel.
 
+Deep Ocean is now a selectable classic target-species tournament biome.
+Players fish there by boat as usual; Deep Ocean has no island teleport marker.
+
+The booth also offers **Suncrest total-weight tournaments**. Every joined player
+is automatically teleported to the Suncrest dock during the five-second countdown.
+All eligible Suncrest fish species count, and the six-minute winner is the
+entrant with the greatest combined catch weight (kg). Ties use biggest individual
+fish, earliest score and joining order. The results leaderboard shows each
+player's total kg, catch count, payout and the overall biggest fish with its
+species. Click any player's name/row after a tournament to request their
+individual catches and weights, in both formats. Detailed histories are kept on
+the server and requested on demand; 10 Hz room snapshots stay compact.
+
+Tournament weight validation permits the generated biome hotspot limit
+plus up to +100% Charm, so legitimate record catches are not rejected.
+The 120-catch limit and all existing duplicate/old-cast/species checks remain.
+
 The local shop save atomically stores the coin debit and its recovery ticket.
 The server persists escrow receipts in `DATA_DIR/tournament-escrow.json` using
 atomic file replacement. Repeated requests cannot charge or score twice. Pending
@@ -91,7 +108,7 @@ Normal tournament state rides on existing room snapshots. Extra requests occur
 only for decisions/catches and unresolved-receipt recovery; there is no server-side
 fish simulation. `tournament-species.mjs` is generated from the current
 `BiomeFishWeights.csv` and `BiomeBaitSpeciesChance.csv` (including the 50% hotspot
-weight allowance). Regenerate that list when fish availability/tuning changes.
+weight allowance; validation separately includes maximum Charm). Regenerate that list when fish availability/tuning changes.
 The existing deployment service's StateDirectory provides the writable DATA_DIR.
 
 Validate with `node --test Server/tests/*.test.mjs`. In Unity, build both clients,
