@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// <summary>
 /// Populates the NEW Suncrest Beach, within 150 metres of the world-space centre
 /// of the artist's main Suncrest rock. Uses the ORIGINAL Palm / SeaGrape / Grass
-/// prefabs and seeded polar / square-root-radius random placement.
+/// prefabs and seeded, stratified placement across the entire island.
 /// No terrain-paint dependency: any DRY, sufficiently level island terrain
 /// may receive vegetation, right up to the shoreline. The artist's rocks,
 /// their undersides, the marina/dock and existing vegetation are protected.
@@ -21,9 +21,11 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_ONLY_V3";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_EVEN_COVERAGE_V4";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     private const float AreaRadius = 150f;
+    private const float MinimumRockClearance = .5f;
+    private const float GridCellSize = 6f;
     private const int TargetPalms = 180;
     private const int TargetBushes = 400;
     private const int TargetGrass = 950;
@@ -91,20 +93,52 @@ public static class SuncrestSceneryScatterEditor
         public readonly List<Vector2> occupied = new List<Vector2>();
         public readonly List<float> radii = new List<float>();
         public readonly System.Random random = new System.Random(73191);
+        private readonly List<Vector2> candidateCells = new List<Vector2>();
+        private int nextCell;
 
         public float Rand(float low, float high)
         {
             return Mathf.Lerp(low,high,(float)random.NextDouble());
         }
 
+        public void PrepareGrid()
+        {
+            // Stratify the actual island: visit every 6m patch in randomized
+            // order before revisiting any patch. Unlike random radial samples
+            // this prevents narrow permitted land from getting all the foliage.
+            int extent=Mathf.CeilToInt(AreaRadius/GridCellSize);
+            for(int x=-extent;x<=extent;x++)
+            for(int z=-extent;z<=extent;z++)
+            {
+                Vector2 offset=new Vector2(
+                    (x+.5f)*GridCellSize,(z+.5f)*GridCellSize);
+                if(offset.sqrMagnitude<AreaRadius*AreaRadius)
+                    candidateCells.Add(offset);
+            }
+            ShuffleGrid();
+        }
+
+        private void ShuffleGrid()
+        {
+            for(int i=candidateCells.Count-1;i>0;i--)
+            {
+                int j=random.Next(i+1);
+                Vector2 t=candidateCells[i];
+                candidateCells[i]=candidateCells[j];
+                candidateCells[j]=t;
+            }
+            nextCell=0;
+        }
+
         public Vector3 Candidate()
         {
-            // Same fixed-seed / polar angle / sqrt radius approach as
-            // SuncrestReefSetup.BuildScenery; unbiased area coverage.
-            float angle = Rand(0f,Mathf.PI*2f);
-            float radius = AreaRadius*Mathf.Sqrt(Rand(.015f,.98f));
-            return center + new Vector3(Mathf.Cos(angle)*radius,0f,
-                                        Mathf.Sin(angle)*radius);
+            if(candidateCells.Count==0)throw new InvalidOperationException(
+                "Suncrest foliage grid is empty.");
+            if(nextCell==candidateCells.Count)ShuffleGrid();
+            Vector2 cell=candidateCells[nextCell++];
+            return center+new Vector3(
+                cell.x+Rand(-GridCellSize*.48f,GridCellSize*.48f),0f,
+                cell.y+Rand(-GridCellSize*.48f,GridCellSize*.48f));
         }
 
         public bool OnTerrain(Vector3 point, float margin)
@@ -130,7 +164,7 @@ public static class SuncrestSceneryScatterEditor
                !OnTerrain(point,radius+1f)) return false;
             float u=(point.x-terrainOrigin.x)/terrainSize.x;
             float v=(point.z-terrainOrigin.z)/terrainSize.z;
-            if(terrain.terrainData.GetSteepness(u,v)>45f) return false;
+            if(terrain.terrainData.GetSteepness(u,v)>55f) return false;
             float ground=Height(point);
             if(ground<water.BaseWaterLevel+.10f)return false;
 
@@ -148,52 +182,56 @@ public static class SuncrestSceneryScatterEditor
             return true;
         }
 
-        private bool IntersectsRockColumn(Vector3 point, float radius)
+        private bool TooCloseToRock(Vector3 point,float stemRadius,
+            float clearHeight)
         {
-            // Check the actual collider triangles, not enormous AABBs
-            // surrounding rock overhangs and caves. Test the ground position,
-            // sides of the plant's footprint, and rays vertically from both
-            // above and below to reject foliage ON or UNDER artist meshes.
-            for(int k=0;k<9;k++)
+            // Check only real rock geometry near the planting surface. The
+            // old ray from the TOP of an entire mountain projected every
+            // overhang onto the terrain, rejecting most of the island.
+            float ground=Height(point);
+            float minDistance=MinimumRockClearance+stemRadius;
+            float minSq=minDistance*minDistance;
+            Vector3 foot=new Vector3(point.x,ground,point.z);
+
+            for(int i=0;i<rockColliders.Count;i++)
             {
-                float angle=(k-1)*Mathf.PI*.25f;
-                Vector3 p=k==0?point:point+new Vector3(
-                    Mathf.Cos(angle)*radius*.85f,0f,
-                    Mathf.Sin(angle)*radius*.85f);
-                float floor=Height(p);
-                Vector3 nearGround=new Vector3(p.x,floor+.32f,p.z);
+                Collider c=rockColliders[i];
+                if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
+                    continue;
+                Bounds b=c.bounds;
+                if(b.min.x>point.x+minDistance ||
+                   b.max.x<point.x-minDistance ||
+                   b.min.z>point.z+minDistance ||
+                   b.max.z<point.z-minDistance ||
+                   b.max.y<ground-.35f ||
+                   b.min.y>ground+clearHeight+minDistance)
+                    continue;
 
-                for(int i=0;i<rockColliders.Count;i++)
+                // True collider distance, allowing stems to within 0.5m
+                // of the rock surface rather than a radius-sized exclusion.
+                for(int h=0;h<4;h++)
                 {
-                    Collider c=rockColliders[i];
-                    if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
-                        continue;
-                    Bounds b=c.bounds;
-                    if(p.x<b.min.x-.10f || p.x>b.max.x+.10f ||
-                       p.z<b.min.z-.10f || p.z>b.max.z+.10f ||
-                       b.max.y<floor-.65f) continue;
-
-                    Vector3 nearest=c.ClosestPoint(nearGround);
-                    if((nearest-nearGround).sqrMagnitude<.65f*.65f)
-                        return true;
-
-                    RaycastHit hit;
-                    Vector3 top=new Vector3(p.x,b.max.y+1f,p.z);
-                    float rayLength=Mathf.Max(1f,b.max.y-floor+2f);
-                    if(c.Raycast(new Ray(top,Vector3.down),out hit,rayLength) &&
-                       hit.point.y>=floor-.35f)
-                        return true;
-
-                    if(c.Raycast(new Ray(new Vector3(p.x,floor+.05f,p.z),
-                                           Vector3.up),
-                                 out hit,rayLength))
+                    float height=h==0?.2f:h==1?.8f:
+                        h==2?Mathf.Min(2f,clearHeight):clearHeight;
+                    Vector3 at=foot+Vector3.up*height;
+                    if((c.ClosestPoint(at)-at).sqrMagnitude<minSq)
                         return true;
                 }
+
+                // Only reject a low overhead rock within the height of
+                // this plant, not distant high overhangs and cliff faces.
+                RaycastHit hit;
+                Vector3 from=foot+Vector3.up*(clearHeight+.1f);
+                if(c.Raycast(new Ray(from,Vector3.down),out hit,
+                             clearHeight+.45f) &&
+                   hit.point.y>=ground-.35f)
+                    return true;
             }
             return false;
         }
 
-        public bool Available(Vector3 point,float radius)
+        public bool Available(Vector3 point,float radius,
+            float stemRadius,float clearHeight)
         {
             Vector2 position=new Vector2(point.x,point.z);
             for(int i=0;i<occupied.Count;i++)
@@ -224,7 +262,7 @@ public static class SuncrestSceneryScatterEditor
                    point.z>=b.min.z-radius-3f &&
                    point.z<=b.max.z+radius+3f) return false;
             }
-            return !IntersectsRockColumn(point,radius);
+            return !TooCloseToRock(point,stemRadius,clearHeight);
         }
 
         public void Claim(Vector3 point,float radius)
@@ -296,7 +334,7 @@ public static class SuncrestSceneryScatterEditor
 
     private static int PlacePrefabs(Scatter s,GameObject prefab,Transform group,
         string prefix,int goal,int tries,float minScale,float maxScale,
-        float footprintRadius,bool shrub)
+        float footprintRadius,bool shrub,float stemRadius,float clearHeight)
     {
         int placed=0;
         for(int attempt=0;attempt<tries && placed<goal;attempt++)
@@ -304,7 +342,8 @@ public static class SuncrestSceneryScatterEditor
             Vector3 point=s.Candidate();
             float scale=s.Rand(minScale,maxScale);
             float radius=footprintRadius*scale;
-            if(!s.DryLand(point,radius) || !s.Available(point,radius))
+            if(!s.DryLand(point,radius) ||
+               !s.Available(point,radius,stemRadius*scale,clearHeight*scale))
                 continue;
 
             GameObject plant=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
@@ -371,6 +410,7 @@ public static class SuncrestSceneryScatterEditor
             scatter.water=water;
             scatter.terrainOrigin=terrain.transform.position;
             scatter.terrainSize=terrain.terrainData.size;
+            scatter.PrepareGrid();
 
             if(old!=null)old.SetActive(false);
             if(previous!=null)previous.SetActive(false);
@@ -387,11 +427,11 @@ public static class SuncrestSceneryScatterEditor
             grasses.transform.SetParent(staged.transform,false);
 
             int a=PlacePrefabs(scatter,palm,palms.transform,
-                "Palm",TargetPalms,30000,.7f,1.2f,1.9f,false);
+                "Palm",TargetPalms,30000,.7f,1.2f,1.9f,false,.30f,3.5f);
             int b=PlacePrefabs(scatter,shrub,bushes.transform,
-                "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true);
+                "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true,.23f,1.6f);
             int c=PlacePrefabs(scatter,grass,grasses.transform,
-                "Grass",TargetGrass,90000,.6f,1.6f,.34f,false);
+                "Grass",TargetGrass,90000,.6f,1.6f,.34f,false,.10f,.8f);
             if(a+b+c==0)throw new InvalidOperationException(
                 "No valid dry island terrain was found within 150 m of the main rock. "+
                 "Check the terrain heights relative to the ocean.");
@@ -403,7 +443,7 @@ public static class SuncrestSceneryScatterEditor
             staged.name=GroupName;
             EditorSceneManager.MarkSceneDirty(scene);
             Physics.SyncTransforms();
-            Debug.Log("[SUNCREST FOLIAGE] Placed "+a+" palms / "+
+            Debug.Log("[SUNCREST FOLIAGE] Even 6m grid and 0.5m rock clearance: "+a+" palms / "+
                 b+" SeaGrape bushes / "+c+" grass clumps. NO beach rocks or "+
                 "limestone added. Saved rock transforms untouched. "+
                 "Group objects are individually editable; press Ctrl+S to save.");
