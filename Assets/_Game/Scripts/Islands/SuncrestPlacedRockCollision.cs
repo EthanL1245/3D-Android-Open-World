@@ -34,7 +34,9 @@ public static class SuncrestPlacedRockCollision
         if (string.IsNullOrEmpty(name)) return false;
         return name.IndexOf("rock",StringComparison.OrdinalIgnoreCase)>=0 ||
                name.IndexOf("boulder",StringComparison.OrdinalIgnoreCase)>=0 ||
-               name.IndexOf("cliff",StringComparison.OrdinalIgnoreCase)>=0;
+               name.IndexOf("cliff",StringComparison.OrdinalIgnoreCase)>=0 ||
+               name.IndexOf("mountain",StringComparison.OrdinalIgnoreCase)>=0 ||
+               name.IndexOf("stone",StringComparison.OrdinalIgnoreCase)>=0;
     }
 
     // WorldDecor/Rocks is the existing artist-maintained set of independent rocks.
@@ -42,8 +44,23 @@ public static class SuncrestPlacedRockCollision
     public static IEnumerable<GameObject> PlacedRocks(Scene scene)
     {
         if (!scene.IsValid() || !scene.isLoaded) yield break;
-        ReefZone reef = UnityEngine.Object.FindFirstObjectByType<ReefZone>();
-        Vector3 center = reef != null ? reef.center : new Vector3(7.409052f,0f,8.93556f);
+        // Rock colliders must follow the rebuilt main rock, not the retired
+        // reef center. The 25 m extra margin includes coastal overhangs.
+        GameObject main = SuncrestMainRockCollision.FindRock(scene);
+        Vector3 center = main != null ? main.transform.position : Vector3.zero;
+        if(main!=null)
+        {
+            Renderer[] renderers=main.GetComponentsInChildren<Renderer>(true);
+            bool found=false;
+            Bounds bounds=new Bounds(center,Vector3.zero);
+            foreach(Renderer r in renderers)
+            {
+                if(r==null || !r.enabled)continue;
+                if(!found){bounds=r.bounds;found=true;}
+                else bounds.Encapsulate(r.bounds);
+            }
+            if(found)center=bounds.center;
+        }
         foreach (GameObject root in scene.GetRootGameObjects())
         {
             if (root.name == GeneratedName)
@@ -68,14 +85,14 @@ public static class SuncrestPlacedRockCollision
                 {
                     if (!IsRock(item.name) || item.name == SuncrestMainRockCollision.RockName) continue;
                     Vector3 d=item.position-center; d.y=0f;
-                    if (d.sqrMagnitude<=225f*225f) yield return item.gameObject;
+                    if (d.sqrMagnitude<=175f*175f) yield return item.gameObject;
                 }
                 continue;
             }
             if (root.name == SuncrestMainRockCollision.RockName ||
                 root.name == "WorldDecor" || !IsRock(root.name)) continue;
             Vector3 offset=root.transform.position-center; offset.y=0f;
-            if (offset.sqrMagnitude<=225f*225f) yield return root;
+            if (offset.sqrMagnitude<=175f*175f) yield return root;
         }
     }
 
