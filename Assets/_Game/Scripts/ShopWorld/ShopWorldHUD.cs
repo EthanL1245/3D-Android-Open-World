@@ -342,7 +342,10 @@ public sealed class ShopWorldHUD : MonoBehaviour
                 bool available=unlocked && (destination!=3 || (IslandExpansionWorld.Active!=null && IslandExpansionWorld.Active.Ready));
                 int biome=IslandExpansionWorld.FishingBiome(player.transform.position);
                 bool here=destination==3?travel.Destination==0 && biome==1:travel.Destination==destination && (destination!=0 || biome==0);
-                string footer=!unlocked?"LOCKED — discover by landing":here?"YOU ARE HERE • TRAVEL →":"TRAVEL →";
+                bool tournamentAllowed=destination==3?travel.TournamentAllowsIsland(1):
+                    destination==0?travel.TournamentAllowsIsland(0):travel.TournamentAllowsDimension(destination);
+                string footer=!tournamentAllowed?"LOCKED DURING TOURNAMENT":
+                    !unlocked?"LOCKED — discover by landing":here?"YOU ARE HERE • TRAVEL →":"TRAVEL →";
                 var button=ButtonAt(cards.transform,names[destination]+"\n\n"+details[destination]+"\n\n"+footer,()=>
                 {
                     if(destination==3)travel.TravelIsland(true);
@@ -352,7 +355,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
                 Anchor(button.GetComponent<RectTransform>(),column*.5f,0,(column+1)*.5f,1,8,8,-8,-8);
                 var caption=button.GetComponentInChildren<Text>();caption.rectTransform.offsetMin=new Vector2(16,16);caption.rectTransform.offsetMax=new Vector2(-16,-16);
                 caption.fontSize=34;caption.resizeTextMaxSize=34;button.GetComponent<Image>().color=colors[destination];
-                SetAvailability(button,available && (destination==0 || destination==3 || !here));
+                SetAvailability(button,tournamentAllowed && available && (destination==0 || destination==3 || !here));
             }
         }
     }
