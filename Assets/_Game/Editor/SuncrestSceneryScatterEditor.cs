@@ -23,7 +23,7 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_MOUNTAIN_RINGS_V9";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_VISIBLE_ROCK_SURFACES_V10";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     // Preserve the 150 m tree line that now follows the mountains.
     private const float AreaRadius = 150f;
@@ -99,7 +99,7 @@ public static class SuncrestSceneryScatterEditor
                     baseline++;
             }
         bool current=group.transform.Find(VersionMarker)!=null;
-        Debug.Log("[SUNCREST FOLIAGE INSPECT] V9 marker="+current+
+        Debug.Log("[SUNCREST FOLIAGE INSPECT] V10 marker="+current+
             ", original palms="+baseline+", new inland palms="+extra+
             ". Selected group="+group.name+
             ". Expand Palms - Individually Editable in the Hierarchy to "+
@@ -276,57 +276,117 @@ public static class SuncrestSceneryScatterEditor
             return true;
         }
 
+        private static readonly Vector2[] RadialTests =
+        {
+            new Vector2(1f,0f),new Vector2(-1f,0f),
+            new Vector2(0f,1f),new Vector2(0f,-1f),
+            new Vector2(.707107f,.707107f),
+            new Vector2(-.707107f,.707107f),
+            new Vector2(.707107f,-.707107f),
+            new Vector2(-.707107f,-.707107f)
+        };
+
+        public readonly Dictionary<string,int> rockRejectionsByCollider =
+            new Dictionary<string,int>();
+
         private bool TooCloseToRock(Vector3 point,float stemRadius,
             float stemHeight)
         {
-            // Earlier versions traced DOWN from the top of every mountain
-            // and excluded the ground below its entire horizontal projection.
-            // Here, test only real rock surfaces within half a metre of
-            // the vertical STEM near the terrain. A mountain rising several
-            // metres overhead does not cast an artificial exclusion shadow.
+            // Rock meshes such as the massive Suncrest main mountain can
+            // overlap/bury themselves beneath the Terrain. ClosestPoint()
+            // returns THE POINT ITSELF when inside a solid MeshCollider:
+            // that is not evidence of a rock SURFACE near a visible tree.
+            //
+            // Instead, use actual triangle raycast contacts at the exposed
+            // trunk: no rocks within 0.5m and no low overhang intersecting
+            // the tree's base. Ignore distant/buried mountain geometry that
+            // made 432/485 otherwise-dry V9 candidates appear 'blocked'.
             float ground=Height(point);
             float clearance=MinimumRockClearance+stemRadius;
-            float maxHeight=Mathf.Min(stemHeight,2.2f);
-            float distSq=clearance*clearance;
+            float upper=Mathf.Min(stemHeight,2.2f);
+            float scanRadius=clearance+.85f;
             for(int i=0;i<rockColliders.Count;i++)
             {
                 Collider c=rockColliders[i];
                 if(c==null || !c.enabled || !c.gameObject.activeInHierarchy)
                     continue;
-                Bounds bounds=c.bounds;
-                if(bounds.min.x>point.x+clearance ||
-                   bounds.max.x<point.x-clearance ||
-                   bounds.min.z>point.z+clearance ||
-                   bounds.max.z<point.z-clearance ||
-                   bounds.max.y<ground-.3f ||
-                   bounds.min.y>ground+maxHeight+clearance)
+                Bounds b=c.bounds;
+                if(b.min.x>point.x+scanRadius ||
+                   b.max.x<point.x-scanRadius ||
+                   b.min.z>point.z+scanRadius ||
+                   b.max.z<point.z-scanRadius ||
+                   b.max.y<ground-.2f ||
+                   b.min.y>ground+upper+.5f)
                     continue;
 
-                // A single narrow trunk clearance allows growth directly
-                // beside rock faces, instead of discarding whole vegetation
-                // footprints. ClosestPoint uses the actual mesh collider.
-                for(int j=0;j<4;j++)
+                bool contact=false;
+                RaycastHit hit;
+                // Check visible surface triangles along the stem's first
+                // 2.2m, where a solid rock wall could intersect the palm.
+                for(int h=0;h<4 && !contact;h++)
                 {
-                    float h=j==0?.08f:j==1?.55f:
-                        j==2?1.15f:maxHeight;
-                    if(h>maxHeight)h=maxHeight;
-                    Vector3 baseSample=new Vector3(point.x,ground+h,point.z);
-                    Vector3 nearest=c.ClosestPoint(baseSample);
-                    if((nearest-baseSample).sqrMagnitude<distSq)
+                    float y=ground+Mathf.Min(upper,h==0?.15f:
+                        h==1?.7f:h==2?1.45f:upper);
+                    for(int k=0;k<RadialTests.Length;k++)
                     {
-                        // Some buried meshes intersect terrain internally.
-                        // If the visible top of the rock at this XZ lies
-                        // BELOW the terrain, it must not block vegetation.
-                        RaycastHit topHit;
-                        float startY=bounds.max.y+.5f;
-                        bool hasTop=c.Raycast(new Ray(
-                            new Vector3(point.x,startY,point.z),
-                            Vector3.down),out topHit,
-                            Mathf.Max(1f,startY-ground+2f));
-                        if(hasTop && topHit.point.y<ground-.08f)
-                            continue;
-                        return true;
+                        Vector2 direction=RadialTests[k];
+                        Vector3 from=new Vector3(
+                            point.x+direction.x*scanRadius,y,
+                            point.z+direction.y*scanRadius);
+                        Vector3 toward=new Vector3(-direction.x,0f,-direction.y);
+                        if(!c.Raycast(new Ray(from,toward),out hit,
+                            scanRadius*2f))continue;
+                        Vector2 hitFromStem=new Vector2(
+                            hit.point.x-point.x,hit.point.z-point.z);
+                        if(hitFromStem.sqrMagnitude<=clearance*clearance)
+                        {
+                            contact=true;
+                            break;
+                        }
                     }
+                }
+
+                // Detect truly LOW overhead mesh (inside the plant height),
+                // not an entire mountain far above it. A rock triangle
+                // crossing the trunk cannot be accepted as terrain.
+                if(!contact)
+                {
+                    Vector3 from=new Vector3(point.x,
+                        ground+upper+.05f,point.z);
+                    if(c.Raycast(new Ray(from,Vector3.down),out hit,
+                        upper+.35f) &&
+                        hit.point.y>=ground-.15f)
+                        contact=true;
+                }
+
+                // A nonzero ClosestPoint offset is evidence of a nearby
+                // exterior surface. Zero offset can mean the point lies
+                // DEEP INSIDE a collider (common with intersecting FBX
+                // mountains) and must not veto a visible dry terrain patch.
+                if(!contact)
+                {
+                    for(int h=0;h<3;h++)
+                    {
+                        Vector3 test=new Vector3(point.x,
+                            ground+Mathf.Min(upper,h==0?.2f:h==1?1f:2f),
+                            point.z);
+                        Vector3 nearest=c.ClosestPoint(test);
+                        float dist=(nearest-test).sqrMagnitude;
+                        if(dist>1e-6f && dist<clearance*clearance)
+                        {
+                            contact=true;
+                            break;
+                        }
+                    }
+                }
+
+                if(contact)
+                {
+                    string name=c.name;
+                    int n;
+                    rockRejectionsByCollider.TryGetValue(name,out n);
+                    rockRejectionsByCollider[name]=n+1;
+                    return true;
                 }
             }
             return false;
@@ -766,6 +826,16 @@ public static class SuncrestSceneryScatterEditor
             // Never silently replace the beach with sparse shoreline clumps
             // again if mountain seeding / expansion fails in Unity.
             if(baseCount<6 || grown<12)
+            {
+                var rejectionTypes=new List<KeyValuePair<string,int>>(
+                    scatter.rockRejectionsByCollider);
+                rejectionTypes.Sort((a,b)=>b.Value.CompareTo(a.Value));
+                var topRocks=new System.Text.StringBuilder();
+                for(int i=0;i<Mathf.Min(6,rejectionTypes.Count);i++)
+                    topRocks.Append(" [").Append(rejectionTypes[i].Key)
+                        .Append(": ").Append(rejectionTypes[i].Value).Append("]");
+                Debug.LogWarning("[SUNCREST FOLIAGE] Rock blockers "+
+                    topRocks.ToString());
                 throw new InvalidOperationException(
                     "Mountain rings generated only "+baseCount+
                     " mountain-base palms and "+grown+" expanded palms from "+
@@ -775,6 +845,7 @@ public static class SuncrestSceneryScatterEditor
                     scatter.spacingRejects+", rock colliders "+
                     scatter.rockRejects+", dock/marina "+
                     scatter.dockRejects+".");
+            }
             int b=PlacePrefabs(scatter,shrub,bushes.transform,
                 "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true,.23f,1.6f);
             int c=PlacePrefabs(scatter,grass,grasses.transform,
@@ -784,7 +855,7 @@ public static class SuncrestSceneryScatterEditor
                 "Check the terrain heights relative to the ocean.");
 
             if(baseCount==0 || grown<40)
-                Debug.LogWarning("[SUNCREST FOLIAGE] V9 produced "+
+                Debug.LogWarning("[SUNCREST FOLIAGE] V10 produced "+
                     baseCount+" mountain seeds / "+grown+" outward palms. "+
                     "Check whether the terrain and main rock MeshColliders "+
                     "match the visible island; no beach-tip clumps were retained.");
@@ -804,7 +875,7 @@ public static class SuncrestSceneryScatterEditor
                 if(d>20f)interior++;
                 maxReach=Mathf.Max(maxReach,d);
             }
-            Debug.Log("[SUNCREST FOLIAGE] V9: "+(baseCount+grown)+" palms ("+
+            Debug.Log("[SUNCREST FOLIAGE] V10: "+(baseCount+grown)+" palms ("+
                 baseCount+" mountain-base + "+grown+" outward-grown through "+
                 waves+" ordered 5m distance rings, "+
                 drySites+" dry growth sites), "+interior+
