@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 /// Populates the NEW Suncrest Beach, up to 195 metres from the world-space centre
 /// of the artist's main Suncrest rock. Uses the ORIGINAL Palm / SeaGrape / Grass
 /// prefabs and seeded, stratified placement across the entire island.
-/// Seeds only near the main mountain and grows successive outward waves.
+/// Seeds only near the main mountain and expands into complete sorted rings.
 /// Beach-tip palms from the prior layout are not retained.
 /// No terrain-paint dependency: any DRY, sufficiently level island terrain
 /// may receive vegetation, right up to the shoreline. The artist's rocks,
@@ -23,7 +23,7 @@ public static class SuncrestSceneryScatterEditor
     private const string ScenePath = "Assets/Scenes/PrototypeWorld.unity";
     private const string GroupName = SuncrestPlacedRockCollision.GeneratedName;
     private const string LegacyGroupName = SuncrestPlacedRockCollision.LegacyGeneratedName;
-    private const string VersionMarker = "SUNCREST_FOLIAGE_MOUNTAIN_GROWTH_V8";
+    private const string VersionMarker = "SUNCREST_FOLIAGE_MOUNTAIN_RINGS_V9";
     private const string PrefabFolder = "Assets/_Game/Reef/Generated/";
     // Preserve the 150 m tree line that now follows the mountains.
     private const float AreaRadius = 150f;
@@ -99,7 +99,7 @@ public static class SuncrestSceneryScatterEditor
                     baseline++;
             }
         bool current=group.transform.Find(VersionMarker)!=null;
-        Debug.Log("[SUNCREST FOLIAGE INSPECT] V8 marker="+current+
+        Debug.Log("[SUNCREST FOLIAGE INSPECT] V9 marker="+current+
             ", original palms="+baseline+", new inland palms="+extra+
             ". Selected group="+group.name+
             ". Expand Palms - Individually Editable in the Hierarchy to "+
@@ -491,11 +491,15 @@ public static class SuncrestSceneryScatterEditor
         return placed;
     }
 
-    private struct GrowthTip
+    private struct GrowthCandidate
     {
-        public Vector3 pos;
-        public Vector2 outward;
-        public GrowthTip(Vector3 p,Vector2 d){pos=p;outward=d;}
+        public Vector3 point;
+        public float distanceFromSeed;
+        public float sortKey;
+        public GrowthCandidate(Vector3 p,float d,float key)
+        {
+            point=p;distanceFromSeed=d;sortKey=key;
+        }
     }
 
     private static bool AddPalm(Scatter s,GameObject prefab,Transform parent,
@@ -584,59 +588,106 @@ public static class SuncrestSceneryScatterEditor
         return kept;
     }
 
-    // Grow in breadth-first waves, each step 7-11m FROM the previous wave.
-    // Unlike the V7 full-island scatter, this cannot jump to beach tips and
-    // make dense outlying forests before the inner clearing is occupied.
+    // Expand outward from the preserved mountain-base palms using complete
+    // concentric 5 m sampling cells ordered by distance from ANY mountain seed.
+    // Do not depend on each previous growth wave having a viable child.
+    // The old V8 frontier died after 3 palms because it ran out of accepted
+    // tips, even though accessible terrain remained beyond them.
     private static int GrowFromMountain(Scatter s,GameObject prefab,
-        Transform group,out int waveCount)
+        Transform group,out int ringCount,out int dryCandidates)
     {
+        var baseTrees=new List<Vector3>(s.treeSites);
+        if(baseTrees.Count==0)
+        {
+            ringCount=0;dryCandidates=0;return 0;
+        }
+
+        const float grid=5f;
+        const float minSeedDistance=5.0f;
+        const float maxSeedDistance=95f;
         var rng=new System.Random(100117);
-        var frontier=new List<GrowthTip>();
-        foreach(Vector3 p in s.treeSites)
+        var candidates=new List<GrowthCandidate>();
+        int extent=Mathf.CeilToInt(ExpandedRadius/grid);
+        float maxAreaSq=ExpandedRadius*ExpandedRadius;
+        float minSq=minSeedDistance*minSeedDistance;
+        float maxSq=maxSeedDistance*maxSeedDistance;
+
+        for(int x=-extent;x<=extent;x++)
+        for(int z=-extent;z<=extent;z++)
         {
-            Vector2 outward;
-            s.MountainDistance(p,out outward);
-            frontier.Add(new GrowthTip(p,outward));
+            // Stratified jitter prevents grid-looking tree rows and gives
+            // each part of the usable island an opportunity to be sampled.
+            Vector3 point=new Vector3(
+                s.center.x+(x+.5f)*grid+s.Rand(-2f,2f),0f,
+                s.center.z+(z+.5f)*grid+s.Rand(-2f,2f));
+            Vector2 centerOffset=new Vector2(point.x-s.center.x,
+                point.z-s.center.z);
+            if(centerOffset.sqrMagnitude>maxAreaSq)continue;
+
+            float nearSq=float.MaxValue;
+            foreach(Vector3 baseTree in baseTrees)
+            {
+                float dx=point.x-baseTree.x,dz=point.z-baseTree.z;
+                float d=dx*dx+dz*dz;
+                if(d<nearSq)nearSq=d;
+            }
+            if(nearSq<minSq || nearSq>maxSq)continue;
+            float near=Mathf.Sqrt(nearSq);
+            // Complete each band before moving substantially farther from
+            // the mountain. A little noise avoids concentric-looking rows.
+            float ranking=near+Mathf.Lerp(-1f,1f,(float)rng.NextDouble());
+            candidates.Add(new GrowthCandidate(point,near,ranking));
         }
-        int grown=0;waveCount=0;
-        for(int wave=0;wave<14 && grown<ExtraPalms && frontier.Count>0;wave++)
+        candidates.Sort((a,b)=>a.sortKey.CompareTo(b.sortKey));
+
+        int placed=0;
+        dryCandidates=0;
+        float furthest=0f;
+        foreach(GrowthCandidate candidate in candidates)
         {
-            // Shuffle growth tips before every wave to avoid favoring one
-            // side of the mountain every time.
-            for(int i=frontier.Count-1;i>0;i--)
+            if(placed>=ExtraPalms)break;
+            // Use stable randomized scales, not the direction of a mesh
+            // collider normal, to decide where the next tree should go.
+            float scale=Mathf.Lerp(.72f,1.16f,(float)rng.NextDouble());
+            float stem=.3f*scale;
+            s.totalCandidates++;
+            if(!s.DryLand(candidate.point,stem))
             {
-                int j=rng.Next(i+1);
-                GrowthTip tmp=frontier[i];frontier[i]=frontier[j];frontier[j]=tmp;
+                s.noLandRejects++;continue;
             }
-            var next=new List<GrowthTip>();
-            foreach(GrowthTip tip in frontier)
+            dryCandidates++;
+            // Do NOT reject an entire neighborhood when one candidate fails.
+            // Keep evaluating independent cells farther from the mountain.
+            if(!s.TreeSpace(candidate.point))
             {
-                if(next.Count>=30 || grown>=ExtraPalms)break;
-                for(int attempt=0;attempt<16;attempt++)
-                {
-                    float angle=Mathf.Lerp(-105f,105f,
-                        (float)rng.NextDouble())*Mathf.Deg2Rad;
-                    float cs=Mathf.Cos(angle),sn=Mathf.Sin(angle);
-                    Vector2 heading=new Vector2(
-                        tip.outward.x*cs-tip.outward.y*sn,
-                        tip.outward.x*sn+tip.outward.y*cs);
-                    float step=Mathf.Lerp(7f,11f,
-                        (float)rng.NextDouble());
-                    Vector3 p=tip.pos+new Vector3(
-                        heading.x*step,0f,heading.y*step);
-                    float scale=Mathf.Lerp(.72f,1.16f,
-                        (float)rng.NextDouble());
-                    if(!AddPalm(s,prefab,group,p,scale,
-                        "Palm_Grow_"+grown.ToString("D4")))continue;
-                    next.Add(new GrowthTip(p,heading));
-                    grown++;
-                    break;
-                }
+                s.spacingRejects++;continue;
             }
-            if(next.Count==0)break;
-            frontier=next;waveCount++;
+            if(!s.Available(candidate.point,1.9f*scale,stem,3.5f*scale))
+                continue;
+
+            GameObject tree=(GameObject)PrefabUtility.InstantiatePrefab(prefab);
+            if(tree==null)throw new InvalidOperationException(
+                "Original Suncrest Palm prefab could not be instantiated.");
+            tree.name="Palm_Grow_"+placed.ToString("D4");
+            tree.transform.SetParent(group,false);
+            tree.transform.SetPositionAndRotation(
+                new Vector3(candidate.point.x,s.Height(candidate.point),
+                    candidate.point.z),
+                Quaternion.Euler(0f,(float)rng.NextDouble()*360f,0f));
+            tree.transform.localScale=Vector3.one*scale;
+            s.Claim(candidate.point,Mathf.Max(.25f,1.9f*scale*.7f));
+            s.treeSites.Add(candidate.point);
+            furthest=Mathf.Max(furthest,candidate.distanceFromSeed);
+            placed++;
         }
-        return grown;
+        // The diagnostic counts distance bands reached, not BFS waves.
+        ringCount=Mathf.CeilToInt(furthest/5f);
+        Debug.Log("[SUNCREST FOLIAGE] Mountain-grid candidate diagnostics: "+
+            candidates.Count+" sites within 5-95m of "+baseTrees.Count+
+            " mountain seeds, "+dryCandidates+" dry candidates scanned, "+
+            placed+" new palms, farthest planted "+
+            furthest.ToString("F1")+"m from nearest seed.");
+        return placed;
     }
 
     private static void Generate()
@@ -703,21 +754,27 @@ public static class SuncrestSceneryScatterEditor
             var grasses=new GameObject("Grass - Individually Editable");
             grasses.transform.SetParent(staged.transform,false);
 
-            // Old beach-tip clumps are NOT copied. Only palms physically
-            // near the main mountain survive, then successive waves grow
-            // outward across connected dry ground.
+            // Old beach-tip clumps are NOT copied. Mountain palms are
+            // retained as seeds for sorted inland candidate rings; a
+            // blocked trial no longer terminates the entire expansion.
             int baseCount=StartAtMountain(scatter,palm,palms.transform,
                 previous!=null?previous:old);
             int waves;
-            int grown=GrowFromMountain(scatter,palm,palms.transform,out waves);
+            int drySites;
+            int grown=GrowFromMountain(scatter,palm,palms.transform,
+                out waves,out drySites);
             // Never silently replace the beach with sparse shoreline clumps
             // again if mountain seeding / expansion fails in Unity.
             if(baseCount<6 || grown<12)
                 throw new InvalidOperationException(
-                    "Mountain-growth failed: only "+baseCount+" base palms and "+
-                    grown+" outward palms. The previous generated foliage "+
-                    "was restored. Check that the active terrain and main "+
-                    "rock colliders match the visible Suncrest island.");
+                    "Mountain rings generated only "+baseCount+
+                    " mountain-base palms and "+grown+" expanded palms from "+
+                    drySites+" dry sampled candidate sites. Existing foliage "+
+                    "was restored. Candidates rejected: dry land "+
+                    scatter.noLandRejects+", existing plant spacing "+
+                    scatter.spacingRejects+", rock colliders "+
+                    scatter.rockRejects+", dock/marina "+
+                    scatter.dockRejects+".");
             int b=PlacePrefabs(scatter,shrub,bushes.transform,
                 "SeaGrape",TargetBushes,60000,.7f,1.45f,.8f,true,.23f,1.6f);
             int c=PlacePrefabs(scatter,grass,grasses.transform,
@@ -727,7 +784,7 @@ public static class SuncrestSceneryScatterEditor
                 "Check the terrain heights relative to the ocean.");
 
             if(baseCount==0 || grown<40)
-                Debug.LogWarning("[SUNCREST FOLIAGE] V8 produced "+
+                Debug.LogWarning("[SUNCREST FOLIAGE] V9 produced "+
                     baseCount+" mountain seeds / "+grown+" outward palms. "+
                     "Check whether the terrain and main rock MeshColliders "+
                     "match the visible island; no beach-tip clumps were retained.");
@@ -747,9 +804,10 @@ public static class SuncrestSceneryScatterEditor
                 if(d>20f)interior++;
                 maxReach=Mathf.Max(maxReach,d);
             }
-            Debug.Log("[SUNCREST FOLIAGE] V8: "+(baseCount+grown)+" palms ("+
+            Debug.Log("[SUNCREST FOLIAGE] V9: "+(baseCount+grown)+" palms ("+
                 baseCount+" mountain-base + "+grown+" outward-grown through "+
-                waves+" waves), "+interior+
+                waves+" ordered 5m distance rings, "+
+                drySites+" dry growth sites), "+interior+
                 " palms >20m from the main mountain, farthest reach "+
                 maxReach.ToString("F1")+"m, "+
                 b+" SeaGrape bushes / "+c+
