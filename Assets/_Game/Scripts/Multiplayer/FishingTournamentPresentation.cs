@@ -9,7 +9,7 @@ public sealed partial class FishingTournament
     private Image headerTrophy;
     private FishIndexLivePreview resultPreview;
     private Text resultSubtitle,championName,championScore,championReward,catchPlayer,catchSpecies,catchWeight;
-    private GameObject resultRoot;
+    private GameObject resultRoot,catchHistoryPanel;
     private readonly List<Text[]> resultRows=new List<Text[]>();
     private static readonly Dictionary<string,Sprite> artworkCache=new Dictionary<string,Sprite>();
     private static readonly Color Gold=new Color(1f,.85f,.35f);
@@ -90,7 +90,7 @@ public sealed partial class FishingTournament
         ResultText(board.transform,"FINAL LEADERBOARD",25,new Vector2(-10,116),new Vector2(1200,40),Color.white);
         ResultText(board.transform,"PLAYER",18,new Vector2(-330,76),new Vector2(400,30),Ice);
         ResultText(board.transform,"FISH CAUGHT",18,new Vector2(60,76),new Vector2(190,30),Ice,TextAnchor.MiddleCenter);
-        ResultText(board.transform,"POINTS",18,new Vector2(292,76),new Vector2(205,30),Ice,TextAnchor.MiddleCenter);
+        ResultText(board.transform,current.mode=="weight"?"TOTAL KG":"POINTS",18,new Vector2(292,76),new Vector2(205,30),Ice,TextAnchor.MiddleCenter);
         ResultText(board.transform,"REWARD",18,new Vector2(510,76),new Vector2(190,30),Ice,TextAnchor.MiddleCenter);
         var viewport=new GameObject("Leaderboard viewport",typeof(RectTransform),typeof(RectMask2D));viewport.transform.SetParent(board.transform,false);
         var vr=viewport.GetComponent<RectTransform>();vr.sizeDelta=new Vector2(1234,190);vr.anchoredPosition=new Vector2(0,-36);
@@ -111,7 +111,16 @@ public sealed partial class FishingTournament
                 ResultText(row.transform,"",26,new Vector2(60,0),new Vector2(170,49),Color.white,TextAnchor.MiddleCenter),
                 ResultText(row.transform,"",29,new Vector2(292,0),new Vector2(205,49),i==0?Gold:Color.white,TextAnchor.MiddleCenter),
                 ResultText(row.transform,"",25,new Vector2(502,0),new Vector2(152,49),Gold,TextAnchor.MiddleCenter)});
-            if(i<joined.Count && joined[i].id==current.winnerId)Artwork(row.transform,"Coins",new Vector2(590,0),new Vector2(34,38));
+            if(i<joined.Count)
+            {
+                // Clicking the person's name/row opens an on-demand, per-fish
+                // breakdown for either tournament format.
+                string playerId=joined[i].id,playerName=joined[i].name;
+                var click=row.AddComponent<Button>();
+                click.transition=Selectable.Transition.None;
+                click.onClick.AddListener(()=>ShowCatchHistory(playerId,playerName));
+                if(playerId==current.winnerId)Artwork(row.transform,"Coins",new Vector2(590,0),new Vector2(34,38));
+            }
         }
         var biggest=Glass(resultRoot.transform,"Biggest catch",new Vector2(0,-290),new Vector2(1260,184));
         ResultText(biggest.transform,"BIGGEST CATCH",25,new Vector2(-377,62),new Vector2(450,36),Gold);
@@ -125,32 +134,82 @@ public sealed partial class FishingTournament
         {
             var fish=new GameObject("Swimming biggest catch",typeof(RectTransform),typeof(RawImage));fish.transform.SetParent(biggest.transform,false);
             var raw=fish.GetComponent<RawImage>();raw.raycastTarget=false;raw.rectTransform.sizeDelta=new Vector2(440,132);raw.rectTransform.anchoredPosition=new Vector2(-350,-23);
-            resultPreview=fish.AddComponent<FishIndexLivePreview>();resultPreview.Show(raw,current.species,440f/132f);
+            resultPreview=fish.AddComponent<FishIndexLivePreview>();resultPreview.Show(raw,current.mode=="weight"?current.biggestSpecies:current.species,440f/132f);
         }
         else ResultText(biggest.transform,"No qualifying catch",23,new Vector2(-350,-15),new Vector2(450,70),Ice,TextAnchor.MiddleCenter);
     }
     private void RefreshResults()
     {
         if(resultRoot==null)return;
-        resultSubtitle.text=(current.speciesName??"RANDOM SPECIES")+"  /  "+current.islandName+"  /  6 MINUTE MATCH";
+        resultSubtitle.text=(current.mode=="weight"?"TOTAL FISH WEIGHT":current.speciesName??"RANDOM SPECIES")+"  /  "+current.islandName+"  /  6 MINUTE MATCH";
         bool won=!string.IsNullOrEmpty(current.winnerId);
         var winner=current.entries==null?null:System.Array.Find(current.entries,e=>e.id==current.winnerId);
         championName.text=won?current.winnerName:"NO WINNER";
-        championScore.text=won && winner!=null?winner.points.ToString("N0")+" POINTS  ("+winner.catches+" FISH CAUGHT)":current.reason;
+        championScore.text=won && winner!=null?(current.mode=="weight"?winner.totalKg.ToString("0.00")+" KG":winner.points.ToString("N0")+" POINTS")+"  ("+winner.catches+" FISH CAUGHT)":current.reason;
         championReward.text=won?"+"+current.pool.ToString("N0")+"\nCOINS!":"ENTRY FEES\nREFUNDED";
         int i=0;foreach(var row in resultRows)foreach(var cell in row)cell.text="";
         foreach(var entry in current.entries??new Entry[0])
         {
             if(entry.status!="joined" || i>=resultRows.Count)continue;
-            var row=resultRows[i++];row[0].text=entry.name;row[1].text=entry.catches.ToString();row[2].text=entry.points.ToString("N0");
+            var row=resultRows[i++];row[0].text=entry.name+"  >";row[1].text=entry.catches.ToString();row[2].text=current.mode=="weight"?entry.totalKg.ToString("0.00"):entry.points.ToString("N0");
             row[3].text=entry.id==current.winnerId?current.pool.ToString("N0"):"—";
         }
         catchPlayer.text=current.biggestKg>0?current.biggestName:"—";
-        catchSpecies.text=current.biggestKg>0?current.speciesName:"—";
+        catchSpecies.text=current.biggestKg>0&&current.biggestSpecies>=0?FishCatalog.Get(current.biggestSpecies).Name:current.biggestKg>0?current.speciesName:"—";
         catchWeight.text=current.biggestKg>0?current.biggestKg.ToString("0.00")+" kg":"—";
+    }
+    private void ShowCatchHistory(string playerId,string playerName)
+    {
+        if(resultRoot==null || current==null || (current.phase!="ended" && current.phase!="cancelled"))return;
+        if(catchHistoryPanel!=null)Destroy(catchHistoryPanel);
+        catchHistoryPanel=Glass(modal.transform,"Player catch history",new Vector2(0,-22),new Vector2(1250,655));
+        var panel=catchHistoryPanel.GetComponent<Image>();panel.color=new Color(.04f,.13f,.17f,1f);
+        ResultText(catchHistoryPanel.transform,playerName+" • CATCH HISTORY",30,new Vector2(-145,273),new Vector2(890,55),Gold);
+        Button back=Button(catchHistoryPanel.transform,"BACK TO RESULTS",new Vector2(481,273),new Vector2(240,58),
+            ()=>{if(catchHistoryPanel!=null)Destroy(catchHistoryPanel);catchHistoryPanel=null;});
+        var info=ResultText(catchHistoryPanel.transform,"Loading catches...",22,new Vector2(0,218),new Vector2(1150,43),Ice,TextAnchor.MiddleCenter);
+        var viewport=new GameObject("Catch list viewport",typeof(RectTransform),typeof(RectMask2D));
+        viewport.transform.SetParent(catchHistoryPanel.transform,false);
+        var vr=viewport.GetComponent<RectTransform>();vr.sizeDelta=new Vector2(1170,456);vr.anchoredPosition=new Vector2(0,-47);
+        var content=new GameObject("Catch list",typeof(RectTransform));content.transform.SetParent(viewport.transform,false);
+        var cr=content.GetComponent<RectTransform>();cr.anchorMin=new Vector2(0,1);cr.anchorMax=Vector2.one;cr.pivot=new Vector2(.5f,1);
+        var scroll=viewport.AddComponent<ScrollRect>();scroll.viewport=vr;scroll.content=cr;scroll.horizontal=false;
+        scroll.vertical=true;scroll.movementType=ScrollRect.MovementType.Clamped;scroll.scrollSensitivity=30;
+        StartCoroutine(LoadCatchHistory(current.id,playerId,info,content.transform,cr));
+    }
+    private System.Collections.IEnumerator LoadCatchHistory(string tournamentId,string playerId,Text info,Transform content,RectTransform cr)
+    {
+        GameObject expectedPanel=catchHistoryPanel;
+        Response response=null;
+        yield return Post("/v1/tournament-catches",
+            JsonUtility.ToJson(new CatchListRequest{id=tournamentId,player=playerId}),
+            session.SessionToken,r=>response=r);
+        if(expectedPanel==null || catchHistoryPanel!=expectedPanel || current==null || current.id!=tournamentId)yield break;
+        if(response==null || !response.ok)
+        {
+            info.text=response?.error??"Unable to load catches. Check the multiplayer connection.";
+            yield break;
+        }
+        var catches=response.catches??new CatchDetail[0];
+        info.text=catches.Length+" FISH  •  "+response.totalKg.ToString("0.00")+" KG TOTAL";
+        if(catches.Length==0)
+        {
+            ResultText(content,"No qualifying fish were caught.",24,new Vector2(0,-30),new Vector2(1040,52),Ice,TextAnchor.MiddleCenter);
+            yield break;
+        }
+        cr.sizeDelta=new Vector2(0,catches.Length*54);
+        for(int i=0;i<catches.Length;i++)
+        {
+            var fish=catches[i];
+            var row=Glass(content,"Catch "+(i+1),new Vector2(0,-27-i*54),new Vector2(1120,50));
+            var rr=row.GetComponent<RectTransform>();rr.anchorMin=rr.anchorMax=new Vector2(.5f,1);
+            ResultText(row.transform,(i+1)+".   "+fish.name,23,new Vector2(-160,0),new Vector2(760,43),Color.white);
+            ResultText(row.transform,fish.kg.ToString("0.00")+" kg",24,new Vector2(390,0),new Vector2(205,43),Gold,TextAnchor.MiddleCenter);
+        }
     }
     private void ClearResults()
     {
+        if(catchHistoryPanel!=null)Destroy(catchHistoryPanel);catchHistoryPanel=null;
         if(resultPreview!=null)resultPreview.Clear();resultPreview=null;
         resultRows.Clear();resultRoot=null;
     }
