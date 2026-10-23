@@ -88,6 +88,16 @@ species. Click any player's name/row after a tournament to request their
 individual catches and weights, in both formats. Detailed histories are kept on
 the server and requested on demand; 10 Hz room snapshots stay compact.
 
+During the Suncrest total-weight countdown and running phase, all joined
+competitors have fast travel restricted to **Suncrest Reef/Beach and Tideglass
+Quay (the shop)**. Home, Brinebreak, Bluewater, Snapper, and direct boat
+teleports are blocked in the central travel controller as well as visually
+disabled in the travel menus. The restriction lifts after the tournament
+ends/cancels or the player disconnects; other tournament formats and players
+not joined in this match keep their normal travel choices. The shop can be
+visited and exited normally, with return travel to Suncrest. This is a
+fast-travel restriction, not a physical barrier to sailing or swimming.
+
 Tournament weight validation permits the generated biome hotspot limit
 plus up to +100% Charm, so legitimate record catches are not rejected.
 The 120-catch limit and all existing duplicate/old-cast/species checks remain.
