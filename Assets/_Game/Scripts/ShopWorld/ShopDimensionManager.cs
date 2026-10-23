@@ -38,11 +38,19 @@ public sealed class ShopDimensionManager : MonoBehaviour
         foreach(var h in World.habitats) if(h.gameObject.activeInHierarchy && Near(h.id)) return h.id;
         return null;
     }
+    // The total-weight tournament restricts teleport destinations, not movement
+    // or access to the Tackle/Market shop dimension. This is the authoritative
+    // guard for BOTH the old travel cards and the newer island index.
+    public bool TournamentTravelRestricted =>
+        GetComponent<FishingTournament>()?.SuncrestTravelRestricted==true;
+    public bool TournamentAllowsIsland(int biome) => !TournamentTravelRestricted || biome==0;
+    public bool TournamentAllowsDimension(int destination) =>
+        !TournamentTravelRestricted || destination==0 || destination==1;
     private int travelIslandBiome;
     public void TravelIsland(bool brinebreak)=>TravelIsland(brinebreak?1:0);
     public void TravelIsland(int biome)
     {
-        if(Traveling || (biome!=0 && biome!=1 && biome!=3 && biome!=4))return;
+        if(Traveling || !TournamentAllowsIsland(biome) || (biome!=0 && biome!=1 && biome!=3 && biome!=4))return;
         if(!ReefCatalog.Zones[biome].Unlocked)return;
         var expansion=IslandExpansionWorld.Active;
         if(biome!=0 && (expansion==null || !expansion.Ready))return;
@@ -59,7 +67,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
     public void Travel(bool shop) => Travel(shop?1:0);
     public void Travel(int destination)
     {
-        if(Traveling || destination==Destination || destination<0 || destination>2)return;
+        if(Traveling || !TournamentAllowsDimension(destination) || destination==Destination || destination<0 || destination>2)return;
         travelIslandBiome=0;StartCoroutine(TravelRoutine(destination));
     }
     private IEnumerator TravelRoutine(int destination)
