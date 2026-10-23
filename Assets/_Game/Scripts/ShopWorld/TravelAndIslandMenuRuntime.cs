@@ -52,6 +52,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private readonly Color gold=new Color(.89f,.72f,.40f,1f);
     private readonly Color muted=new Color(.23f,.23f,.23f,1f);
     private readonly Color mutedText=new Color(.60f,.60f,.60f,1f);
+    private bool previousTournamentLock;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Install()
@@ -99,8 +100,11 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         if(page!="travel" && page!="islands")return;
 
         RectTransform list=ListField.GetValue(hud) as RectTransform;
-        if(list==null || HasActiveMarker(list))return;
-
+        if(list==null)return;
+        // Refresh an already-open menu when a tournament starts or ends.
+        bool restricted=travel!=null && travel.TournamentTravelRestricted;
+        if(HasActiveMarker(list) && previousTournamentLock==restricted)return;
+        previousTournamentLock=restricted;
         if(page=="travel")BuildTravelPage(list);
         else BuildIslandIndex(list);
     }
@@ -147,7 +151,9 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 
         GameObject hint=Panel("IslandTravelHint",list,new Color(.04f,.12f,.14f,.95f));
         hint.AddComponent<LayoutElement>().preferredHeight=78f;
-        Text hintText=Label(hint.transform,"ISLAND FAST TRAVEL HAS MOVED TO  ISLAND / BIOME INDEX",22,gold,TextAnchor.MiddleCenter);
+        Text hintText=Label(hint.transform,travel!=null && travel.TournamentTravelRestricted
+            ?"TOTAL-WEIGHT TOURNAMENT: ONLY SUNCREST AND TIDEGLASS QUAY TRAVEL IS ENABLED"
+            :"ISLAND FAST TRAVEL HAS MOVED TO  ISLAND / BIOME INDEX",22,gold,TextAnchor.MiddleCenter);
         Full(hintText.rectTransform,18,8,-18,-8);
 
         GameObject row=Panel("DimensionTravel",list,Color.clear);
@@ -165,7 +171,8 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private void CreateTravelCard(Transform parent,float minX,float maxX,string title,string detail,int destination,Color color)
     {
         bool here=travel!=null && travel.Destination==destination;
-        string footer=here?"YOU ARE HERE":"TRAVEL →";
+        bool allowed=travel==null || travel.TournamentAllowsDimension(destination);
+        string footer=!allowed?"LOCKED DURING TOURNAMENT":here?"YOU ARE HERE":"TRAVEL →";
         Button button=ButtonAt(parent,title+"\n\n"+detail+"\n\n"+footer,()=>
         {
             CapturePlacedBoat();
@@ -177,14 +184,15 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         caption.fontSize=32;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=19;caption.resizeTextMaxSize=32;
         caption.horizontalOverflow=HorizontalWrapMode.Wrap;caption.verticalOverflow=VerticalWrapMode.Truncate;
         Full(caption.rectTransform,18,16,-18,-16);
-        SetButtonAvailable(button,!here && !IsFishingBusy());
+        SetButtonAvailable(button,allowed && !here && !IsFishingBusy());
     }
 
     private void CreateBoatTravelCard(Transform parent)
     {
         bool owns=OwnsAnyBoat();
         bool placed=hasPlacedBoat || (boats!=null && boats.ActiveBoat!=null);
-        string footer=!owns?"NO BOAT OWNED":!placed?"BOAT NOT PLACED":"TELEPORT TO BOAT →";
+        bool restricted=travel!=null && travel.TournamentTravelRestricted;
+        string footer=restricted?"LOCKED DURING TOURNAMENT":!owns?"NO BOAT OWNED":!placed?"BOAT NOT PLACED":"TELEPORT TO BOAT →";
         string detail="Return directly to the boat you placed in the fishing world";
         Button button=ButtonAt(parent,"YOUR BOAT\n\n"+detail+"\n\n"+footer,BeginBoatTeleport);
         Anchor(button.GetComponent<RectTransform>(),0f,0f,1f,1f,8,8,-8,-8);
@@ -193,7 +201,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
         caption.fontSize=32;caption.resizeTextForBestFit=true;caption.resizeTextMinSize=19;caption.resizeTextMaxSize=32;
         caption.horizontalOverflow=HorizontalWrapMode.Wrap;caption.verticalOverflow=VerticalWrapMode.Truncate;
         Full(caption.rectTransform,24,16,-24,-16);
-        SetButtonAvailable(button,owns && placed && travel!=null && !travel.Traveling && !IsFishingBusy());
+        SetButtonAvailable(button,!restricted && owns && placed && travel!=null && !travel.Traveling && !IsFishingBusy());
     }
 
     private bool OwnsAnyBoat()
@@ -258,10 +266,11 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 
         if(isIsland)
         {
-            string travelText=here?"YOU ARE HERE":fishingBusy?"FISHING…":"TELEPORT";
+            bool allowed=travel==null || travel.TournamentAllowsIsland(biome);
+            string travelText=!allowed?"TOURNAMENT LOCK":here?"YOU ARE HERE":fishingBusy?"FISHING…":"TELEPORT";
             Button teleport=ButtonAt(card.transform,travelText,()=>TeleportToIsland(biome));
             Anchor(teleport.GetComponent<RectTransform>(),.74f,.54f,.98f,.88f,0,0,0,0);
-            SetButtonAvailable(teleport,unlocked && worldReady && !here && !fishingBusy && travel!=null && !travel.Traveling);
+            SetButtonAvailable(teleport,allowed && unlocked && worldReady && !here && !fishingBusy && travel!=null && !travel.Traveling);
         }
 
         Button fishIndex=ButtonAt(card.transform,"FISH INDEX",()=>OpenFishIndex(biome));
@@ -280,7 +289,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private void TeleportToIsland(int biome)
     {
         if(IsFishingBusy())return;
-        if(travel==null || travel.Traveling || biome<0 || biome>=ReefCatalog.Zones.Length)return;
+        if(travel==null || travel.Traveling || !travel.TournamentAllowsIsland(biome) || biome<0 || biome>=ReefCatalog.Zones.Length)return;
         if(!ReefCatalog.Zones[biome].Unlocked)return;
         if(biome!=0 && biome!=1 && biome!=3 && biome!=4)return; // Deep Ocean and future non-island biomes have no teleport.
         if((biome==1 || biome==3) && (IslandExpansionWorld.Active==null || !IslandExpansionWorld.Active.Ready))return;
@@ -345,7 +354,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
     private void BeginBoatTeleport()
     {
         if(IsFishingBusy())return;
-        if(boatTeleportRoutine!=null || travel==null || travel.Traveling)return;
+        if(boatTeleportRoutine!=null || travel==null || travel.Traveling || travel.TournamentTravelRestricted)return;
         CapturePlacedBoat();
         if(!hasPlacedBoat)return;
         boatTeleportRoutine=StartCoroutine(TeleportToBoatRoutine());
@@ -353,6 +362,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
 
     private IEnumerator TeleportToBoatRoutine()
     {
+        if(travel==null || travel.TournamentTravelRestricted){boatTeleportRoutine=null;yield break;}
         if(travel.Destination!=0)
         {
             travel.Travel(0);
@@ -366,8 +376,10 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
             }
         }
 
+        if(travel==null || travel.TournamentTravelRestricted){boatTeleportRoutine=null;yield break;}
         RestorePlacedBoatIfNeeded();
         yield return null;
+        if(travel==null || travel.TournamentTravelRestricted){boatTeleportRoutine=null;yield break;}
         RestorePlacedBoatIfNeeded();
 
         BoatController boat=boats!=null?boats.ActiveBoat:null;
@@ -377,6 +389,7 @@ public sealed class TravelAndIslandMenuRuntime : MonoBehaviour
             yield break;
         }
 
+        if(travel==null || travel.TournamentTravelRestricted){boatTeleportRoutine=null;yield break;}
         if(fishing!=null)fishing.PrepareForWorldTravel();
         if(passenger!=null)passenger.Detach();
         if(hud!=null && ShopWorldHUD.MenuOpen)hud.Close();
