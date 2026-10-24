@@ -54,7 +54,7 @@ public static class SnapperIslandGeometry
 
     public static int ResolveBiome(Vector3 p)
     {
-        if(SnapperIslandRuntime.Ready && ContainsArea(p,SnapperIslandRuntime.Center))
+        if(SnapperIslandRuntime.Ready && SnapperCavesRockRegion.ContainsBiome(p))
             return ReefCatalog.SnapperBiomeId;
         return IslandExpansionWorld.FishingBiome(p);
     }
