@@ -159,77 +159,49 @@ public sealed class ShopDimensionManager : MonoBehaviour
         { float d=(h.transform.position-transform.position).sqrMagnitude; if(d<distance) { distance=d; nearest=h; } }
         if(nearest!=null) Teleport(nearest.exit.position,nearest.exit.rotation);
     }
-    // Keep the authored SnapperArrival marker and every placed rock untouched.
-    // On teleport only, move 1 m east in world space and find terrain under the
-    // PLAYER rather than using the marker's stale Y after terrain sculpting.
+    // SnapperArrival is saved at the former SeaGrape_0321 marker.
+    // Land against the imported cave rock, not the underwater terrain.
     private bool TrySnapperArrival(Vector3 marker,CharacterController capsule,out Vector3 arrival)
     {
         arrival=marker;
-        var expansion=IslandExpansionWorld.Active;
-        Terrain terrain=expansion!=null && expansion.Terrain!=null
-            ? expansion.Terrain : Terrain.activeTerrain;
-        if(terrain==null || terrain.terrainData==null)
-        {
-            Debug.LogWarning("[SNAPPER TRAVEL] Cannot find terrain for safe arrival.");
-            return false;
-        }
-
-        // Search the desired +1m east landing first. If rocks now block it,
-        // try small offsets nearby without ever moving the marker or scenery.
-        float[] east={1f,2f,3f,0f,4f,-1f,-2f};
-        float[] north={0f,1f,-1f,2f,-2f,3f,-3f};
         Vector3 scale=transform.lossyScale;
         float radius=capsule.radius*Mathf.Max(Mathf.Abs(scale.x),Mathf.Abs(scale.z));
         float halfHeight=Mathf.Max(capsule.height*Mathf.Abs(scale.y)*.5f,radius);
         float centerOffset=capsule.center.y*scale.y;
         float feetOffset=centerOffset-halfHeight;
         float cylinderHalf=Mathf.Max(0f,halfHeight-radius);
-        const float footClearance=.55f;
-
+        const float footClearance=.38f;
+        float[] offsets={0f,1f,-1f,2f,-2f,3f,-3f,4f,-4f};
         Physics.SyncTransforms();
-        for(int z=0;z<north.Length;z++)
-        for(int x=0;x<east.Length;x++)
+        for(int z=0;z<offsets.Length;z++)
+        for(int x=0;x<offsets.Length;x++)
         {
-            Vector3 proposed=marker+new Vector3(east[x],0f,north[z]);
-            // Avoid spilling onto the shoreline if Snapper's layout changes.
-            if(SnapperIslandGeometry.Ellipse(proposed,SnapperIslandRuntime.Center)>.92f)
-                continue;
-
-            float terrainY=terrain.SampleHeight(proposed)+terrain.transform.position.y;
-            if(float.IsNaN(terrainY) || float.IsInfinity(terrainY))continue;
-            proposed.y=terrainY+footClearance-feetOffset;
-
-            Vector3 capsuleCenter=proposed+Vector3.up*centerOffset;
-            Vector3 bottom=capsuleCenter-Vector3.up*cylinderHalf;
-            Vector3 top=capsuleCenter+Vector3.up*cylinderHalf;
-            // Include rocks and TerrainCollider, ignore all triggers (water,
-            // island discovery etc). The player's controller is disabled here,
-            // so its own capsule cannot block the query.
-            if(Physics.CheckCapsule(bottom,top,Mathf.Max(.05f,radius-.01f),
-                ~0,QueryTriggerInteraction.Ignore))continue;
-            arrival=proposed;
-            return true;
-        }
-
-        // If there is no clear terrain-level location, prefer arriving over
-        // the geometry to spawning inside a solid mesh. The player can fall
-        // normally onto whatever surface is underneath.
-        Vector3 raised=marker+Vector3.right;
-        raised.y=terrain.SampleHeight(raised)+terrain.transform.position.y+footClearance-feetOffset;
-        float[] elevations={2f,4f,8f,16f,32f,64f};
-        for(int i=0;i<elevations.Length;i++)
-        {
-            Vector3 proposed=raised+Vector3.up*elevations[i];
+            Vector3 proposed=marker+new Vector3(offsets[x],0f,offsets[z]);
+            RaycastHit[] hits=Physics.RaycastAll(
+                new Vector3(proposed.x,marker.y+90f,proposed.z),
+                Vector3.down,200f,~0,QueryTriggerInteraction.Ignore);
+            bool found=false;
+            float closestDifference=float.PositiveInfinity,surfaceY=0f;
+            foreach(RaycastHit hit in hits)
+            {
+                if(!SnapperCavesRockRegion.IsSnapperRock(hit.collider.transform))continue;
+                float difference=Mathf.Abs(hit.point.y-marker.y);
+                if(difference>=closestDifference)continue;
+                closestDifference=difference;
+                surfaceY=hit.point.y;
+                found=true;
+            }
+            if(!found)continue;
+            proposed.y=surfaceY+footClearance-feetOffset;
             Vector3 capsuleCenter=proposed+Vector3.up*centerOffset;
             Vector3 bottom=capsuleCenter-Vector3.up*cylinderHalf;
             Vector3 top=capsuleCenter+Vector3.up*cylinderHalf;
             if(Physics.CheckCapsule(bottom,top,Mathf.Max(.05f,radius-.01f),
                 ~0,QueryTriggerInteraction.Ignore))continue;
             arrival=proposed;
-            Debug.LogWarning("[SNAPPER TRAVEL] Nearby landing blocked by scenery; using clear elevated arrival.");
             return true;
         }
-        Debug.LogError("[SNAPPER TRAVEL] No safe arrival found. Teleport aborted.");
+        Debug.LogError("[SNAPPER TRAVEL] No clear landing on cave rock MeshColliders. Check the rock import settings; travel aborted.");
         return false;
     }
 
