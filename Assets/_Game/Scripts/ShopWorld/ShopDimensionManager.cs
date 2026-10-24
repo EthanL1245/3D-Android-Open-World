@@ -223,6 +223,9 @@ public sealed class ShopDimensionManager : MonoBehaviour
             if(bluewaterArrival && (capsule==null ||
                 !BluewaterCayRockCollision.TryGetArrival(capsule,out position,out rotation)))
                 return;
+            // North on the fishing map is world +Z. Always face north after
+            // travelling to Snapper, including when returning from the shop.
+            if(snapperArrival)rotation=Quaternion.LookRotation(Vector3.forward,Vector3.up);
             transform.SetPositionAndRotation(position,rotation);
             controller.ResetMotion(); controller.ResetViewPitch();
             Physics.SyncTransforms();
