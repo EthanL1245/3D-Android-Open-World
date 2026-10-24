@@ -81,6 +81,10 @@ public class OceanWater : MonoBehaviour
         RefreshWaveLook();
         ConfigureGridRecenter();
 
+        // Visual-only outer ocean; the authored mesh, material and simulation stay intact.
+        if (Application.isPlaying && GetComponent<DistantOceanRuntime>() == null)
+            gameObject.AddComponent<DistantOceanRuntime>();
+
         if (propertyBlock == null)
         {
             propertyBlock = new MaterialPropertyBlock();
