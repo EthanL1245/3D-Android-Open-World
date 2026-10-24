@@ -78,25 +78,27 @@ and the biggest qualifying catch in kilograms; the top-right × closes the panel
 Deep Ocean is now a selectable classic target-species tournament biome.
 Players fish there by boat as usual; Deep Ocean has no island teleport marker.
 
-The booth also offers **Suncrest total-weight tournaments**. Every joined player
+The booth also offers **map-wide total-weight tournaments**. Every joined player
 is automatically teleported to the Suncrest dock during the five-second countdown.
-All eligible Suncrest fish species count, and the six-minute winner is the
-entrant with the greatest combined catch weight (kg). Ties use biggest individual
+All eligible fish caught in any of the five fishing biomes count toward the same
+total, using that biome's species list and maximum legal fish weight. The six-minute
+winner is the entrant with the greatest combined catch weight (kg). Ties use biggest individual
 fish, earliest score and joining order. The results leaderboard shows each
 player's total kg, catch count, payout and the overall biggest fish with its
 species. Click any player's name/row after a tournament to request their
 individual catches and weights, in both formats. Detailed histories are kept on
 the server and requested on demand; 10 Hz room snapshots stay compact.
 
-During the Suncrest total-weight countdown and running phase, all joined
-competitors have fast travel restricted to **Suncrest Reef/Beach and Tideglass
+During the map-wide total-weight countdown and running phase, all joined
+competitors still have fast travel restricted to **Suncrest Reef/Beach and Tideglass
 Quay (the shop)**. Home, Brinebreak, Bluewater, Snapper, and direct boat
 teleports are blocked in the central travel controller as well as visually
 disabled in the travel menus. The restriction lifts after the tournament
 ends/cancels or the player disconnects; other tournament formats and players
 not joined in this match keep their normal travel choices. The shop can be
 visited and exited normally, with return travel to Suncrest. This is a
-fast-travel restriction, not a physical barrier to sailing or swimming.
+fast-travel restriction, not a physical barrier to sailing or swimming, and
+valid catches from any biome count even when reached without fast travel.
 
 Tournament weight validation permits the generated biome hotspot limit
 plus up to +100% Charm, so legitimate record catches are not rejected.
