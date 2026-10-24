@@ -33,7 +33,7 @@ public static class SnapperRockFishObstacles
     private static bool NearIsland(Vector3 position)
     {
         return SnapperIslandRuntime.Ready &&
-            SnapperIslandGeometry.DistanceFromShore(position, SnapperIslandRuntime.Center) < IslandMargin;
+            SnapperCavesRockRegion.ContainsBiome(position, -8f);
     }
 
     private static bool IsRockName(string name)
@@ -67,7 +67,7 @@ public static class SnapperRockFishObstacles
         // Only run this scan once per loaded fishing scene. All rocks in Snapper,
         // including single instances, old Blender formations and protected scenery,
         // are considered when their hierarchy identifies them as rocks.
-        Vector3 center = SnapperIslandRuntime.Center;
+        // Use authored cave-rock bounds instead of the former island ellipse.
         foreach (GameObject root in scene.GetRootGameObjects())
         foreach (Collider collider in root.GetComponentsInChildren<Collider>(true))
         {
@@ -76,9 +76,7 @@ public static class SnapperRockFishObstacles
                 continue;
 
             Bounds b = collider.bounds;
-            if (Mathf.Abs(b.center.x - center.x) > SnapperIslandGeometry.RadiusX + IslandMargin + b.extents.x ||
-                Mathf.Abs(b.center.z - center.z) > SnapperIslandGeometry.RadiusZ + IslandMargin + b.extents.z)
-                continue;
+            if (!SnapperCavesRockRegion.NearBounds(b, 10f)) continue;
             Rocks.Add(collider);
             RockSet.Add(collider);
         }
