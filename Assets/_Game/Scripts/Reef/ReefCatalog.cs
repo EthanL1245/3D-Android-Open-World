@@ -33,7 +33,7 @@ public static class ReefCatalog
             new float[]{5,5,5,20,0,16,2,2,32,20,8,14,6,4,6}),
         new Zone(PelagicIslandGeometry.Id,PelagicIslandGeometry.Name,"A southern cay with pelagic fishing waters extending 75 m beyond the shore. Land here to unlock travel.",false,
             new float[]{35,0,0,0,0,20,0,0,15,15,0,0,0,15,0}),
-        new Zone(SnapperIslandGeometry.Id,SnapperIslandGeometry.Name,"A dedicated snapper island directly south of Suncrest. Snappers, blackfin and great barracuda, and Blacktip Reef Sharks bite within 50 m of its coast. Land here to unlock travel.",false,
+        new Zone(SnapperIslandGeometry.Id,SnapperIslandGeometry.Name,"A dedicated snapper island directly south of Suncrest. Snappers, blackfin and great barracuda, and Blacktip Reef Sharks bite within 100 m of its three cave rocks. Land here to unlock travel.",false,
             new float[]{0,38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,13,2,0,0,10,4,2})
     };
 
