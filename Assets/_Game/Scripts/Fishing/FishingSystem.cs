@@ -1754,6 +1754,7 @@ public class FishingSystem : MonoBehaviour
         Vector3 worldPosition)
     {
         if (!SnapperRockFishObstacles.SurfacePointClear(worldPosition,.40f) ||
+            !BrinebreakRockRegion.SurfacePointClear(worldPosition,.40f) ||
             !BluewaterCayRockCollision.SurfacePointClear(worldPosition,.40f) ||
             !SuncrestMainRockCollision.SurfacePointClear(worldPosition,.40f) ||
             !HasFishingDepth(
@@ -2552,6 +2553,7 @@ public class FishingSystem : MonoBehaviour
 
         if (!MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) ||
             !SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
+            !BrinebreakRockRegion.SurfaceSegmentClear(current,candidate,.40f) ||
             !BluewaterCayRockCollision.SurfaceSegmentClear(current,candidate,.40f) ||
             !SuncrestMainRockCollision.SurfaceSegmentClear(current,candidate,.40f) ||
             !IsValidFishingWater(candidate))
@@ -2638,6 +2640,7 @@ public class FishingSystem : MonoBehaviour
         // Treat a subdued fish reaching any authored island rock exactly like reaching
         // shallow terrain: stop at the obstacle and complete the existing catch.
         if (!SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
+            !BrinebreakRockRegion.SurfaceSegmentClear(current,candidate,.40f) ||
             !BluewaterCayRockCollision.SurfaceSegmentClear(current,candidate,.40f) ||
             !SuncrestMainRockCollision.SurfaceSegmentClear(current,candidate,.40f))
         {

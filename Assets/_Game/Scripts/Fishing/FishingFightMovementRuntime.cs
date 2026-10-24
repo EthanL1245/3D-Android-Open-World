@@ -384,12 +384,14 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     private static bool RockFishSegmentClear(Vector3 from, Vector3 to, float radius)
     {
         return SnapperRockFishObstacles.SurfaceSegmentClear(from,to,radius) &&
+               BrinebreakRockRegion.SurfaceSegmentClear(from,to,radius) &&
                BluewaterCayRockCollision.SurfaceSegmentClear(from,to,radius);
     }
 
     private static bool RockFishPointClear(Vector3 position, float radius)
     {
         return SnapperRockFishObstacles.SurfacePointClear(position,radius) &&
+               BrinebreakRockRegion.SurfacePointClear(position,radius) &&
                BluewaterCayRockCollision.SurfacePointClear(position,radius);
     }
 

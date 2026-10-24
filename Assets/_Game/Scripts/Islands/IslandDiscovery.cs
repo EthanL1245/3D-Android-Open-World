@@ -18,6 +18,14 @@ public sealed class IslandDiscovery : MonoBehaviour
             // Cave islands are imported rock meshes, not raised Unity Terrain.
             if(!SnapperCavesRockRegion.ContainsBiome(p))return;
         }
+        else if(Biome==1 && BrinebreakRockRegion.HasRocks)
+        {
+            // Brinebreak has moved to the two imported rocks, not the old ellipse.
+            if(!BrinebreakRockRegion.ContainsBiome(p))return;
+            float floor=world.Terrain.SampleHeight(p)+world.Terrain.transform.position.y;
+            if(!BrinebreakRockRegion.StandingOnRock(p) &&
+               (floor<world.Water.BaseWaterLevel+.2f || Mathf.Abs(p.y-floor)>.6f))return;
+        }
         else
         {
             Vector3 center=Biome==3?world.PelagicCenter:world.NewCenter;

@@ -60,7 +60,7 @@ public sealed class ShopDimensionManager : MonoBehaviour
         if(point==null)return;
         travelIslandBiome=biome;
         if(Destination!=0){StartCoroutine(TravelRoutine(0));return;}
-        fishing.PrepareForWorldTravel();Teleport(point.position,point.rotation,biome==4,biome==3);
+        fishing.PrepareForWorldTravel();Teleport(point.position,point.rotation,biome==4,biome==3,biome==1);
         var ui=FindFirstObjectByType<ShopWorldHUD>();if(ui!=null)ui.Close();
         travelIslandBiome=0;
     }
@@ -126,10 +126,12 @@ public sealed class ShopDimensionManager : MonoBehaviour
                 SnapperIslandRuntime.Ready;
             bool returningToBluewater=travelIslandBiome==3 && expansion!=null &&
                 dock==expansion.PelagicArrival;
+            bool returningToBrinebreak=travelIslandBiome==1 && expansion!=null &&
+                dock==expansion.Arrival;
             travelIslandBiome=0;
             Teleport(dock!=null?dock.position:hasReturn?returnPosition:islandArrival.position,
                 dock!=null?dock.rotation:hasReturn?returnRotation:islandArrival.rotation,
-                returningToSnapper,returningToBluewater);
+                returningToSnapper,returningToBluewater,returningToBrinebreak);
             RenderSettings.fog=oldFog; RenderSettings.fogColor=oldFogColor; RenderSettings.fogDensity=oldFogDensity;
         }
         else Teleport(target.spawn.position,target.spawn.rotation);
@@ -159,53 +161,53 @@ public sealed class ShopDimensionManager : MonoBehaviour
         { float d=(h.transform.position-transform.position).sqrMagnitude; if(d<distance) { distance=d; nearest=h; } }
         if(nearest!=null) Teleport(nearest.exit.position,nearest.exit.rotation);
     }
-    // SnapperArrival is saved at the former SeaGrape_0321 marker.
-    // Land against the imported cave rock, not the underwater terrain.
+    // Preserve the authored SnapperArrival X/Z and existing cave rocks, but
+    // land ON the edited Unity terrain rather than atop an imported cave mesh.
     private bool TrySnapperArrival(Vector3 marker,CharacterController capsule,out Vector3 arrival)
     {
         arrival=marker;
+        IslandExpansionWorld expansion=IslandExpansionWorld.Active;
+        Terrain terrain=expansion!=null?expansion.Terrain:Terrain.activeTerrain;
+        OceanWater ocean=expansion!=null?expansion.Water:FindFirstObjectByType<OceanWater>();
+        if(terrain==null || terrain.terrainData==null || ocean==null)return false;
+        float sea=ocean.BaseWaterLevel;
         Vector3 scale=transform.lossyScale;
-        float radius=capsule.radius*Mathf.Max(Mathf.Abs(scale.x),Mathf.Abs(scale.z));
-        float halfHeight=Mathf.Max(capsule.height*Mathf.Abs(scale.y)*.5f,radius);
-        float centerOffset=capsule.center.y*scale.y;
-        float feetOffset=centerOffset-halfHeight;
+        float radius=Mathf.Max(.15f,capsule.radius*Mathf.Max(Mathf.Abs(scale.x),Mathf.Abs(scale.z)));
+        float halfHeight=Mathf.Max(radius,capsule.height*Mathf.Abs(scale.y)*.5f);
+        float centerY=capsule.center.y*scale.y;
+        float feetOffset=centerY-halfHeight;
         float cylinderHalf=Mathf.Max(0f,halfHeight-radius);
-        const float footClearance=.38f;
-        float[] offsets={0f,1f,-1f,2f,-2f,3f,-3f,4f,-4f};
+        float[] searchRadii={0f,1.5f,3f,5f,8f,12f,18f,26f,35f,46f,58f};
+        Vector3 terrainOrigin=terrain.transform.position,terrainSize=terrain.terrainData.size;
         Physics.SyncTransforms();
-        for(int z=0;z<offsets.Length;z++)
-        for(int x=0;x<offsets.Length;x++)
+        for(int ring=0;ring<searchRadii.Length;ring++)
         {
-            Vector3 proposed=marker+new Vector3(offsets[x],0f,offsets[z]);
-            RaycastHit[] hits=Physics.RaycastAll(
-                new Vector3(proposed.x,marker.y+90f,proposed.z),
-                Vector3.down,200f,~0,QueryTriggerInteraction.Ignore);
-            bool found=false;
-            float closestDifference=float.PositiveInfinity,surfaceY=0f;
-            foreach(RaycastHit hit in hits)
+            int samples=ring==0?1:20;
+            for(int i=0;i<samples;i++)
             {
-                if(!SnapperCavesRockRegion.IsSnapperRock(hit.collider.transform))continue;
-                float difference=Mathf.Abs(hit.point.y-marker.y);
-                if(difference>=closestDifference)continue;
-                closestDifference=difference;
-                surfaceY=hit.point.y;
-                found=true;
+                float angle=i*Mathf.PI*2f/samples;
+                Vector3 p=marker+new Vector3(Mathf.Cos(angle)*searchRadii[ring],0f,
+                    Mathf.Sin(angle)*searchRadii[ring]);
+                float u=(p.x-terrainOrigin.x)/terrainSize.x;
+                float v=(p.z-terrainOrigin.z)/terrainSize.z;
+                if(u<0f||u>1f||v<0f||v>1f)continue;
+                float ground=terrain.SampleHeight(p)+terrainOrigin.y;
+                if(ground<sea+.35f || terrain.terrainData.GetSteepness(u,v)>38f)
+                    continue;
+                p.y=ground+.38f-feetOffset;
+                Vector3 center=p+Vector3.up*centerY;
+                if(Physics.CheckCapsule(center-Vector3.up*cylinderHalf,
+                    center+Vector3.up*cylinderHalf,Mathf.Max(.05f,radius-.02f),
+                    ~0,QueryTriggerInteraction.Ignore))continue;
+                arrival=p;
+                return true;
             }
-            if(!found)continue;
-            proposed.y=surfaceY+footClearance-feetOffset;
-            Vector3 capsuleCenter=proposed+Vector3.up*centerOffset;
-            Vector3 bottom=capsuleCenter-Vector3.up*cylinderHalf;
-            Vector3 top=capsuleCenter+Vector3.up*cylinderHalf;
-            if(Physics.CheckCapsule(bottom,top,Mathf.Max(.05f,radius-.01f),
-                ~0,QueryTriggerInteraction.Ignore))continue;
-            arrival=proposed;
-            return true;
         }
-        Debug.LogError("[SNAPPER TRAVEL] No clear landing on cave rock MeshColliders. Check the rock import settings; travel aborted.");
+        Debug.LogError("[SNAPPER TRAVEL] No clear dry terrain surface near SnapperArrival; teleport cancelled.");
         return false;
     }
 
-    private void Teleport(Vector3 position,Quaternion rotation,bool snapperArrival=false,bool bluewaterArrival=false)
+    private void Teleport(Vector3 position,Quaternion rotation,bool snapperArrival=false,bool bluewaterArrival=false,bool brinebreakArrival=false)
     {
         var capsule=GetComponent<CharacterController>();
         // Disable first so the overlap query cannot mistake our own collider
@@ -217,6 +219,11 @@ public sealed class ShopDimensionManager : MonoBehaviour
         {
             if(snapperArrival && capsule!=null &&
                 !TrySnapperArrival(position,capsule,out position))
+                return;
+            // Brinebreak is relocated to the former SeaGrape_0350 marker.
+            // Resolve nearby clear footing on the new rocks/terrain before travel.
+            if(brinebreakArrival && (capsule==null ||
+                !BrinebreakRockRegion.TryGetArrival(position,capsule,out position)))
                 return;
             // Bluewater is now a single imported rock, not the old terrain island.
             // Resolve a safe near-water NW rock surface each loaded world session.

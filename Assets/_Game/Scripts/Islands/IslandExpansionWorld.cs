@@ -320,7 +320,24 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         query.transform.position=new Vector3(Terrain.transform.position.x+Terrain.terrainData.size.x*.5f,sea-.025f,Terrain.transform.position.z+Terrain.terrainData.size.z*.5f);
         box.size=new Vector3(Terrain.terrainData.size.x,.05f,Terrain.terrainData.size.z);
     }
-    public int BiomeAt(Vector3 p)=>SnapperIslandRuntime.Ready && SnapperCavesRockRegion.ContainsBiome(p)?ReefCatalog.SnapperBiomeId:(PelagicIslandGeometry.Contains(p,PelagicCenter)||BluewaterCayRockRegion.ContainsBiome(p))?PelagicIslandGeometry.BiomeId:IslandGeometry.Biome(p,reef.center,NewCenter);
+    public int BiomeAt(Vector3 p)
+    {
+        if(SnapperIslandRuntime.Ready && SnapperCavesRockRegion.ContainsBiome(p))
+            return ReefCatalog.SnapperBiomeId;
+        // The relocated Brinebreak is ONLY the union of two 150m rock circles.
+        bool newBrinebreak=BrinebreakRockRegion.HasRocks;
+        if(newBrinebreak && BrinebreakRockRegion.ContainsBiome(p))return 1;
+        if(PelagicIslandGeometry.Contains(p,PelagicCenter) || BluewaterCayRockRegion.ContainsBiome(p))
+            return PelagicIslandGeometry.BiomeId;
+        if(!newBrinebreak)return IslandGeometry.Biome(p,reef.center,NewCenter);
+        // Preserve the original Suncrest boundary; moving Brinebreak must not
+        // inflate Suncrest's fishing waters or leave the old Brinebreak biome.
+        Vector3 oldBrinebreak=reef.center+
+            new Vector3(reef.islandRadiusX+Config.OffsetBeyondSuncrest,0f,35f);
+        float suncrestRadius=IslandGeometry.ZoneRadius(reef.center,oldBrinebreak);
+        float dx=p.x-reef.center.x,dz=p.z-reef.center.z;
+        return dx*dx+dz*dz<=suncrestRadius*suncrestRadius?0:2;
+    }
     public float OffshoreAt(Vector3 p)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(0,180,IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii)));
     public static int FishingBiome(Vector3 p)=>Active!=null && Active.Ready?Active.BiomeAt(p):0;
     private static void RemoveGeneratedObject(Object value)
