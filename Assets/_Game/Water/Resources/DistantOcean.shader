@@ -108,24 +108,29 @@ Shader "OpenWorld/DistantOcean"
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
                 half3 normalWS : TEXCOORD1;
+                float edgeDistance : TEXCOORD2;
             };
 
             Varyings Vert(Attributes input)
             {
                 Varyings output;
                 float3 p = TransformObjectToWorld(input.positionOS.xyz);
-                float2 offset, derivative;
-                float4 jacobian;
-                float height;
-                OceanGerstnerSample(p.xz, offset, jacobian, height, derivative);
-                // Exact existing waves/normals on the shared boundary. Remove
-                // undersampled geometry before reaching the large outer triangles.
-                float waveWeight = 1.0 - smoothstep(0.0, 225.0, input.edgeDistance.x);
-                p.xz += offset * waveWeight;
-                p.y += height * waveWeight;
-                float3 tx = float3(1.0 + jacobian.x, derivative.x, jacobian.z);
-                float3 tz = float3(jacobian.y, derivative.y, 1.0 + jacobian.w);
-                output.normalWS = normalize(lerp(float3(0,1,0), normalize(cross(tz,tx)), waveWeight));
+                output.normalWS = half3(0,1,0);
+                output.edgeDistance = input.edgeDistance.x;
+                // Only the shared boundary needs waves to keep the seam sealed.
+                // Every outer vertex is static and skips the wave trigonometry.
+                [branch] if (input.edgeDistance.x < 0.5)
+                {
+                    float2 offset, derivative;
+                    float4 jacobian;
+                    float height;
+                    OceanGerstnerSample(p.xz, offset, jacobian, height, derivative);
+                    p.xz += offset;
+                    p.y += height;
+                    float3 tx = float3(1.0 + jacobian.x, derivative.x, jacobian.z);
+                    float3 tz = float3(jacobian.y, derivative.y, 1.0 + jacobian.w);
+                    output.normalWS = normalize(cross(tz,tx));
+                }
                 output.positionWS = p;
                 output.positionCS = TransformWorldToHClip(p);
                 // Extend ONLY this ocean beyond the camera's existing far plane.
@@ -157,6 +162,9 @@ Shader "OpenWorld/DistantOcean"
                 fresnel *= fresnel;
                 half3 deepColor = _DeepColor.rgb;
                 if (_ReferenceLook > 0.5) deepColor *= half3(0.65, 0.66, 1.18);
+                // Preserve the exact boundary tint; only a subtle blue shift outside it.
+                deepColor *= lerp(half3(1,1,1), half3(0.99,1.0,1.04),
+                                  smoothstep(0.0, 40.0, input.edgeDistance));
                 half3 color = deepColor * (0.55 + light.color * diffuse * 0.45);
                 // Same distant lighting as OceanWater once its ripple/foam fade is zero.
                 half horizon = saturate((cameraDistance - 75.0) / 325.0);
@@ -167,8 +175,7 @@ Shader "OpenWorld/DistantOcean"
                 half power = _ReferenceLook > 0.5 ? 48.0 : lerp(36.0,220.0,_Smoothness);
                 half specular = pow(saturate(dot(normalWS, halfDirection)), power);
                 color += specular * light.color * _SpecularStrength * (_ReferenceLook > 0.5 ? 0.08 : 1.0);
-                // Water-only haze, starting well outside the unchanged near patch.
-                color = lerp(color, skyTint, smoothstep(900.0, 6000.0, cameraDistance) * 0.65);
+                // No separate distant haze: retain the immediate ocean lighting.
                 output.color = half4(color, 1);
 
                 // Reconstruct actual depth per pixel. Simply interpolating clamped

@@ -86,14 +86,15 @@ public sealed class DistantOceanRuntime : MonoBehaviour
 
         Vector3 center = (grid[0] + grid[grid.Length - 1]) * .5f;
         Vector3 half = (grid[grid.Length - 1] - grid[0]) * .5f;
-        float spacing = Mathf.Max(half.x, half.z) * 2f / segments;
-        // First ring retains every edge vertex. Each subsequent ring halves the
-        // edge density, joined with triangles rather than cracks/T-junctions.
-        float[] distances = { spacing, 15f, 45f, 105f, 225f, 465f, 1200f, 100000f };
+        // Only the original edge animates. A narrow skirt joins it to a flat
+        // surface; the far plane needs corners/very few edge points, not wave LODs.
+        float[] distances = { 20f, 1200f, 100000f };
+        int[] subdivisions = { Mathf.Max(4, segments / 4), 4, 4 };
         int previousStart = 0, previousCount = segments * 4;
-        int ringSegments = segments;
-        foreach (float distance in distances)
+        for (int ring = 0; ring < distances.Length; ring++)
         {
+            float distance = distances[ring];
+            int ringSegments = subdivisions[ring];
             int start = vertices.Count;
             for (int side = 0; side < 4; side++)
             {
@@ -130,7 +131,6 @@ public sealed class DistantOceanRuntime : MonoBehaviour
             }
             previousStart = start;
             previousCount = count;
-            ringSegments = Mathf.Max(4, ringSegments / 2);
         }
 
         Mesh result = new Mesh { name = "Distant Ocean LOD Rings" };

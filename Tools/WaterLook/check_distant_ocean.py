@@ -24,10 +24,9 @@ def check_rings(grid, row):
     perimeter = vertices.copy()
     center = tuple((a + b) / 2 for a, b in zip(grid[0], grid[-1]))
     half = tuple((b - a) / 2 for a, b in zip(grid[0], grid[-1]))
-    spacing = max(half[0], half[2]) * 2 / segments
     triangles = []
-    start0, count0, n = 0, segments * 4, segments
-    for distance in [spacing, 15, 45, 105, 225, 465, 1200, 100000]:
+    start0, count0 = 0, segments * 4
+    for distance, n in zip([20,1200,100000], [max(4,segments//4),4,4]):
         start = len(vertices)
         for side in range(4):
             a, b = perimeter[side * segments], perimeter[((side + 1) % 4) * segments]
@@ -49,7 +48,9 @@ def check_rings(grid, row):
                 c = start + outer % count1
             triangles.append((a,b,c))
         start0, count0 = start, count1
-        n = max(4,n//2)
+    # Every vertex outside the copied seam lies at the original flat sea level.
+    assert all(p[1] == center[1] for p in vertices[segments*4:])
+    assert len(triangles) <= 1100, "Distant geometry budget exceeded"
     edges = Counter()
     total_area = 0
     for tri in triangles:
@@ -94,3 +95,7 @@ assert 'SampleSceneDepth(' not in shader and 'SAMPLE_TEXTURE' not in shader
 assert 'SV_Depth' in shader and 'TransformWorldToHClip(input.positionWS)' in shader
 assert shader.count('Name "DistantOcean"') == 1
 print('PASS: shared wave include, Resources inclusion, single pass, no texture sampling')
+
+assert 'if (input.edgeDistance.x < 0.5)' in shader
+assert 'smoothstep(900.0, 6000.0' not in shader
+print('PASS: flat outer surface, boundary-only animation, no separate grey haze')
