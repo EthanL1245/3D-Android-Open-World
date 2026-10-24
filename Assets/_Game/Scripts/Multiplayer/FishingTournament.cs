@@ -111,7 +111,7 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(view.phase=="inviting" && screen=="info" && me?.status=="joined")ShowLobby();
         RefreshText();
     }
-    // Active only for entrants in the Suncrest total-weight format. Other
+    // Active only for entrants in the map-wide total-weight format. Other
     // players and all classic tournament travel rules remain unchanged.
     // The travel service uses this to block destinations even when invoked
     // outside the visible MENU / TRAVEL buttons.
@@ -157,7 +157,7 @@ public sealed partial class FishingTournament : MonoBehaviour
     public void ReportCatch(CaughtFishRecord fish,int island,int cast)
     {
         if(current==null || current.phase!="running" || Mine()?.status!="joined" || !session.Connected ||
-            island!=current.island || (current.mode!="weight" && FishCatalog.CanonicalId(fish.speciesId)!=current.species))return;
+            (current.mode!="weight" && (island!=current.island || FishCatalog.CanonicalId(fish.speciesId)!=current.species)))return;
         commands.Enqueue(new Command{op="catch",id=current.id,island=island,species=FishCatalog.CanonicalId(fish.speciesId),cast=cast,kg=fish.weightKg});
     }
     private bool Reserve(string id,int amount,out TournamentWager entry)
@@ -229,9 +229,9 @@ public sealed partial class FishingTournament : MonoBehaviour
         if(current!=null && (current.phase=="inviting" || current.phase=="countdown" || current.phase=="running")){ShowLobby();return;}
         if(!session.IsHost){Open("info","FISHING TOURNAMENTS");body.text="Only the server host needs to visit this stand.\nThey choose the island and entry fee; everyone receives an invitation.";return;}
         Open("modes","CHOOSE TOURNAMENT FORMAT");
-        body.text="Choose a classic target-species tournament in any unlocked fishing biome, or a total-weight tournament at Suncrest Beach.";
+        body.text="Choose a classic target-species tournament in any unlocked fishing biome, or a map-wide total-weight tournament. All weight-tournament players start at Suncrest.";
         ActionButton("TARGET SPECIES • CHOOSE BIOME",15,OpenSpeciesIslands);
-        ActionButton("SUNCREST • TOTAL FISH WEIGHT",-85,()=>ChooseWager(0,"weight"));
+        ActionButton("MAP-WIDE • TOTAL FISH WEIGHT",-85,()=>ChooseWager(0,"weight"));
     }
     private void OpenSpeciesIslands()
     {
@@ -246,9 +246,9 @@ public sealed partial class FishingTournament : MonoBehaviour
     }
     private void ChooseWager(int island,string mode="species")
     {
-        selectedIsland=island;selectedMode=mode;Open("wager","ENTRY FEE • "+ReefCatalog.Zones[island].name.ToUpperInvariant());
+        selectedIsland=island;selectedMode=mode;Open("wager",mode=="weight"?"ENTRY FEE • MAP-WIDE TOTAL WEIGHT":"ENTRY FEE • "+ReefCatalog.Zones[island].name.ToUpperInvariant());
         body.text=mode=="weight"
-            ?"All participating anglers teleport to Suncrest Beach at the start.\nCatch any Suncrest fish; most TOTAL KG after six minutes wins.\nTies: biggest catch, then earliest score. Winner takes all.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins"
+            ?"All participating anglers teleport to Suncrest Beach at the start.\nFish caught anywhere in the map count; most TOTAL KG after six minutes wins.\nTies: biggest catch, then earliest score. Winner takes all.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins"
             :"100 points per kg of the target species. Six minutes.\nWinner takes all. Ties: biggest catch, then first to reach the score.\nNo qualifying catches or cancelled match: full refunds.\nYour balance: "+progress.Data.coins.ToString("N0")+" coins";
         var input=Panel("Wager",modal.transform,new Vector2(0,10),new Vector2(500,65),new Color(.95f,.95f,.9f));FishingHudTheme.Panel(input,3);modalControls.Add(input);
         wagerInput=input.AddComponent<InputField>();var text=Label(input.transform,"",26,Vector2.zero,new Vector2(470,60));text.color=Color.white;text.alignment=TextAnchor.MiddleLeft;
@@ -286,7 +286,7 @@ public sealed partial class FishingTournament : MonoBehaviour
     {
         if(current==null || body==null)return;
         if(screen=="invitation")body.text=current.islandName+" • "+current.wager.ToString("N0")+" coins to join\nSix minutes • "+(current.mode=="weight"?"MOST TOTAL FISH WEIGHT":"100 points per target-species kg")+" • Winner takes all\n\n"+
-            (!Unlocked(current.island)?"You have not unlocked this island and cannot join.":progress.Data.coins<current.wager?"You do not have enough coins to join.":current.mode=="weight"?"Join to compete, or decline.\nJoined players teleport to Suncrest Beach at match countdown.":"Join to wager the entry fee, or decline.\nThe target species is revealed after everyone responds.");
+            (!Unlocked(current.island)?"You have not unlocked this island and cannot join.":progress.Data.coins<current.wager?"You do not have enough coins to join.":current.mode=="weight"?"Join to compete, or decline.\nJoined players start at Suncrest Beach, but fish from any biome count.":"Join to wager the entry fee, or decline.\nThe target species is revealed after everyone responds.");
         else if(screen=="lobby")
         {
             body.rectTransform.anchoredPosition=new Vector2(0,40);body.rectTransform.sizeDelta=new Vector2(850,430);
@@ -295,7 +295,7 @@ public sealed partial class FishingTournament : MonoBehaviour
             text.Append("\nUnanswered invitations decline after 45 seconds.");body.text=text.ToString();
         }
         else if(screen=="announcement")body.text=(current.mode=="weight"
-            ?"CATCH ANY SUNCREST FISH\n\nAll competitors are teleported to Suncrest Beach.\nMost total kilograms caught in six minutes wins. Only NEW casts in Suncrest waters score."
+            ?"CATCH FISH FROM ANY BIOME\n\nAll competitors start at Suncrest Beach.\nMost total kilograms caught in six minutes wins. Only NEW casts during the tournament count, across the entire fishing map."
             :"CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Other species do not score.")
             +"\n\nStarts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-(Time.realtimeSinceStartup-receivedAt)))+" seconds";
         else if(screen=="results")
