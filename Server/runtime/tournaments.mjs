@@ -71,7 +71,7 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
     tick(room);const t=room.tournament;if(!t)return null;
     const rows=t.entries.map(({ticket,seen,history,...e})=>e).sort((a,b)=>(t.mode==='weight'?b.totalKg-a.totalKg:b.points-a.points) || b.biggestKg-a.biggestKg || a.scoreAt-b.scoreAt || a.order-b.order);
     const biggest=rows.filter(e=>e.status==='joined').sort((a,b)=>b.biggestKg-a.biggestKg || a.order-b.order)[0];
-    return {serverTime:clock(),id:t.id,phase:t.phase,island:t.island,islandName:tournamentIslands[t.island].name,wager:t.wager,
+    return {serverTime:clock(),id:t.id,phase:t.phase,island:t.island,islandName:t.mode==='weight'?'Entire Fishing Map':tournamentIslands[t.island].name,wager:t.wager,
       pool:rows.filter(e=>e.status==='joined').length*t.wager,mode:t.mode,species:t.target?.id??-1,speciesName:t.mode==='weight'?'All species':t.target?.name??'',
       inviteSeconds:Math.max(0,(t.inviteEnds-clock())/1000),startSeconds:Math.max(0,((t.startsAt??0)-clock())/1000),
       secondsLeft:Math.max(0,((t.endsAt??0)-clock())/1000),entries:rows,winnerId:t.winnerId??'',winnerName:t.winnerName??'',
@@ -107,11 +107,16 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(t.phase!=='running'||!e||e.status!=='joined')fail('Tournament is not accepting catches.');
       if(!Number.isInteger(c.cast)||c.cast<=e.startSequence||c.cast!==p.pose.castSequence)fail('Only new tournament casts count.');
       if(e.seen.has(c.cast))return view(room);
-      if(c.island!==t.island || p.pose.world!==0 || (t.mode==='species' && c.species!==t.target.id))
+      if(p.pose.world!==0 || (t.mode==='species' && (c.island!==t.island || c.species!==t.target.id)))
         fail('This catch does not match the tournament.');
       // Each species max already includes the 1.5x hotspot bonus. Charm can add
       // another 100% on top; the old ceiling incorrectly rejected real record fish.
-      const species=t.mode==='weight'?tournamentIslands[t.island].fish.find(f=>f.id===c.species):t.target;
+      // Total-weight catches are validated against the biome where the cast began,
+      // not the host's Suncrest starting location. Species and weight ceilings
+      // remain biome-specific, including the existing max Charm allowance.
+      const biome=Number.isInteger(c.island) && c.island>=0 && c.island<tournamentIslands.length
+        ?tournamentIslands[c.island]:null;
+      const species=t.mode==='weight'?biome?.fish.find(f=>f.id===c.species):t.target;
       if(!species)fail('This catch does not match the tournament.');
       if(typeof c.kg!=='number'||!Number.isFinite(c.kg)||c.kg<=0||c.kg>species.maxKg*2+.01||e.catches>=120)
         fail('Invalid tournament catch.');
