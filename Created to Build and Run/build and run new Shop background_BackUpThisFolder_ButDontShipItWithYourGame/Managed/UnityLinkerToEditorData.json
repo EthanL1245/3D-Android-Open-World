@@ -1105,9 +1105,7 @@
           },
           {
             "name": "SphereCollider",
-            "scenes": [
-              "Assets/Scenes/PrototypeWorld.unity"
-            ],
+            "scenes": [],
             "dependencyType": 0,
             "icon": null
           },

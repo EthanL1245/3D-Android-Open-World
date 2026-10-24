@@ -14311,6 +14311,151 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5513518656576665247, guid: 8a03d15521d308d49a1692e745c49724, type: 3}
   m_PrefabInstance: {fileID: 469227000}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &469378241
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 9.8213
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 9.8213
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 9.8213
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 86.8666
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -26.7
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -790.9585
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1353.6176
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1388.8496
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1094.8788
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 20.34
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.54
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8.46
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.17549378
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.1346903
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.6706239
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.7080424
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -94.487
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 214.798
+      objectReference: {fileID: 0}
+    - target: {fileID: -3469552933019998406, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -60.15799
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_Name
+      value: Brinebreak Isle Main rock
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1412.4603
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1284.4302
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1100.9855
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.87
+      objectReference: {fileID: 0}
+    - target: {fileID: 8023846785508970131, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0ecd12052b513c440912271b00f99d3a, type: 3}
 --- !u!1001 &473408256
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -38976,15 +39121,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5513518656576665247, guid: 8a03d15521d308d49a1692e745c49724, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -58.48607
+      value: 50.3
       objectReference: {fileID: 0}
     - target: {fileID: 5513518656576665247, guid: 8a03d15521d308d49a1692e745c49724, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.359064
+      value: 15.5
       objectReference: {fileID: 0}
     - target: {fileID: 5513518656576665247, guid: 8a03d15521d308d49a1692e745c49724, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 131.0584
+      value: -774.54
       objectReference: {fileID: 0}
     - target: {fileID: 5513518656576665247, guid: 8a03d15521d308d49a1692e745c49724, type: 3}
       propertyPath: m_LocalRotation.w
@@ -72359,6 +72504,8 @@ GameObject:
   m_Component:
   - component: {fileID: 9026102402}
   - component: {fileID: 9026102403}
+  - component: {fileID: 9026102405}
+  - component: {fileID: 9026102404}
   m_Layer: 8
   m_Name: South Ocean Seabed
   m_TagString: Untagged
@@ -72391,11 +72538,72 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 317f2166c0c24442b9492fb81fb71313, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SouthSeabedTerrain
   sourceTerrain: {fileID: 869948846}
   water: {fileID: 1680097373}
-  terrain: {fileID: 0}
+  terrain: {fileID: 9026102405}
+--- !u!154 &9026102404
+TerrainCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9026102401}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_TerrainData: {fileID: 15600000, guid: 940d2a435d186fe44907c0d7d1d0e896, type: 2}
+  m_EnableTreeColliders: 1
+--- !u!218 &9026102405
+Terrain:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9026102401}
+  m_Enabled: 1
+  serializedVersion: 6
+  m_TerrainData: {fileID: 15600000, guid: 940d2a435d186fe44907c0d7d1d0e896, type: 2}
+  m_TreeDistance: 0
+  m_TreeBillboardDistance: 50
+  m_TreeCrossFadeLength: 5
+  m_TreeMaximumFullLODCount: 50
+  m_DetailObjectDistance: 0
+  m_DetailObjectDensity: 1
+  m_HeightmapPixelError: 8
+  m_SplatMapDistance: 350
+  m_HeightmapMinimumLODSimplification: 0
+  m_HeightmapMaximumLOD: 0
+  m_ShadowCastingMode: 2
+  m_DrawHeightmap: 1
+  m_DrawInstanced: 1
+  m_DrawTreesAndFoliage: 0
+  m_StaticShadowCaster: 0
+  m_IgnoreQualitySettings: 0
+  m_ReflectionProbeUsage: 1
+  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_BakeLightProbesForTrees: 1
+  m_PreserveTreePrototypeLayers: 0
+  m_DeringLightProbesForTrees: 1
+  m_ReceiveGI: 1
+  m_ScaleInLightmap: 1
+  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
+  m_GroupingID: 0
+  m_RenderingLayerMask: 1
+  m_AllowAutoConnect: 1
+  m_EnableHeightmapRayTracing: 1
+  m_EnableTreesAndDetailsRayTracing: 0
+  m_EnableHeightmapLODFrustumCulling: 1
+  m_TreeMotionVectorModeOverride: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -72434,3 +72642,4 @@ SceneRoots:
   - {fileID: 1556706148}
   - {fileID: 372944328}
   - {fileID: 9026102402}
+  - {fileID: 469378241}

@@ -93,6 +93,7 @@ struct InternedStringU5BU5D_t0B851758733FC0B118D84BE83AED10A0404C18D5;
 struct KeyControlU5BU5D_t247D92FAA9E46BA28BB54BB6E38E7F99BD2C02DA;
 struct MeshU5BU5D_t178CA36422FC397211E68FB7E39C5B2F95619689;
 struct MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA;
+struct MeshRendererU5BU5D_tDF429EF168050A5CE085D0B51909A6AE2067E446;
 struct ObjectU5BU5D_t8061030B0A12A55D5AD8652A20C922FE99450918;
 struct RaycastHitU5BU5D_t008B8309DE422FE7567068D743D68054D5EBF1A8;
 struct RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A;
@@ -216,6 +217,7 @@ struct ShopLedger_t1E5552313FE8A63F37BC2D35CAC8CAB598BA36BE;
 struct ShopPreview_t07901B6913A41ECCFCAB4708C897CFEAD6686E09;
 struct ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480;
 struct ShopWorldEnvironment_t478D7DBB7E06D56AD64E94F0090278CEEB6BD94F;
+struct ShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1;
 struct Sprite_tAFF74BC83CD68037494CB0B4F28CBDF8971CAB99;
 struct String_t;
 struct Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667;
@@ -274,6 +276,7 @@ IL2CPP_EXTERN_C RuntimeClass* MotorboatWake_tE2FE0CB884C2896F53ABD87A5F72D4292A9
 IL2CPP_EXTERN_C RuntimeClass* Mouse_t9A9CC4636FA9CDBAD7FB7A02DB0D6395EDCC338F_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* NotSupportedException_t1429765983D409BD2986508963C98D214E4EBF4A_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var;
+IL2CPP_EXTERN_C RuntimeClass* OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* PondWater_t4EC81C3CAD55EB7CB5A933BBB5D51D7597C8BA2C_il2cpp_TypeInfo_var;
 IL2CPP_EXTERN_C RuntimeClass* Predicate_1_t2542F232AAF15B0C9FEA19C05264CD3E0D6D8C43_il2cpp_TypeInfo_var;
@@ -398,6 +401,7 @@ IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponentInParent_TisBoatContr
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponentInParent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_m7B4B0FC04186242284E446A199D79F151FC794D0_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponentInParent_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m7084C17400147DB9E8FE99DD98800E2A26AFA0EE_RuntimeMethod_var;
+IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponentInParent_TisShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1_m5DDD76CEA102BC93B42186E5FB6CC74F40ECC408_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_mE9CC662025541A2724AA403E16F166F939AAF0AE_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_mC63E15101298ECE38817EE9467C3EA978BA3A539_RuntimeMethod_var;
 IL2CPP_EXTERN_C const RuntimeMethod* Component_GetComponent_TisBoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63_m29BF852545EA1DCD105BAC38435EB421FD696767_RuntimeMethod_var;
@@ -2261,6 +2265,8 @@ struct FishingTournament_t0E7C9995E3DC1CA34631B0D5C20B71B53FA902EB  : public Mon
 	bool ___wasConnected;
 	String_t* ___inFlightTicket;
 	String_t* ___screen;
+	String_t* ___selectedMode;
+	String_t* ___teleportedTournamentId;
 	int32_t ___selectedIsland;
 	Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* ___closeButton;
 	Image_tBC1D03F63BF71132E9A5E472B8742F172A011E7E* ___headerTrophy;
@@ -2273,6 +2279,7 @@ struct FishingTournament_t0E7C9995E3DC1CA34631B0D5C20B71B53FA902EB  : public Mon
 	Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* ___catchSpecies;
 	Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* ___catchWeight;
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___resultRoot;
+	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___catchHistoryPanel;
 	List_1_t0929F27DFD2338EE0B224B2257A42032C015ACA0* ___resultRows;
 };
 struct Keyboard_t015BD1A6508137D20B4395295F6E002773FAAF43  : public InputDevice_t8BCF67533E872A75779C24C93D1D7085B72D364B
@@ -2356,6 +2363,9 @@ struct OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1  : public MonoBehavi
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___gridAnchor;
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___recenterStep;
 	bool ___alignedGrid;
+	float ___contactFoamStrength;
+	float ___contactFoamWidth;
+	float ___contactFoamTextureScale;
 	float ___waveAmplitude1;
 	float ___waveLength1;
 	float ___waveSpeed1;
@@ -2466,6 +2476,17 @@ struct ShopWorldHUD_t8812EFB0576ECEF8F3A54219BEBC76CEA1118A2B  : public MonoBeha
 	Color_tD001788D726C3A7F1379BEED0260B9591F440C1F ___gold;
 	Texture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4* ___bluewaterThumbnail;
 	Texture2D_tE6505BC111DD8A424A9DBE8E05D7D09E11FFFCF4* ___snapperThumbnail;
+};
+struct ShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
+{
+	OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___ocean;
+	Material_t18053F08F347D0DCA5E1140EC7EC4533DD8A14E3* ___foamMaterial;
+	float ___width;
+	float ___cycleSeconds;
+	float ___fadeStart;
+	float ___fadeEnd;
+	MeshRendererU5BU5D_tDF429EF168050A5CE085D0B51909A6AE2067E446* ___chunks;
+	float ___bakedWaterLevel;
 };
 struct UIBehaviour_tB9D4295827BD2EEDEF0749200C6CA7090C742A9D  : public MonoBehaviour_t532A11E69716D348D8AA7F854AFCBFCB8AD17F71
 {
@@ -3579,6 +3600,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_NextPowerOfTwo_mA1C
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR int32_t Mathf_Min_m888083F74FF5655778F0403BB5E9608BEFDEA8CB_inline (int32_t ___0_a, int32_t ___1_b, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void Physics_IgnoreCollision_mA8E5C54299FC47921E41BF864C7C2214621595D6 (Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* ___0_collider1, Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* ___1_collider2, bool ___2_ignore, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatWake_Attach_mD1D7A01AAEB7A996981CDA539B15D83D4FCA5D98 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_owner, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_water, const RuntimeMethod* method) ;
+IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void OceanContactFoam_RegisterExclusion_m23B1587C373C30761BE7B54B268F94F56AB9DB91 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_PassengerCount_m260331D525EB77C0C2070D93D05971BED6F737A5 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MultiplayerBoat_get_CanBoard_mC626833421DD1AF63F1B584FD538868502428B5D (MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCADEA0A2637EE9C7D2E73F9B987AEF (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) ;
@@ -4005,6 +4027,10 @@ inline RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* Object_FindObje
 }
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool Renderer_get_enabled_mFDDF363859AEC88105A925FA7EA341C077B09B54 (Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* __this, const RuntimeMethod* method) ;
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool GameObject_get_activeInHierarchy_m49250F4F168DCC5388D5BE4F6A5681386907B109 (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* __this, const RuntimeMethod* method) ;
+inline ShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1* Component_GetComponentInParent_TisShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1_m5DDD76CEA102BC93B42186E5FB6CC74F40ECC408 (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3* __this, const RuntimeMethod* method)
+{
+	return ((  ShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponentInParent_TisRuntimeObject_m6746D6BB99912B1B509746C993906492F86CD119_gshared)(__this, method);
+}
 inline FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435 (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3* __this, const RuntimeMethod* method)
 {
 	return ((  FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* (*) (Component_t39FBE53E5EFCF4409111FB22C15FF73717632EC3*, const RuntimeMethod*))Component_GetComponentInParent_TisRuntimeObject_m6746D6BB99912B1B509746C993906492F86CD119_gshared)(__this, method);
@@ -4286,7 +4312,7 @@ inline void List_1_AddWithResize_mB4265280280DE9F4BEF06A71F3C716C34F829100 (List
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51848
+// Method Definition Index: 48723
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatClearance_MotorboatBrakingDepth_mB67DB810B711DC8AFF82519935E6795E269FE8D9 (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, const RuntimeMethod* method) 
 {
 	{
@@ -4297,7 +4323,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatClearance_MotorboatBrakingDepth_mB6
 		return ((float)il2cpp_codegen_subtract(L_1, (0.949999988f)));
 	}
 }
-// Method Definition Index: 51849
+// Method Definition Index: 48724
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatClearance_ApproachingShallowWater_m54CC71F6D5D2A24484451936A35041CAB053C9DE (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___2_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___3_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -4886,7 +4912,7 @@ IL_0275:
 		return L_112;
 	}
 }
-// Method Definition Index: 51850
+// Method Definition Index: 48725
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatClearance_Valid_m73C2D9474AE30904BCEF280DC538CF68C1613423 (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___2_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___3_water, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___4_ignored, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___5_player, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5679,7 +5705,7 @@ IL_03a1:
 		return L_154;
 	}
 }
-// Method Definition Index: 51851
+// Method Definition Index: 48726
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatClearance__cctor_m3515A06C83EC258EE554AE403E865D4230BAA07D (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5705,7 +5731,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatClearance__cctor_m3515A06C83EC258EE5
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51852
+// Method Definition Index: 48727
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SeatedGuest_mC4BCB862E06C44EF7531727E4BC06D0B684FD4A9 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -5714,7 +5740,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD
 		return L_0;
 	}
 }
-// Method Definition Index: 51853
+// Method Definition Index: 48728
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SeatedGuest_m91BA106B0D73CF22983CE4ACFEDEF56CCEAE5A3A (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -5725,7 +5751,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SeatedGuest_m91BA106B
 		return;
 	}
 }
-// Method Definition Index: 51854
+// Method Definition Index: 48729
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* BoatController_get_GuestSeat_m11E087647CF934B4BCEF0A49A76CA102F2C7E8FB (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* G_B3_0 = NULL;
@@ -5758,7 +5784,7 @@ IL_0016:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 51855
+// Method Definition Index: 48730
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_HasHelmOccupant_mD4EDE6892B9A908DE899B8AF45C63D678E6659F6 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5822,7 +5848,7 @@ IL_0035:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51856
+// Method Definition Index: 48731
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_CanSit_m804FE483CE5DE472FE945DE1777990074C8938ED (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -5984,7 +6010,7 @@ IL_0098:
 		return (bool)G_B15_0;
 	}
 }
-// Method Definition Index: 51857
+// Method Definition Index: 48732
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_TakePassengerSeat_m2CF29E3CC01DD6FFF37C10DCD7C63656899AC6BD (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	bool V_0 = false;
@@ -6024,7 +6050,7 @@ IL_001f:
 		return L_4;
 	}
 }
-// Method Definition Index: 51858
+// Method Definition Index: 48733
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -6033,7 +6059,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD
 		return L_0;
 	}
 }
-// Method Definition Index: 51859
+// Method Definition Index: 48734
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -6044,7 +6070,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3
 		return;
 	}
 }
-// Method Definition Index: 51860
+// Method Definition Index: 48735
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6086,7 +6112,7 @@ IL_0026:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51861
+// Method Definition Index: 48736
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6128,7 +6154,7 @@ IL_0026:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51862
+// Method Definition Index: 48737
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_FrontPaddling_mE156B72EC590E9EF15A1F70C328E9DC5F2E853B0 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -6161,7 +6187,7 @@ IL_0022:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51863
+// Method Definition Index: 48738
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_get_RearPaddling_mD2F61A44923201677DE5CFE7D29387155F88A771 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B4_0 = 0;
@@ -6214,7 +6240,7 @@ IL_002d:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51864
+// Method Definition Index: 48739
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_ActivePaddlers_mD3ED53E6FCB2063D30A17FBA187409D934017806 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -6269,7 +6295,7 @@ IL_0018:
 		return ((int32_t)il2cpp_codegen_add(G_B6_1, G_B6_0));
 	}
 }
-// Method Definition Index: 51865
+// Method Definition Index: 48740
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ClearNetworkInput_m9CCB2C954D89EE692B2DC5DED6725E2F427527DA (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 V_0;
@@ -6289,7 +6315,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ClearNetworkInput_m9CCB2C
 		return;
 	}
 }
-// Method Definition Index: 51866
+// Method Definition Index: 48741
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_get_RowingSpeed_mB6F582631B0401E0E1066D73B04C56A33E307822 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6359,7 +6385,7 @@ IL_0039:
 		return G_B6_0;
 	}
 }
-// Method Definition Index: 51867
+// Method Definition Index: 48742
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasInput_m00E3F9EC50D5855FA845AB75E6AD573303A320BD (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6420,7 +6446,7 @@ IL_0034:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 51868
+// Method Definition Index: 48743
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* BoatController_SeatFor_m43A0B970694FF9D6D1C8658F03C438926EA06069 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6486,7 +6512,7 @@ IL_0032:
 		return G_B6_0;
 	}
 }
-// Method Definition Index: 51869
+// Method Definition Index: 48744
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_CanUseSeat_m5415794920AE9D0822B2438593E0ED2DB22E686F (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_p, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6680,7 +6706,7 @@ IL_00c1:
 		return (bool)G_B19_0;
 	}
 }
-// Method Definition Index: 51870
+// Method Definition Index: 48745
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -6689,7 +6715,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD
 		return L_0;
 	}
 }
-// Method Definition Index: 51871
+// Method Definition Index: 48746
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -6700,7 +6726,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_set_Driver_mED2AFAE7BA0E3
 		return;
 	}
 }
-// Method Definition Index: 51872
+// Method Definition Index: 48747
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_PassengerCount_m260331D525EB77C0C2070D93D05971BED6F737A5 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -6710,7 +6736,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR int32_t BoatController_get_PassengerCount_m26
 		return ((int32_t)il2cpp_codegen_add(L_0, L_1));
 	}
 }
-// Method Definition Index: 51873
+// Method Definition Index: 48748
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A447293364E5FE241D97086B3B0C05F4D702 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_ocean, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -6721,6 +6747,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Initialize_mC072A44729336
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_m64EB86DDB49F92CFAAF6003C9EAC7D7D8B0F35DB_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&MotorboatWake_tE2FE0CB884C2896F53ABD87A5F72D4292A96579C_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&_stringLiteral46580D65357E6BC22728934BD6BC047227EFE0E6);
 		s_Il2CppMethodInitialized = true;
@@ -7017,10 +7044,15 @@ IL_01b1:
 		il2cpp_codegen_runtime_class_init_inline(MotorboatWake_tE2FE0CB884C2896F53ABD87A5F72D4292A96579C_il2cpp_TypeInfo_var);
 		MotorboatWake_Attach_mD1D7A01AAEB7A996981CDA539B15D83D4FCA5D98(__this, L_61, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:113>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_62;
+		L_62 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(__this, NULL);
+		il2cpp_codegen_runtime_class_init_inline(OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
+		OceanContactFoam_RegisterExclusion_m23B1587C373C30761BE7B54B268F94F56AB9DB91(L_62, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:114>
 		return;
 	}
 }
-// Method Definition Index: 51874
+// Method Definition Index: 48749
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_Board_mB2C07D1CF10EA2BA97B356C034FD21229D821AE8 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7034,7 +7066,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_Board_mB2C07D1CF10EA2BA97
 	int32_t G_B5_0 = 0;
 	int32_t G_B7_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -7100,45 +7132,45 @@ IL_0044:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:117>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
 		V_1 = (bool)0;
 		goto IL_005e;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:118>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
 		int32_t L_10 = __this->___localPassengerCount;
 		__this->___localPassengerCount = ((int32_t)il2cpp_codegen_add(L_10, 1));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:119>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:120>
 		V_1 = (bool)1;
 		goto IL_005e;
 	}
 
 IL_005e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:120>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:121>
 		bool L_11 = V_1;
 		return L_11;
 	}
 }
-// Method Definition Index: 51875
+// Method Definition Index: 48750
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_Leave_m0B2B8C3BD2B1E4E69A79FCD3394E3E24423EE1E2 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:124>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:125>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_passenger;
 		BoatController_ReleaseHelm_m931837C01FCADEA0A2637EE9C7D2E73F9B987AEF(__this, L_0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:125>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:126>
 		int32_t L_1 = __this->___localPassengerCount;
 		int32_t L_2;
 		L_2 = Mathf_Max_m7FA442918DE37E3A00106D1F2E789D65829792B8_inline(0, ((int32_t)il2cpp_codegen_subtract(L_1, 1)), NULL);
 		__this->___localPassengerCount = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:126>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:127>
 		return;
 	}
 }
-// Method Definition Index: 51876
+// Method Definition Index: 48751
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_TakeHelm_mE4A43380865253E6C0F4834EFD0BB7EAEDC71A11 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7160,7 +7192,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_TakeHelm_mE4A43380865253E
 	int32_t G_B8_0 = 0;
 	int32_t G_B21_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:131>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0 = ___0_passenger;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -7197,14 +7229,14 @@ IL_0019:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:131>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_0024:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:132>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_6;
 		L_6 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_7 = ___0_passenger;
@@ -7242,14 +7274,14 @@ IL_0041:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:131>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:132>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:132>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:133>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_13 = __this->___Shared;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_14;
@@ -7262,7 +7294,7 @@ IL_004c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:134>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_16 = __this->___Shared;
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_17 = ___0_passenger;
 		NullCheck(L_16);
@@ -7276,14 +7308,14 @@ IL_004c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:134>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_0079:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_20 = __this->___Shared;
 		NullCheck(L_20);
 		int32_t L_21;
@@ -7296,34 +7328,34 @@ IL_0079:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_23 = ___0_passenger;
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, L_23, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:135>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_009a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:137>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_24 = ___0_passenger;
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_24, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:137>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_25 = ___0_passenger;
 		NullCheck(L_25);
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_26;
 		L_26 = Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0(L_25, Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0_RuntimeMethod_var);
 		__this->___driverView = L_26;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)L_26);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:136>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:137>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_00b2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:138>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:139>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_27;
 		L_27 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -7337,7 +7369,7 @@ IL_00b2:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:140>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
 		bool L_30;
 		L_30 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (!L_30)
@@ -7380,46 +7412,46 @@ IL_00ea:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:140>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
 		V_1 = (bool)0;
 		goto IL_0118;
 	}
 
 IL_00f4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:141>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:142>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_36 = ___0_passenger;
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, L_36, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:142>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:143>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_0100:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:144>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:145>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_37 = ___0_passenger;
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_37, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:145>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:146>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_38 = ___0_passenger;
 		NullCheck(L_38);
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_39;
 		L_39 = Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0(L_38, Component_GetComponentInChildren_TisCamera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184_mA91C303D066164328CA44BB875DDC3EBDC9C9BC0_RuntimeMethod_var);
 		__this->___driverView = L_39;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)L_39);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:146>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:147>
 		V_1 = (bool)1;
 		goto IL_0118;
 	}
 
 IL_0118:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:147>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:148>
 		bool L_40 = V_1;
 		return L_40;
 	}
 }
-// Method Definition Index: 51877
+// Method Definition Index: 48752
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCADEA0A2637EE9C7D2E73F9B987AEF (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_passenger, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7439,7 +7471,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCA
 	Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* G_B11_0 = NULL;
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* G_B11_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:151>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:152>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_0;
 		L_0 = BoatController_get_SeatedGuest_mC4BCB862E06C44EF7531727E4BC06D0B684FD4A9_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_1 = ___0_passenger;
@@ -7454,13 +7486,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_ReleaseHelm_m931837C01FCA
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:151>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:152>
 		BoatController_set_SeatedGuest_m91BA106B0D73CF22983CE4ACFEDEF56CCEAE5A3A_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
 	}
 
 IL_0019:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:152>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_4;
 		L_4 = BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_5 = ___0_passenger;
@@ -7475,13 +7507,13 @@ IL_0019:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:152>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
 		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
 	}
 
 IL_0031:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_8;
 		L_8 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_9 = ___0_passenger;
@@ -7496,13 +7528,13 @@ IL_0031:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:153>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
 		goto IL_00ba;
 	}
 
 IL_0043:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
 		MultiplayerBoat_tEDD55735E46BDDD45BDC1FB4C3F748ECC5FB4242* L_12 = __this->___Shared;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_13;
@@ -7515,24 +7547,24 @@ IL_0043:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
 		__this->___driverView = (Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&__this->___driverView), (void*)(Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184*)NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:154>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:155>
 		goto IL_00ba;
 	}
 
 IL_0065:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:156>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:157>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_15;
 		L_15 = BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline(__this, NULL);
 		BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline(__this, L_15, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:156>
-		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:157>
+		BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline(__this, (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4*)NULL, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:158>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_16;
 		L_16 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -7567,7 +7599,7 @@ IL_0097:
 		NullCheck(G_B11_1);
 		G_B11_1->___driverView = G_B11_0;
 		Il2CppCodeGenWriteBarrier((void**)(&G_B11_1->___driverView), (void*)G_B11_0);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:158>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:159>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_20;
 		L_20 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -7581,7 +7613,7 @@ IL_0097:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:158>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:159>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_23;
 		L_23 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		NullCheck(L_23);
@@ -7590,11 +7622,11 @@ IL_0097:
 
 IL_00ba:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:159>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:160>
 		return;
 	}
 }
-// Method Definition Index: 51878
+// Method Definition Index: 48753
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_FloatingHeight_mC8F74CCCD1CB09A529001E49658D0F5E48E71513 (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_data, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_ocean, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_position, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___3_rotation, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7617,14 +7649,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_FloatingHeight_mC8F74CCC
 	bool V_9 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:166>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:167>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_0 = ___1_ocean;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1 = ___2_position;
 		NullCheck(L_0);
 		float L_2;
 		L_2 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_0, L_1, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:168>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_3 = ___0_data;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_4;
@@ -7659,7 +7691,7 @@ IL_0025:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:168>
 		float L_9 = V_0;
 		V_4 = L_9;
 		goto IL_00e1;
@@ -7667,7 +7699,7 @@ IL_0025:
 
 IL_0031:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:168>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:169>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_10 = ___0_data;
 		NullCheck(L_10);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_11 = (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)(&L_10->___HullSize);
@@ -7675,7 +7707,7 @@ IL_0031:
 		float L_13;
 		L_13 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_12, (0.419999987f))), NULL);
 		V_1 = L_13;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:169>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:170>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_14 = ___0_data;
 		NullCheck(L_14);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2* L_15 = (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2*)(&L_14->___HullSize);
@@ -7683,21 +7715,21 @@ IL_0031:
 		float L_17;
 		L_17 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_16, (0.419999987f))), NULL);
 		V_2 = L_17;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
 		V_5 = (-1);
 		goto IL_00c8;
 	}
 
 IL_006e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:172>
 		V_6 = (-1);
 		goto IL_00b4;
 	}
 
 IL_0073:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:173>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:174>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_18 = ___3_rotation;
 		int32_t L_19 = V_5;
 		float L_20 = V_2;
@@ -7709,7 +7741,7 @@ IL_0073:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
 		L_24 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_18, L_23, NULL);
 		V_7 = L_24;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:174>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:175>
 		float L_25 = V_0;
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = ___1_ocean;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = ___2_position;
@@ -7724,14 +7756,14 @@ IL_0073:
 		float L_33;
 		L_33 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_25, ((float)il2cpp_codegen_subtract(L_30, L_32)), NULL);
 		V_0 = L_33;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:172>
 		int32_t L_34 = V_6;
 		V_6 = ((int32_t)il2cpp_codegen_add(L_34, 1));
 	}
 
 IL_00b4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:172>
 		int32_t L_35 = V_6;
 		V_8 = (bool)((((int32_t)((((int32_t)L_35) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_36 = V_8;
@@ -7741,14 +7773,14 @@ IL_00b4:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
 		int32_t L_37 = V_5;
 		V_5 = ((int32_t)il2cpp_codegen_add(L_37, 1));
 	}
 
 IL_00c8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:171>
 		int32_t L_38 = V_5;
 		V_9 = (bool)((((int32_t)((((int32_t)L_38) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_39 = V_9;
@@ -7758,7 +7790,7 @@ IL_00c8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:177>
 		float L_40 = V_0;
 		V_4 = ((float)il2cpp_codegen_add(L_40, (0.360000014f)));
 		goto IL_00e1;
@@ -7766,12 +7798,12 @@ IL_00c8:
 
 IL_00e1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:178>
 		float L_41 = V_4;
 		return L_41;
 	}
 }
-// Method Definition Index: 51879
+// Method Definition Index: 48754
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_ApplyWaveRocking_m34CAE4FB3D09BF6C9E4512279DBC097CCC36AEB3 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_right, float* ___2_highestWaveAtHull, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -7833,14 +7865,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float BoatController_ApplyWaveRocking_m34CAE4
 	float G_B13_0 = 0.0f;
 	float G_B15_0 = 0.0f;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:183>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:184>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		NullCheck(L_0);
 		String_t* L_1 = L_0->___ID;
 		bool L_2;
 		L_2 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_1, _stringLiteral2A536493D93E98DF3CA2B514703EE6BFBCEB2C68, NULL);
 		V_0 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:185>
 		bool L_3 = V_0;
 		if (L_3)
 		{
@@ -7866,7 +7898,7 @@ IL_0036:
 IL_003b:
 	{
 		V_1 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:185>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:186>
 		bool L_8 = V_0;
 		if (L_8)
 		{
@@ -7892,23 +7924,23 @@ IL_005b:
 IL_0060:
 	{
 		V_2 = G_B6_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:187>
 		float L_13 = V_1;
 		float L_14;
 		L_14 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_13, (0.419999987f))), NULL);
 		V_3 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:187>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:188>
 		float L_15 = V_2;
 		float L_16;
 		L_16 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.349999994f), ((float)il2cpp_codegen_multiply(L_15, (0.419999987f))), NULL);
 		V_4 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:189>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_17 = __this->___body;
 		NullCheck(L_17);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18;
 		L_18 = Rigidbody_get_position_m4ECB79BDBBF8FD1EA572EDB792D3330DDED24691(L_17, NULL);
 		V_5 = L_18;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:189>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:190>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_19 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = ___0_forward;
@@ -7921,7 +7953,7 @@ IL_0060:
 		float L_25;
 		L_25 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_19, L_24, NULL);
 		V_6 = L_25;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:190>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:191>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_28 = ___0_forward;
@@ -7934,7 +7966,7 @@ IL_0060:
 		float L_32;
 		L_32 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_26, L_31, NULL);
 		V_7 = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:192>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_33 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_34 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_35 = ___1_right;
@@ -7947,7 +7979,7 @@ IL_0060:
 		float L_39;
 		L_39 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_33, L_38, NULL);
 		V_8 = L_39;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:192>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:193>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_40 = __this->___water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_41 = V_5;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_42 = ___1_right;
@@ -7960,17 +7992,17 @@ IL_0060:
 		float L_46;
 		L_46 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_40, L_45, NULL);
 		V_9 = L_46;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:194>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:195>
 		float L_47 = V_6;
 		float L_48 = V_7;
 		float L_49 = V_4;
 		V_10 = ((float)(((float)il2cpp_codegen_subtract(L_47, L_48))/((float)il2cpp_codegen_multiply((2.0f), L_49))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:195>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:196>
 		float L_50 = V_8;
 		float L_51 = V_9;
 		float L_52 = V_3;
 		V_11 = ((float)(((float)il2cpp_codegen_subtract(L_50, L_51))/((float)il2cpp_codegen_multiply((2.0f), L_52))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:197>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_53;
 		L_53 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_54 = ___0_forward;
@@ -7989,8 +8021,8 @@ IL_0060:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_62;
 		L_62 = Vector3_get_normalized_m736BBF65D5CDA7A18414370D15B4DFCC1E466F07_inline((&V_17), NULL);
 		V_12 = L_62;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:197>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:198>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:199>
 		bool L_63 = V_0;
 		if (L_63)
 		{
@@ -8051,7 +8083,7 @@ IL_0181:
 IL_0186:
 	{
 		V_13 = G_B15_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:199>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:200>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_68;
 		L_68 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69 = V_12;
@@ -8059,7 +8091,7 @@ IL_0186:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_71;
 		L_71 = Vector3_RotateTowards_m884BB56D5A071EF6008F9354D5FF1C9A1913AF92_inline(L_68, L_69, ((float)il2cpp_codegen_multiply(L_70, (0.0174532924f))), (0.0f), NULL);
 		V_12 = L_71;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:200>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:201>
 		bool L_72;
 		L_72 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
 		V_18 = L_72;
@@ -8070,7 +8102,7 @@ IL_0186:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:205>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:206>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_74 = __this->___body;
 		NullCheck(L_74);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_75;
@@ -8083,7 +8115,7 @@ IL_0186:
 		float L_78;
 		L_78 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_17), NULL);
 		V_19 = L_78;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:206>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:207>
 		float L_79 = V_19;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_80 = __this->___Data;
 		NullCheck(L_80);
@@ -8093,10 +8125,10 @@ IL_0186:
 		float L_83;
 		L_83 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)(L_79/L_82)), NULL);
 		V_20 = L_83;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
 		float L_84 = V_20;
 		V_21 = ((float)il2cpp_codegen_multiply(L_84, (10.0f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:208>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:209>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_85 = __this->___body;
 		NullCheck(L_85);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_86;
@@ -8105,13 +8137,13 @@ IL_0186:
 		float L_88;
 		L_88 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)(((float)il2cpp_codegen_multiply(L_87, (57.2957802f)))/(32.0f))), (-1.0f), (1.0f), NULL);
 		V_22 = L_88;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:209>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:210>
 		float L_89 = V_22;
 		float L_90 = V_19;
 		float L_91;
 		L_91 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)(L_90/(5.0f))), NULL);
 		V_23 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((-L_89)), (15.0f))), L_91));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:210>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:211>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_92 = V_12;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_93 = ___0_forward;
 		float L_94;
@@ -8121,7 +8153,7 @@ IL_0186:
 		float L_96;
 		L_96 = asinf(L_95);
 		V_24 = ((float)il2cpp_codegen_multiply(((-L_96)), (57.2957802f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:211>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:212>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_97 = V_12;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_98 = ___1_right;
 		float L_99;
@@ -8131,20 +8163,20 @@ IL_0186:
 		float L_101;
 		L_101 = asinf(L_100);
 		V_25 = ((float)il2cpp_codegen_multiply(((-L_101)), (57.2957802f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:212>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:213>
 		float L_102 = V_24;
 		float L_103 = V_21;
 		float L_104;
 		L_104 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_add(L_102, L_103)), (-10.0f), (10.0f), NULL);
 		V_26 = L_104;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:213>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:214>
 		float L_105 = V_25;
 		float L_106 = V_23;
 		float L_107;
 		L_107 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_add(L_105, L_106)), (-15.0f), (15.0f), NULL);
 		V_27 = L_107;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:214>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:216>
 		float L_108 = V_27;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_109 = ___0_forward;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_110;
@@ -8164,8 +8196,8 @@ IL_0186:
 
 IL_02db:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:219>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:220>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:221>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_117 = __this->___body;
 		NullCheck(L_117);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_118;
@@ -8182,7 +8214,7 @@ IL_02db:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_124;
 		L_124 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_122, L_123, NULL);
 		V_14 = L_124;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:221>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:222>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_125 = __this->___body;
 		NullCheck(L_125);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_126;
@@ -8192,7 +8224,7 @@ IL_02db:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_128;
 		L_128 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_126, L_127, NULL);
 		V_15 = L_128;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:222>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:223>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_129 = V_14;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
 		L_130 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_129, (26.0f), NULL);
@@ -8202,17 +8234,17 @@ IL_02db:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_133;
 		L_133 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_130, L_132, NULL);
 		V_16 = L_133;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:223>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:224>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_134 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_135 = V_16;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136;
 		L_136 = Vector3_ClampMagnitude_mF83675F19744F58E97CF24D8359A810634DC031F_inline(L_135, (8.0f), NULL);
 		NullCheck(L_134);
 		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_134, L_136, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:227>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:228>
 		float* L_137 = ___2_highestWaveAtHull;
 		*((float*)L_137) = (float)(-std::numeric_limits<float>::infinity());
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:228>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:229>
 		bool L_138;
 		L_138 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		V_28 = L_138;
@@ -8223,7 +8255,7 @@ IL_02db:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:230>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:231>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_140 = __this->___body;
 		NullCheck(L_140);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_141;
@@ -8236,7 +8268,7 @@ IL_02db:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_145;
 		L_145 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_143, L_144, NULL);
 		V_29 = L_145;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:231>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:232>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_146 = __this->___body;
 		NullCheck(L_146);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_147;
@@ -8249,8 +8281,8 @@ IL_02db:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_151;
 		L_151 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_149, L_150, NULL);
 		V_30 = L_151;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:232>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:233>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
 		float* L_152 = ___2_highestWaveAtHull;
 		float L_153 = V_6;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_154 = V_29;
@@ -8271,21 +8303,21 @@ IL_02db:
 		float L_167;
 		L_167 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_159, L_166, NULL);
 		*((float*)L_152) = (float)L_167;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
 		V_31 = (-1);
 		goto IL_044f;
 	}
 
 IL_03e2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:236>
 		V_32 = (-1);
 		goto IL_043b;
 	}
 
 IL_03e7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:237>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:238>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_168 = __this->___body;
 		NullCheck(L_168);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_169;
@@ -8300,8 +8332,8 @@ IL_03e7:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_175;
 		L_175 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_169, L_174, NULL);
 		V_33 = L_175;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:238>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:239>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:240>
 		float* L_176 = ___2_highestWaveAtHull;
 		float* L_177 = ___2_highestWaveAtHull;
 		float L_178 = *((float*)L_177);
@@ -8318,14 +8350,14 @@ IL_03e7:
 		float L_186;
 		L_186 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_178, ((float)il2cpp_codegen_subtract(L_183, L_185)), NULL);
 		*((float*)L_176) = (float)L_186;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:236>
 		int32_t L_187 = V_32;
 		V_32 = ((int32_t)il2cpp_codegen_add(L_187, 2));
 	}
 
 IL_043b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:236>
 		int32_t L_188 = V_32;
 		V_34 = (bool)((((int32_t)((((int32_t)L_188) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_189 = V_34;
@@ -8335,14 +8367,14 @@ IL_043b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
 		int32_t L_190 = V_31;
 		V_31 = ((int32_t)il2cpp_codegen_add(L_190, 2));
 	}
 
 IL_044f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:235>
 		int32_t L_191 = V_31;
 		V_35 = (bool)((((int32_t)((((int32_t)L_191) > ((int32_t)1))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_192 = V_35;
@@ -8356,7 +8388,7 @@ IL_044f:
 
 IL_045e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:242>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:243>
 		float L_193 = V_6;
 		float L_194 = V_7;
 		float L_195 = V_8;
@@ -8367,12 +8399,12 @@ IL_045e:
 
 IL_0473:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:243>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:244>
 		float L_197 = V_36;
 		return L_197;
 	}
 }
-// Method Definition Index: 51880
+// Method Definition Index: 48755
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasClearOpenWaterAhead_m527DF0870309F7C84422287D333AA6FB5A385C94 (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -8414,7 +8446,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatController_HasClearOpenWaterAhead_m5
 	int32_t G_B17_0 = 0;
 	int32_t G_B24_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:249>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:250>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_0 = __this->___Data;
 		NullCheck(L_0);
 		String_t* L_1 = L_0->___ID;
@@ -8444,7 +8476,7 @@ IL_0034:
 IL_0039:
 	{
 		V_0 = G_B3_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:251>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_7 = __this->___Data;
 		NullCheck(L_7);
 		String_t* L_8 = L_7->___ID;
@@ -8474,14 +8506,14 @@ IL_006d:
 IL_0072:
 	{
 		V_1 = G_B6_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:252>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___0_forward;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
 		L_15 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_16;
 		L_16 = Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline(L_14, L_15, NULL);
 		V_2 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:252>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:253>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_17 = __this->___body;
 		NullCheck(L_17);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18;
@@ -8493,7 +8525,7 @@ IL_0072:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22;
 		L_22 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_18, L_21, NULL);
 		V_3 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:253>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:254>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_23 = __this->___body;
 		NullCheck(L_23);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24;
@@ -8506,7 +8538,7 @@ IL_0072:
 		float L_28;
 		L_28 = fabsf(((float)il2cpp_codegen_subtract(L_25, L_27)));
 		V_4 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_28, (0.5f))), (1.60000002f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:254>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:255>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_29 = __this->___body;
 		NullCheck(L_29);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_30;
@@ -8517,7 +8549,7 @@ IL_0072:
 		float L_33;
 		L_33 = OceanWater_get_BaseWaterLevel_mAFE0A175DF61B9456516F846040CB90E5CC13CB6(L_32, NULL);
 		(&V_3)->___y = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_add(L_31, L_33)), (0.5f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:255>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:256>
 		float L_34 = V_0;
 		float L_35 = V_4;
 		float L_36 = V_1;
@@ -8527,8 +8559,8 @@ IL_0072:
 
 IL_011a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:259>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:260>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:261>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_37 = V_3;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_38 = V_5;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_39 = __this->___waveSafetyContacts;
@@ -8538,7 +8570,7 @@ IL_011a:
 		int32_t L_42;
 		L_42 = Physics_OverlapBoxNonAlloc_m1D43D10CD88EF2D5440601D3CD14CA4EB449A295(L_37, L_38, L_39, L_40, L_41, 1, NULL);
 		V_6 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:261>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:262>
 		int32_t L_43 = V_6;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_44 = __this->___waveSafetyContacts;
 		NullCheck(L_44);
@@ -8550,13 +8582,13 @@ IL_011a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:261>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:262>
 		goto IL_018d;
 	}
 
 IL_0147:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:264>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:265>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_46 = __this->___waveSafetyContacts;
 		NullCheck(L_46);
 		V_8 = (bool)((((int32_t)((((int32_t)((int32_t)(((RuntimeArray*)L_46)->max_length))) < ((int32_t)((int32_t)8192)))? 1 : 0)) == ((int32_t)0))? 1 : 0);
@@ -8567,14 +8599,14 @@ IL_0147:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:264>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:265>
 		V_9 = (bool)0;
 		goto IL_0239;
 	}
 
 IL_0167:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:265>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:266>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787** L_48 = (ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787**)(&__this->___waveSafetyContacts);
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_49 = __this->___waveSafetyContacts;
 		NullCheck(L_49);
@@ -8585,28 +8617,28 @@ IL_0167:
 
 IL_0188:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:257>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:258>
 		V_10 = (bool)1;
 		goto IL_011a;
 	}
 
 IL_018d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:268>
 		V_11 = 0;
 		goto IL_0225;
 	}
 
 IL_0195:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:269>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:270>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_51 = __this->___waveSafetyContacts;
 		int32_t L_52 = V_11;
 		NullCheck(L_51);
 		int32_t L_53 = L_52;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_54 = (L_51)->GetAt(static_cast<il2cpp_array_size_t>(L_53));
 		V_12 = L_54;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:270>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_55 = V_12;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_56;
@@ -8645,13 +8677,13 @@ IL_01c0:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:270>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
 		goto IL_021f;
 	}
 
 IL_01c8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:272>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_62 = V_12;
 		V_15 = (bool)((!(((RuntimeObject*)(TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)((TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)IsInstClass((RuntimeObject*)L_62, TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05_il2cpp_TypeInfo_var))) <= ((RuntimeObject*)(RuntimeObject*)NULL)))? 1 : 0);
 		bool L_63 = V_15;
@@ -8661,19 +8693,19 @@ IL_01c8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:271>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:272>
 		goto IL_021f;
 	}
 
 IL_01da:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:272>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:273>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_64 = V_12;
 		NullCheck(L_64);
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_65;
 		L_65 = Component_GetComponentInParent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_m7B4B0FC04186242284E446A199D79F151FC794D0(L_64, Component_GetComponentInParent_TisBoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4_m7B4B0FC04186242284E446A199D79F151FC794D0_RuntimeMethod_var);
 		V_13 = L_65;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:273>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_66 = V_13;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_67;
@@ -8710,13 +8742,13 @@ IL_01fd:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:273>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
 		goto IL_021f;
 	}
 
 IL_0205:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_72 = V_12;
 		NullCheck(L_72);
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_73;
@@ -8732,27 +8764,27 @@ IL_0205:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:274>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
 		goto IL_021f;
 	}
 
 IL_021a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:275>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:276>
 		V_9 = (bool)0;
 		goto IL_0239;
 	}
 
 IL_021f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:268>
 		int32_t L_76 = V_11;
 		V_11 = ((int32_t)il2cpp_codegen_add(L_76, 1));
 	}
 
 IL_0225:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:267>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:268>
 		int32_t L_77 = V_11;
 		int32_t L_78 = V_6;
 		V_18 = (bool)((((int32_t)L_77) < ((int32_t)L_78))? 1 : 0);
@@ -8763,19 +8795,19 @@ IL_0225:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:277>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:278>
 		V_9 = (bool)1;
 		goto IL_0239;
 	}
 
 IL_0239:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:278>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:279>
 		bool L_80 = V_9;
 		return L_80;
 	}
 }
-// Method Definition Index: 51881
+// Method Definition Index: 48756
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum_mBA323B518D2331E2E0652EB413022346DA02C22C (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_forward, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_plannedDirection, float ___2_propulsion, float ___3_targetSpeed, float ___4_headingError, bool ___5_shallowAhead, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -8791,7 +8823,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum
 	float G_B20_0 = 0.0f;
 	BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* G_B20_1 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:284>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:285>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_0 = __this->___body;
 		NullCheck(L_0);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1;
@@ -8800,8 +8832,8 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_PreserveDeepWaterMomentum
 		float L_3;
 		L_3 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_1, L_2, NULL);
 		V_0 = L_3;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:287>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:288>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:289>
 		float L_4 = ___2_propulsion;
 		if ((!(((float)L_4) > ((float)(0.0500000007f)))))
 		{
@@ -8839,7 +8871,7 @@ IL_003e:
 IL_003f:
 	{
 		V_1 = (bool)G_B5_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:289>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:290>
 		bool L_9 = V_1;
 		if (!L_9)
 		{
@@ -8874,8 +8906,8 @@ IL_005b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:291>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:292>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:293>
 		float L_13 = __this->___lastDrivenForwardSpeed;
 		float L_14 = ___3_targetSpeed;
 		float L_15;
@@ -8883,7 +8915,7 @@ IL_005b:
 		float L_16;
 		L_16 = Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381(NULL);
 		V_3 = ((float)il2cpp_codegen_subtract(L_15, ((float)il2cpp_codegen_multiply((2.5f), L_16))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:293>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:294>
 		float L_17 = V_3;
 		if ((!(((float)L_17) > ((float)(0.699999988f)))))
 		{
@@ -8921,7 +8953,7 @@ IL_0090:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:298>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:299>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_23 = __this->___body;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_24 = L_23;
 		NullCheck(L_24);
@@ -8936,7 +8968,7 @@ IL_0090:
 		L_30 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_25, L_29, NULL);
 		NullCheck(L_24);
 		Rigidbody_set_linearVelocity_m29AE03D5FC079EAD4202FCF72E2AEBDC19363985(L_24, L_30, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:299>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:300>
 		float L_31 = V_3;
 		V_0 = L_31;
 	}
@@ -8947,10 +8979,10 @@ IL_00ba:
 
 IL_00bb:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:302>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:303>
 		bool L_32 = V_1;
 		__this->___wasPropelling = L_32;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:303>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:304>
 		bool L_33 = V_1;
 		if (L_33)
 		{
@@ -8978,11 +9010,11 @@ IL_00d8:
 	{
 		NullCheck(G_B20_1);
 		G_B20_1->___lastDrivenForwardSpeed = G_B20_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:304>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:305>
 		return;
 	}
 }
-// Method Definition Index: 51882
+// Method Definition Index: 48757
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_FixedUpdate_m22E2D4F3337C97BED1C261154A7444A835D1264B (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -9086,7 +9118,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController_FixedUpdate_m22E2D4F3337C
 	int32_t G_B74_0 = 0;
 	int32_t G_B79_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:308>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:309>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_0 = __this->___body;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_1;
@@ -9160,13 +9192,13 @@ IL_004a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:308>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:309>
 		goto IL_081d;
 	}
 
 IL_0055:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:311>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:312>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_11 = __this->___body;
 		NullCheck(L_11);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_12;
@@ -9180,7 +9212,7 @@ IL_0055:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_16;
 		L_16 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_14, L_15, NULL);
 		V_0 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:312>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:313>
 		float L_17;
 		L_17 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_0), NULL);
 		V_25 = (bool)((((float)L_17) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9191,7 +9223,7 @@ IL_0055:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:312>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:313>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_19;
 		L_19 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
 		V_0 = L_19;
@@ -9199,21 +9231,21 @@ IL_0055:
 
 IL_008f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:313>
-		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_0), NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:314>
+		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_0), NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:315>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_20;
 		L_20 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_21 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22;
 		L_22 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_20, L_21, NULL);
 		V_1 = L_22;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:316>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:317>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_24 = V_1;
 		float L_25;
 		L_25 = BoatController_ApplyWaveRocking_m34CAE4FB3D09BF6C9E4512279DBC097CCC36AEB3(__this, L_23, L_24, (&V_2), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:317>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:318>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_26 = __this->___water;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_27 = __this->___body;
 		NullCheck(L_27);
@@ -9223,9 +9255,9 @@ IL_008f:
 		float L_29;
 		L_29 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_26, L_28, NULL);
 		V_3 = L_29;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:323>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:324>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:325>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:326>
 		bool L_30;
 		L_30 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (L_30)
@@ -9250,7 +9282,7 @@ IL_00d4:
 IL_00e6:
 	{
 		V_4 = G_B15_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:326>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:327>
 		float L_34 = V_3;
 		bool L_35;
 		L_35 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
@@ -9277,7 +9309,7 @@ IL_00f8:
 IL_0100:
 	{
 		V_5 = ((float)il2cpp_codegen_add(G_B18_1, G_B18_0));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:327>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:328>
 		bool L_37 = __this->___buoyancyStarted;
 		V_26 = (bool)((((int32_t)L_37) == ((int32_t)0))? 1 : 0);
 		bool L_38 = V_26;
@@ -9287,20 +9319,20 @@ IL_0100:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:329>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:330>
 		float L_39 = V_5;
 		__this->___filteredBuoyancyHeight = L_39;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:330>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:331>
 		__this->___buoyancyStarted = (bool)1;
 	}
 
 IL_0123:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:332>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:333>
 		float L_40 = V_5;
 		float L_41 = __this->___filteredBuoyancyHeight;
 		V_6 = ((float)il2cpp_codegen_subtract(L_40, L_41));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:333>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:334>
 		float L_42 = V_6;
 		if ((((float)L_42) >= ((float)(0.0f))))
 		{
@@ -9320,8 +9352,8 @@ IL_013e:
 IL_0143:
 	{
 		V_7 = G_B23_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:334>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:335>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:336>
 		float L_43 = __this->___filteredBuoyancyHeight;
 		float L_44 = V_6;
 		float L_45 = V_7;
@@ -9333,7 +9365,7 @@ IL_0143:
 		float L_49;
 		L_49 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_44, ((float)il2cpp_codegen_multiply(((-L_45)), L_46)), ((float)il2cpp_codegen_multiply(L_47, L_48)), NULL);
 		__this->___filteredBuoyancyHeight = ((float)il2cpp_codegen_add(L_43, L_49));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:338>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:339>
 		float L_50 = __this->___filteredBuoyancyHeight;
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_51 = __this->___body;
 		NullCheck(L_51);
@@ -9341,9 +9373,9 @@ IL_0143:
 		L_52 = Rigidbody_get_position_m4ECB79BDBBF8FD1EA572EDB792D3330DDED24691(L_51, NULL);
 		float L_53 = L_52.___y;
 		V_8 = ((float)il2cpp_codegen_subtract(L_50, L_53));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:339>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:340>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:341>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:342>
 		bool L_54;
 		L_54 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		if (L_54)
@@ -9376,7 +9408,7 @@ IL_01ac:
 IL_01cb:
 	{
 		V_9 = G_B26_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:342>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:343>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_63 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_64;
 		L_64 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9387,7 +9419,7 @@ IL_01cb:
 		L_67 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_64, L_66, NULL);
 		NullCheck(L_63);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_63, L_67, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:345>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:346>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_68 = __this->___body;
 		NullCheck(L_68);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69;
@@ -9397,7 +9429,7 @@ IL_01cb:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_71;
 		L_71 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_69, L_70, NULL);
 		V_10 = L_71;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:346>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:347>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_72 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_73 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_74 = V_1;
@@ -9406,7 +9438,7 @@ IL_01cb:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_76;
 		L_76 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_72, L_75, NULL);
 		V_11 = L_76;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:347>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:348>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_77 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_78 = V_11;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_79;
@@ -9415,7 +9447,7 @@ IL_01cb:
 		L_80 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_79, (9.0f), NULL);
 		NullCheck(L_77);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_77, L_80, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:349>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:350>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_81;
 		L_81 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -9448,17 +9480,17 @@ IL_0250:
 IL_0260:
 	{
 		V_12 = G_B29_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:350>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:351>
 		float L_87;
 		L_87 = Vector2_get_magnitude_m5C59B4056420AEFDB291AD0914A3F675330A75CE_inline((&V_12), NULL);
 		float L_88;
 		L_88 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(L_87, NULL);
 		V_13 = L_88;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:353>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:354>
 		bool L_89;
 		L_89 = BoatController_get_RearPaddling_mD2F61A44923201677DE5CFE7D29387155F88A771(__this, NULL);
 		V_14 = L_89;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:354>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:355>
 		bool L_90 = V_14;
 		if (L_90)
 		{
@@ -9479,24 +9511,24 @@ IL_0280:
 IL_0285:
 	{
 		V_15 = G_B32_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:355>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:356>
 		float L_92;
 		L_92 = BoatController_get_RowingSpeed_mB6F582631B0401E0E1066D73B04C56A33E307822(__this, NULL);
 		V_16 = L_92;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:356>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:357>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_93;
 		L_93 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
 		V_17 = L_93;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:357>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:358>
 		V_18 = (0.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:359>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:360>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_94 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_95;
 		L_95 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_96;
 		L_96 = Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline(L_94, L_95, NULL);
 		V_19 = L_96;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:361>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:362>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_97;
 		L_97 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -9537,7 +9569,7 @@ IL_02cc:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:363>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:364>
 		Camera_tA92CC927D7439999BC82DBEDC0AA45B470F9E184* L_102 = __this->___driverView;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_103;
@@ -9572,7 +9604,7 @@ IL_02f3:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:363>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:364>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_107;
 		L_107 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		NullCheck(L_107);
@@ -9584,7 +9616,7 @@ IL_02f3:
 
 IL_030a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:364>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:365>
 		BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* L_109;
 		L_109 = BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline(__this, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -9642,7 +9674,7 @@ IL_034f:
 IL_035f:
 	{
 		V_28 = G_B47_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:366>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:367>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_121 = V_28;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_122;
 		L_122 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
@@ -9653,7 +9685,7 @@ IL_035f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_125;
 		L_125 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_123, L_124, NULL);
 		V_29 = L_125;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:367>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:368>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_126 = V_28;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_127;
 		L_127 = Vector3_get_right_mFF573AFBBB2186E7AFA1BA7CA271A78DF67E4EA0_inline(NULL);
@@ -9664,7 +9696,7 @@ IL_035f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
 		L_130 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_128, L_129, NULL);
 		V_30 = L_130;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:368>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:369>
 		float L_131;
 		L_131 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_29), NULL);
 		V_33 = (bool)((((float)L_131) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9675,14 +9707,14 @@ IL_035f:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:368>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:369>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_133 = V_0;
 		V_29 = L_133;
 	}
 
 IL_03a8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:369>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:370>
 		float L_134;
 		L_134 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_30), NULL);
 		V_34 = (bool)((((float)L_134) < ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9693,19 +9725,19 @@ IL_03a8:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:369>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:370>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136 = V_1;
 		V_30 = L_136;
 	}
 
 IL_03bf:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:370>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:371>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_29), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:370>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:371>
 		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_30), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:379>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:380>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:381>
 		bool L_137;
 		L_137 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
 		if (!L_137)
@@ -9759,9 +9791,9 @@ IL_040a:
 IL_040b:
 	{
 		V_31 = (bool)G_B56_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:381>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:382>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:383>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:384>
 		bool L_146 = V_31;
 		if (L_146)
 		{
@@ -9805,14 +9837,14 @@ IL_0434:
 IL_0453:
 	{
 		V_17 = G_B59_0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:384>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:385>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_165 = V_17;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_166;
 		L_166 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_167;
 		L_167 = Vector3_ProjectOnPlane_m68FB895F6E9FCC45676BB8B95857D091C0D78794_inline(L_165, L_166, NULL);
 		V_17 = L_167;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:385>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:386>
 		float L_168;
 		L_168 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_17), NULL);
 		V_35 = (bool)((((float)L_168) > ((float)(9.99999975E-05f)))? 1 : 0);
@@ -9823,9 +9855,9 @@ IL_0453:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:387>
-		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_17), NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:388>
+		Vector3_Normalize_mC749B887A4C74BA0A2E13E6377F17CCAEB0AADA8_inline((&V_17), NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:389>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_170 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_171 = V_17;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_172;
@@ -9833,25 +9865,25 @@ IL_0453:
 		float L_173;
 		L_173 = Vector3_SignedAngle_m76C77F9D7BAF5969FA5B7500ED2D5FF9F9FA4153_inline(L_170, L_171, L_172, NULL);
 		V_18 = L_173;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:392>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:393>
 		float L_174 = V_18;
 		float L_175;
 		L_175 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_multiply(L_174, (1.25f))), (-32.0f), (32.0f), NULL);
 		V_36 = L_175;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:393>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:394>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_176 = __this->___body;
 		NullCheck(L_176);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_177;
 		L_177 = Rigidbody_get_angularVelocity_m4EACCFCF15CA441CCD53B24322C2E7B8EEBDF6A8(L_176, NULL);
 		float L_178 = L_177.___y;
 		V_37 = ((float)il2cpp_codegen_multiply(L_178, (57.2957802f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:394>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:395>
 		float L_179 = V_36;
 		float L_180 = V_37;
 		float L_181;
 		L_181 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_179, L_180)), (0.0174532924f))), (5.19999981f))), (-3.0f), (3.0f), NULL);
 		V_38 = L_181;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:395>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:396>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_182 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_183;
 		L_183 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9860,12 +9892,12 @@ IL_0453:
 		L_185 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_183, L_184, NULL);
 		NullCheck(L_182);
 		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_182, L_185, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:397>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:398>
 		float L_186 = V_18;
 		float L_187;
 		L_187 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_186, (-18.0f), (18.0f), NULL);
 		V_39 = L_187;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:398>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:399>
 		float L_188 = V_39;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_189;
 		L_189 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9883,7 +9915,7 @@ IL_0527:
 
 IL_0528:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:402>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:403>
 		bool L_193 = V_14;
 		if (!L_193)
 		{
@@ -9911,21 +9943,21 @@ IL_053b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:402>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:403>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_196 = V_0;
 		V_17 = L_196;
 	}
 
 IL_0544:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:403>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:404>
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_197 = V_19;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_198;
 		L_198 = Vector3_get_forward_mAA55A7034304DF8B2152EAD49AE779FC4CA2EB4A_inline(NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_199;
 		L_199 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_197, L_198, NULL);
 		V_20 = L_199;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:404>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:405>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_200 = __this->___body;
 		NullCheck(L_200);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_201;
@@ -9942,7 +9974,7 @@ IL_0544:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_208;
 		L_208 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_204, L_207, NULL);
 		V_21 = L_208;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:408>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:409>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_209 = __this->___Data;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_210 = V_21;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_211 = V_19;
@@ -9951,7 +9983,7 @@ IL_0544:
 		bool L_213;
 		L_213 = BoatClearance_ApproachingShallowWater_m54CC71F6D5D2A24484451936A35041CAB053C9DE(L_209, L_210, L_211, L_212, NULL);
 		V_22 = L_213;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:409>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:410>
 		bool L_214 = V_22;
 		V_41 = L_214;
 		bool L_215 = V_41;
@@ -9961,11 +9993,11 @@ IL_0544:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:411>
-		__this->___wasPropelling = (bool)0;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:412>
-		__this->___lastDrivenForwardSpeed = (0.0f);
+		__this->___wasPropelling = (bool)0;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:413>
+		__this->___lastDrivenForwardSpeed = (0.0f);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:414>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_216 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_217 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_218;
@@ -9974,7 +10006,7 @@ IL_0544:
 		L_219 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_218, (7.0f), NULL);
 		NullCheck(L_216);
 		Rigidbody_AddForce_mBDBC288D0E266BC1B62E3649B4FCE46E7EA9CCBC(L_216, L_219, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:414>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:415>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_220 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_221;
 		L_221 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
@@ -9987,13 +10019,13 @@ IL_0544:
 		L_225 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_221, ((float)il2cpp_codegen_multiply(((-L_224)), (5.0f))), NULL);
 		NullCheck(L_220);
 		Rigidbody_AddTorque_m7922F76C73DACF9E1610D72726C01709C14F0937(L_220, L_225, 5, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:415>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:416>
 		goto IL_081d;
 	}
 
 IL_0607:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:421>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:422>
 		bool L_226;
 		L_226 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
 		if (!L_226)
@@ -10040,7 +10072,7 @@ IL_0634:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:423>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:424>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_232 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_233 = V_0;
 		float L_234;
@@ -10048,7 +10080,7 @@ IL_0634:
 		float L_235;
 		L_235 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.0f), L_234, NULL);
 		V_43 = L_235;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:424>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:425>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_236 = __this->___body;
 		NullCheck(L_236);
 		float L_237;
@@ -10056,7 +10088,7 @@ IL_0634:
 		float L_238;
 		L_238 = Mathf_Min_m747CA71A9483CDB394B13BD0AD048EE17E48FFE4_inline((0.150000006f), L_237, NULL);
 		V_44 = L_238;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:425>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:426>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_239 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_240 = V_0;
 		float L_241 = V_43;
@@ -10069,7 +10101,7 @@ IL_0634:
 
 IL_067f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:428>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:429>
 		float L_244 = V_15;
 		if ((!(((float)L_244) > ((float)(0.0500000007f)))))
 		{
@@ -10098,25 +10130,25 @@ IL_0699:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:430>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:431>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_247 = V_10;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_248 = V_0;
 		float L_249;
 		L_249 = Vector3_Dot_mBB86BB940AA0A32FA7D3C02AC42E5BC7095A5D52_inline(L_247, L_248, NULL);
 		V_46 = L_249;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:431>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:432>
 		float L_250 = V_18;
 		float L_251;
 		L_251 = fabsf(L_250);
 		float L_252;
 		L_252 = Mathf_Clamp01_mA7E048DBDA832D399A581BE4D6DED9FA44CE0F14_inline(((float)il2cpp_codegen_subtract((1.0f), ((float)(L_251/(120.0f))))), NULL);
 		V_47 = L_252;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:432>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:433>
 		float L_253 = V_47;
 		float L_254;
 		L_254 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.219999999f), (1.0f), L_253, NULL);
 		V_48 = L_254;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:436>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:437>
 		bool L_255;
 		L_255 = BoatController_get_IsRowboat_mE895E8CD24293200F0B5FA4E595B69C3984C5F48(__this, NULL);
 		V_49 = L_255;
@@ -10127,12 +10159,12 @@ IL_0699:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:440>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:441>
 		float L_257 = V_16;
 		float L_258 = V_15;
 		float L_259 = V_48;
 		V_50 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_257, L_258)), L_259));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:441>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:442>
 		float L_260 = V_50;
 		float L_261 = V_46;
 		float L_262 = V_46;
@@ -10141,7 +10173,7 @@ IL_0699:
 		float L_264;
 		L_264 = Rigidbody_get_linearDamping_m9A75A439BEDC39A14ADDDBEA9BF3BE08805DA7F2(L_263, NULL);
 		V_51 = ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_260, L_261)), (2.5f))), ((float)il2cpp_codegen_multiply(L_262, L_264))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:442>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:443>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_265 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_266 = V_0;
 		float L_267 = V_51;
@@ -10154,7 +10186,7 @@ IL_0699:
 
 IL_0728:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:444>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:445>
 		bool L_269;
 		L_269 = BoatController_get_IsMotorboat_mDC1923ADBF9C17B41D882E2F844D2C7EC7F24D66(__this, NULL);
 		V_52 = L_269;
@@ -10165,25 +10197,25 @@ IL_0728:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:449>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:450>
 		float L_271 = V_16;
 		float L_272 = V_15;
 		float L_273 = V_48;
 		V_53 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_271, L_272)), L_273));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:450>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:451>
 		float L_274 = V_16;
 		float L_275;
 		L_275 = Time_get_fixedDeltaTime_m43136893D00AF5D5FE80AD05609558F6E2381381(NULL);
 		V_54 = ((float)il2cpp_codegen_multiply(((float)(L_274/(3.0f))), L_275));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:451>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:452>
 		float L_276 = V_46;
 		float L_277 = V_53;
 		float L_278 = V_54;
 		float L_279;
 		L_279 = Mathf_MoveTowards_m69751B5EC50D8E7127D4BB2C8D908E38808AF45D_inline(L_276, L_277, L_278, NULL);
 		V_55 = L_279;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:452>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:453>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:454>
 		float L_280 = V_55;
 		float L_281 = V_46;
 		float L_282;
@@ -10194,7 +10226,7 @@ IL_0728:
 		float L_285;
 		L_285 = Rigidbody_get_linearDamping_m9A75A439BEDC39A14ADDDBEA9BF3BE08805DA7F2(L_284, NULL);
 		V_56 = ((float)il2cpp_codegen_add(((float)(((float)il2cpp_codegen_subtract(L_280, L_281))/L_282)), ((float)il2cpp_codegen_multiply(L_283, L_285))));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:454>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:455>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_286 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_287 = V_0;
 		float L_288 = V_56;
@@ -10207,7 +10239,7 @@ IL_0728:
 
 IL_0790:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:456>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:457>
 		float L_290 = V_46;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_291 = __this->___Data;
 		NullCheck(L_291);
@@ -10220,7 +10252,7 @@ IL_0790:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:457>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:458>
 		Rigidbody_t268697F5A994213ED97393309870968BC1C7393C* L_294 = __this->___body;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_295 = V_0;
 		float L_296 = V_13;
@@ -10246,8 +10278,8 @@ IL_07db:
 
 IL_07dc:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:463>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:464>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:465>
 		float L_304 = V_16;
 		float L_305 = V_15;
 		float L_306 = V_18;
@@ -10258,8 +10290,8 @@ IL_07dc:
 		float L_309;
 		L_309 = Mathf_Lerp_m47EF2FFB7647BD0A1FDC26DC03E28B19812139B5_inline((0.219999999f), (1.0f), L_308, NULL);
 		V_23 = ((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_multiply(L_304, L_305)), L_309));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:465>
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:466>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:467>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_310 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_311 = V_17;
 		float L_312 = V_15;
@@ -10271,11 +10303,11 @@ IL_07dc:
 
 IL_081d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:467>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/BoatController.cs:468>
 		return;
 	}
 }
-// Method Definition Index: 51883
+// Method Definition Index: 48758
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController__ctor_mBA78C64F2F311CF0258C520D2EF2C8DF0851079F (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10303,7 +10335,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatController__ctor_mBA78C64F2F311CF025
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51884
+// Method Definition Index: 48759
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatData__ctor_mB4997346CA27D6DA76B0FFC03CAD0069B3F1BADA (BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* __this, const RuntimeMethod* method) 
 {
 	{
@@ -10330,7 +10362,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatData__ctor_mB4997346CA27D6DA76B0FFC0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51885
+// Method Definition Index: 48760
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* BoatPassenger_get_Controls_m5272D23BCBF9E61BB212279CAB9E39194A748252 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -10339,7 +10371,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D
 		return L_0;
 	}
 }
-// Method Definition Index: 51886
+// Method Definition Index: 48761
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2B266CDF99F926044006099F8313F (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -10350,7 +10382,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2
 		return;
 	}
 }
-// Method Definition Index: 51887
+// Method Definition Index: 48762
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_get_Boat_m33A6D6679104FA5AF25CA92BFBBA498D52FEB1E1 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -10359,7 +10391,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1
 		return L_0;
 	}
 }
-// Method Definition Index: 51888
+// Method Definition Index: 48763
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35DF52D3E18354D2502EB596E8E (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -10370,7 +10402,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35D
 		return;
 	}
 }
-// Method Definition Index: 51889
+// Method Definition Index: 48764
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Driving_m6CE76AA5E39700A1A6EDFDEB3281F6C9ADA35B85 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10441,7 +10473,7 @@ IL_0038:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51890
+// Method Definition Index: 48765
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Sitting_m9A8EF1CA9BCF8F407C9FF6022F9AEF1E556C5D13 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10486,7 +10518,7 @@ IL_0022:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51891
+// Method Definition Index: 48766
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_Seated_mE7DA6F7E9B87D4ED10A9423C2EC58D8146D8CB38 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	int32_t G_B3_0 = 0;
@@ -10516,7 +10548,7 @@ IL_0011:
 		return (bool)G_B3_0;
 	}
 }
-// Method Definition Index: 51892
+// Method Definition Index: 48767
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m0286772F95D8BDD3223A3A49FBC1EA5155DA5919 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -10525,7 +10557,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m028677
 		return L_0;
 	}
 }
-// Method Definition Index: 51893
+// Method Definition Index: 48768
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F036FD57815E9E5AE80BF32664A9A04A4DF (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -10535,7 +10567,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F
 		return;
 	}
 }
-// Method Definition Index: 51894
+// Method Definition Index: 48769
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Awake_m9E51F388E68358171DEBED0A5A348C8204C851DA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10559,7 +10591,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Awake_m9E51F388E68358171DE
 		return;
 	}
 }
-// Method Definition Index: 51895
+// Method Definition Index: 48770
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Update_mAB2EAB2B80F7F27F672C4AEDFC888A2DA1F32A20 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -10937,7 +10969,7 @@ IL_01df:
 		return;
 	}
 }
-// Method Definition Index: 51896
+// Method Definition Index: 48771
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_FindBoatBelow_m58669FAB35220E418C396932A2EDB9454396C5CA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, float ___0_distance, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11148,7 +11180,7 @@ IL_00eb:
 		return L_36;
 	}
 }
-// Method Definition Index: 51897
+// Method Definition Index: 48772
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_IsAboveBoatFootprint_m44284A129460D2D23081A679EB7FE70BB484EDCA (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_boat, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11369,7 +11401,7 @@ IL_0118:
 		return L_47;
 	}
 }
-// Method Definition Index: 51898
+// Method Definition Index: 48773
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatPassenger_BoardFromWater_mFC5FE1EA10156A89768F94A0EFC61C9364348317 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_boat, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11516,7 +11548,7 @@ IL_00d2:
 		return L_27;
 	}
 }
-// Method Definition Index: 51899
+// Method Definition Index: 48774
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_ToggleHelm_m407D4F40D9C8DE2A0586E43F489E8B662296CF5C (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11708,7 +11740,7 @@ IL_00d3:
 		return;
 	}
 }
-// Method Definition Index: 51900
+// Method Definition Index: 48775
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_UpdatePassengerCollision_mDBD0E5D46090890050DA54FF6D7E043F991370CE (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -11977,7 +12009,7 @@ IL_0115:
 		return;
 	}
 }
-// Method Definition Index: 51901
+// Method Definition Index: 48776
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_SetPlatformPosition_m04364356BBF5A7B8BCC1CBDCE8A5B3B3AEE0E132 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_position, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12083,7 +12115,7 @@ IL_0068:
 		return;
 	}
 }
-// Method Definition Index: 51902
+// Method Definition Index: 48777
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_SnapToRowingSeat_mDCBD686C63CDA69851B28EC9D890AA1209B79031 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12178,7 +12210,7 @@ IL_0075:
 		return;
 	}
 }
-// Method Definition Index: 51903
+// Method Definition Index: 48778
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_Detach_m8373041F9CCB9DC16ECC004CFEA6CFEB22BE9C98 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12222,7 +12254,7 @@ IL_001e:
 		return;
 	}
 }
-// Method Definition Index: 51904
+// Method Definition Index: 48779
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_OnDisable_m09F86315DFCD7D7BA77CD10A8C506F38A0DC8999 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -12232,7 +12264,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger_OnDisable_m09F86315DFCD7D7
 		return;
 	}
 }
-// Method Definition Index: 51905
+// Method Definition Index: 48780
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger__ctor_m92ECD3C32BA5237E8C08407535765C03023DF498 (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -12249,7 +12281,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatPassenger__ctor_m92ECD3C32BA5237E8C0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51906
+// Method Definition Index: 48781
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_get_ActiveBoat_m6691C9D74B0170F6FBB8204FD74770D8E93DDC46 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -12258,7 +12290,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1
 		return L_0;
 	}
 }
-// Method Definition Index: 51907
+// Method Definition Index: 48782
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940F30907732B544F6D58B0F5F3F53 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -12269,7 +12301,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940
 		return;
 	}
 }
-// Method Definition Index: 51908
+// Method Definition Index: 48783
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E017284269C23CF98149FABD1A8C04A (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -12278,7 +12310,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E
 		return L_0;
 	}
 }
-// Method Definition Index: 51909
+// Method Definition Index: 48784
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD437023DA15CF8D90FC3C125A1678A09 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -12288,7 +12320,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD4
 		return;
 	}
 }
-// Method Definition Index: 51910
+// Method Definition Index: 48785
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* BoatSystem_get_Selected_m0334387D8ADE514E37545EB99C43830C639C925D (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12328,7 +12360,7 @@ IL_0022:
 		return G_B3_0;
 	}
 }
-// Method Definition Index: 51911
+// Method Definition Index: 48786
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_OnIsland_m12C121B6C69F1F6449C6BCD57ACA88E2AB751AD5 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12393,7 +12425,7 @@ IL_002c:
 		return (bool)G_B6_0;
 	}
 }
-// Method Definition Index: 51912
+// Method Definition Index: 48787
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_get_NearMarina_m86CADD2D5F371D98B7AC162BC991BB6B4BE591F1 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12448,7 +12480,7 @@ IL_003b:
 		return (bool)G_B4_0;
 	}
 }
-// Method Definition Index: 51913
+// Method Definition Index: 48788
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Awake_m2C80706B0C19519773151A3468DCCDDF7FDE9F33 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12485,7 +12517,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Awake_m2C80706B0C19519773151A
 		return;
 	}
 }
-// Method Definition Index: 51914
+// Method Definition Index: 48789
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Start_m5919D5F9E8233A37F33072B56B28AA9006969CAD (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -12497,7 +12529,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Start_m5919D5F9E8233A37F33072
 		return;
 	}
 }
-// Method Definition Index: 51915
+// Method Definition Index: 48790
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_MergeBoatCatalog_mEF0E4EA943AEB6CB2DC45DB8EAE2D9B6C44BDBDC (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -12907,7 +12939,7 @@ IL_019e:
 		return;
 	}
 }
-// Method Definition Index: 51916
+// Method Definition Index: 48791
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BindSlot_mC2472C296F83E3313115C6D24671EF602BCE1836 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___0_slot, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13031,7 +13063,7 @@ IL_001d:
 		return;
 	}
 }
-// Method Definition Index: 51917
+// Method Definition Index: 48792
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_TogglePlacement_m8995B38C15557940799FEE91742F33AA0BBD3634 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13496,7 +13528,7 @@ IL_028c:
 		return;
 	}
 }
-// Method Definition Index: 51918
+// Method Definition Index: 48793
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_CancelPlacement_m0E07440793A23FBE51D9E44C5C7046D772A3BE35 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -13606,7 +13638,7 @@ IL_0089:
 		return;
 	}
 }
-// Method Definition Index: 51919
+// Method Definition Index: 48794
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Update_mF6738627F6E440C4ADF3347FF42C25A00A2AD3D1 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -14997,7 +15029,7 @@ IL_062d:
 		return;
 	}
 }
-// Method Definition Index: 51920
+// Method Definition Index: 48795
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Place_mA29FED5A5E807303847AE4C1B89C58FDF88E8792 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15355,7 +15387,7 @@ IL_01c4:
 		return;
 	}
 }
-// Method Definition Index: 51921
+// Method Definition Index: 48796
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BeforeTeleport_m95D6145645ECF6C1F70DEA77B15AF148892DE35A (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15416,7 +15448,7 @@ IL_005f:
 		return;
 	}
 }
-// Method Definition Index: 51922
+// Method Definition Index: 48797
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_NearestBoat_mF2E61E341076CFD59A041B4EADA3EB3F19A81D92 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15604,7 +15636,7 @@ IL_00b3:
 		return L_34;
 	}
 }
-// Method Definition Index: 51923
+// Method Definition Index: 48798
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Interact_mBAE756FE2F7D20D0190C5687026D657EAB7587F8 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15752,7 +15784,7 @@ IL_00ad:
 		return;
 	}
 }
-// Method Definition Index: 51924
+// Method Definition Index: 48799
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_CloseShop_mC765A1CED21A46DADC407E37D61F324471397D38 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -15818,7 +15850,7 @@ IL_0041:
 		return;
 	}
 }
-// Method Definition Index: 51925
+// Method Definition Index: 48800
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_RefreshShop_m35BE22F7FB68D13EB27FE1A700222A36C32A8671 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16334,7 +16366,7 @@ IL_027a:
 		return;
 	}
 }
-// Method Definition Index: 51926
+// Method Definition Index: 48801
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_Notice_m5FA5A0E49D3C86BF321F21D0478F81213EE9FFB3 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, String_t* ___0_text, float ___1_seconds, bool ___2_placementOnly, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16414,7 +16446,7 @@ IL_0048:
 		return;
 	}
 }
-// Method Definition Index: 51927
+// Method Definition Index: 48802
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_ClearNotice_mE9CBA8B2C3800E7506B2DFB5F26435003FF25FCB (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16455,7 +16487,7 @@ IL_0022:
 		return;
 	}
 }
-// Method Definition Index: 51928
+// Method Definition Index: 48803
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BuildUI_m85054E7637EA800FCF0EBBF38D87874FCC4F21C9 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16679,7 +16711,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_BuildUI_m85054E7637EA800FCF0E
 		return;
 	}
 }
-// Method Definition Index: 51929
+// Method Definition Index: 48804
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Text_tD60B2346DAA6666BF0D822FF607F0B220C2B9E62* BoatSystem_Label_m0AD2B3303CBB566FDB2F4DA80AD3FC1CABB6B02F (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, String_t* ___1_text, int32_t ___2_size, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___3_position, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___4_dimensions, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16793,7 +16825,7 @@ IL_00ac:
 		return L_30;
 	}
 }
-// Method Definition Index: 51930
+// Method Definition Index: 48805
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Button_t6786514A57F7AFDEE5431112FEA0CAB24F5AE098* BoatSystem_MakeButton_mA1E685645522BA55CDAA530DCE74B80EB741709A (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, String_t* ___1_text, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___2_position, Vector2_t1FD6F485C871E832B347AB2DC8CBA08B739D8DF7 ___3_dimensions, UnityAction_t11A1F3B953B365C072A5DCC32677EE1796A962A7* ___4_action, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16919,7 +16951,7 @@ IL_00c1:
 		return L_38;
 	}
 }
-// Method Definition Index: 51931
+// Method Definition Index: 48806
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem_OnDestroy_mE45683DC5094AFA61A37ABD78F1D06FB083B7600 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -16962,7 +16994,7 @@ IL_0029:
 		return;
 	}
 }
-// Method Definition Index: 51932
+// Method Definition Index: 48807
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem__ctor_m16038DD2B6911A6C917016CE5F89F0BE1A858611 (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -16971,7 +17003,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void BoatSystem__ctor_m16038DD2B6911A6C917016
 		return;
 	}
 }
-// Method Definition Index: 51933
+// Method Definition Index: 48808
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool BoatSystem_U3Cget_SelectedU3Eb__32_0_m11660E141B02F8790ED96416F8E1840F2904223F (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17026,7 +17058,7 @@ IL_0027:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51934
+// Method Definition Index: 48809
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_0__ctor_m0ED27A5DB3D5E7F9ABF749FD1B336859BE89757E (U3CU3Ec__DisplayClass39_0_t9D55F035DF3033D1F1E22BAC2A59D44DA9D43C57* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -17035,7 +17067,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_0__ctor_m0ED27A5
 		return;
 	}
 }
-// Method Definition Index: 51935
+// Method Definition Index: 48810
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_0_U3CMergeBoatCatalogU3Eb__0_mCC183C464A2C19A7641EDF8B3DD5327F0A2C7CA0 (U3CU3Ec__DisplayClass39_0_t9D55F035DF3033D1F1E22BAC2A59D44DA9D43C57* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17085,7 +17117,7 @@ IL_001d:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51936
+// Method Definition Index: 48811
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_1__ctor_m98216B475E45940FE55383273223A91B34C844BB (U3CU3Ec__DisplayClass39_1_t8A5063602A68D721C1AA6A3944E95964C0790BE9* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -17094,7 +17126,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass39_1__ctor_m98216B4
 		return;
 	}
 }
-// Method Definition Index: 51937
+// Method Definition Index: 48812
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_1_U3CMergeBoatCatalogU3Eb__1_mA355DEC1FEAE593DE2813B3BB74F6CED26ECD635 (U3CU3Ec__DisplayClass39_1_t8A5063602A68D721C1AA6A3944E95964C0790BE9* __this, BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* ___0_b, const RuntimeMethod* method) 
 {
 	{
@@ -17118,7 +17150,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CU3Ec__DisplayClass39_1_U3CMergeBoatCa
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51938
+// Method Definition Index: 48813
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0__ctor_mC9591C86A69541797C7FF021CB855D08E070090D (U3CU3Ec__DisplayClass49_0_t6EB029EA2F0FF5BFF6252319CF2EEEB97936492F* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -17127,7 +17159,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0__ctor_mC9591C8
 		return;
 	}
 }
-// Method Definition Index: 51939
+// Method Definition Index: 48814
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CU3Ec__DisplayClass49_0_U3CRefreshShopU3Eb__0_m84ECBE8D14E9085D35529CF9F1245890B966C50A (U3CU3Ec__DisplayClass49_0_t6EB029EA2F0FF5BFF6252319CF2EEEB97936492F* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17280,7 +17312,7 @@ IL_00bb:
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51940
+// Method Definition Index: 48815
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Install_mA2EBAB8F5344A03916D969D80FA761EFFC3D14B4 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17368,7 +17400,7 @@ IL_0037:
 		return;
 	}
 }
-// Method Definition Index: 51941
+// Method Definition Index: 48816
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Start_m5178939F1BD3A67748A1F3982A6EEECA1ED6D8F1 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17389,7 +17421,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_Start_m517893
 		return;
 	}
 }
-// Method Definition Index: 51942
+// Method Definition Index: 48817
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_BuildExtension_mE43064B1EB2703975A2297572CB65BE1F5FECCBC (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -17408,6 +17440,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_BuildExtensio
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_Instantiate_TisMesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4_mCB63EA96E3A7048C1CD837AD0CAF59AA9200DBE8_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Resources_Load_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_m496A3B1B60A28F5E0397043974B848C9157B625A_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var);
@@ -17540,7 +17573,7 @@ IL_004c:
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:32>
-		goto IL_04d1;
+		goto IL_04e7;
 	}
 
 IL_0057:
@@ -17563,305 +17596,313 @@ IL_0057:
 		bool L_17 = V_9;
 		if (!L_17)
 		{
-			goto IL_007a;
+			goto IL_0082;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:34>
-		goto IL_04d1;
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_18 = V_3;
+		il2cpp_codegen_runtime_class_init_inline(OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
+		OceanContactFoam_RegisterExclusion_m23B1587C373C30761BE7B54B268F94F56AB9DB91(L_18, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:34>
+		goto IL_04e7;
 	}
 
-IL_007a:
+IL_0082:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:35>
-		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_18 = __this->___boats;
-		NullCheck(L_18);
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_19 = L_18->___Water;
+		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_19 = __this->___boats;
+		NullCheck(L_19);
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_20 = L_19->___Water;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		bool L_20;
-		L_20 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_19, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
-		if (L_20)
+		bool L_21;
+		L_21 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_20, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		if (L_21)
 		{
-			goto IL_0094;
+			goto IL_009c;
 		}
 	}
 	{
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_21;
-		L_21 = Object_FindFirstObjectByType_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m35858608DA845B899B71A2B4AB60160574CFF299(Object_FindFirstObjectByType_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m35858608DA845B899B71A2B4AB60160574CFF299_RuntimeMethod_var);
-		G_B12_0 = L_21;
-		goto IL_009f;
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_22;
+		L_22 = Object_FindFirstObjectByType_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m35858608DA845B899B71A2B4AB60160574CFF299(Object_FindFirstObjectByType_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m35858608DA845B899B71A2B4AB60160574CFF299_RuntimeMethod_var);
+		G_B12_0 = L_22;
+		goto IL_00a7;
 	}
 
-IL_0094:
+IL_009c:
 	{
-		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_22 = __this->___boats;
-		NullCheck(L_22);
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_23 = L_22->___Water;
-		G_B12_0 = L_23;
+		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_23 = __this->___boats;
+		NullCheck(L_23);
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_24 = L_23->___Water;
+		G_B12_0 = L_24;
 	}
 
-IL_009f:
+IL_00a7:
 	{
 		V_4 = G_B12_0;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:36>
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_24 = V_4;
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_25 = V_4;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		bool L_25;
-		L_25 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_24, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
-		V_10 = L_25;
-		bool L_26 = V_10;
-		if (!L_26)
+		bool L_26;
+		L_26 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_25, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		V_10 = L_26;
+		bool L_27 = V_10;
+		if (!L_27)
 		{
-			goto IL_00b4;
+			goto IL_00bc;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:36>
-		goto IL_04d1;
+		goto IL_04e7;
 	}
 
-IL_00b4:
+IL_00bc:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:37>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_27 = V_3;
-		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_28 = V_4;
-		float L_29;
-		L_29 = MarinaDockExtensionRuntime_FindSafeDockEnd_m4E78D49BE4D2EED2AC90D648A66649497D925652(__this, L_27, L_28, NULL);
-		V_5 = L_29;
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_28 = V_3;
+		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_29 = V_4;
+		float L_30;
+		L_30 = MarinaDockExtensionRuntime_FindSafeDockEnd_m4E78D49BE4D2EED2AC90D648A66649497D925652(__this, L_28, L_29, NULL);
+		V_5 = L_30;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:38>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_30 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
-		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_30, _stringLiteralC0FC80A2F408DA325486EFD4E3C2814BD97DA7DB, NULL);
-		V_6 = L_30;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_31 = (GameObject_t76FEDD663AB33C991A9C9A23129337651094216F*)il2cpp_codegen_object_new(GameObject_t76FEDD663AB33C991A9C9A23129337651094216F_il2cpp_TypeInfo_var);
+		GameObject__ctor_m37D512B05D292F954792225E6C6EEE95293A9B88(L_31, _stringLiteralC0FC80A2F408DA325486EFD4E3C2814BD97DA7DB, NULL);
+		V_6 = L_31;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:38>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_31 = V_6;
-		NullCheck(L_31);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_32;
-		L_32 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_31, NULL);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_33 = V_3;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_32 = V_6;
 		NullCheck(L_32);
-		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_32, L_33, (bool)0, NULL);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_33;
+		L_33 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_32, NULL);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_34 = V_3;
+		NullCheck(L_33);
+		Transform_SetParent_m9BDD7B7476714B2D7919B10BDC22CE75C0A0A195(L_33, L_34, (bool)0, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:39>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_34 = V_1;
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_35 = V_6;
-		NullCheck(L_35);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_36;
-		L_36 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_35, NULL);
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_35 = V_1;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_36 = V_6;
+		NullCheck(L_36);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_37;
+		L_37 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_36, NULL);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_37;
-		L_37 = Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6(L_34, L_36, (bool)0, Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6_RuntimeMethod_var);
-		V_7 = L_37;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_38;
+		L_38 = Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6(L_35, L_37, (bool)0, Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6_RuntimeMethod_var);
+		V_7 = L_38;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:40>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_38 = V_7;
-		NullCheck(L_38);
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_39;
-		L_39 = GameObject_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mC29DC007A56E819962202CC5829E097BA9E61495(L_38, GameObject_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mC29DC007A56E819962202CC5829E097BA9E61495_RuntimeMethod_var);
-		V_11 = L_39;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_39 = V_7;
+		NullCheck(L_39);
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_40;
+		L_40 = GameObject_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mC29DC007A56E819962202CC5829E097BA9E61495(L_39, GameObject_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_mC29DC007A56E819962202CC5829E097BA9E61495_RuntimeMethod_var);
+		V_11 = L_40;
 		V_12 = 0;
-		goto IL_01ef;
+		goto IL_01f7;
 	}
 
-IL_00fc:
+IL_0104:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:40>
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_40 = V_11;
-		int32_t L_41 = V_12;
-		NullCheck(L_40);
-		int32_t L_42 = L_41;
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_43 = (L_40)->GetAt(static_cast<il2cpp_array_size_t>(L_42));
-		V_13 = L_43;
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_41 = V_11;
+		int32_t L_42 = V_12;
+		NullCheck(L_41);
+		int32_t L_43 = L_42;
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_44 = (L_41)->GetAt(static_cast<il2cpp_array_size_t>(L_43));
+		V_13 = L_44;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:42>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_44 = V_13;
-		NullCheck(L_44);
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_45;
-		L_45 = MeshFilter_get_sharedMesh_mE4ED3E7E31C1DE5097E4980DA996E620F7D7CB8C(L_44, NULL);
-		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_45 = V_13;
+		NullCheck(L_45);
 		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_46;
-		L_46 = Object_Instantiate_TisMesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4_mCB63EA96E3A7048C1CD837AD0CAF59AA9200DBE8(L_45, Object_Instantiate_TisMesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4_mCB63EA96E3A7048C1CD837AD0CAF59AA9200DBE8_RuntimeMethod_var);
-		V_14 = L_46;
+		L_46 = MeshFilter_get_sharedMesh_mE4ED3E7E31C1DE5097E4980DA996E620F7D7CB8C(L_45, NULL);
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_47;
+		L_47 = Object_Instantiate_TisMesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4_mCB63EA96E3A7048C1CD837AD0CAF59AA9200DBE8(L_46, Object_Instantiate_TisMesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4_mCB63EA96E3A7048C1CD837AD0CAF59AA9200DBE8_RuntimeMethod_var);
+		V_14 = L_47;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:42>
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_47 = V_14;
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_48 = V_13;
-		NullCheck(L_48);
-		String_t* L_49;
-		L_49 = Object_get_name_mAC2F6B897CF1303BA4249B4CB55271AFACBB6392(L_48, NULL);
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_48 = V_14;
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_49 = V_13;
+		NullCheck(L_49);
 		String_t* L_50;
-		L_50 = String_Concat_m9E3155FB84015C823606188F53B47CB44C444991(L_49, _stringLiteral0A9583A97437B13D9A0DA08C871AD910D86B73A1, NULL);
-		NullCheck(L_47);
-		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_47, L_50, NULL);
+		L_50 = Object_get_name_mAC2F6B897CF1303BA4249B4CB55271AFACBB6392(L_49, NULL);
+		String_t* L_51;
+		L_51 = String_Concat_m9E3155FB84015C823606188F53B47CB44C444991(L_50, _stringLiteral0A9583A97437B13D9A0DA08C871AD910D86B73A1, NULL);
+		NullCheck(L_48);
+		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_48, L_51, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:43>
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_51 = V_14;
-		NullCheck(L_51);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_52;
-		L_52 = Mesh_get_vertices_mA3577F1B08EDDD54E26AEB3F8FFE4EC247D2ABB9(L_51, NULL);
-		V_15 = L_52;
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_52 = V_14;
+		NullCheck(L_52);
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_53;
+		L_53 = Mesh_get_vertices_mA3577F1B08EDDD54E26AEB3F8FFE4EC247D2ABB9(L_52, NULL);
+		V_15 = L_53;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:44>
 		V_16 = 0;
-		goto IL_0191;
+		goto IL_0199;
 	}
 
-IL_0139:
+IL_0141:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:45>
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_53 = V_15;
-		int32_t L_54 = V_16;
-		NullCheck(L_53);
-		float L_55 = ((L_53)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_54)))->___z;
-		V_17 = (bool)((((float)L_55) > ((float)(2.0f)))? 1 : 0);
-		bool L_56 = V_17;
-		if (!L_56)
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_54 = V_15;
+		int32_t L_55 = V_16;
+		NullCheck(L_54);
+		float L_56 = ((L_54)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_55)))->___z;
+		V_17 = (bool)((((float)L_56) > ((float)(2.0f)))? 1 : 0);
+		bool L_57 = V_17;
+		if (!L_57)
 		{
-			goto IL_018b;
+			goto IL_0193;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:45>
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_57 = V_15;
-		int32_t L_58 = V_16;
-		NullCheck(L_57);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_59 = V_15;
-		int32_t L_60 = V_16;
-		NullCheck(L_59);
-		float L_61 = ((L_59)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_60)))->___z;
-		float L_62 = V_5;
-		((L_57)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_58)))->___z = ((float)il2cpp_codegen_add((2.0f), ((float)(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_61, (2.0f))), ((float)il2cpp_codegen_subtract(L_62, (2.0f)))))/(19.9422016f)))));
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_58 = V_15;
+		int32_t L_59 = V_16;
+		NullCheck(L_58);
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_60 = V_15;
+		int32_t L_61 = V_16;
+		NullCheck(L_60);
+		float L_62 = ((L_60)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_61)))->___z;
+		float L_63 = V_5;
+		((L_58)->GetAddressAt(static_cast<il2cpp_array_size_t>(L_59)))->___z = ((float)il2cpp_codegen_add((2.0f), ((float)(((float)il2cpp_codegen_multiply(((float)il2cpp_codegen_subtract(L_62, (2.0f))), ((float)il2cpp_codegen_subtract(L_63, (2.0f)))))/(19.9422016f)))));
 	}
 
-IL_018b:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:44>
-		int32_t L_63 = V_16;
-		V_16 = ((int32_t)il2cpp_codegen_add(L_63, 1));
-	}
-
-IL_0191:
+IL_0193:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:44>
 		int32_t L_64 = V_16;
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_65 = V_15;
-		NullCheck(L_65);
-		V_18 = (bool)((((int32_t)L_64) < ((int32_t)((int32_t)(((RuntimeArray*)L_65)->max_length))))? 1 : 0);
-		bool L_66 = V_18;
-		if (L_66)
+		V_16 = ((int32_t)il2cpp_codegen_add(L_64, 1));
+	}
+
+IL_0199:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:44>
+		int32_t L_65 = V_16;
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_66 = V_15;
+		NullCheck(L_66);
+		V_18 = (bool)((((int32_t)L_65) < ((int32_t)((int32_t)(((RuntimeArray*)L_66)->max_length))))? 1 : 0);
+		bool L_67 = V_18;
+		if (L_67)
 		{
-			goto IL_0139;
+			goto IL_0141;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:46>
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_67 = V_14;
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_68 = V_15;
-		NullCheck(L_67);
-		Mesh_set_vertices_m5BB814D89E9ACA00DBF19F7D8E22CB73AC73FE5C(L_67, L_68, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:46>
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_69 = V_14;
-		NullCheck(L_69);
-		Mesh_RecalculateBounds_mA9B293F57C6CD298AE2D2DB19061FC23B05AB90B(L_69, NULL);
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_68 = V_14;
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_69 = V_15;
+		NullCheck(L_68);
+		Mesh_set_vertices_m5BB814D89E9ACA00DBF19F7D8E22CB73AC73FE5C(L_68, L_69, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:46>
 		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_70 = V_14;
 		NullCheck(L_70);
-		Mesh_RecalculateNormals_m3AA2788914611444E030CA310E03E3CFE683902B(L_70, NULL);
+		Mesh_RecalculateBounds_mA9B293F57C6CD298AE2D2DB19061FC23B05AB90B(L_70, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:46>
 		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_71 = V_14;
 		NullCheck(L_71);
-		Mesh_RecalculateTangents_m92AC413FAF889C5E811D86DCE0C25ED4625825EC(L_71, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:47>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_72 = V_13;
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_73 = V_14;
+		Mesh_RecalculateNormals_m3AA2788914611444E030CA310E03E3CFE683902B(L_71, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:46>
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_72 = V_14;
 		NullCheck(L_72);
-		MeshFilter_set_sharedMesh_m946F7E3F583761982642BDA4753784AF1DF6E16F(L_72, L_73, NULL);
+		Mesh_RecalculateTangents_m92AC413FAF889C5E811D86DCE0C25ED4625825EC(L_72, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:47>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_74 = V_13;
-		NullCheck(L_74);
-		MeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455* L_75;
-		L_75 = Component_GetComponent_TisMeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455_mFC0F02CCD26A6A186031CF43E92D7B60EA1CC370(L_74, Component_GetComponent_TisMeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455_mFC0F02CCD26A6A186031CF43E92D7B60EA1CC370_RuntimeMethod_var);
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_76 = V_14;
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_73 = V_13;
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_74 = V_14;
+		NullCheck(L_73);
+		MeshFilter_set_sharedMesh_m946F7E3F583761982642BDA4753784AF1DF6E16F(L_73, L_74, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:47>
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_75 = V_13;
 		NullCheck(L_75);
-		MeshCollider_set_sharedMesh_m05F87B9AC04139285EBBCC159F77B51C6940E79C(L_75, L_76, NULL);
+		MeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455* L_76;
+		L_76 = Component_GetComponent_TisMeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455_mFC0F02CCD26A6A186031CF43E92D7B60EA1CC370(L_75, Component_GetComponent_TisMeshCollider_tB525E4DDE383252364ED0BDD32CF2B53914EE455_mFC0F02CCD26A6A186031CF43E92D7B60EA1CC370_RuntimeMethod_var);
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_77 = V_14;
+		NullCheck(L_76);
+		MeshCollider_set_sharedMesh_m05F87B9AC04139285EBBCC159F77B51C6940E79C(L_76, L_77, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:47>
-		List_1_t43FB89B126C93A6B04630BC64C751BBE95AFEAF4* L_77 = __this->___stretchedMeshes;
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_78 = V_14;
-		NullCheck(L_77);
-		List_1_Add_m0AA44AA37E6B2131E4A3A94A5D1C42F44336D28A_inline(L_77, L_78, List_1_Add_m0AA44AA37E6B2131E4A3A94A5D1C42F44336D28A_RuntimeMethod_var);
-		int32_t L_79 = V_12;
-		V_12 = ((int32_t)il2cpp_codegen_add(L_79, 1));
+		List_1_t43FB89B126C93A6B04630BC64C751BBE95AFEAF4* L_78 = __this->___stretchedMeshes;
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_79 = V_14;
+		NullCheck(L_78);
+		List_1_Add_m0AA44AA37E6B2131E4A3A94A5D1C42F44336D28A_inline(L_78, L_79, List_1_Add_m0AA44AA37E6B2131E4A3A94A5D1C42F44336D28A_RuntimeMethod_var);
+		int32_t L_80 = V_12;
+		V_12 = ((int32_t)il2cpp_codegen_add(L_80, 1));
 	}
 
-IL_01ef:
+IL_01f7:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:40>
-		int32_t L_80 = V_12;
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_81 = V_11;
-		NullCheck(L_81);
-		if ((((int32_t)L_80) < ((int32_t)((int32_t)(((RuntimeArray*)L_81)->max_length)))))
+		int32_t L_81 = V_12;
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_82 = V_11;
+		NullCheck(L_82);
+		if ((((int32_t)L_81) < ((int32_t)((int32_t)(((RuntimeArray*)L_82)->max_length)))))
 		{
-			goto IL_00fc;
+			goto IL_0104;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:52>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_82 = V_3;
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_83 = V_6;
-		NullCheck(L_83);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_84;
-		L_84 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_83, NULL);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_83 = V_3;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_84 = V_6;
+		NullCheck(L_84);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_85;
+		L_85 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_84, NULL);
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		bool L_85;
-		L_85 = MarinaDockExtensionRuntime_FindClearSite_mA18D394F649C7ADA0AC2184EC8FDCB6511A68B01(L_82, L_84, NULL);
-		V_19 = (bool)((((int32_t)L_85) == ((int32_t)0))? 1 : 0);
-		bool L_86 = V_19;
-		if (!L_86)
+		bool L_86;
+		L_86 = MarinaDockExtensionRuntime_FindClearSite_mA18D394F649C7ADA0AC2184EC8FDCB6511A68B01(L_83, L_85, NULL);
+		V_19 = (bool)((((int32_t)L_86) == ((int32_t)0))? 1 : 0);
+		bool L_87 = V_19;
+		if (!L_87)
 		{
-			goto IL_0232;
+			goto IL_0241;
 		}
 	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:54>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_87 = V_6;
-		NullCheck(L_87);
-		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_87, (bool)0, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:54>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_88 = V_6;
+		NullCheck(L_88);
+		GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_88, (bool)0, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:54>
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_89 = V_6;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_88, NULL);
+		Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_89, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:55>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_90 = V_3;
+		il2cpp_codegen_runtime_class_init_inline(OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
+		OceanContactFoam_RegisterExclusion_m23B1587C373C30761BE7B54B268F94F56AB9DB91(L_90, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:56>
 		il2cpp_codegen_runtime_class_init_inline(Debug_t8394C7EEAECA3689C2C9B9DE9C7166D73596276F_il2cpp_TypeInfo_var);
 		Debug_LogError_mB00B2B4468EF3CAF041B038D840820FB84C924B2(_stringLiteral10E5970159D55D7B0058A6D52B8AFEA982C92541, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:56>
-		goto IL_04d1;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:57>
+		goto IL_04e7;
 	}
 
-IL_0232:
+IL_0241:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:58>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_89 = V_3;
-		NullCheck(L_89);
-		RuntimeObject* L_90;
-		L_90 = Transform_GetEnumerator_mA7E1C882ACA0C33E284711CD09971DEA3FFEF404(L_89, NULL);
-		V_20 = L_90;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:59>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_91 = V_3;
+		NullCheck(L_91);
+		RuntimeObject* L_92;
+		L_92 = Transform_GetEnumerator_mA7E1C882ACA0C33E284711CD09971DEA3FFEF404(L_91, NULL);
+		V_20 = L_92;
 	}
 	{
 		auto __finallyBlock = il2cpp::utils::Finally([&]
 		{
 
-FINALLY_02f8:
+FINALLY_0307:
 			{
 				{
-					RuntimeObject* L_91 = V_20;
-					V_25 = ((RuntimeObject*)IsInst((RuntimeObject*)L_91, IDisposable_t030E0496B4E0E4E4F086825007979AF51F7248C5_il2cpp_TypeInfo_var));
-					RuntimeObject* L_92 = V_25;
-					if (!L_92)
+					RuntimeObject* L_93 = V_20;
+					V_25 = ((RuntimeObject*)IsInst((RuntimeObject*)L_93, IDisposable_t030E0496B4E0E4E4F086825007979AF51F7248C5_il2cpp_TypeInfo_var));
+					RuntimeObject* L_94 = V_25;
+					if (!L_94)
 					{
-						goto IL_030d;
+						goto IL_031c;
 					}
 				}
 				{
-					RuntimeObject* L_93 = V_25;
-					NullCheck(L_93);
-					InterfaceActionInvoker0::Invoke(0, IDisposable_t030E0496B4E0E4E4F086825007979AF51F7248C5_il2cpp_TypeInfo_var, L_93);
+					RuntimeObject* L_95 = V_25;
+					NullCheck(L_95);
+					InterfaceActionInvoker0::Invoke(0, IDisposable_t030E0496B4E0E4E4F086825007979AF51F7248C5_il2cpp_TypeInfo_var, L_95);
 				}
 
-IL_030d:
+IL_031c:
 				{
 					return;
 				}
@@ -17870,152 +17911,152 @@ IL_030d:
 		try
 		{
 			{
-				goto IL_02ea_1;
+				goto IL_02f9_1;
 			}
 
-IL_0240_1:
+IL_024f_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:58>
-				RuntimeObject* L_94 = V_20;
-				NullCheck(L_94);
-				RuntimeObject* L_95;
-				L_95 = InterfaceFuncInvoker0< RuntimeObject* >::Invoke(1, IEnumerator_t7B609C2FFA6EB5167D9C62A0C32A21DE2F666DAA_il2cpp_TypeInfo_var, L_94);
-				V_21 = ((Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)CastclassClass((RuntimeObject*)L_95, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1_il2cpp_TypeInfo_var));
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:60>
-				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_96 = V_21;
-				GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_97 = V_6;
-				NullCheck(L_97);
-				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_98;
-				L_98 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_97, NULL);
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:59>
+				RuntimeObject* L_96 = V_20;
+				NullCheck(L_96);
+				RuntimeObject* L_97;
+				L_97 = InterfaceFuncInvoker0< RuntimeObject* >::Invoke(1, IEnumerator_t7B609C2FFA6EB5167D9C62A0C32A21DE2F666DAA_il2cpp_TypeInfo_var, L_96);
+				V_21 = ((Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1*)CastclassClass((RuntimeObject*)L_97, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1_il2cpp_TypeInfo_var));
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:61>
+				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_98 = V_21;
+				GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_99 = V_6;
+				NullCheck(L_99);
+				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_100;
+				L_100 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_99, NULL);
 				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-				bool L_99;
-				L_99 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_96, L_98, NULL);
-				V_23 = L_99;
-				bool L_100 = V_23;
-				if (!L_100)
+				bool L_101;
+				L_101 = Object_op_Equality_mB6120F782D83091EF56A198FCEBCF066DB4A9605(L_98, L_100, NULL);
+				V_23 = L_101;
+				bool L_102 = V_23;
+				if (!L_102)
 				{
-					goto IL_0268_1;
+					goto IL_0277_1;
 				}
 			}
-			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:60>
-				goto IL_02ea_1;
-			}
-
-IL_0268_1:
 			{
 				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:61>
-				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_101 = V_21;
-				NullCheck(L_101);
-				String_t* L_102;
-				L_102 = Object_get_name_mAC2F6B897CF1303BA4249B4CB55271AFACBB6392(L_101, NULL);
-				V_22 = L_102;
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:62>
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:63>
-				String_t* L_103 = V_22;
-				bool L_104;
-				L_104 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_103, _stringLiteralAFAD837944812EF84A20250525A1A40BE1B5AD42, NULL);
-				if (L_104)
-				{
-					goto IL_02c5_1;
-				}
+				goto IL_02f9_1;
 			}
+
+IL_0277_1:
 			{
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:62>
+				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_103 = V_21;
+				NullCheck(L_103);
+				String_t* L_104;
+				L_104 = Object_get_name_mAC2F6B897CF1303BA4249B4CB55271AFACBB6392(L_103, NULL);
+				V_22 = L_104;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:63>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:64>
 				String_t* L_105 = V_22;
 				bool L_106;
-				L_106 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_105, _stringLiteral87F72C2F37866741F6417B72D1B0BACD26A8F621, NULL);
+				L_106 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_105, _stringLiteralAFAD837944812EF84A20250525A1A40BE1B5AD42, NULL);
 				if (L_106)
 				{
-					goto IL_02c5_1;
+					goto IL_02d4_1;
 				}
 			}
 			{
 				String_t* L_107 = V_22;
 				bool L_108;
-				L_108 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_107, _stringLiteralAD855C3F574D2FFDB9E53E42F0629A6D8A74D592, NULL);
+				L_108 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_107, _stringLiteral87F72C2F37866741F6417B72D1B0BACD26A8F621, NULL);
 				if (L_108)
 				{
-					goto IL_02c5_1;
+					goto IL_02d4_1;
 				}
 			}
 			{
 				String_t* L_109 = V_22;
-				NullCheck(L_109);
 				bool L_110;
-				L_110 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_109, _stringLiteral81A354118CBA7A8ACD831B42EB12877794643517, NULL);
+				L_110 = String_op_Equality_m030E1B219352228970A076136E455C4E568C02C1(L_109, _stringLiteralAD855C3F574D2FFDB9E53E42F0629A6D8A74D592, NULL);
 				if (L_110)
 				{
-					goto IL_02c5_1;
+					goto IL_02d4_1;
 				}
 			}
 			{
 				String_t* L_111 = V_22;
 				NullCheck(L_111);
 				bool L_112;
-				L_112 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_111, _stringLiteral73093D95D04BFF35983075E48DF301FEB159C7EC, NULL);
+				L_112 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_111, _stringLiteral81A354118CBA7A8ACD831B42EB12877794643517, NULL);
 				if (L_112)
 				{
-					goto IL_02c5_1;
+					goto IL_02d4_1;
 				}
 			}
 			{
 				String_t* L_113 = V_22;
 				NullCheck(L_113);
 				bool L_114;
-				L_114 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_113, _stringLiteralFFE393283D25B621DC32D68E454ED8914BED1296, NULL);
-				G_B35_0 = ((int32_t)(L_114));
-				goto IL_02c6_1;
+				L_114 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_113, _stringLiteral73093D95D04BFF35983075E48DF301FEB159C7EC, NULL);
+				if (L_114)
+				{
+					goto IL_02d4_1;
+				}
+			}
+			{
+				String_t* L_115 = V_22;
+				NullCheck(L_115);
+				bool L_116;
+				L_116 = String_StartsWith_mF75DBA1EB709811E711B44E26FF919C88A8E65C0(L_115, _stringLiteralFFE393283D25B621DC32D68E454ED8914BED1296, NULL);
+				G_B35_0 = ((int32_t)(L_116));
+				goto IL_02d5_1;
 			}
 
-IL_02c5_1:
+IL_02d4_1:
 			{
 				G_B35_0 = 1;
 			}
 
-IL_02c6_1:
+IL_02d5_1:
 			{
 				V_24 = (bool)G_B35_0;
-				bool L_115 = V_24;
-				if (!L_115)
+				bool L_117 = V_24;
+				if (!L_117)
 				{
-					goto IL_02e9_1;
+					goto IL_02f8_1;
 				}
 			}
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:64>
-				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_116 = V_21;
-				NullCheck(L_116);
-				GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_117;
-				L_117 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_116, NULL);
-				NullCheck(L_117);
-				GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_117, (bool)0, NULL);
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:64>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:65>
 				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_118 = V_21;
 				NullCheck(L_118);
 				GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_119;
 				L_119 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_118, NULL);
-				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-				Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_119, NULL);
-			}
-
-IL_02e9_1:
-			{
-			}
-
-IL_02ea_1:
-			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:58>
-				RuntimeObject* L_120 = V_20;
+				NullCheck(L_119);
+				GameObject_SetActive_m638E92E1E75E519E5B24CF150B08CA8E0CDFAB92(L_119, (bool)0, NULL);
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:65>
+				Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_120 = V_21;
 				NullCheck(L_120);
-				bool L_121;
-				L_121 = InterfaceFuncInvoker0< bool >::Invoke(0, IEnumerator_t7B609C2FFA6EB5167D9C62A0C32A21DE2F666DAA_il2cpp_TypeInfo_var, L_120);
-				if (L_121)
+				GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_121;
+				L_121 = Component_get_gameObject_m57AEFBB14DB39EC476F740BA000E170355DE691B(L_120, NULL);
+				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+				Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_121, NULL);
+			}
+
+IL_02f8_1:
+			{
+			}
+
+IL_02f9_1:
+			{
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:59>
+				RuntimeObject* L_122 = V_20;
+				NullCheck(L_122);
+				bool L_123;
+				L_123 = InterfaceFuncInvoker0< bool >::Invoke(0, IEnumerator_t7B609C2FFA6EB5167D9C62A0C32A21DE2F666DAA_il2cpp_TypeInfo_var, L_122);
+				if (L_123)
 				{
-					goto IL_0240_1;
+					goto IL_024f_1;
 				}
 			}
 			{
-				goto IL_030e;
+				goto IL_031d;
 			}
 		}
 		catch(Il2CppExceptionWrapper& e)
@@ -18024,307 +18065,311 @@ IL_02ea_1:
 		}
 	}
 
-IL_030e:
+IL_031d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:66>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_122 = V_3;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:67>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_124 = V_3;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		MarinaDockExtensionRuntime_FitRamp_mE3BEBF38EB0E97595F13B0F9365BD8559AC86212(L_122, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_123 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_124 = L_123;
-		NullCheck(L_124);
-		(L_124)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-4.6500001f));
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_125 = L_124;
-		NullCheck(L_125);
-		(L_125)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(4.6500001f));
-		V_26 = L_125;
-		V_27 = 0;
-		goto IL_038f;
-	}
-
-IL_0333:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_126 = V_26;
-		int32_t L_127 = V_27;
-		NullCheck(L_126);
-		int32_t L_128 = L_127;
-		float L_129 = (L_126)->GetAt(static_cast<il2cpp_array_size_t>(L_128));
-		V_28 = L_129;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_130 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_131 = L_130;
-		NullCheck(L_131);
-		(L_131)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-4.5f));
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_132 = L_131;
-		NullCheck(L_132);
-		(L_132)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(1.39999998f));
-		V_29 = L_132;
-		V_30 = 0;
-		goto IL_0381;
-	}
-
-IL_0358:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_133 = V_29;
-		int32_t L_134 = V_30;
-		NullCheck(L_133);
-		int32_t L_135 = L_134;
-		float L_136 = (L_133)->GetAt(static_cast<il2cpp_array_size_t>(L_135));
-		V_31 = L_136;
+		MarinaDockExtensionRuntime_FitRamp_mE3BEBF38EB0E97595F13B0F9365BD8559AC86212(L_124, NULL);
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_137 = V_6;
-		NullCheck(L_137);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_138;
-		L_138 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_137, NULL);
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_139 = V_2;
-		float L_140 = V_28;
-		float L_141 = V_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_142;
-		memset((&L_142), 0, sizeof(L_142));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_142), L_140, (0.0f), L_141, NULL);
-		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_138, L_139, L_142, NULL);
-		int32_t L_143 = V_30;
-		V_30 = ((int32_t)il2cpp_codegen_add(L_143, 1));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_125 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_126 = L_125;
+		NullCheck(L_126);
+		(L_126)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-4.6500001f));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_127 = L_126;
+		NullCheck(L_127);
+		(L_127)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(4.6500001f));
+		V_26 = L_127;
+		V_27 = 0;
+		goto IL_039e;
 	}
 
-IL_0381:
+IL_0342:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		int32_t L_144 = V_30;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_145 = V_29;
-		NullCheck(L_145);
-		if ((((int32_t)L_144) < ((int32_t)((int32_t)(((RuntimeArray*)L_145)->max_length)))))
-		{
-			goto IL_0358;
-		}
-	}
-	{
-		int32_t L_146 = V_27;
-		V_27 = ((int32_t)il2cpp_codegen_add(L_146, 1));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_128 = V_26;
+		int32_t L_129 = V_27;
+		NullCheck(L_128);
+		int32_t L_130 = L_129;
+		float L_131 = (L_128)->GetAt(static_cast<il2cpp_array_size_t>(L_130));
+		V_28 = L_131;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_132 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_133 = L_132;
+		NullCheck(L_133);
+		(L_133)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-4.5f));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_134 = L_133;
+		NullCheck(L_134);
+		(L_134)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(1.39999998f));
+		V_29 = L_134;
+		V_30 = 0;
+		goto IL_0390;
 	}
 
-IL_038f:
+IL_0367:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:69>
-		int32_t L_147 = V_27;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_148 = V_26;
-		NullCheck(L_148);
-		if ((((int32_t)L_147) < ((int32_t)((int32_t)(((RuntimeArray*)L_148)->max_length)))))
-		{
-			goto IL_0333;
-		}
-	}
-	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_135 = V_29;
+		int32_t L_136 = V_30;
+		NullCheck(L_135);
+		int32_t L_137 = L_136;
+		float L_138 = (L_135)->GetAt(static_cast<il2cpp_array_size_t>(L_137));
+		V_31 = L_138;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:71>
-		V_32 = (4.0f);
-		goto IL_03f9;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_139 = V_6;
+		NullCheck(L_139);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_140;
+		L_140 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_139, NULL);
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_141 = V_2;
+		float L_142 = V_28;
+		float L_143 = V_31;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_144;
+		memset((&L_144), 0, sizeof(L_144));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_144), L_142, (0.0f), L_143, NULL);
+		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
+		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_140, L_141, L_144, NULL);
+		int32_t L_145 = V_30;
+		V_30 = ((int32_t)il2cpp_codegen_add(L_145, 1));
 	}
 
-IL_03a0:
+IL_0390:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:72>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_149 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_150 = L_149;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
+		int32_t L_146 = V_30;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_147 = V_29;
+		NullCheck(L_147);
+		if ((((int32_t)L_146) < ((int32_t)((int32_t)(((RuntimeArray*)L_147)->max_length)))))
+		{
+			goto IL_0367;
+		}
+	}
+	{
+		int32_t L_148 = V_27;
+		V_27 = ((int32_t)il2cpp_codegen_add(L_148, 1));
+	}
+
+IL_039e:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:70>
+		int32_t L_149 = V_27;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_150 = V_26;
 		NullCheck(L_150);
-		(L_150)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-0.49000001f));
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_151 = L_150;
-		NullCheck(L_151);
-		(L_151)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(0.49000001f));
-		V_33 = L_151;
-		V_34 = 0;
-		goto IL_03e7;
+		if ((((int32_t)L_149) < ((int32_t)((int32_t)(((RuntimeArray*)L_150)->max_length)))))
+		{
+			goto IL_0342;
+		}
 	}
-
-IL_03be:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:72>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_152 = V_33;
-		int32_t L_153 = V_34;
+		V_32 = (4.0f);
+		goto IL_0408;
+	}
+
+IL_03af:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_151 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_152 = L_151;
 		NullCheck(L_152);
-		int32_t L_154 = L_153;
-		float L_155 = (L_152)->GetAt(static_cast<il2cpp_array_size_t>(L_154));
-		V_35 = L_155;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:72>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_156 = V_6;
-		NullCheck(L_156);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_157;
-		L_157 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_156, NULL);
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_158 = V_2;
-		float L_159 = V_35;
-		float L_160 = V_32;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_161;
-		memset((&L_161), 0, sizeof(L_161));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_161), L_159, (0.0f), L_160, NULL);
+		(L_152)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-0.49000001f));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_153 = L_152;
+		NullCheck(L_153);
+		(L_153)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(0.49000001f));
+		V_33 = L_153;
+		V_34 = 0;
+		goto IL_03f6;
+	}
+
+IL_03cd:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_154 = V_33;
+		int32_t L_155 = V_34;
+		NullCheck(L_154);
+		int32_t L_156 = L_155;
+		float L_157 = (L_154)->GetAt(static_cast<il2cpp_array_size_t>(L_156));
+		V_35 = L_157;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_158 = V_6;
+		NullCheck(L_158);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_159;
+		L_159 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_158, NULL);
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_160 = V_2;
+		float L_161 = V_35;
+		float L_162 = V_32;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_163;
+		memset((&L_163), 0, sizeof(L_163));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_163), L_161, (0.0f), L_162, NULL);
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_157, L_158, L_161, NULL);
-		int32_t L_162 = V_34;
-		V_34 = ((int32_t)il2cpp_codegen_add(L_162, 1));
+		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_159, L_160, L_163, NULL);
+		int32_t L_164 = V_34;
+		V_34 = ((int32_t)il2cpp_codegen_add(L_164, 1));
 	}
 
-IL_03e7:
+IL_03f6:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
+		int32_t L_165 = V_34;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_166 = V_33;
+		NullCheck(L_166);
+		if ((((int32_t)L_165) < ((int32_t)((int32_t)(((RuntimeArray*)L_166)->max_length)))))
+		{
+			goto IL_03cd;
+		}
+	}
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:72>
-		int32_t L_163 = V_34;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_164 = V_33;
-		NullCheck(L_164);
-		if ((((int32_t)L_163) < ((int32_t)((int32_t)(((RuntimeArray*)L_164)->max_length)))))
+		float L_167 = V_32;
+		V_32 = ((float)il2cpp_codegen_add(L_167, (4.0f)));
+	}
+
+IL_0408:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:72>
+		float L_168 = V_32;
+		float L_169 = V_5;
+		V_36 = (bool)((((float)L_168) < ((float)((float)il2cpp_codegen_subtract(L_169, (5.0f)))))? 1 : 0);
+		bool L_170 = V_36;
+		if (L_170)
 		{
-			goto IL_03be;
+			goto IL_03af;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:71>
-		float L_165 = V_32;
-		V_32 = ((float)il2cpp_codegen_add(L_165, (4.0f)));
-	}
-
-IL_03f9:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:71>
-		float L_166 = V_32;
-		float L_167 = V_5;
-		V_36 = (bool)((((float)L_166) < ((float)((float)il2cpp_codegen_subtract(L_167, (5.0f)))))? 1 : 0);
-		bool L_168 = V_36;
-		if (L_168)
-		{
-			goto IL_03a0;
-		}
-	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_169 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_170 = L_169;
-		NullCheck(L_170);
-		(L_170)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-1.39999998f));
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_171 = L_170;
-		NullCheck(L_171);
-		(L_171)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(1.39999998f));
-		V_37 = L_171;
-		V_38 = 0;
-		goto IL_0458;
-	}
-
-IL_0429:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_172 = V_37;
-		int32_t L_173 = V_38;
-		NullCheck(L_172);
-		int32_t L_174 = L_173;
-		float L_175 = (L_172)->GetAt(static_cast<il2cpp_array_size_t>(L_174));
-		V_39 = L_175;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:74>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_176 = V_6;
-		NullCheck(L_176);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_177;
-		L_177 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_176, NULL);
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_178 = V_2;
-		float L_179 = V_39;
-		float L_180 = V_5;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_181;
-		memset((&L_181), 0, sizeof(L_181));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_181), L_179, (0.0f), ((float)il2cpp_codegen_subtract(L_180, (1.0f))), NULL);
-		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_177, L_178, L_181, NULL);
-		int32_t L_182 = V_38;
-		V_38 = ((int32_t)il2cpp_codegen_add(L_182, 1));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_171 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)2);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_172 = L_171;
+		NullCheck(L_172);
+		(L_172)->SetAt(static_cast<il2cpp_array_size_t>(0), (float)(-1.39999998f));
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_173 = L_172;
+		NullCheck(L_173);
+		(L_173)->SetAt(static_cast<il2cpp_array_size_t>(1), (float)(1.39999998f));
+		V_37 = L_173;
+		V_38 = 0;
+		goto IL_0467;
 	}
 
-IL_0458:
+IL_0438:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:73>
-		int32_t L_183 = V_38;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_184 = V_37;
-		NullCheck(L_184);
-		if ((((int32_t)L_183) < ((int32_t)((int32_t)(((RuntimeArray*)L_184)->max_length)))))
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:74>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_174 = V_37;
+		int32_t L_175 = V_38;
+		NullCheck(L_174);
+		int32_t L_176 = L_175;
+		float L_177 = (L_174)->GetAt(static_cast<il2cpp_array_size_t>(L_176));
+		V_39 = L_177;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:75>
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_178 = V_6;
+		NullCheck(L_178);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_179;
+		L_179 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_178, NULL);
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_180 = V_2;
+		float L_181 = V_39;
+		float L_182 = V_5;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_183;
+		memset((&L_183), 0, sizeof(L_183));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_183), L_181, (0.0f), ((float)il2cpp_codegen_subtract(L_182, (1.0f))), NULL);
+		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
+		MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1(L_179, L_180, L_183, NULL);
+		int32_t L_184 = V_38;
+		V_38 = ((int32_t)il2cpp_codegen_add(L_184, 1));
+	}
+
+IL_0467:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:74>
+		int32_t L_185 = V_38;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_186 = V_37;
+		NullCheck(L_186);
+		if ((((int32_t)L_185) < ((int32_t)((int32_t)(((RuntimeArray*)L_186)->max_length)))))
 		{
-			goto IL_0429;
+			goto IL_0438;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:75>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_185 = V_6;
-		NullCheck(L_185);
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_186;
-		L_186 = GameObject_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_mEB861FF41A6625D346B9D34D7A5A1E761E27963D(L_185, GameObject_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_mEB861FF41A6625D346B9D34D7A5A1E761E27963D_RuntimeMethod_var);
-		__this->___solids = L_186;
-		Il2CppCodeGenWriteBarrier((void**)(&__this->___solids), (void*)L_186);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:75>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:76>
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_187 = V_6;
+		NullCheck(L_187);
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_188;
+		L_188 = GameObject_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_mEB861FF41A6625D346B9D34D7A5A1E761E27963D(L_187, GameObject_GetComponentsInChildren_TisCollider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76_mEB861FF41A6625D346B9D34D7A5A1E761E27963D_RuntimeMethod_var);
+		__this->___solids = L_188;
+		Il2CppCodeGenWriteBarrier((void**)(&__this->___solids), (void*)L_188);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:76>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active = __this;
 		Il2CppCodeGenWriteBarrier((void**)(&((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active), (void*)__this);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:76>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:77>
 		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
 		Physics_SyncTransforms_mB88B6B27C24234D18846F614F9AE674976A5F1CA(NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:77>
-		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_187 = V_6;
-		NullCheck(L_187);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_188;
-		L_188 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_187, NULL);
-		NullCheck(L_188);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_189;
-		L_189 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_188, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_190;
-		L_190 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
-		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_191;
-		memset((&L_191), 0, sizeof(L_191));
-		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&L_191), L_189, L_190, NULL);
-		__this->___worldBounds = L_191;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:78>
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_192 = __this->___solids;
-		V_40 = L_192;
+		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_189 = V_6;
+		NullCheck(L_189);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_190;
+		L_190 = GameObject_get_transform_m0BC10ADFA1632166AE5544BDF9038A2650C2AE56(L_189, NULL);
+		NullCheck(L_190);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_191;
+		L_191 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_190, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_192;
+		L_192 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
+		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_193;
+		memset((&L_193), 0, sizeof(L_193));
+		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&L_193), L_191, L_192, NULL);
+		__this->___worldBounds = L_193;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:79>
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_194 = __this->___solids;
+		V_40 = L_194;
 		V_41 = 0;
-		goto IL_04c3;
+		goto IL_04d2;
 	}
 
-IL_04a3:
+IL_04b2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:78>
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_193 = V_40;
-		int32_t L_194 = V_41;
-		NullCheck(L_193);
-		int32_t L_195 = L_194;
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_196 = (L_193)->GetAt(static_cast<il2cpp_array_size_t>(L_195));
-		V_42 = L_196;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:78>
-		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3* L_197 = (Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3*)(&__this->___worldBounds);
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_198 = V_42;
-		NullCheck(L_198);
-		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_199;
-		L_199 = Collider_get_bounds_mCC32F749590E9A85C7930E5355661367F78E4CB4(L_198, NULL);
-		Bounds_Encapsulate_m7C70C382B9380A8C962074C78E189B53CE8F7A22_inline(L_197, L_199, NULL);
-		int32_t L_200 = V_41;
-		V_41 = ((int32_t)il2cpp_codegen_add(L_200, 1));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:79>
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_195 = V_40;
+		int32_t L_196 = V_41;
+		NullCheck(L_195);
+		int32_t L_197 = L_196;
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_198 = (L_195)->GetAt(static_cast<il2cpp_array_size_t>(L_197));
+		V_42 = L_198;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:79>
+		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3* L_199 = (Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3*)(&__this->___worldBounds);
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_200 = V_42;
+		NullCheck(L_200);
+		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_201;
+		L_201 = Collider_get_bounds_mCC32F749590E9A85C7930E5355661367F78E4CB4(L_200, NULL);
+		Bounds_Encapsulate_m7C70C382B9380A8C962074C78E189B53CE8F7A22_inline(L_199, L_201, NULL);
+		int32_t L_202 = V_41;
+		V_41 = ((int32_t)il2cpp_codegen_add(L_202, 1));
 	}
 
-IL_04c3:
+IL_04d2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:78>
-		int32_t L_201 = V_41;
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_202 = V_40;
-		NullCheck(L_202);
-		if ((((int32_t)L_201) < ((int32_t)((int32_t)(((RuntimeArray*)L_202)->max_length)))))
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:79>
+		int32_t L_203 = V_41;
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_204 = V_40;
+		NullCheck(L_204);
+		if ((((int32_t)L_203) < ((int32_t)((int32_t)(((RuntimeArray*)L_204)->max_length)))))
 		{
-			goto IL_04a3;
+			goto IL_04b2;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:79>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:80>
 		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
 		Physics_SyncTransforms_mB88B6B27C24234D18846F614F9AE674976A5F1CA(NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:81>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_205 = V_3;
+		il2cpp_codegen_runtime_class_init_inline(OceanContactFoam_t26BF0423AB98B19E441B511183EF44F435E00D39_il2cpp_TypeInfo_var);
+		OceanContactFoam_RegisterExclusion_m23B1587C373C30761BE7B54B268F94F56AB9DB91(L_205, NULL);
 	}
 
-IL_04d1:
+IL_04e7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:80>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:82>
 		return;
 	}
 }
-// Method Definition Index: 51943
+// Method Definition Index: 48818
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3B3189ADCD2D828DD5D30F124209A7B0C33A1 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_parent, GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* ___1_prefab, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___2_local, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18342,7 +18387,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3
 	float V_2 = 0.0f;
 	GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* V_3 = NULL;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:84>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:86>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = ___0_parent;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1 = ___2_local;
 		float L_2 = L_1.___x;
@@ -18355,31 +18400,31 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6;
 		L_6 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_0, L_5, NULL);
 		V_0 = L_6;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:85>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:87>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		float L_8;
 		L_8 = MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1(L_7, NULL);
 		V_1 = ((float)il2cpp_codegen_subtract(L_8, (0.300000012f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:86>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:88>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9 = V_0;
 		float L_10 = L_9.___y;
 		float L_11 = V_1;
 		float L_12;
 		L_12 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline((0.400000006f), ((float)il2cpp_codegen_subtract(L_10, L_11)), NULL);
 		V_2 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:87>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:89>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_13 = ___1_prefab;
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_14 = ___0_parent;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_15;
 		L_15 = Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6(L_13, L_14, (bool)0, Object_Instantiate_TisGameObject_t76FEDD663AB33C991A9C9A23129337651094216F_mCE536F8736F04AC3C46EED6FD5FA02F5D22A84C6_RuntimeMethod_var);
 		V_3 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:87>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:89>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_16 = V_3;
 		NullCheck(L_16);
 		Object_set_name_mC79E6DC8FFD72479C90F0C4CC7F42A0FEAF5AE47(L_16, _stringLiteral85319649DD886C0D0ABE1701AC0E16850A923619, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:88>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:90>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_17 = V_3;
 		NullCheck(L_17);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_18;
@@ -18396,7 +18441,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_26), L_20, ((float)il2cpp_codegen_subtract(L_22, ((float)il2cpp_codegen_multiply(L_23, (0.5f))))), L_25, NULL);
 		NullCheck(L_18);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_18, L_26, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:89>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:91>
 		GameObject_t76FEDD663AB33C991A9C9A23129337651094216F* L_27 = V_3;
 		NullCheck(L_27);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_28;
@@ -18414,11 +18459,11 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_AddPost_m81A3
 		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_34), (0.239999995f), ((float)(L_29/L_33)), (0.239999995f), NULL);
 		NullCheck(L_28);
 		Transform_set_localScale_mBA79E811BAF6C47B80FF76414C12B47B3CD03633(L_28, L_34, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:90>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:92>
 		return;
 	}
 }
-// Method Definition Index: 51944
+// Method Definition Index: 48819
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_point, const RuntimeMethod* method) 
 {
 	TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* V_0 = NULL;
@@ -18432,7 +18477,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_Ground_m4B63
 	float V_6 = 0.0f;
 	int32_t G_B6_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:94>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:96>
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_0;
 		L_0 = Terrain_get_activeTerrains_mB90A9BC89764F626D13F3EF1420EA8D3E186B701(NULL);
 		V_0 = L_0;
@@ -18442,14 +18487,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_Ground_m4B63
 
 IL_000f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:94>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:96>
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_1 = V_0;
 		int32_t L_2 = V_1;
 		NullCheck(L_1);
 		int32_t L_3 = L_2;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_4 = (L_1)->GetAt(static_cast<il2cpp_array_size_t>(L_3));
 		V_2 = L_4;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:96>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:98>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = ___0_point;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_6 = V_2;
 		NullCheck(L_6);
@@ -18461,7 +18506,7 @@ IL_000f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9;
 		L_9 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_5, L_8, NULL);
 		V_3 = L_9;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:96>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:98>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_10 = V_2;
 		NullCheck(L_10);
 		TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* L_11;
@@ -18470,7 +18515,7 @@ IL_000f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_12;
 		L_12 = TerrainData_get_size_mCD3977F344B9DEBFF61DD537D03FEB9473838DA5(L_11, NULL);
 		V_4 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:97>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:99>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13 = V_3;
 		float L_14 = L_13.___x;
 		if ((!(((float)L_14) >= ((float)(0.0f)))))
@@ -18520,7 +18565,7 @@ IL_0071:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:97>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:99>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_26 = V_2;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_27 = ___0_point;
 		NullCheck(L_26);
@@ -18546,7 +18591,7 @@ IL_0093:
 
 IL_0098:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:94>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:96>
 		int32_t L_34 = V_1;
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_35 = V_0;
 		NullCheck(L_35);
@@ -18556,7 +18601,7 @@ IL_0098:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:99>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:101>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36 = ___0_point;
 		float L_37 = L_36.___y;
 		V_6 = ((float)il2cpp_codegen_subtract(L_37, (8.0f)));
@@ -18565,12 +18610,12 @@ IL_0098:
 
 IL_00b1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:100>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:102>
 		float L_38 = V_6;
 		return L_38;
 	}
 }
-// Method Definition Index: 51945
+// Method Definition Index: 48820
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_FindClearSite_mA18D394F649C7ADA0AC2184EC8FDCB6511A68B01 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_marina, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___1_dock, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -18581,6 +18626,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_FindClearSite
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentInParent_TisOceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1_m7084C17400147DB9E8FE99DD98800E2A26AFA0EE_RuntimeMethod_var);
+		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentInParent_TisShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1_m5DDD76CEA102BC93B42186E5FB6CC74F40ECC408_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_m68EDB1BC21CDD271AF95048193430D2BFD67C99E_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7_RuntimeMethod_var);
 		il2cpp_codegen_initialize_runtime_metadata((uintptr_t*)&Enumerator_Dispose_m39794B37E9AE88ED22C03824DE8D637C0DADBAF0_RuntimeMethod_var);
@@ -18677,48 +18723,49 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_FindClearSite
 	bool V_54 = false;
 	bool V_55 = false;
 	bool V_56 = false;
-	int32_t G_B9_0 = 0;
-	int32_t G_B26_0 = 0;
-	int32_t G_B56_0 = 0;
+	int32_t G_B10_0 = 0;
+	int32_t G_B27_0 = 0;
+	int32_t G_B57_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:104>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:106>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = ___0_marina;
 		NullCheck(L_0);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_1;
 		L_1 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_0, NULL);
 		V_0 = L_1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:106>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:110>
 		List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93* L_2 = (List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93*)il2cpp_codegen_object_new(List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93_il2cpp_TypeInfo_var);
 		List_1__ctor_m803E10F7A50EB22BF82C0C1AB251D5407B4496DE(L_2, List_1__ctor_m803E10F7A50EB22BF82C0C1AB251D5407B4496DE_RuntimeMethod_var);
 		V_1 = L_2;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:107>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:111>
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_3;
 		L_3 = Object_FindObjectsByType_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m83F1834AC55F185E9E67535775869A690A0396A9(0, Object_FindObjectsByType_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m83F1834AC55F185E9E67535775869A690A0396A9_RuntimeMethod_var);
 		V_4 = L_3;
 		V_5 = 0;
-		goto IL_00ce;
+		goto IL_00dd;
 	}
 
 IL_001f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:107>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:111>
 		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_4 = V_4;
 		int32_t L_5 = V_5;
 		NullCheck(L_4);
 		int32_t L_6 = L_5;
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_7 = (L_4)->GetAt(static_cast<il2cpp_array_size_t>(L_6));
 		V_6 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:109>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:110>
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:111>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:113>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:114>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:115>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:116>
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_8 = V_6;
 		NullCheck(L_8);
 		bool L_9;
 		L_9 = Renderer_get_enabled_mFDDF363859AEC88105A925FA7EA341C077B09B54(L_8, NULL);
 		if (!L_9)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
@@ -18731,7 +18778,7 @@ IL_001f:
 		L_12 = GameObject_get_activeInHierarchy_m49250F4F168DCC5388D5BE4F6A5681386907B109(L_11, NULL);
 		if (!L_12)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
@@ -18745,7 +18792,7 @@ IL_001f:
 		L_16 = Transform_IsChildOf_mFE071BE1E775E825401FE0A9B9BE49E39D256CEA(L_14, L_15, NULL);
 		if (L_16)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
@@ -18758,257 +18805,270 @@ IL_001f:
 		L_19 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_18, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
 		if (L_19)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_20 = V_6;
 		NullCheck(L_20);
-		FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* L_21;
-		L_21 = Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435(L_20, Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var);
+		ShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1* L_21;
+		L_21 = Component_GetComponentInParent_TisShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1_m5DDD76CEA102BC93B42186E5FB6CC74F40ECC408(L_20, Component_GetComponentInParent_TisShorelineFoam_tF7390ABE05FB88C11707B263B38AE2473B0CCCF1_m5DDD76CEA102BC93B42186E5FB6CC74F40ECC408_RuntimeMethod_var);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_22;
 		L_22 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_21, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
 		if (L_22)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_23 = V_6;
 		NullCheck(L_23);
-		AmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749* L_24;
-		L_24 = Component_GetComponentInParent_TisAmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749_mE78B0D58CB04CA694AC780B7AF34BA25E8FABF72(L_23, Component_GetComponentInParent_TisAmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749_mE78B0D58CB04CA694AC780B7AF34BA25E8FABF72_RuntimeMethod_var);
+		FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* L_24;
+		L_24 = Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435(L_23, Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_25;
 		L_25 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_24, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
 		if (L_25)
 		{
-			goto IL_0089;
+			goto IL_0098;
 		}
 	}
 	{
 		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_26 = V_6;
 		NullCheck(L_26);
-		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_27;
-		L_27 = Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F(L_26, Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F_RuntimeMethod_var);
+		AmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749* L_27;
+		L_27 = Component_GetComponentInParent_TisAmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749_mE78B0D58CB04CA694AC780B7AF34BA25E8FABF72(L_26, Component_GetComponentInParent_TisAmbientFishAgent_t08456AEBCBBE5D9A142D78246BD445B7A8658749_mE78B0D58CB04CA694AC780B7AF34BA25E8FABF72_RuntimeMethod_var);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_28;
 		L_28 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_27, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
-		G_B9_0 = ((int32_t)(L_28));
-		goto IL_008a;
-	}
-
-IL_0089:
-	{
-		G_B9_0 = 1;
-	}
-
-IL_008a:
-	{
-		V_7 = (bool)G_B9_0;
-		bool L_29 = V_7;
-		if (!L_29)
+		if (L_28)
 		{
-			goto IL_0092;
+			goto IL_0098;
 		}
 	}
+	{
+		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_29 = V_6;
+		NullCheck(L_29);
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_30;
+		L_30 = Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F(L_29, Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F_RuntimeMethod_var);
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_31;
+		L_31 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_30, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		G_B10_0 = ((int32_t)(L_31));
+		goto IL_0099;
+	}
+
+IL_0098:
+	{
+		G_B10_0 = 1;
+	}
+
+IL_0099:
+	{
+		V_7 = (bool)G_B10_0;
+		bool L_32 = V_7;
+		if (!L_32)
+		{
+			goto IL_00a1;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:116>
+		goto IL_00d7;
+	}
+
+IL_00a1:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:117>
+		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_33 = V_6;
+		NullCheck(L_33);
+		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_34;
+		L_34 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_33, NULL);
+		V_9 = L_34;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_35;
+		L_35 = Bounds_get_center_m5B05F81CB835EB6DD8628FDA24B638F477984DC3_inline((&V_9), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36 = V_0;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_37;
+		L_37 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_35, L_36, NULL);
+		V_10 = L_37;
+		float L_38;
+		L_38 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_10), NULL);
+		V_8 = (bool)((((float)L_38) < ((float)(10000.0f)))? 1 : 0);
+		bool L_39 = V_8;
+		if (!L_39)
+		{
+			goto IL_00d6;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:117>
+		List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93* L_40 = V_1;
+		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_41 = V_6;
+		NullCheck(L_40);
+		List_1_Add_mB608316C3D0F44AB60BB05CC6676E509D51F7AC2_inline(L_40, L_41, List_1_Add_mB608316C3D0F44AB60BB05CC6676E509D51F7AC2_RuntimeMethod_var);
+	}
+
+IL_00d6:
+	{
+	}
+
+IL_00d7:
+	{
+		int32_t L_42 = V_5;
+		V_5 = ((int32_t)il2cpp_codegen_add(L_42, 1));
+	}
+
+IL_00dd:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:111>
-		goto IL_00c8;
-	}
-
-IL_0092:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:112>
-		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_30 = V_6;
-		NullCheck(L_30);
-		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_31;
-		L_31 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_30, NULL);
-		V_9 = L_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_32;
-		L_32 = Bounds_get_center_m5B05F81CB835EB6DD8628FDA24B638F477984DC3_inline((&V_9), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_33 = V_0;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_34;
-		L_34 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_32, L_33, NULL);
-		V_10 = L_34;
-		float L_35;
-		L_35 = Vector3_get_sqrMagnitude_m43C27DEC47C4811FB30AB474FF2131A963B66FC8_inline((&V_10), NULL);
-		V_8 = (bool)((((float)L_35) < ((float)(10000.0f)))? 1 : 0);
-		bool L_36 = V_8;
-		if (!L_36)
-		{
-			goto IL_00c7;
-		}
-	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:112>
-		List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93* L_37 = V_1;
-		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_38 = V_6;
-		NullCheck(L_37);
-		List_1_Add_mB608316C3D0F44AB60BB05CC6676E509D51F7AC2_inline(L_37, L_38, List_1_Add_mB608316C3D0F44AB60BB05CC6676E509D51F7AC2_RuntimeMethod_var);
-	}
-
-IL_00c7:
-	{
-	}
-
-IL_00c8:
-	{
-		int32_t L_39 = V_5;
-		V_5 = ((int32_t)il2cpp_codegen_add(L_39, 1));
-	}
-
-IL_00ce:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:107>
-		int32_t L_40 = V_5;
-		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_41 = V_4;
-		NullCheck(L_41);
-		if ((((int32_t)L_40) < ((int32_t)((int32_t)(((RuntimeArray*)L_41)->max_length)))))
+		int32_t L_43 = V_5;
+		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_44 = V_4;
+		NullCheck(L_44);
+		if ((((int32_t)L_43) < ((int32_t)((int32_t)(((RuntimeArray*)L_44)->max_length)))))
 		{
 			goto IL_001f;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:114>
-		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_42 = (List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65*)il2cpp_codegen_object_new(List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65_il2cpp_TypeInfo_var);
-		List_1__ctor_m6495AB7C6BDDC4D06EE93E691A9DC2C6FC791911(L_42, List_1__ctor_m6495AB7C6BDDC4D06EE93E691A9DC2C6FC791911_RuntimeMethod_var);
-		V_2 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:115>
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_43 = (ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)SZArrayNew(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787_il2cpp_TypeInfo_var, (uint32_t)((int32_t)64));
-		V_3 = L_43;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:116>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_44 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)4);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_45 = L_44;
-		RuntimeFieldHandle_t6E4C45B6D2EA12FC99185805A7E77527899B25C5 L_46 = { reinterpret_cast<intptr_t> (U3CPrivateImplementationDetailsU3E_t0F5473E849A5A5185A9F4C5246F0C32816C49FCA____C73733CFBD1AEE670DCE75F394258CEAB30EE6C07A6B147F58924A8A390608B0_FieldInfo_var) };
-		RuntimeHelpers_InitializeArray_m751372AA3F24FBF6DA9B9D687CBFA2DE436CAB9B((RuntimeArray*)L_45, L_46, NULL);
-		V_11 = L_45;
-		V_12 = 0;
-		goto IL_0541;
-	}
-
-IL_0103:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:116>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_47 = V_11;
-		int32_t L_48 = V_12;
-		NullCheck(L_47);
-		int32_t L_49 = L_48;
-		float L_50 = (L_47)->GetAt(static_cast<il2cpp_array_size_t>(L_49));
-		V_13 = L_50;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:117>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_51 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)7);
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_52 = L_51;
-		RuntimeFieldHandle_t6E4C45B6D2EA12FC99185805A7E77527899B25C5 L_53 = { reinterpret_cast<intptr_t> (U3CPrivateImplementationDetailsU3E_t0F5473E849A5A5185A9F4C5246F0C32816C49FCA____9BF2EC101B733641E6184458FB8E90BDCC8B0BD1D12AC285911A42821CB6B0E4_FieldInfo_var) };
-		RuntimeHelpers_InitializeArray_m751372AA3F24FBF6DA9B9D687CBFA2DE436CAB9B((RuntimeArray*)L_52, L_53, NULL);
-		V_14 = L_52;
-		V_15 = 0;
-		goto IL_0530;
-	}
-
-IL_0126:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:117>
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_54 = V_14;
-		int32_t L_55 = V_15;
-		NullCheck(L_54);
-		int32_t L_56 = L_55;
-		float L_57 = (L_54)->GetAt(static_cast<il2cpp_array_size_t>(L_56));
-		V_16 = L_57;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:119>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_58 = ___0_marina;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_59 = V_0;
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_60 = ___0_marina;
-		NullCheck(L_60);
-		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_61;
-		L_61 = Transform_get_rotation_m32AF40CA0D50C797DA639A696F8EAEC7524C179C(L_60, NULL);
-		float L_62 = V_16;
-		float L_63 = V_13;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_64;
-		memset((&L_64), 0, sizeof(L_64));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_64), L_62, (0.0f), L_63, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_65;
-		L_65 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_61, L_64, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_66;
-		L_66 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_59, L_65, NULL);
-		NullCheck(L_58);
-		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_58, L_66, NULL);
+		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_45 = (List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65*)il2cpp_codegen_object_new(List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65_il2cpp_TypeInfo_var);
+		List_1__ctor_m6495AB7C6BDDC4D06EE93E691A9DC2C6FC791911(L_45, List_1__ctor_m6495AB7C6BDDC4D06EE93E691A9DC2C6FC791911_RuntimeMethod_var);
+		V_2 = L_45;
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:120>
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_46 = (ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787*)SZArrayNew(ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787_il2cpp_TypeInfo_var, (uint32_t)((int32_t)64));
+		V_3 = L_46;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:121>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_47 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)4);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_48 = L_47;
+		RuntimeFieldHandle_t6E4C45B6D2EA12FC99185805A7E77527899B25C5 L_49 = { reinterpret_cast<intptr_t> (U3CPrivateImplementationDetailsU3E_t0F5473E849A5A5185A9F4C5246F0C32816C49FCA____C73733CFBD1AEE670DCE75F394258CEAB30EE6C07A6B147F58924A8A390608B0_FieldInfo_var) };
+		RuntimeHelpers_InitializeArray_m751372AA3F24FBF6DA9B9D687CBFA2DE436CAB9B((RuntimeArray*)L_48, L_49, NULL);
+		V_11 = L_48;
+		V_12 = 0;
+		goto IL_0550;
+	}
+
+IL_0112:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:121>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_50 = V_11;
+		int32_t L_51 = V_12;
+		NullCheck(L_50);
+		int32_t L_52 = L_51;
+		float L_53 = (L_50)->GetAt(static_cast<il2cpp_array_size_t>(L_52));
+		V_13 = L_53;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:122>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_54 = (SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C*)SZArrayNew(SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C_il2cpp_TypeInfo_var, (uint32_t)7);
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_55 = L_54;
+		RuntimeFieldHandle_t6E4C45B6D2EA12FC99185805A7E77527899B25C5 L_56 = { reinterpret_cast<intptr_t> (U3CPrivateImplementationDetailsU3E_t0F5473E849A5A5185A9F4C5246F0C32816C49FCA____9BF2EC101B733641E6184458FB8E90BDCC8B0BD1D12AC285911A42821CB6B0E4_FieldInfo_var) };
+		RuntimeHelpers_InitializeArray_m751372AA3F24FBF6DA9B9D687CBFA2DE436CAB9B((RuntimeArray*)L_55, L_56, NULL);
+		V_14 = L_55;
+		V_15 = 0;
+		goto IL_053f;
+	}
+
+IL_0135:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:122>
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_57 = V_14;
+		int32_t L_58 = V_15;
+		NullCheck(L_57);
+		int32_t L_59 = L_58;
+		float L_60 = (L_57)->GetAt(static_cast<il2cpp_array_size_t>(L_59));
+		V_16 = L_60;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:124>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_61 = ___0_marina;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_62 = V_0;
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_63 = ___0_marina;
+		NullCheck(L_63);
+		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_64;
+		L_64 = Transform_get_rotation_m32AF40CA0D50C797DA639A696F8EAEC7524C179C(L_63, NULL);
+		float L_65 = V_16;
+		float L_66 = V_13;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_67;
+		memset((&L_67), 0, sizeof(L_67));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_67), L_65, (0.0f), L_66, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_68;
+		L_68 = Quaternion_op_Multiply_mE1EBA73F9173432B50F8F17CE8190C5A7986FB8C(L_64, L_67, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69;
+		L_69 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_62, L_68, NULL);
+		NullCheck(L_61);
+		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_61, L_69, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:125>
 		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
 		Physics_SyncTransforms_mB88B6B27C24234D18846F614F9AE674976A5F1CA(NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:121>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:126>
 		V_17 = (bool)1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:122>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_67 = ___1_dock;
-		NullCheck(L_67);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_68;
-		L_68 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_67, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_69;
-		L_69 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
-		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&V_18), L_68, L_69, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:123>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:127>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_70 = ___1_dock;
 		NullCheck(L_70);
-		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_71;
-		L_71 = Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7(L_70, Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7_RuntimeMethod_var);
-		V_19 = L_71;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_71;
+		L_71 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_70, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_72;
+		L_72 = Vector3_get_zero_m0C1249C3F25B1C70EAD3CC8B31259975A457AE39_inline(NULL);
+		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&V_18), L_71, L_72, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_73 = ___1_dock;
+		NullCheck(L_73);
+		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_74;
+		L_74 = Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7(L_73, Component_GetComponentsInChildren_TisRenderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF_m35AC34F858BD2F34770712CD020AA0518D9409C7_RuntimeMethod_var);
+		V_19 = L_74;
 		V_20 = 0;
-		goto IL_0199;
+		goto IL_01a8;
 	}
 
-IL_017d:
+IL_018c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:123>
-		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_72 = V_19;
-		int32_t L_73 = V_20;
-		NullCheck(L_72);
-		int32_t L_74 = L_73;
-		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_75 = (L_72)->GetAt(static_cast<il2cpp_array_size_t>(L_74));
-		V_21 = L_75;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:123>
-		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_76 = V_21;
-		NullCheck(L_76);
-		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_77;
-		L_77 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_76, NULL);
-		Bounds_Encapsulate_m7C70C382B9380A8C962074C78E189B53CE8F7A22_inline((&V_18), L_77, NULL);
-		int32_t L_78 = V_20;
-		V_20 = ((int32_t)il2cpp_codegen_add(L_78, 1));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
+		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_75 = V_19;
+		int32_t L_76 = V_20;
+		NullCheck(L_75);
+		int32_t L_77 = L_76;
+		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_78 = (L_75)->GetAt(static_cast<il2cpp_array_size_t>(L_77));
+		V_21 = L_78;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
+		Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_79 = V_21;
+		NullCheck(L_79);
+		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_80;
+		L_80 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_79, NULL);
+		Bounds_Encapsulate_m7C70C382B9380A8C962074C78E189B53CE8F7A22_inline((&V_18), L_80, NULL);
+		int32_t L_81 = V_20;
+		V_20 = ((int32_t)il2cpp_codegen_add(L_81, 1));
 	}
 
-IL_0199:
+IL_01a8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:123>
-		int32_t L_79 = V_20;
-		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_80 = V_19;
-		NullCheck(L_80);
-		if ((((int32_t)L_79) < ((int32_t)((int32_t)(((RuntimeArray*)L_80)->max_length)))))
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
+		int32_t L_82 = V_20;
+		RendererU5BU5D_t32FDD782F67917B2291EA4FF242719877440A02A* L_83 = V_19;
+		NullCheck(L_83);
+		if ((((int32_t)L_82) < ((int32_t)((int32_t)(((RuntimeArray*)L_83)->max_length)))))
 		{
-			goto IL_017d;
+			goto IL_018c;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:124>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_81;
-		memset((&L_81), 0, sizeof(L_81));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_81), (1.0f), (5.0f), (1.0f), NULL);
-		Bounds_Expand_m2A706601C441E430A6E1B8095C6007D8AC64311F_inline((&V_18), L_81, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:125>
-		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_82 = V_2;
-		NullCheck(L_82);
-		List_1_Clear_mB2A4421E2E7AC7A55F52642E3F1F0EB3E47E8F6A_inline(L_82, List_1_Clear_mB2A4421E2E7AC7A55F52642E3F1F0EB3E47E8F6A_RuntimeMethod_var);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:126>
-		List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93* L_83 = V_1;
-		NullCheck(L_83);
-		Enumerator_t4B5D90D1324DE6E043169A1E8DCD75512559AFA7 L_84;
-		L_84 = List_1_GetEnumerator_mC86A1EF9E784B7E7B5C00025383C6381B831F88C(L_83, List_1_GetEnumerator_mC86A1EF9E784B7E7B5C00025383C6381B831F88C_RuntimeMethod_var);
-		V_22 = L_84;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:129>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_84;
+		memset((&L_84), 0, sizeof(L_84));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_84), (1.0f), (5.0f), (1.0f), NULL);
+		Bounds_Expand_m2A706601C441E430A6E1B8095C6007D8AC64311F_inline((&V_18), L_84, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:130>
+		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_85 = V_2;
+		NullCheck(L_85);
+		List_1_Clear_mB2A4421E2E7AC7A55F52642E3F1F0EB3E47E8F6A_inline(L_85, List_1_Clear_mB2A4421E2E7AC7A55F52642E3F1F0EB3E47E8F6A_RuntimeMethod_var);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
+		List_1_tD435DCC2A88E36DFC551EA5392CE0182F0C50E93* L_86 = V_1;
+		NullCheck(L_86);
+		Enumerator_t4B5D90D1324DE6E043169A1E8DCD75512559AFA7 L_87;
+		L_87 = List_1_GetEnumerator_mC86A1EF9E784B7E7B5C00025383C6381B831F88C(L_86, List_1_GetEnumerator_mC86A1EF9E784B7E7B5C00025383C6381B831F88C_RuntimeMethod_var);
+		V_22 = L_87;
 	}
 	{
 		auto __finallyBlock = il2cpp::utils::Finally([&]
 		{
 
-FINALLY_0212:
+FINALLY_0221:
 			{
 				Enumerator_Dispose_m39794B37E9AE88ED22C03824DE8D637C0DADBAF0((&V_22), Enumerator_Dispose_m39794B37E9AE88ED22C03824DE8D637C0DADBAF0_RuntimeMethod_var);
 				return;
@@ -19017,73 +19077,73 @@ FINALLY_0212:
 		try
 		{
 			{
-				goto IL_0207_1;
+				goto IL_0216_1;
 			}
 
-IL_01cf_1:
+IL_01de_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:126>
-				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_85;
-				L_85 = Enumerator_get_Current_mF219FEB0F2097ED593A4E6E2283167335AFBA4B6_inline((&V_22), Enumerator_get_Current_mF219FEB0F2097ED593A4E6E2283167335AFBA4B6_RuntimeMethod_var);
-				V_23 = L_85;
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:127>
-				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_86 = V_23;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
+				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_88;
+				L_88 = Enumerator_get_Current_mF219FEB0F2097ED593A4E6E2283167335AFBA4B6_inline((&V_22), Enumerator_get_Current_mF219FEB0F2097ED593A4E6E2283167335AFBA4B6_RuntimeMethod_var);
+				V_23 = L_88;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:132>
+				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_89 = V_23;
 				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
-				bool L_87;
-				L_87 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_86, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
-				if (!L_87)
-				{
-					goto IL_01f2_1;
-				}
-			}
-			{
-				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_88 = V_23;
-				NullCheck(L_88);
-				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_89;
-				L_89 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_88, NULL);
 				bool L_90;
-				L_90 = Bounds_Intersects_m91D6CE48052C56F8519243104C3575738B159531_inline((&V_18), L_89, NULL);
-				G_B26_0 = ((int32_t)(L_90));
-				goto IL_01f3_1;
-			}
-
-IL_01f2_1:
-			{
-				G_B26_0 = 0;
-			}
-
-IL_01f3_1:
-			{
-				V_24 = (bool)G_B26_0;
-				bool L_91 = V_24;
-				if (!L_91)
+				L_90 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_89, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+				if (!L_90)
 				{
-					goto IL_0207_1;
+					goto IL_0201_1;
 				}
 			}
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:127>
-				List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_92 = V_2;
-				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_93 = V_23;
-				NullCheck(L_93);
-				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_94;
-				L_94 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_93, NULL);
-				NullCheck(L_92);
-				List_1_Add_m930CA3F1A016B820967E8D53B5D8B2EEB9F10DAC_inline(L_92, L_94, List_1_Add_m930CA3F1A016B820967E8D53B5D8B2EEB9F10DAC_RuntimeMethod_var);
+				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_91 = V_23;
+				NullCheck(L_91);
+				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_92;
+				L_92 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_91, NULL);
+				bool L_93;
+				L_93 = Bounds_Intersects_m91D6CE48052C56F8519243104C3575738B159531_inline((&V_18), L_92, NULL);
+				G_B27_0 = ((int32_t)(L_93));
+				goto IL_0202_1;
 			}
 
-IL_0207_1:
+IL_0201_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:126>
-				bool L_95;
-				L_95 = Enumerator_MoveNext_m36545FD9B7C5DA66EAD80FD8813D279003BA8749((&V_22), Enumerator_MoveNext_m36545FD9B7C5DA66EAD80FD8813D279003BA8749_RuntimeMethod_var);
-				if (L_95)
+				G_B27_0 = 0;
+			}
+
+IL_0202_1:
+			{
+				V_24 = (bool)G_B27_0;
+				bool L_94 = V_24;
+				if (!L_94)
 				{
-					goto IL_01cf_1;
+					goto IL_0216_1;
 				}
 			}
 			{
-				goto IL_0221;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:132>
+				List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_95 = V_2;
+				Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* L_96 = V_23;
+				NullCheck(L_96);
+				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_97;
+				L_97 = Renderer_get_bounds_m390CF334730C3C34E45CE59F1D08C3B9F3109C7C(L_96, NULL);
+				NullCheck(L_95);
+				List_1_Add_m930CA3F1A016B820967E8D53B5D8B2EEB9F10DAC_inline(L_95, L_97, List_1_Add_m930CA3F1A016B820967E8D53B5D8B2EEB9F10DAC_RuntimeMethod_var);
+			}
+
+IL_0216_1:
+			{
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
+				bool L_98;
+				L_98 = Enumerator_MoveNext_m36545FD9B7C5DA66EAD80FD8813D279003BA8749((&V_22), Enumerator_MoveNext_m36545FD9B7C5DA66EAD80FD8813D279003BA8749_RuntimeMethod_var);
+				if (L_98)
+				{
+					goto IL_01de_1;
+				}
+			}
+			{
+				goto IL_0230;
 			}
 		}
 		catch(Il2CppExceptionWrapper& e)
@@ -19092,236 +19152,236 @@ IL_0207_1:
 		}
 	}
 
-IL_0221:
+IL_0230:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_96 = ___1_dock;
-		NullCheck(L_96);
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_97;
-		L_97 = Component_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_m68EDB1BC21CDD271AF95048193430D2BFD67C99E(L_96, Component_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_m68EDB1BC21CDD271AF95048193430D2BFD67C99E_RuntimeMethod_var);
-		V_25 = L_97;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_99 = ___1_dock;
+		NullCheck(L_99);
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_100;
+		L_100 = Component_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_m68EDB1BC21CDD271AF95048193430D2BFD67C99E(L_99, Component_GetComponentsInChildren_TisMeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5_m68EDB1BC21CDD271AF95048193430D2BFD67C99E_RuntimeMethod_var);
+		V_25 = L_100;
 		V_26 = 0;
-		goto IL_0511;
+		goto IL_0520;
 	}
 
-IL_0232:
+IL_0241:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_98 = V_25;
-		int32_t L_99 = V_26;
-		NullCheck(L_98);
-		int32_t L_100 = L_99;
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_101 = (L_98)->GetAt(static_cast<il2cpp_array_size_t>(L_100));
-		V_27 = L_101;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:130>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_102 = V_27;
-		NullCheck(L_102);
-		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_103;
-		L_103 = MeshFilter_get_sharedMesh_mE4ED3E7E31C1DE5097E4980DA996E620F7D7CB8C(L_102, NULL);
-		NullCheck(L_103);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_104;
-		L_104 = Mesh_get_vertices_mA3577F1B08EDDD54E26AEB3F8FFE4EC247D2ABB9(L_103, NULL);
-		V_28 = L_104;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:130>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_101 = V_25;
+		int32_t L_102 = V_26;
+		NullCheck(L_101);
+		int32_t L_103 = L_102;
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_104 = (L_101)->GetAt(static_cast<il2cpp_array_size_t>(L_103));
+		V_27 = L_104;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:135>
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_105 = V_27;
 		NullCheck(L_105);
 		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_106;
 		L_106 = MeshFilter_get_sharedMesh_mE4ED3E7E31C1DE5097E4980DA996E620F7D7CB8C(L_105, NULL);
 		NullCheck(L_106);
-		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_107;
-		L_107 = Mesh_get_triangles_m33E39B4A383CC613C760FA7E297AC417A433F24B(L_106, NULL);
-		V_29 = L_107;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
-		V_30 = 0;
-		goto IL_04e9;
-	}
-
-IL_025e:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_107;
+		L_107 = Mesh_get_vertices_mA3577F1B08EDDD54E26AEB3F8FFE4EC247D2ABB9(L_106, NULL);
+		V_28 = L_107;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:135>
 		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_108 = V_27;
 		NullCheck(L_108);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_109;
-		L_109 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_108, NULL);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_110 = V_28;
-		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_111 = V_29;
-		int32_t L_112 = V_30;
-		NullCheck(L_111);
-		int32_t L_113 = L_112;
-		int32_t L_114 = (L_111)->GetAt(static_cast<il2cpp_array_size_t>(L_113));
-		NullCheck(L_110);
-		int32_t L_115 = L_114;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_116 = (L_110)->GetAt(static_cast<il2cpp_array_size_t>(L_115));
+		Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_109;
+		L_109 = MeshFilter_get_sharedMesh_mE4ED3E7E31C1DE5097E4980DA996E620F7D7CB8C(L_108, NULL);
 		NullCheck(L_109);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_117;
-		L_117 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_109, L_116, NULL);
-		V_31 = L_117;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_118 = V_27;
-		NullCheck(L_118);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_119;
-		L_119 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_118, NULL);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_120 = V_28;
-		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_121 = V_29;
-		int32_t L_122 = V_30;
+		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_110;
+		L_110 = Mesh_get_triangles_m33E39B4A383CC613C760FA7E297AC417A433F24B(L_109, NULL);
+		V_29 = L_110;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:136>
+		V_30 = 0;
+		goto IL_04f8;
+	}
+
+IL_026d:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:138>
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_111 = V_27;
+		NullCheck(L_111);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_112;
+		L_112 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_111, NULL);
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_113 = V_28;
+		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_114 = V_29;
+		int32_t L_115 = V_30;
+		NullCheck(L_114);
+		int32_t L_116 = L_115;
+		int32_t L_117 = (L_114)->GetAt(static_cast<il2cpp_array_size_t>(L_116));
+		NullCheck(L_113);
+		int32_t L_118 = L_117;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_119 = (L_113)->GetAt(static_cast<il2cpp_array_size_t>(L_118));
+		NullCheck(L_112);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_120;
+		L_120 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_112, L_119, NULL);
+		V_31 = L_120;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:138>
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_121 = V_27;
 		NullCheck(L_121);
-		int32_t L_123 = ((int32_t)il2cpp_codegen_add(L_122, 1));
-		int32_t L_124 = (L_121)->GetAt(static_cast<il2cpp_array_size_t>(L_123));
-		NullCheck(L_120);
-		int32_t L_125 = L_124;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_126 = (L_120)->GetAt(static_cast<il2cpp_array_size_t>(L_125));
-		NullCheck(L_119);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_127;
-		L_127 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_119, L_126, NULL);
-		V_32 = L_127;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
-		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_128 = V_27;
-		NullCheck(L_128);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_129;
-		L_129 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_128, NULL);
-		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_130 = V_28;
-		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_131 = V_29;
-		int32_t L_132 = V_30;
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_122;
+		L_122 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_121, NULL);
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_123 = V_28;
+		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_124 = V_29;
+		int32_t L_125 = V_30;
+		NullCheck(L_124);
+		int32_t L_126 = ((int32_t)il2cpp_codegen_add(L_125, 1));
+		int32_t L_127 = (L_124)->GetAt(static_cast<il2cpp_array_size_t>(L_126));
+		NullCheck(L_123);
+		int32_t L_128 = L_127;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_129 = (L_123)->GetAt(static_cast<il2cpp_array_size_t>(L_128));
+		NullCheck(L_122);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_130;
+		L_130 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_122, L_129, NULL);
+		V_32 = L_130;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:138>
+		MeshFilter_t6D1CE2473A1E45AC73013400585A1163BF66B2F5* L_131 = V_27;
 		NullCheck(L_131);
-		int32_t L_133 = ((int32_t)il2cpp_codegen_add(L_132, 2));
-		int32_t L_134 = (L_131)->GetAt(static_cast<il2cpp_array_size_t>(L_133));
-		NullCheck(L_130);
-		int32_t L_135 = L_134;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_136 = (L_130)->GetAt(static_cast<il2cpp_array_size_t>(L_135));
-		NullCheck(L_129);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_137;
-		L_137 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_129, L_136, NULL);
-		V_33 = L_137;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:134>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_138 = V_32;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_139 = V_31;
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_132;
+		L_132 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_131, NULL);
+		Vector3U5BU5D_tFF1859CCE176131B909E2044F76443064254679C* L_133 = V_28;
+		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_134 = V_29;
+		int32_t L_135 = V_30;
+		NullCheck(L_134);
+		int32_t L_136 = ((int32_t)il2cpp_codegen_add(L_135, 2));
+		int32_t L_137 = (L_134)->GetAt(static_cast<il2cpp_array_size_t>(L_136));
+		NullCheck(L_133);
+		int32_t L_138 = L_137;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_139 = (L_133)->GetAt(static_cast<il2cpp_array_size_t>(L_138));
+		NullCheck(L_132);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_140;
-		L_140 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_138, L_139, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_141 = V_33;
+		L_140 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_132, L_139, NULL);
+		V_33 = L_140;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:139>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_141 = V_32;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_142 = V_31;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_143;
 		L_143 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_141, L_142, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_144;
-		L_144 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_140, L_143, NULL);
-		float L_145 = L_144.___y;
-		V_35 = (bool)((((int32_t)((!(((float)L_145) <= ((float)(0.00100000005f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
-		bool L_146 = V_35;
-		if (!L_146)
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_144 = V_33;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_145 = V_31;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_146;
+		L_146 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_144, L_145, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_147;
+		L_147 = Vector3_Cross_mF93A280558BCE756D13B6CC5DCD7DE8A43148987_inline(L_143, L_146, NULL);
+		float L_148 = L_147.___y;
+		V_35 = (bool)((((int32_t)((!(((float)L_148) <= ((float)(0.00100000005f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
+		bool L_149 = V_35;
+		if (!L_149)
 		{
-			goto IL_02e2;
+			goto IL_02f1;
 		}
 	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:134>
-		goto IL_04e3;
-	}
-
-IL_02e2:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:136>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_147 = V_32;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_148 = V_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_149;
-		L_149 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_147, L_148, NULL);
-		V_10 = L_149;
-		float L_150;
-		L_150 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_10), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_151 = V_33;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_152 = V_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_153;
-		L_153 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_151, L_152, NULL);
-		V_10 = L_153;
-		float L_154;
-		L_154 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_10), NULL);
-		float L_155;
-		L_155 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_150, L_154, NULL);
-		int32_t L_156;
-		L_156 = Mathf_CeilToInt_mF2BF9F4261B3431DC20E10A46CFEEED103C48963_inline(((float)il2cpp_codegen_multiply(L_155, (2.0f))), NULL);
-		V_34 = L_156;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
-		V_36 = 0;
-		goto IL_04cd;
-	}
-
-IL_0320:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
-		V_37 = 0;
-		goto IL_04af;
-	}
-
-IL_0328:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:139>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_157 = V_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_158 = V_32;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_159 = V_31;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_160;
-		L_160 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_158, L_159, NULL);
-		int32_t L_161 = V_36;
-		int32_t L_162 = V_34;
+		goto IL_04f2;
+	}
+
+IL_02f1:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:141>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_150 = V_32;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_151 = V_31;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_152;
+		L_152 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_150, L_151, NULL);
+		V_10 = L_152;
+		float L_153;
+		L_153 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_10), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_154 = V_33;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_155 = V_31;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_156;
+		L_156 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_154, L_155, NULL);
+		V_10 = L_156;
+		float L_157;
+		L_157 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_10), NULL);
+		float L_158;
+		L_158 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_153, L_157, NULL);
+		int32_t L_159;
+		L_159 = Mathf_CeilToInt_mF2BF9F4261B3431DC20E10A46CFEEED103C48963_inline(((float)il2cpp_codegen_multiply(L_158, (2.0f))), NULL);
+		V_34 = L_159;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		V_36 = 0;
+		goto IL_04dc;
+	}
+
+IL_032f:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		V_37 = 0;
+		goto IL_04be;
+	}
+
+IL_0337:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:144>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_160 = V_31;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_161 = V_32;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_162 = V_31;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_163;
-		L_163 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_160, ((float)(((float)L_161)/((float)L_162))), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_164;
-		L_164 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_157, L_163, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_165 = V_33;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_166 = V_31;
+		L_163 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_161, L_162, NULL);
+		int32_t L_164 = V_36;
+		int32_t L_165 = V_34;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_166;
+		L_166 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_163, ((float)(((float)L_164)/((float)L_165))), NULL);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_167;
-		L_167 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_165, L_166, NULL);
-		int32_t L_168 = V_37;
-		int32_t L_169 = V_34;
+		L_167 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_160, L_166, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_168 = V_33;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_169 = V_31;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_170;
-		L_170 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_167, ((float)(((float)L_168)/((float)L_169))), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_171;
-		L_171 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_164, L_170, NULL);
-		V_38 = L_171;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:140>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_172 = V_38;
+		L_170 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_168, L_169, NULL);
+		int32_t L_171 = V_37;
+		int32_t L_172 = V_34;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_173;
+		L_173 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_170, ((float)(((float)L_171)/((float)L_172))), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_174;
+		L_174 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_167, L_173, NULL);
+		V_38 = L_174;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_175 = V_38;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
-		float L_173;
-		L_173 = MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1(L_172, NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_174 = V_38;
-		float L_175 = L_174.___y;
-		V_41 = (bool)((((float)L_173) > ((float)((float)il2cpp_codegen_add(L_175, (0.0299999993f)))))? 1 : 0);
-		bool L_176 = V_41;
-		if (!L_176)
+		float L_176;
+		L_176 = MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1(L_175, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_177 = V_38;
+		float L_178 = L_177.___y;
+		V_41 = (bool)((((float)L_176) > ((float)((float)il2cpp_codegen_add(L_178, (0.0299999993f)))))? 1 : 0);
+		bool L_179 = V_41;
+		if (!L_179)
 		{
-			goto IL_0386;
+			goto IL_0395;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:140>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
 		V_17 = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:140>
-		goto IL_04c7;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
+		goto IL_04d6;
 	}
 
-IL_0386:
+IL_0395:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:141>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_177 = V_38;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_178;
-		L_178 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_179;
-		L_179 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_178, (1.0f), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_180;
-		L_180 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_177, L_179, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:146>
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_180 = V_38;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_181;
-		memset((&L_181), 0, sizeof(L_181));
-		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_181), (0.5f), (2.0f), (0.5f), NULL);
-		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&V_39), L_180, L_181, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
-		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_182 = V_2;
-		NullCheck(L_182);
-		Enumerator_t04AEAB89B233363D9DD3E3B4983988CB227509C9 L_183;
-		L_183 = List_1_GetEnumerator_mB3308638D2F473E3C77E7EFC751B40A342D3F76C(L_182, List_1_GetEnumerator_mB3308638D2F473E3C77E7EFC751B40A342D3F76C_RuntimeMethod_var);
-		V_42 = L_183;
+		L_181 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_182;
+		L_182 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_181, (1.0f), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_183;
+		L_183 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_180, L_182, NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_184;
+		memset((&L_184), 0, sizeof(L_184));
+		Vector3__ctor_m376936E6B999EF1ECBE57D990A386303E2283DE0_inline((&L_184), (0.5f), (2.0f), (0.5f), NULL);
+		Bounds__ctor_mAF7B238B9FBF90C495E5D7951760085A93119C5A_inline((&V_39), L_183, L_184, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
+		List_1_t7D73463EA17F4D29A37E8110AB60DAD5C80EBF65* L_185 = V_2;
+		NullCheck(L_185);
+		Enumerator_t04AEAB89B233363D9DD3E3B4983988CB227509C9 L_186;
+		L_186 = List_1_GetEnumerator_mB3308638D2F473E3C77E7EFC751B40A342D3F76C(L_185, List_1_GetEnumerator_mB3308638D2F473E3C77E7EFC751B40A342D3F76C_RuntimeMethod_var);
+		V_42 = L_186;
 	}
 	{
 		auto __finallyBlock = il2cpp::utils::Finally([&]
 		{
 
-FINALLY_03eb:
+FINALLY_03fa:
 			{
 				Enumerator_Dispose_m7D0FE53437326A173476B03BC7AF9F8A5F5997C7((&V_42), Enumerator_Dispose_m7D0FE53437326A173476B03BC7AF9F8A5F5997C7_RuntimeMethod_var);
 				return;
@@ -19330,47 +19390,47 @@ FINALLY_03eb:
 		try
 		{
 			{
-				goto IL_03e0_1;
+				goto IL_03ef_1;
 			}
 
-IL_03c2_1:
+IL_03d1_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
-				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_184;
-				L_184 = Enumerator_get_Current_m8A8BCC20F997D87B36452D42369EF6033C17E2A6_inline((&V_42), Enumerator_get_Current_m8A8BCC20F997D87B36452D42369EF6033C17E2A6_RuntimeMethod_var);
-				V_43 = L_184;
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
-				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_185 = V_39;
-				bool L_186;
-				L_186 = Bounds_Intersects_m91D6CE48052C56F8519243104C3575738B159531_inline((&V_43), L_185, NULL);
-				V_44 = L_186;
-				bool L_187 = V_44;
-				if (!L_187)
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
+				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_187;
+				L_187 = Enumerator_get_Current_m8A8BCC20F997D87B36452D42369EF6033C17E2A6_inline((&V_42), Enumerator_get_Current_m8A8BCC20F997D87B36452D42369EF6033C17E2A6_RuntimeMethod_var);
+				V_43 = L_187;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
+				Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_188 = V_39;
+				bool L_189;
+				L_189 = Bounds_Intersects_m91D6CE48052C56F8519243104C3575738B159531_inline((&V_43), L_188, NULL);
+				V_44 = L_189;
+				bool L_190 = V_44;
+				if (!L_190)
 				{
-					goto IL_03e0_1;
+					goto IL_03ef_1;
 				}
 			}
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
 				V_17 = (bool)0;
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
-				goto IL_03e9_1;
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
+				goto IL_03f8_1;
 			}
 
-IL_03e0_1:
+IL_03ef_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
-				bool L_188;
-				L_188 = Enumerator_MoveNext_m95B16A9D35F7881B8201884A88F11FED4CD2E0A1((&V_42), Enumerator_MoveNext_m95B16A9D35F7881B8201884A88F11FED4CD2E0A1_RuntimeMethod_var);
-				if (L_188)
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:147>
+				bool L_191;
+				L_191 = Enumerator_MoveNext_m95B16A9D35F7881B8201884A88F11FED4CD2E0A1((&V_42), Enumerator_MoveNext_m95B16A9D35F7881B8201884A88F11FED4CD2E0A1_RuntimeMethod_var);
+				if (L_191)
 				{
-					goto IL_03c2_1;
+					goto IL_03d1_1;
 				}
 			}
 
-IL_03e9_1:
+IL_03f8_1:
 			{
-				goto IL_03fa;
+				goto IL_0409;
 			}
 		}
 		catch(Il2CppExceptionWrapper& e)
@@ -19379,335 +19439,335 @@ IL_03e9_1:
 		}
 	}
 
-IL_03fa:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:143>
-		bool L_189 = V_17;
-		V_45 = (bool)((((int32_t)L_189) == ((int32_t)0))? 1 : 0);
-		bool L_190 = V_45;
-		if (!L_190)
-		{
-			goto IL_040a;
-		}
-	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:143>
-		goto IL_04c7;
-	}
-
-IL_040a:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:144>
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_191 = V_38;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_192;
-		L_192 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_193;
-		L_193 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_192, (0.649999976f), NULL);
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_194;
-		L_194 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_191, L_193, NULL);
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_195 = V_3;
-		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
-		int32_t L_196;
-		L_196 = Physics_OverlapSphereNonAlloc_mED890C8454FCC0354A94F97453707FA01B27AE83(L_194, (0.649999976f), L_195, ((int32_t)-5), 1, NULL);
-		V_40 = L_196;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
-		int32_t L_197 = V_40;
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_198 = V_3;
-		NullCheck(L_198);
-		V_46 = (bool)((((int32_t)L_197) == ((int32_t)((int32_t)(((RuntimeArray*)L_198)->max_length))))? 1 : 0);
-		bool L_199 = V_46;
-		if (!L_199)
-		{
-			goto IL_0446;
-		}
-	}
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
-		V_17 = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:145>
-		goto IL_04c7;
-	}
-
-IL_0446:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:146>
-		V_47 = 0;
-		goto IL_049c;
-	}
-
-IL_044b:
+IL_0409:
 	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:148>
-		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_200 = V_3;
-		int32_t L_201 = V_47;
-		NullCheck(L_200);
-		int32_t L_202 = L_201;
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_203 = (L_200)->GetAt(static_cast<il2cpp_array_size_t>(L_202));
-		V_48 = L_203;
+		bool L_192 = V_17;
+		V_45 = (bool)((((int32_t)L_192) == ((int32_t)0))? 1 : 0);
+		bool L_193 = V_45;
+		if (!L_193)
+		{
+			goto IL_0419;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:148>
+		goto IL_04d6;
+	}
+
+IL_0419:
+	{
 		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:149>
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_204 = V_48;
-		if (((TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)IsInstClass((RuntimeObject*)L_204, TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05_il2cpp_TypeInfo_var)))
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_194 = V_38;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_195;
+		L_195 = Vector3_get_up_m128AF3FDC820BF59D5DE86D973E7DE3F20C3AEBA_inline(NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_196;
+		L_196 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_195, (0.649999976f), NULL);
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_197;
+		L_197 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_194, L_196, NULL);
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_198 = V_3;
+		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
+		int32_t L_199;
+		L_199 = Physics_OverlapSphereNonAlloc_mED890C8454FCC0354A94F97453707FA01B27AE83(L_197, (0.649999976f), L_198, ((int32_t)-5), 1, NULL);
+		V_40 = L_199;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:150>
+		int32_t L_200 = V_40;
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_201 = V_3;
+		NullCheck(L_201);
+		V_46 = (bool)((((int32_t)L_200) == ((int32_t)((int32_t)(((RuntimeArray*)L_201)->max_length))))? 1 : 0);
+		bool L_202 = V_46;
+		if (!L_202)
 		{
-			goto IL_0488;
+			goto IL_0455;
 		}
 	}
 	{
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_205 = V_48;
-		NullCheck(L_205);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_206;
-		L_206 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_205, NULL);
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_207 = ___0_marina;
-		NullCheck(L_206);
-		bool L_208;
-		L_208 = Transform_IsChildOf_mFE071BE1E775E825401FE0A9B9BE49E39D256CEA(L_206, L_207, NULL);
-		if (L_208)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:150>
+		V_17 = (bool)0;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:150>
+		goto IL_04d6;
+	}
+
+IL_0455:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:151>
+		V_47 = 0;
+		goto IL_04ab;
+	}
+
+IL_045a:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:153>
+		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_203 = V_3;
+		int32_t L_204 = V_47;
+		NullCheck(L_203);
+		int32_t L_205 = L_204;
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_206 = (L_203)->GetAt(static_cast<il2cpp_array_size_t>(L_205));
+		V_48 = L_206;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:154>
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_207 = V_48;
+		if (((TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05*)IsInstClass((RuntimeObject*)L_207, TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05_il2cpp_TypeInfo_var)))
 		{
-			goto IL_0488;
+			goto IL_0497;
 		}
 	}
 	{
-		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_209 = V_48;
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_208 = V_48;
+		NullCheck(L_208);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_209;
+		L_209 = Component_get_transform_m2919A1D81931E6932C7F06D4C2F0AB8DDA9A5371(L_208, NULL);
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_210 = ___0_marina;
 		NullCheck(L_209);
-		FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* L_210;
-		L_210 = Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435(L_209, Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var);
-		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_211;
-		L_211 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_210, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		L_211 = Transform_IsChildOf_mFE071BE1E775E825401FE0A9B9BE49E39D256CEA(L_209, L_210, NULL);
 		if (L_211)
 		{
-			goto IL_0488;
+			goto IL_0497;
 		}
 	}
 	{
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_212 = V_48;
 		NullCheck(L_212);
-		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_213;
-		L_213 = Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F(L_212, Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F_RuntimeMethod_var);
+		FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* L_213;
+		L_213 = Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435(L_212, Component_GetComponentInParent_TisFirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443_m3CE7FE65AE5D9F06383077D4336345F55ABC2435_RuntimeMethod_var);
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_214;
 		L_214 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_213, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
-		G_B56_0 = ((int32_t)(L_214));
-		goto IL_0489;
-	}
-
-IL_0488:
-	{
-		G_B56_0 = 1;
-	}
-
-IL_0489:
-	{
-		V_49 = (bool)G_B56_0;
-		bool L_215 = V_49;
-		if (!L_215)
+		if (L_214)
 		{
-			goto IL_0491;
+			goto IL_0497;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:149>
-		goto IL_0496;
+		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_215 = V_48;
+		NullCheck(L_215);
+		BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* L_216;
+		L_216 = Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F(L_215, Component_GetComponentInParent_TisBoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013_m77BAA4DA3B3AEFB586E39E95089BAF09A007B52F_RuntimeMethod_var);
+		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
+		bool L_217;
+		L_217 = Object_op_Inequality_mD0BE578448EAA61948F25C32F8DD55AB1F778602(L_216, (Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C*)NULL, NULL);
+		G_B57_0 = ((int32_t)(L_217));
+		goto IL_0498;
 	}
 
-IL_0491:
+IL_0497:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:150>
+		G_B57_0 = 1;
+	}
+
+IL_0498:
+	{
+		V_49 = (bool)G_B57_0;
+		bool L_218 = V_49;
+		if (!L_218)
+		{
+			goto IL_04a0;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:154>
+		goto IL_04a5;
+	}
+
+IL_04a0:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:155>
 		V_17 = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:150>
-		goto IL_04a8;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:155>
+		goto IL_04b7;
 	}
 
-IL_0496:
+IL_04a5:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:146>
-		int32_t L_216 = V_47;
-		V_47 = ((int32_t)il2cpp_codegen_add(L_216, 1));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:151>
+		int32_t L_219 = V_47;
+		V_47 = ((int32_t)il2cpp_codegen_add(L_219, 1));
 	}
 
-IL_049c:
+IL_04ab:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:146>
-		int32_t L_217 = V_47;
-		int32_t L_218 = V_40;
-		V_50 = (bool)((((int32_t)L_217) < ((int32_t)L_218))? 1 : 0);
-		bool L_219 = V_50;
-		if (L_219)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:151>
+		int32_t L_220 = V_47;
+		int32_t L_221 = V_40;
+		V_50 = (bool)((((int32_t)L_220) < ((int32_t)L_221))? 1 : 0);
+		bool L_222 = V_50;
+		if (L_222)
 		{
-			goto IL_044b;
+			goto IL_045a;
 		}
 	}
 
-IL_04a8:
+IL_04b7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
-		int32_t L_220 = V_37;
-		V_37 = ((int32_t)il2cpp_codegen_add(L_220, 1));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		int32_t L_223 = V_37;
+		V_37 = ((int32_t)il2cpp_codegen_add(L_223, 1));
 	}
 
-IL_04af:
+IL_04be:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
-		int32_t L_221 = V_37;
-		int32_t L_222 = V_34;
-		int32_t L_223 = V_36;
-		bool L_224 = V_17;
-		V_51 = (bool)((int32_t)(((((int32_t)((((int32_t)L_221) > ((int32_t)((int32_t)il2cpp_codegen_subtract(L_222, L_223))))? 1 : 0)) == ((int32_t)0))? 1 : 0)&(int32_t)L_224));
-		bool L_225 = V_51;
-		if (L_225)
-		{
-			goto IL_0328;
-		}
-	}
-
-IL_04c7:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		int32_t L_224 = V_37;
+		int32_t L_225 = V_34;
 		int32_t L_226 = V_36;
-		V_36 = ((int32_t)il2cpp_codegen_add(L_226, 1));
+		bool L_227 = V_17;
+		V_51 = (bool)((int32_t)(((((int32_t)((((int32_t)L_224) > ((int32_t)((int32_t)il2cpp_codegen_subtract(L_225, L_226))))? 1 : 0)) == ((int32_t)0))? 1 : 0)&(int32_t)L_227));
+		bool L_228 = V_51;
+		if (L_228)
+		{
+			goto IL_0337;
+		}
 	}
 
-IL_04cd:
+IL_04d6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:137>
-		int32_t L_227 = V_36;
-		int32_t L_228 = V_34;
-		bool L_229 = V_17;
-		V_52 = (bool)((int32_t)(((((int32_t)((((int32_t)L_227) > ((int32_t)L_228))? 1 : 0)) == ((int32_t)0))? 1 : 0)&(int32_t)L_229));
-		bool L_230 = V_52;
-		if (L_230)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		int32_t L_229 = V_36;
+		V_36 = ((int32_t)il2cpp_codegen_add(L_229, 1));
+	}
+
+IL_04dc:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:142>
+		int32_t L_230 = V_36;
+		int32_t L_231 = V_34;
+		bool L_232 = V_17;
+		V_52 = (bool)((int32_t)(((((int32_t)((((int32_t)L_230) > ((int32_t)L_231))? 1 : 0)) == ((int32_t)0))? 1 : 0)&(int32_t)L_232));
+		bool L_233 = V_52;
+		if (L_233)
 		{
-			goto IL_0320;
+			goto IL_032f;
 		}
 	}
 	{
 	}
 
-IL_04e3:
+IL_04f2:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
-		int32_t L_231 = V_30;
-		V_30 = ((int32_t)il2cpp_codegen_add(L_231, 3));
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:136>
+		int32_t L_234 = V_30;
+		V_30 = ((int32_t)il2cpp_codegen_add(L_234, 3));
 	}
 
-IL_04e9:
+IL_04f8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:131>
-		int32_t L_232 = V_30;
-		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_233 = V_29;
-		NullCheck(L_233);
-		bool L_234 = V_17;
-		V_53 = (bool)((int32_t)(((((int32_t)L_232) < ((int32_t)((int32_t)(((RuntimeArray*)L_233)->max_length))))? 1 : 0)&(int32_t)L_234));
-		bool L_235 = V_53;
-		if (L_235)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:136>
+		int32_t L_235 = V_30;
+		Int32U5BU5D_t19C97395396A72ECAF310612F0760F165060314C* L_236 = V_29;
+		NullCheck(L_236);
+		bool L_237 = V_17;
+		V_53 = (bool)((int32_t)(((((int32_t)L_235) < ((int32_t)((int32_t)(((RuntimeArray*)L_236)->max_length))))? 1 : 0)&(int32_t)L_237));
+		bool L_238 = V_53;
+		if (L_238)
 		{
-			goto IL_025e;
+			goto IL_026d;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:154>
-		bool L_236 = V_17;
-		V_54 = (bool)((((int32_t)L_236) == ((int32_t)0))? 1 : 0);
-		bool L_237 = V_54;
-		if (!L_237)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:159>
+		bool L_239 = V_17;
+		V_54 = (bool)((((int32_t)L_239) == ((int32_t)0))? 1 : 0);
+		bool L_240 = V_54;
+		if (!L_240)
 		{
-			goto IL_050a;
+			goto IL_0519;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:154>
-		goto IL_051c;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:159>
+		goto IL_052b;
 	}
 
-IL_050a:
+IL_0519:
 	{
-		int32_t L_238 = V_26;
-		V_26 = ((int32_t)il2cpp_codegen_add(L_238, 1));
+		int32_t L_241 = V_26;
+		V_26 = ((int32_t)il2cpp_codegen_add(L_241, 1));
 	}
 
-IL_0511:
+IL_0520:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:128>
-		int32_t L_239 = V_26;
-		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_240 = V_25;
-		NullCheck(L_240);
-		if ((((int32_t)L_239) < ((int32_t)((int32_t)(((RuntimeArray*)L_240)->max_length)))))
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:133>
+		int32_t L_242 = V_26;
+		MeshFilterU5BU5D_tCE3B457E6F7ECE5ECEE9E09150642150448685BA* L_243 = V_25;
+		NullCheck(L_243);
+		if ((((int32_t)L_242) < ((int32_t)((int32_t)(((RuntimeArray*)L_243)->max_length)))))
 		{
-			goto IL_0232;
+			goto IL_0241;
 		}
 	}
 
-IL_051c:
+IL_052b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:156>
-		bool L_241 = V_17;
-		V_55 = L_241;
-		bool L_242 = V_55;
-		if (!L_242)
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:161>
+		bool L_244 = V_17;
+		V_55 = L_244;
+		bool L_245 = V_55;
+		if (!L_245)
 		{
-			goto IL_0529;
+			goto IL_0538;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:156>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:161>
 		V_56 = (bool)1;
-		goto IL_055f;
+		goto IL_056e;
 	}
 
-IL_0529:
+IL_0538:
 	{
-		int32_t L_243 = V_15;
-		V_15 = ((int32_t)il2cpp_codegen_add(L_243, 1));
+		int32_t L_246 = V_15;
+		V_15 = ((int32_t)il2cpp_codegen_add(L_246, 1));
 	}
 
-IL_0530:
+IL_053f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:117>
-		int32_t L_244 = V_15;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_245 = V_14;
-		NullCheck(L_245);
-		if ((((int32_t)L_244) < ((int32_t)((int32_t)(((RuntimeArray*)L_245)->max_length)))))
-		{
-			goto IL_0126;
-		}
-	}
-	{
-		int32_t L_246 = V_12;
-		V_12 = ((int32_t)il2cpp_codegen_add(L_246, 1));
-	}
-
-IL_0541:
-	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:116>
-		int32_t L_247 = V_12;
-		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_248 = V_11;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:122>
+		int32_t L_247 = V_15;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_248 = V_14;
 		NullCheck(L_248);
 		if ((((int32_t)L_247) < ((int32_t)((int32_t)(((RuntimeArray*)L_248)->max_length)))))
 		{
-			goto IL_0103;
+			goto IL_0135;
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:158>
-		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_249 = ___0_marina;
-		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_250 = V_0;
-		NullCheck(L_249);
-		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_249, L_250, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:158>
-		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
-		Physics_SyncTransforms_mB88B6B27C24234D18846F614F9AE674976A5F1CA(NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:158>
-		V_56 = (bool)0;
-		goto IL_055f;
+		int32_t L_249 = V_12;
+		V_12 = ((int32_t)il2cpp_codegen_add(L_249, 1));
 	}
 
-IL_055f:
+IL_0550:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:159>
-		bool L_251 = V_56;
-		return L_251;
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:121>
+		int32_t L_250 = V_12;
+		SingleU5BU5D_t89DEFE97BCEDB5857010E79ECE0F52CF6E93B87C* L_251 = V_11;
+		NullCheck(L_251);
+		if ((((int32_t)L_250) < ((int32_t)((int32_t)(((RuntimeArray*)L_251)->max_length)))))
+		{
+			goto IL_0112;
+		}
+	}
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_252 = ___0_marina;
+		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_253 = V_0;
+		NullCheck(L_252);
+		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_252, L_253, NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		il2cpp_codegen_runtime_class_init_inline(Physics_t1244C2983AEAFA149425AFFC3DF53BC91C18ED56_il2cpp_TypeInfo_var);
+		Physics_SyncTransforms_mB88B6B27C24234D18846F614F9AE674976A5F1CA(NULL);
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		V_56 = (bool)0;
+		goto IL_056e;
+	}
+
+IL_056e:
+	{
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:164>
+		bool L_254 = V_56;
+		return L_254;
 	}
 }
-// Method Definition Index: 51946
+// Method Definition Index: 48821
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_FitRamp_mE3BEBF38EB0E97595F13B0F9365BD8559AC86212 (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19727,13 +19787,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_FitRamp_mE3BE
 	memset((&V_3), 0, sizeof(V_3));
 	bool V_4 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:168>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = ___0_root;
 		NullCheck(L_0);
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_1;
 		L_1 = Transform_Find_m3087032B0E1C5B96A2D2C27020BAEAE2DA08F932(L_0, _stringLiteralBC7825C24E5ADEC62D03F96967BB06E0A6E70F6E, NULL);
 		V_0 = L_1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:168>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_2 = V_0;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_3;
@@ -19746,13 +19806,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_FitRamp_mE3BE
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:163>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:168>
 		goto IL_00b7;
 	}
 
 IL_001f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:164>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:169>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_5 = ___0_root;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6;
 		memset((&L_6), 0, sizeof(L_6));
@@ -19761,7 +19821,7 @@ IL_001f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_7;
 		L_7 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_5, L_6, NULL);
 		V_1 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:165>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:170>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_8 = ___0_root;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_9;
 		memset((&L_9), 0, sizeof(L_9));
@@ -19770,19 +19830,19 @@ IL_001f:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_10;
 		L_10 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_8, L_9, NULL);
 		V_2 = L_10;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:165>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:170>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_11 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		float L_12;
 		L_12 = MarinaDockExtensionRuntime_Ground_m4B63AA7F4126F12A36E437A1175C9A27E283F6B1(L_11, NULL);
 		(&V_2)->___y = ((float)il2cpp_codegen_add(L_12, (0.0799999982f)));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:166>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:171>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = V_2;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_15;
 		L_15 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_13, L_14, NULL);
 		V_3 = L_15;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:172>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_16 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_17 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_18 = V_2;
@@ -19792,7 +19852,7 @@ IL_001f:
 		L_20 = Vector3_op_Multiply_m87BA7C578F96C8E49BB07088DAAC4649F83B0353_inline(L_19, (0.5f), NULL);
 		NullCheck(L_16);
 		Transform_set_position_mA1A817124BB41B685043DED2A9BA48CDF37C4156(L_16, L_20, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:167>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:172>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_21 = V_0;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_22 = V_3;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_23;
@@ -19801,7 +19861,7 @@ IL_001f:
 		L_24 = Quaternion_LookRotation_mFB02EDC8F733774DFAC3BEA4B4BB265A228F8307_inline(L_22, L_23, NULL);
 		NullCheck(L_21);
 		Transform_set_rotation_m61340DE74726CF0F9946743A727C4D444397331D(L_21, L_24, NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:169>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:174>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_25 = V_0;
 		float L_26;
 		L_26 = Vector3_get_magnitude_mF0D6017E90B345F1F52D1CC564C640F1A847AF2D_inline((&V_3), NULL);
@@ -19814,11 +19874,11 @@ IL_001f:
 
 IL_00b7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:170>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:175>
 		return;
 	}
 }
-// Method Definition Index: 51947
+// Method Definition Index: 48822
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterClear_m96431F95B19AD8B96F48A052C0CA91EE6463FCCB (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_point, float ___1_radius, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -19867,7 +19927,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterClear_m9
 	Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 G_B23_3;
 	memset((&G_B23_3), 0, sizeof(G_B23_3));
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:174>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:179>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_0 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -19902,23 +19962,23 @@ IL_001e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:174>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:179>
 		V_4 = (bool)1;
 		goto IL_016e;
 	}
 
 IL_002a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:175>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:180>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_5 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		NullCheck(L_5);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_6 = L_5->___worldBounds;
 		V_0 = L_6;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:175>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:180>
 		float L_7 = ___1_radius;
 		Bounds_Expand_m49340CC585463AB7DEFD672E523ADD5443AFFEA3((&V_0), ((float)il2cpp_codegen_multiply(L_7, (2.0f))), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:181>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8 = ___0_point;
 		bool L_9;
 		L_9 = Bounds_Contains_m584E9DE0CF9D90C3C4F928BA8F5AD328393F3555_inline((&V_0), L_8, NULL);
@@ -19930,14 +19990,14 @@ IL_002a:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:176>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:181>
 		V_4 = (bool)1;
 		goto IL_016e;
 	}
 
 IL_005d:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:182>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_11 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		NullCheck(L_11);
@@ -19949,14 +20009,14 @@ IL_005d:
 
 IL_006f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:182>
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_13 = V_6;
 		int32_t L_14 = V_7;
 		NullCheck(L_13);
 		int32_t L_15 = L_14;
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_16 = (L_13)->GetAt(static_cast<il2cpp_array_size_t>(L_15));
 		V_8 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:179>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:184>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_17 = V_8;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_18;
@@ -19990,22 +20050,22 @@ IL_008e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:179>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:184>
 		goto IL_00e1;
 	}
 
 IL_0096:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:180>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:185>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_22 = V_8;
 		NullCheck(L_22);
 		Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 L_23;
 		L_23 = Collider_get_bounds_mCC32F749590E9A85C7930E5355661367F78E4CB4(L_22, NULL);
 		V_9 = L_23;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:180>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:185>
 		float L_24 = ___1_radius;
 		Bounds_Expand_m49340CC585463AB7DEFD672E523ADD5443AFFEA3((&V_9), ((float)il2cpp_codegen_multiply(L_24, (2.0f))), NULL);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:181>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:186>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_25 = ___0_point;
 		bool L_26;
 		L_26 = Bounds_Contains_m584E9DE0CF9D90C3C4F928BA8F5AD328393F3555_inline((&V_9), L_25, NULL);
@@ -20017,13 +20077,13 @@ IL_0096:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:181>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:186>
 		goto IL_00e1;
 	}
 
 IL_00c1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:189>
 		Collider_t1CC3163924FCD6C4CC2E816373A929C1E3D55E76* L_28 = V_8;
 		NullCheck(L_28);
 		String_t* L_29;
@@ -20038,7 +20098,7 @@ IL_00c1:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:184>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:189>
 		V_4 = (bool)0;
 		goto IL_016e;
 	}
@@ -20055,7 +20115,7 @@ IL_00e1:
 
 IL_00e7:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:177>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:182>
 		int32_t L_33 = V_7;
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_34 = V_6;
 		NullCheck(L_34);
@@ -20065,11 +20125,11 @@ IL_00e7:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:186>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:191>
 		int32_t L_35;
 		L_35 = LayerMask_NameToLayer_m2764C530EDA9EC3226A36E3FD43E020B413AF139(_stringLiteralE5A22B80916586DE88322B31E1516201F5FE6993, NULL);
 		V_1 = L_35;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:187>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:192>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_36 = ___0_point;
 		float L_37 = ___1_radius;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
@@ -20109,14 +20169,14 @@ IL_010f:
 		int32_t L_41;
 		L_41 = Physics_OverlapSphereNonAlloc_mED890C8454FCC0354A94F97453707FA01B27AE83(G_B23_3, G_B23_2, G_B23_1, G_B23_0, 1, NULL);
 		V_2 = L_41;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:193>
 		V_13 = 0;
 		goto IL_0149;
 	}
 
 IL_011b:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:193>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_42 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		NullCheck(L_42);
@@ -20136,21 +20196,21 @@ IL_011b:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:193>
 		V_4 = (bool)0;
 		goto IL_016e;
 	}
 
 IL_0143:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:193>
 		int32_t L_50 = V_13;
 		V_13 = ((int32_t)il2cpp_codegen_add(L_50, 1));
 	}
 
 IL_0149:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:188>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:193>
 		int32_t L_51 = V_13;
 		int32_t L_52 = V_2;
 		V_15 = (bool)((((int32_t)L_51) < ((int32_t)L_52))? 1 : 0);
@@ -20161,7 +20221,7 @@ IL_0149:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:189>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:194>
 		int32_t L_54 = V_2;
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		ColliderU5BU5D_t94A9D70F63D095AFF2A9B4613012A5F7F3141787* L_55 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___waterHits;
@@ -20174,26 +20234,26 @@ IL_0149:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:189>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:194>
 		V_4 = (bool)0;
 		goto IL_016e;
 	}
 
 IL_0169:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:190>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:195>
 		V_4 = (bool)1;
 		goto IL_016e;
 	}
 
 IL_016e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:191>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
 		bool L_57 = V_4;
 		return L_57;
 	}
 }
-// Method Definition Index: 51948
+// Method Definition Index: 48823
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterSegmentClear_m3072096FBD2B0B320691F4C97DB76DE4909A3579 (Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_from, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___1_to, float ___2_radius, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20212,7 +20272,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_WaterSegmentC
 	bool V_6 = false;
 	int32_t G_B3_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:194>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:199>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_0 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -20247,20 +20307,20 @@ IL_001e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:194>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:199>
 		V_3 = (bool)1;
 		goto IL_0084;
 	}
 
 IL_0026:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:195>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:200>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = ___0_from;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_6 = ___1_to;
 		float L_7;
 		L_7 = Vector3_Distance_m2314DB9B8BD01157E013DF87BEA557375C7F9FF9_inline(L_5, L_6, NULL);
 		V_0 = L_7;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:195>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:200>
 		float L_8 = V_0;
 		float L_9 = ___2_radius;
 		float L_10;
@@ -20270,14 +20330,14 @@ IL_0026:
 		int32_t L_12;
 		L_12 = Mathf_Max_m7FA442918DE37E3A00106D1F2E789D65829792B8_inline(1, L_11, NULL);
 		V_1 = L_12;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
 		V_4 = 0;
 		goto IL_0072;
 	}
 
 IL_004c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_13 = ___0_from;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_14 = ___1_to;
 		int32_t L_15 = V_4;
@@ -20296,21 +20356,21 @@ IL_004c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
 		V_3 = (bool)0;
 		goto IL_0084;
 	}
 
 IL_006c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
 		int32_t L_21 = V_4;
 		V_4 = ((int32_t)il2cpp_codegen_add(L_21, 1));
 	}
 
 IL_0072:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:196>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
 		int32_t L_22 = V_4;
 		int32_t L_23 = V_1;
 		V_6 = (bool)((((int32_t)((((int32_t)L_22) > ((int32_t)L_23))? 1 : 0)) == ((int32_t)0))? 1 : 0);
@@ -20321,19 +20381,19 @@ IL_0072:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:197>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
 		V_3 = (bool)1;
 		goto IL_0084;
 	}
 
 IL_0084:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:198>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:203>
 		bool L_25 = V_3;
 		return L_25;
 	}
 }
-// Method Definition Index: 51949
+// Method Definition Index: 48824
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_OnDestroy_m7FC88E1B5FB9683BDE60715F4B34420FDF4255EE (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20353,7 +20413,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_OnDestroy_m7F
 	Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* V_2 = NULL;
 	bool V_3 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:206>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* L_0 = ((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
@@ -20367,7 +20427,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_OnDestroy_m7F
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:201>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:206>
 		il2cpp_codegen_runtime_class_init_inline(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var);
 		((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active = (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349*)NULL;
 		Il2CppCodeGenWriteBarrier((void**)(&((MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_StaticFields*)il2cpp_codegen_static_fields_for(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349_il2cpp_TypeInfo_var))->___active), (void*)(MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349*)NULL);
@@ -20375,7 +20435,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime_OnDestroy_m7F
 
 IL_0016:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
 		List_1_t43FB89B126C93A6B04630BC64C751BBE95AFEAF4* L_3 = __this->___stretchedMeshes;
 		NullCheck(L_3);
 		Enumerator_t4A9A6A9508198EDB2BF4245488EC602D8CBA505F L_4;
@@ -20400,11 +20460,11 @@ FINALLY_004a:
 
 IL_0025_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
 				Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_5;
 				L_5 = Enumerator_get_Current_m393177B5F91BAC1C09D2795868AC2A7D6D40DBF6_inline((&V_1), Enumerator_get_Current_m393177B5F91BAC1C09D2795868AC2A7D6D40DBF6_RuntimeMethod_var);
 				V_2 = L_5;
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
 				Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_6 = V_2;
 				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 				bool L_7;
@@ -20417,7 +20477,7 @@ IL_0025_1:
 				}
 			}
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
 				Mesh_t6D9C539763A09BC2B12AEAEF36F6DFFC98AE63D4* L_9 = V_2;
 				il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 				Object_Destroy_mE97D0A766419A81296E8D4E5C23D01D3FE91ACBB(L_9, NULL);
@@ -20425,7 +20485,7 @@ IL_0025_1:
 
 IL_003f_1:
 			{
-				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:202>
+				//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
 				bool L_10;
 				L_10 = Enumerator_MoveNext_mA27CC8F7CE4A5FE91F62D4CEA0AF8140BE963ACA((&V_1), Enumerator_MoveNext_mA27CC8F7CE4A5FE91F62D4CEA0AF8140BE963ACA_RuntimeMethod_var);
 				if (L_10)
@@ -20445,11 +20505,11 @@ IL_003f_1:
 
 IL_0059:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:203>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:208>
 		return;
 	}
 }
-// Method Definition Index: 51950
+// Method Definition Index: 48825
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_FindSafeDockEnd_m4E78D49BE4D2EED2AC90D648A66649497D925652 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_marina, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___1_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20479,16 +20539,16 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MarinaDockExtensionRuntime_FindSafeDock
 	float V_15 = 0.0f;
 	bool V_16 = false;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:206>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:211>
 		V_0 = (22.0f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:212>
 		V_1 = (22.0f);
 		goto IL_0107;
 	}
 
 IL_0012:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:209>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:214>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_0 = ___0_marina;
 		float L_1 = V_1;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_2;
@@ -20498,14 +20558,14 @@ IL_0012:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_3;
 		L_3 = Transform_TransformPoint_m05BFF013DB830D7BFE44A007703694AE1062EE44(L_0, L_2, NULL);
 		V_2 = L_3;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:210>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:215>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_4 = ___1_water;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_5 = V_2;
 		NullCheck(L_4);
 		float L_6;
 		L_6 = OceanWater_GetSurfaceHeight_m660C1B860F345B44E8F428E66C440D1D47ECE15C(L_4, L_5, NULL);
 		(&V_2)->___y = L_6;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:211>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:216>
 		Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* L_7 = ___0_marina;
 		NullCheck(L_7);
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_8;
@@ -20514,14 +20574,14 @@ IL_0012:
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_10;
 		L_10 = Quaternion_Euler_m9262AB29E3E9CE94EF71051F38A28E82AEC73F90_inline((0.0f), L_9, (0.0f), NULL);
 		V_3 = L_10;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:213>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:218>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_11 = V_2;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_12 = V_3;
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_13 = ___1_water;
 		bool L_14;
 		L_14 = MarinaDockExtensionRuntime_HasCatalogDepth_mC93FB1968D304F52086D670D34AAD2EC1E85FBCE(__this, L_11, L_12, L_13, NULL);
 		V_4 = L_14;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:214>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:219>
 		bool L_15 = V_4;
 		V_6 = L_15;
 		bool L_16 = V_6;
@@ -20531,14 +20591,14 @@ IL_0012:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:214>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:219>
 		float L_17 = V_1;
 		V_0 = L_17;
 	}
 
 IL_006e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:220>
 		bool L_18 = V_4;
 		V_7 = (bool)((((int32_t)L_18) == ((int32_t)0))? 1 : 0);
 		bool L_19 = V_7;
@@ -20548,15 +20608,15 @@ IL_006e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:215>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:220>
 		goto IL_00ff;
 	}
 
 IL_007e:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:217>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:222>
 		V_5 = (bool)1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:218>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:223>
 		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_20 = __this->___boats;
 		NullCheck(L_20);
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_21 = L_20->___Catalog;
@@ -20568,7 +20628,7 @@ IL_007e:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:220>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:225>
 		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_23 = __this->___boats;
 		NullCheck(L_23);
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_24 = L_23->___Catalog;
@@ -20579,14 +20639,14 @@ IL_007e:
 
 IL_00a9:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:220>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:225>
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_25 = V_9;
 		int32_t L_26 = V_10;
 		NullCheck(L_25);
 		int32_t L_27 = L_26;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_28 = (L_25)->GetAt(static_cast<il2cpp_array_size_t>(L_27));
 		V_11 = L_28;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:222>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:227>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_29 = V_11;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_30;
@@ -20599,13 +20659,13 @@ IL_00a9:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:222>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:227>
 		goto IL_00e2;
 	}
 
 IL_00c1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:223>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:228>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_32 = V_11;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_33 = V_2;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_34 = V_3;
@@ -20623,9 +20683,9 @@ IL_00c1:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:224>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:229>
 		V_5 = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:224>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:229>
 		goto IL_00f0;
 	}
 
@@ -20641,7 +20701,7 @@ IL_00e2:
 
 IL_00e8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:220>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:225>
 		int32_t L_40 = V_10;
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_41 = V_9;
 		NullCheck(L_41);
@@ -20657,7 +20717,7 @@ IL_00f0:
 
 IL_00f1:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:227>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:232>
 		bool L_42 = V_5;
 		V_14 = L_42;
 		bool L_43 = V_14;
@@ -20667,7 +20727,7 @@ IL_00f1:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:227>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:232>
 		float L_44 = V_1;
 		V_15 = L_44;
 		goto IL_012f;
@@ -20679,14 +20739,14 @@ IL_00fe:
 
 IL_00ff:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:212>
 		float L_45 = V_1;
 		V_1 = ((float)il2cpp_codegen_add(L_45, (1.0f)));
 	}
 
 IL_0107:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:207>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:212>
 		float L_46 = V_1;
 		V_16 = (bool)((((int32_t)((!(((float)L_46) <= ((float)(42.0f))))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_47 = V_16;
@@ -20696,7 +20756,7 @@ IL_0107:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:229>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:234>
 		float L_48 = V_0;
 		float L_49;
 		L_49 = Mathf_Clamp_mEB9AEA827D27D20FCC787F7375156AF46BB12BBF_inline(L_48, (22.0f), (42.0f), NULL);
@@ -20706,12 +20766,12 @@ IL_0107:
 
 IL_012f:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:230>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:235>
 		float L_50 = V_15;
 		return L_50;
 	}
 }
-// Method Definition Index: 51951
+// Method Definition Index: 48826
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_HasCatalogDepth_mC93FB1968D304F52086D670D34AAD2EC1E85FBCE (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_center, Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 ___1_rotation, OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* ___2_water, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -20749,13 +20809,13 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_HasCatalogDep
 	bool V_23 = false;
 	int32_t G_B16_0 = 0;
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:239>
 		V_0 = (2.5f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:239>
 		V_1 = (3.5f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:234>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:239>
 		V_2 = (1.25f);
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:235>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:240>
 		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_0 = __this->___boats;
 		NullCheck(L_0);
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_1 = L_0->___Catalog;
@@ -20767,7 +20827,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_HasCatalogDep
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:237>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:242>
 		BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* L_3 = __this->___boats;
 		NullCheck(L_3);
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_4 = L_3->___Catalog;
@@ -20778,14 +20838,14 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MarinaDockExtensionRuntime_HasCatalogDep
 
 IL_003c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:237>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:242>
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_5 = V_4;
 		int32_t L_6 = V_5;
 		NullCheck(L_5);
 		int32_t L_7 = L_6;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_8 = (L_5)->GetAt(static_cast<il2cpp_array_size_t>(L_7));
 		V_6 = L_8;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:239>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:244>
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_9 = V_6;
 		il2cpp_codegen_runtime_class_init_inline(Object_tC12DECB6760A7F2CBF65D9DCF18D044C2D97152C_il2cpp_TypeInfo_var);
 		bool L_10;
@@ -20798,13 +20858,13 @@ IL_003c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:239>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:244>
 		goto IL_00a7;
 	}
 
 IL_0054:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:240>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:245>
 		float L_12 = V_0;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_13 = V_6;
 		NullCheck(L_13);
@@ -20813,7 +20873,7 @@ IL_0054:
 		float L_16;
 		L_16 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_12, ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_15, (0.5f))), (1.0f))), NULL);
 		V_0 = L_16;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:241>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:246>
 		float L_17 = V_1;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_18 = V_6;
 		NullCheck(L_18);
@@ -20822,7 +20882,7 @@ IL_0054:
 		float L_21;
 		L_21 = Mathf_Max_mF5379E63D2BBAC76D090748695D833934F8AD051_inline(L_17, ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_20, (0.5f))), (1.0f))), NULL);
 		V_1 = L_21;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:242>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:247>
 		float L_22 = V_2;
 		BoatData_tD43AA1C5FE7FDD30F91BD1D2DC3C4CE97CC610ED* L_23 = V_6;
 		NullCheck(L_23);
@@ -20840,7 +20900,7 @@ IL_00a7:
 
 IL_00ad:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:237>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:242>
 		int32_t L_27 = V_5;
 		BoatDataU5BU5D_tF180599F8F49D9018FCE585B4D5449CE93D28A65* L_28 = V_4;
 		NullCheck(L_28);
@@ -20854,21 +20914,21 @@ IL_00ad:
 
 IL_00b6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:246>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
 		V_8 = ((int32_t)-2);
 		goto IL_01f4;
 	}
 
 IL_00bf:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:247>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:252>
 		V_9 = ((int32_t)-3);
 		goto IL_01dd;
 	}
 
 IL_00c8:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:249>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:254>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_29 = ___0_center;
 		Quaternion_tDA59F214EF07D7700B26E40E562F267AF7306974 L_30 = ___1_rotation;
 		float L_31 = V_0;
@@ -20883,9 +20943,9 @@ IL_00c8:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_37;
 		L_37 = Vector3_op_Addition_m78C0EC70CB66E8DCAC225743D82B268DAEE92067_inline(L_29, L_36, NULL);
 		V_10 = L_37;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:250>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:255>
 		V_11 = (bool)0;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:256>
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_38;
 		L_38 = Terrain_get_activeTerrains_mB90A9BC89764F626D13F3EF1420EA8D3E186B701(NULL);
 		V_12 = L_38;
@@ -20895,14 +20955,14 @@ IL_00c8:
 
 IL_010a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:256>
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_39 = V_12;
 		int32_t L_40 = V_13;
 		NullCheck(L_39);
 		int32_t L_41 = L_40;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_42 = (L_39)->GetAt(static_cast<il2cpp_array_size_t>(L_41));
 		V_14 = L_42;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:253>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:258>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_43 = V_10;
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_44 = V_14;
 		NullCheck(L_44);
@@ -20914,7 +20974,7 @@ IL_010a:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_47;
 		L_47 = Vector3_op_Subtraction_mE42023FF80067CB44A1D4A27EB7CF2B24CABB828_inline(L_43, L_46, NULL);
 		V_15 = L_47;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:254>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:259>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_48 = V_14;
 		NullCheck(L_48);
 		TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* L_49;
@@ -20923,7 +20983,7 @@ IL_010a:
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_50;
 		L_50 = TerrainData_get_size_mCD3977F344B9DEBFF61DD537D03FEB9473838DA5(L_49, NULL);
 		V_16 = L_50;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:255>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:260>
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_51 = V_15;
 		float L_52 = L_51.___x;
 		if ((((float)L_52) < ((float)(0.0f))))
@@ -20973,15 +21033,15 @@ IL_0174:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:255>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:260>
 		goto IL_01b5;
 	}
 
 IL_017c:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:256>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:261>
 		V_11 = (bool)1;
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:257>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:262>
 		Terrain_t7F309492F67238DBFBC4566F47385B2A665CF667* L_64 = V_14;
 		Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 L_65 = V_10;
 		NullCheck(L_64);
@@ -20996,7 +21056,7 @@ IL_017c:
 		L_69 = Transform_get_position_m69CD5FA214FDAE7BB701552943674846C220FDE1(L_68, NULL);
 		float L_70 = L_69.___y;
 		V_17 = ((float)il2cpp_codegen_add(L_66, L_70));
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:263>
 		OceanWater_t4335938C85C93BBD8FC6B42830E845900A02ACC1* L_71 = ___2_water;
 		NullCheck(L_71);
 		float L_72;
@@ -21011,14 +21071,14 @@ IL_017c:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:258>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:263>
 		V_20 = (bool)0;
 		goto IL_020a;
 	}
 
 IL_01b3:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:259>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:264>
 		goto IL_01c6;
 	}
 
@@ -21030,7 +21090,7 @@ IL_01b5:
 
 IL_01bb:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:256>
 		int32_t L_77 = V_13;
 		TerrainU5BU5D_t89E2F0565563C3D9005990300ADEDD183F1823FE* L_78 = V_12;
 		NullCheck(L_78);
@@ -21042,7 +21102,7 @@ IL_01bb:
 
 IL_01c6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:261>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:266>
 		bool L_79 = V_11;
 		V_21 = (bool)((((int32_t)L_79) == ((int32_t)0))? 1 : 0);
 		bool L_80 = V_21;
@@ -21052,21 +21112,21 @@ IL_01c6:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:261>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:266>
 		V_20 = (bool)0;
 		goto IL_020a;
 	}
 
 IL_01d6:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:247>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:252>
 		int32_t L_81 = V_9;
 		V_9 = ((int32_t)il2cpp_codegen_add(L_81, 1));
 	}
 
 IL_01dd:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:247>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:252>
 		int32_t L_82 = V_9;
 		V_22 = (bool)((((int32_t)((((int32_t)L_82) > ((int32_t)3))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_83 = V_22;
@@ -21076,14 +21136,14 @@ IL_01dd:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:246>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
 		int32_t L_84 = V_8;
 		V_8 = ((int32_t)il2cpp_codegen_add(L_84, 1));
 	}
 
 IL_01f4:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:246>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:251>
 		int32_t L_85 = V_8;
 		V_23 = (bool)((((int32_t)((((int32_t)L_85) > ((int32_t)2))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 		bool L_86 = V_23;
@@ -21093,19 +21153,19 @@ IL_01f4:
 		}
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:263>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:268>
 		V_20 = (bool)1;
 		goto IL_020a;
 	}
 
 IL_020a:
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:264>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Boats/MarinaDockExtensionRuntime.cs:269>
 		bool L_87 = V_20;
 		return L_87;
 	}
 }
-// Method Definition Index: 51952
+// Method Definition Index: 48827
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__ctor_m6A19521E78B2F6100316F3A69FA626852F702D80 (MarinaDockExtensionRuntime_t861AAABA44F36AAFF24F3BF4E4FC89CFAD369349* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21125,7 +21185,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__ctor_m6A1952
 		return;
 	}
 }
-// Method Definition Index: 51953
+// Method Definition Index: 48828
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__cctor_m5528AF843D0719F9DFE070A10DA1EC88C08A2EB6 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21151,7 +21211,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaDockExtensionRuntime__cctor_m5528A
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51954
+// Method Definition Index: 48829
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Install_m6C0A10155D5B242C95FBA9181B6B0FEC0CB70545 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21221,7 +21281,7 @@ IL_002f:
 		return;
 	}
 }
-// Method Definition Index: 51955
+// Method Definition Index: 48830
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnEnable_m2475D63C2AD78D7E22D2721FA872718C6DBA80CB (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21240,7 +21300,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnEnable_m2475D63
 		return;
 	}
 }
-// Method Definition Index: 51956
+// Method Definition Index: 48831
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDisable_m62E61014060246AC3C44CF5EC2A6AA14F85C3320 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21259,7 +21319,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDisable_m62E610
 		return;
 	}
 }
-// Method Definition Index: 51957
+// Method Definition Index: 48832
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnDestroy_m4B2571E4F0019E8ABF97F4CCF2A7145C1C428E8D (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21298,7 +21358,7 @@ IL_0026:
 		return;
 	}
 }
-// Method Definition Index: 51958
+// Method Definition Index: 48833
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Awake_m422253F5CBB4416D73096C2D6FCB5D61AA36111B (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	{
@@ -21308,7 +21368,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Awake_m422253F5CB
 		return;
 	}
 }
-// Method Definition Index: 51959
+// Method Definition Index: 48834
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_Repair_m4FB2F64E866989D3567DD2450FAB015DCDCEA617 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21716,7 +21776,7 @@ IL_0277:
 		return;
 	}
 }
-// Method Definition Index: 51960
+// Method Definition Index: 48835
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_OnFontTextureRebuilt_mAAFA7F7600FC49BE3EB4FE9574598C3E90804F0F (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, Font_tC95270EA3198038970422D78B74A7F2E218A96B6* ___0_rebuilt, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21798,7 +21858,7 @@ IL_0044:
 		return;
 	}
 }
-// Method Definition Index: 51961
+// Method Definition Index: 48836
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* MarinaSignPresentation_FitNextFrame_mA00C81005F4EA679BF6A7C0CFF3FD52BEDDE19A9 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -21818,7 +21878,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* MarinaSignPresentation_FitNext
 		return L_1;
 	}
 }
-// Method Definition Index: 51962
+// Method Definition Index: 48837
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_FitToSign_mED15EFB0DD4D8966DEDF647517689F5A24AF165D (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22024,7 +22084,7 @@ IL_015e:
 		return;
 	}
 }
-// Method Definition Index: 51963
+// Method Definition Index: 48838
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_SetWorldScale_m632F17CCFA5BC4A08944DE529BF5F940F3093DAF (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, float ___0_uniformWorldScale, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22123,7 +22183,7 @@ IL_0086:
 		return;
 	}
 }
-// Method Definition Index: 51964
+// Method Definition Index: 48839
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation_LateUpdate_mF2CB7B9E37A139FE775F73AA6773E523723741E3 (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22200,7 +22260,7 @@ IL_0047:
 		return;
 	}
 }
-// Method Definition Index: 51965
+// Method Definition Index: 48840
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* MarinaSignPresentation_FindDeepChild_m4DC0BBA2A1A23CB173A2F057C46AA4E4FF125A0F (Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* ___0_root, String_t* ___1_name, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22309,7 +22369,7 @@ IL_0042:
 		return L_17;
 	}
 }
-// Method Definition Index: 51966
+// Method Definition Index: 48841
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation__ctor_m1A33DE9EC0E3BD148F1B154667F74BBE139749EC (MarinaSignPresentation_tA967DB7274779DF144532F9C23D558BC05523920* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22326,7 +22386,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MarinaSignPresentation__ctor_m1A33DE9EC0
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51967
+// Method Definition Index: 48842
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13__ctor_m0B63895E8804DA989D6FD716A2644D228D9C7F20 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, int32_t ___0_U3CU3E1__state, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22337,7 +22397,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13__ctor_m0B63895E8
 		return;
 	}
 }
-// Method Definition Index: 51968
+// Method Definition Index: 48843
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_IDisposable_Dispose_m97C6634C10236DD5EAB16231D5219C0606AD1D92 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22345,7 +22405,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_IDisposab
 		return;
 	}
 }
-// Method Definition Index: 51969
+// Method Definition Index: 48844
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool U3CFitNextFrameU3Ed__13_MoveNext_m266B95866C07DF328BE0515F4373D1A253766B7B (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	int32_t V_0 = 0;
@@ -22410,7 +22470,7 @@ IL_0030:
 		return (bool)0;
 	}
 }
-// Method Definition Index: 51970
+// Method Definition Index: 48845
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System_Collections_Generic_IEnumeratorU3CSystem_ObjectU3E_get_Current_mA62CD934BEA6F63FE99292372E91C21874875593 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22419,7 +22479,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System
 		return L_0;
 	}
 }
-// Method Definition Index: 51971
+// Method Definition Index: 48846
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_Reset_mEAAC73F2278ED121956EABD5D4601AB875CE4DC8 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22429,7 +22489,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void U3CFitNextFrameU3Ed__13_System_Collectio
 		IL2CPP_RAISE_MANAGED_EXCEPTION(L_0, ((RuntimeMethod*)il2cpp_codegen_initialize_runtime_metadata_inline((uintptr_t*)&U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_Reset_mEAAC73F2278ED121956EABD5D4601AB875CE4DC8_RuntimeMethod_var)));
 	}
 }
-// Method Definition Index: 51972
+// Method Definition Index: 48847
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System_Collections_IEnumerator_get_Current_mAA54FAB6CC74D3618F8C6C03A68C2A064C28DBE8 (U3CFitNextFrameU3Ed__13_t6E98AB4C58CF58F8C83BD0FE4BBBAFB718635CE6* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -22446,7 +22506,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR RuntimeObject* U3CFitNextFrameU3Ed__13_System
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51973
+// Method Definition Index: 48848
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* MotorboatDrivingSeat_get_PassengerAnchor_mD5B0C63A8098021B23FDDB18C26B26992995DC2A (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22455,7 +22515,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99
 		return L_0;
 	}
 }
-// Method Definition Index: 51974
+// Method Definition Index: 48849
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 MotorboatDrivingSeat_get_PassengerSurface_mACEB7E1E64890D655DCDDE23C6CA86C4879F69F9 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22469,7 +22529,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_2;
 	}
 }
-// Method Definition Index: 51975
+// Method Definition Index: 48850
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* MotorboatDrivingSeat_For_m42BB8AE5D28C859218E1581402E7C065F8B325DE (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_boat, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22574,7 +22634,7 @@ IL_003f:
 		return L_13;
 	}
 }
-// Method Definition Index: 51976
+// Method Definition Index: 48851
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 MotorboatDrivingSeat_get_SeatSurface_mFDA86E85C952C1BB934D036515F0098D07D77DB4 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22588,7 +22648,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_2;
 	}
 }
-// Method Definition Index: 51977
+// Method Definition Index: 48852
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 MotorboatDrivingSeat_get_LeftGrip_m7C0D21CDC37198F92F95648E826BB23682B59828 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22609,7 +22669,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_6;
 	}
 }
-// Method Definition Index: 51978
+// Method Definition Index: 48853
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 MotorboatDrivingSeat_get_RightGrip_m410548D4D74204233E447937561FC46C7970BE24 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22630,7 +22690,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A
 		return L_6;
 	}
 }
-// Method Definition Index: 51979
+// Method Definition Index: 48854
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 MotorboatDrivingSeat_ClosestRimPoint_mBA102E517BB7C64028A7DE6F9ACB0506ECF71831 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, Vector3_t24C512C7B96BBABAD472002D0BA2BDA40A5A80B2 ___0_palm, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -22842,7 +22902,7 @@ IL_0141:
 		return L_64;
 	}
 }
-// Method Definition Index: 51980
+// Method Definition Index: 48855
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatDrivingSeat_Awake_m2C24BA71165C95294D7B88AD36486ED9A200DC47 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -22852,7 +22912,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatDrivingSeat_Awake_m2C24BA71165C
 		return;
 	}
 }
-// Method Definition Index: 51981
+// Method Definition Index: 48856
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MotorboatDrivingSeat_Has_m4C50B415188A1B4AECCD93F59DAEE213835E02DF (String_t* ___0_name, String_t* ___1_term, const RuntimeMethod* method) 
 {
 	{
@@ -22865,7 +22925,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR bool MotorboatDrivingSeat_Has_m4C50B415188A1B
 		return (bool)((((int32_t)((((int32_t)L_2) < ((int32_t)0))? 1 : 0)) == ((int32_t)0))? 1 : 0);
 	}
 }
-// Method Definition Index: 51982
+// Method Definition Index: 48857
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatDrivingSeat_Locate_m70D9A41220FB0531F8DADD80FA30AC92419BCAC0 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -23847,7 +23907,7 @@ IL_05ac:
 		return;
 	}
 }
-// Method Definition Index: 51983
+// Method Definition Index: 48858
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 MotorboatDrivingSeat_BoatLocalBounds_m8E7506217CCE2D563196CDEBB32689268A1CB031 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, Renderer_t320575F223BCB177A982E5DDB5DB19FAA89E7FBF* ___0_renderer, const RuntimeMethod* method) 
 {
 	Bounds_t367E830C64BBF235ED8C3B2F8CF6254FDCAD39C3 V_0;
@@ -23999,7 +24059,7 @@ IL_00be:
 		return L_30;
 	}
 }
-// Method Definition Index: 51984
+// Method Definition Index: 48859
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatDrivingSeat__ctor_m899515844E2A439EF78910D285780463BE759365 (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -24016,7 +24076,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatDrivingSeat__ctor_m899515844E2A
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 51985
+// Method Definition Index: 48860
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_Awake_m16C133F43A75ECE927771B9E3FFD92C8B7154B41 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24041,7 +24101,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_Awake_m16C133F4
 		return;
 	}
 }
-// Method Definition Index: 51986
+// Method Definition Index: 48861
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_OnEnable_m9CB38825234569BC0CF3F2C6BBCD28FA9D8D1F70 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24088,7 +24148,7 @@ IL_0044:
 		return;
 	}
 }
-// Method Definition Index: 51987
+// Method Definition Index: 48862
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_OnDisable_m372CC24FE407677B7328786FF30AD07C21EEC04B (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24193,7 +24253,7 @@ IL_0062:
 		return;
 	}
 }
-// Method Definition Index: 51988
+// Method Definition Index: 48863
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_LateUpdate_m62B39EB69EE490A542141ED6797A08E6977967BE (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24549,7 +24609,7 @@ IL_01a3:
 		return;
 	}
 }
-// Method Definition Index: 51989
+// Method Definition Index: 48864
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_PrepareAudio_m687093AC552D27C2C0BD4CCA4148C2E94F5B16C7 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24709,7 +24769,7 @@ IL_00d0:
 		return;
 	}
 }
-// Method Definition Index: 51990
+// Method Definition Index: 48865
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR AudioSource_t871AC2272F896738252F04EE949AEF5B241D3299* MotorboatEngineAnimation_CreateSource_mC6965E5EC9FA027D0B0463C71277F3E4DAFBDBCB (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24773,7 +24833,7 @@ IL_0065:
 		return L_11;
 	}
 }
-// Method Definition Index: 51991
+// Method Definition Index: 48866
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_PlayIgnition_m7B5141D5D792C63EA92516B41562C7C13B9D657C (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, AudioClip_t5D272C4EB4F2D3ED49F1C346DEA373CF6D585F20* ___0_clip, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -24818,7 +24878,7 @@ IL_0031:
 		return;
 	}
 }
-// Method Definition Index: 51992
+// Method Definition Index: 48867
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR float MotorboatEngineAnimation_SmoothRange_mD35D7C856B92A8C03BD52F9199E4A1B42B08FA27 (float ___0_a, float ___1_b, float ___2_value, const RuntimeMethod* method) 
 {
 	float V_0 = 0.0f;
@@ -24847,7 +24907,7 @@ IL_0022:
 		return L_8;
 	}
 }
-// Method Definition Index: 51993
+// Method Definition Index: 48868
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_UpdateEngineAudio_m562C970ADFBA71B708620A92F133FDBADAF1F791 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, float ___0_measuredSpeed, bool ___1_running, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25306,7 +25366,7 @@ IL_02a6:
 		return;
 	}
 }
-// Method Definition Index: 51994
+// Method Definition Index: 48869
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation_ApplyLayer_m442320F4E794AAF2750EE8FEC2308113792541D0 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, int32_t ___0_index, float ___1_weight, float ___2_pitch, float ___3_blend, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25499,7 +25559,7 @@ IL_00b7:
 		return;
 	}
 }
-// Method Definition Index: 51995
+// Method Definition Index: 48870
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation__ctor_m932E5DC0F4F6A87B46906D0F8E1207231BF74742 (MotorboatEngineAnimation_tF2BDBBE1833C81E25F95360C9D38972DA21DE1D6* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25521,7 +25581,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation__ctor_m932E5DC0
 		return;
 	}
 }
-// Method Definition Index: 51996
+// Method Definition Index: 48871
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void MotorboatEngineAnimation__cctor_mD17D2385E4F1CA3751BD52E1C6F879E0D9C5E298 (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -25712,7 +25772,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 51887
+// Method Definition Index: 48762
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatPassenger_get_Boat_m33A6D6679104FA5AF25CA92BFBBA498D52FEB1E1_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25721,7 +25781,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC258
 		return L_0;
 	}
 }
-// Method Definition Index: 51973
+// Method Definition Index: 48848
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A13E4D662BF99785DB1* MotorboatDrivingSeat_get_PassengerAnchor_mD5B0C63A8098021B23FDDB18C26B26992995DC2A_inline (MotorboatDrivingSeat_t023BB330BD4CA6BED4994D05A3C13A65CA79703A* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25730,7 +25790,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Transform_tB27202C6F4E36D225EE28A
 		return L_0;
 	}
 }
-// Method Definition Index: 51870
+// Method Definition Index: 48745
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_Driver_m8DA8D5766F1712E5A7E16DD7FD51ADA06BC81458_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25739,7 +25799,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E
 		return L_0;
 	}
 }
-// Method Definition Index: 51852
+// Method Definition Index: 48727
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SeatedGuest_mC4BCB862E06C44EF7531727E4BC06D0B684FD4A9_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25801,7 +25861,7 @@ IL_0040:
 		return L_19;
 	}
 }
-// Method Definition Index: 51853
+// Method Definition Index: 48728
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_SeatedGuest_m91BA106B0D73CF22983CE4ACFEDEF56CCEAE5A3A_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -25824,7 +25884,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR float Vector2_get_sqrMagnitude_mA
 		return ((float)il2cpp_codegen_add(((float)il2cpp_codegen_multiply(L_0, L_1)), ((float)il2cpp_codegen_multiply(L_2, L_3))));
 	}
 }
-// Method Definition Index: 51858
+// Method Definition Index: 48733
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* BoatController_get_SecondRower_m43E23540A44F54AC9C1BAD93CF0AF62AF1B6059B_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25887,7 +25947,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 51885
+// Method Definition Index: 48760
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* BoatPassenger_get_Controls_m5272D23BCBF9E61BB212279CAB9E39194A748252_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -25976,7 +26036,7 @@ IL_000c:
 		return L_4;
 	}
 }
-// Method Definition Index: 51859
+// Method Definition Index: 48734
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_SecondRower_m0B5B30D3BA75561EB8A3F6FF412D41B439163939_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -25987,7 +26047,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_SecondRow
 		return;
 	}
 }
-// Method Definition Index: 51871
+// Method Definition Index: 48746
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatController_set_Driver_mED2AFAE7BA0E3FF4B376B3A49F9F076BF1AE0C21_inline (BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* __this, BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26833,7 +26893,7 @@ IL_0026:
 		return L_11;
 	}
 }
-// Method Definition Index: 51886
+// Method Definition Index: 48761
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Controls_mCF5D23EA5BD2B266CDF99F926044006099F8313F_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, FirstPersonController_tE8AFB5AAF13A04E655C31D600DD3D70AB1EE4443* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26854,7 +26914,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Quaternion_tDA59F214EF07D7700B26E
 		return L_0;
 	}
 }
-// Method Definition Index: 51893
+// Method Definition Index: 48768
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOnBoat_m29EC7F036FD57815E9E5AE80BF32664A9A04A4DF_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26864,7 +26924,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_GroundedOn
 		return;
 	}
 }
-// Method Definition Index: 51892
+// Method Definition Index: 48767
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatPassenger_get_GroundedOnBoat_m0286772F95D8BDD3223A3A49FBC1EA5155DA5919_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26888,7 +26948,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR Vector3_t24C512C7B96BBABAD472002D
 		return L_0;
 	}
 }
-// Method Definition Index: 51888
+// Method Definition Index: 48763
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B7BEAC2D1C35DF52D3E18354D2502EB596E8E_inline (BoatPassenger_t71E670DB97857FD22E4266FE2279CD8ECCE66FD4* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26899,7 +26959,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatPassenger_set_Boat_m1A3B
 		return;
 	}
 }
-// Method Definition Index: 53813
+// Method Definition Index: 50792
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopDimensionManager_t5A3BF0D5815ADD10B7184E08C8B7CBC4BE2F489B* ShopDimensionManager_get_Instance_m2CDCBB8C2E0427270D99350B5CA30B7AD16E96C0_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26914,7 +26974,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopDimensionManager_t5A3BF0D5815
 		return L_0;
 	}
 }
-// Method Definition Index: 53820
+// Method Definition Index: 50799
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopDimensionManager_get_Traveling_m3BF9515601BD88C92A06324C93F32F0608EAA833_inline (ShopDimensionManager_t5A3BF0D5815ADD10B7184E08C8B7CBC4BE2F489B* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26952,7 +27012,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector2__ctor_m9525B79969AFF
 		return;
 	}
 }
-// Method Definition Index: 51908
+// Method Definition Index: 48783
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode_mECFD5D373E017284269C23CF98149FABD1A8C04A_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -26961,7 +27021,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool BoatSystem_get_PlacementMode
 		return L_0;
 	}
 }
-// Method Definition Index: 51909
+// Method Definition Index: 48784
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode_m1019F6EAD437023DA15CF8D90FC3C125A1678A09_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, bool ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -26971,7 +27031,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_PlacementMode
 		return;
 	}
 }
-// Method Definition Index: 54021
+// Method Definition Index: 51003
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mBDC1D92F3F5EDADB9541EC73FF7F8703DD71E20F_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26987,7 +27047,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopWorldHUD_get_MenuOpen_mB
 		return L_0;
 	}
 }
-// Method Definition Index: 53346
+// Method Definition Index: 50307
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingTournament_get_ModalOpen_mAD30C694E4D87E01E72B6385CFAEDBB6616178FA_inline (const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -26997,7 +27057,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool FishingTournament_get_ModalO
 		s_Il2CppMethodInitialized = true;
 	}
 	{
-		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Multiplayer/FishingTournament.cs:36>
+		//<source_info:C:/Users/antho/Unity/3D-Android-Open-World/Assets/_Game/Scripts/Multiplayer/FishingTournament.cs:38>
 		il2cpp_codegen_runtime_class_init_inline(FishingTournament_t0E7C9995E3DC1CA34631B0D5C20B71B53FA902EB_il2cpp_TypeInfo_var);
 		bool L_0 = ((FishingTournament_t0E7C9995E3DC1CA34631B0D5C20B71B53FA902EB_StaticFields*)il2cpp_codegen_static_fields_for(FishingTournament_t0E7C9995E3DC1CA34631B0D5C20B71B53FA902EB_il2cpp_TypeInfo_var))->___U3CModalOpenU3Ek__BackingField;
 		return L_0;
@@ -27054,7 +27114,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void Vector3__ctor_m5F87930F9B082
 		return;
 	}
 }
-// Method Definition Index: 51906
+// Method Definition Index: 48781
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* BoatSystem_get_ActiveBoat_m6691C9D74B0170F6FBB8204FD74770D8E93DDC46_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27087,7 +27147,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ButtonControl_t85949109B98AAF5B7A
 		return L_0;
 	}
 }
-// Method Definition Index: 51907
+// Method Definition Index: 48782
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m14DE7CB2E9940F30907732B544F6D58B0F5F3F53_inline (BoatSystem_tF7520C0D33546E4B412DAA721EC409B81F778A63* __this, BoatController_t956D0D0A74DFEC25855ED01126CB1F22BD0CE013* ___0_value, const RuntimeMethod* method) 
 {
 	{
@@ -27098,7 +27158,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR void BoatSystem_set_ActiveBoat_m1
 		return;
 	}
 }
-// Method Definition Index: 53960
+// Method Definition Index: 50942
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2D35CAC8CAB598BA36BE* ShopProgress_get_Data_m6914FA1ED3EA9895ACBBE372A50A8EAC377B5643_inline (ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480* __this, const RuntimeMethod* method) 
 {
 	{
@@ -27107,7 +27167,7 @@ IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR ShopLedger_t1E5552313FE8A63F37BC2
 		return L_0;
 	}
 }
-// Method Definition Index: 53970
+// Method Definition Index: 50952
 IL2CPP_MANAGED_FORCE_INLINE IL2CPP_METHOD_ATTR bool ShopProgress_get_ReadOnly_m49B3B13A671902E01123995BC5600A9972C2E7D2_inline (ShopProgress_t7781BA8E9DBE576E353C7AB96D9ECB2BB8DD0480* __this, const RuntimeMethod* method) 
 {
 	{

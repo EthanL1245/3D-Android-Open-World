@@ -244,7 +244,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void* IntPtr_op_Explicit_m2728CBA081E79B97DDC
 #pragma clang diagnostic ignored "-Winvalid-offsetof"
 #pragma clang diagnostic ignored "-Wunused-variable"
 #endif
-// Method Definition Index: 71929
+// Method Definition Index: 72051
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* TerrainCollider_get_terrainData_m4B39540CB704719FA710B1D3837D9D1CD39AC07A (TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05* __this, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -284,7 +284,7 @@ IL_000f:
 		return L_3;
 	}
 }
-// Method Definition Index: 71930
+// Method Definition Index: 72052
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void TerrainCollider_set_terrainData_mF77FBF6CCEFBBE591D729E02E0873B58C2F2E0BE (TerrainCollider_tBCAC2FC868B0E00ACB88A0E8FEDDE44DABE6DA05* __this, TerrainData_t615A68EAC648066681875D47FC641496D12F2E24* ___0_value, const RuntimeMethod* method) 
 {
 	static bool s_Il2CppMethodInitialized;
@@ -324,7 +324,7 @@ IL_000f:
 		return;
 	}
 }
-// Method Definition Index: 71931
+// Method Definition Index: 72053
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR intptr_t TerrainCollider_get_terrainData_Injected_mD0C2991615998A29FC3A91863C21F08CC97C9929 (intptr_t ___0__unity_self, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
@@ -335,7 +335,7 @@ IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR intptr_t TerrainCollider_get_terrainData_Inje
 	intptr_t icallRetVal = _il2cpp_icall_func(___0__unity_self);
 	return icallRetVal;
 }
-// Method Definition Index: 71932
+// Method Definition Index: 72054
 IL2CPP_EXTERN_C IL2CPP_METHOD_ATTR void TerrainCollider_set_terrainData_Injected_mAD64AE8F5491022F2FC81A458DBC8F8335EB4FC5 (intptr_t ___0__unity_self, intptr_t ___1_value, const RuntimeMethod* method) 
 {
 	//<source_info:<no-source>:1>
