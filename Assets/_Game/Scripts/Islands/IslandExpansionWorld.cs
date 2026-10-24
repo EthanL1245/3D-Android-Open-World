@@ -86,7 +86,19 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         if(q.x<0 || q.z<0 || q.x>size.x || q.z>size.z)return sea-Config.OceanDepth;
         return originalPosition.y+originalData.GetInterpolatedHeight(q.x/size.x,q.z/size.z);
     }
-    public float Height(Vector3 p)=>savedLayout && Terrain!=null?Terrain.SampleHeight(p)+Terrain.transform.position.y:SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
+    public float Height(Vector3 p)
+    {
+        if (savedLayout && Terrain != null)
+        {
+            Vector3 q = p - Terrain.transform.position;
+            Vector3 size = Terrain.terrainData.size;
+            // Preserve the authored main map; sample the new tile only outside it.
+            if ((q.x < 0f || q.z < 0f || q.x > size.x || q.z > size.z) &&
+                SouthSeabedTerrain.TryGetHeight(p, out float southHeight)) return southHeight;
+            return Terrain.SampleHeight(p) + Terrain.transform.position.y;
+        }
+        return SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
+    }
     private float BaseHeight(Vector3 p)
     {
         float beyond=IslandGeometry.Beyond(p,ShelfCenter,ShelfRadii);
