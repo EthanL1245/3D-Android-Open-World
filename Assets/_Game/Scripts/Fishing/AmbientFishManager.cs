@@ -90,7 +90,7 @@ public class AmbientFishManager : MonoBehaviour
         var world=IslandExpansionWorld.Active;
         if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin && !BluewaterCayRockRegion.ContainsBiome(position,clearance))return false;
         if(biome==ReefCatalog.SnapperBiomeId && SnapperIslandRuntime.Ready &&
-            SnapperIslandGeometry.DistanceFromShore(position,SnapperIslandRuntime.Center)+clearance>SnapperIslandGeometry.FishingMargin)return false;
+            !SnapperCavesRockRegion.ContainsBiome(position,clearance))return false;
         if(!MarinaDockExtensionRuntime.WaterClear(position,clearance))return false;
         // Imported Blender rocks have their own MeshColliders; Terrain.SampleHeight
         // alone cannot detect a submerged or overhanging rock.
