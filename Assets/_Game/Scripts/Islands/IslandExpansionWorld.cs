@@ -261,23 +261,10 @@ public sealed class IslandExpansionWorld : MonoBehaviour
         Vector3 approach=NewCenter+new Vector3(-Config.IslandRadii.x*.82f,0,-8);
         approach.y=Terrain.SampleHeight(approach)+Terrain.transform.position.y+.12f;
         Arrival.SetPositionAndRotation(approach,Quaternion.Euler(0,90,0));
-        var random=new System.Random(Config.ScenerySeed);
-        for(int i=0;i<17;i++)
-        {
-            float angle=(float)random.NextDouble()*Mathf.PI*2;float radius=Mathf.Sqrt((float)random.NextDouble())*.94f;
-            Vector3 p=NewCenter+new Vector3(Mathf.Cos(angle)*radius*Config.IslandRadii.x,0,Mathf.Sin(angle)*radius*Config.IslandRadii.y);
-            if(Vector3.ProjectOnPlane(p-approach,Vector3.up).magnitude<12)continue;
-            bool bush=i%4==0;float scale=bush?1.3f:1.5f+(float)random.NextDouble()*4.5f;
-            var prop=GameObject.CreatePrimitive(bush?PrimitiveType.Sphere:PrimitiveType.Cube);prop.name=bush?"Wind scrub":"Weathered rock";prop.transform.SetParent(transform,false);
-            prop.transform.localScale=new Vector3(scale,bush?.8f:scale*.6f,scale*.8f);prop.transform.rotation=Quaternion.Euler(bush?0:random.Next(-18,19),random.Next(360),bush?0:random.Next(-18,19));
-            p.y=Terrain.SampleHeight(p)+Terrain.transform.position.y;prop.transform.position=p;
-            var renderer=prop.GetComponent<Renderer>();renderer.sharedMaterial=bush?grass:rock;
-            prop.transform.position+=Vector3.up*(renderer.bounds.extents.y*.45f); // bury lower half in slope
-            if(bush)RemoveGeneratedObject(prop.GetComponent<Collider>());
-            prop.isStatic=true;
-        }
-        Vector3 signPoint=approach+new Vector3(4,0,4);signPoint.y=Terrain.SampleHeight(signPoint)+Terrain.transform.position.y;
-        IslandWelcomeSign.Create(transform,"BRINEBREAK ISLE",signPoint,Quaternion.Euler(0,90,0),wood);
+        // Legacy Brinebreak decorations were intentionally retired after the
+        // island moved to two artist-placed southern rock meshes. Never spawn
+        // the old Weathered rock/Wind scrub props or a Brinebreak welcome sign.
+        // The new saved scene owns its authored rocks and terrain independently.
         var trigger=new GameObject("Brinebreak Land Discovery");trigger.transform.SetParent(transform,false);trigger.transform.position=NewCenter+Vector3.up*(sea+12-NewCenter.y);
         var box=trigger.AddComponent<BoxCollider>();box.isTrigger=true;box.size=new Vector3(Config.IslandRadii.x*2,30,Config.IslandRadii.y*2);
         var rb=trigger.AddComponent<Rigidbody>();rb.isKinematic=true;rb.useGravity=false;trigger.AddComponent<IslandDiscovery>();
