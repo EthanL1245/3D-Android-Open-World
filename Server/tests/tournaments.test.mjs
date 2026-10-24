@@ -125,27 +125,34 @@ test('100 percent Charm on top of hotspot max is accepted, but excessive weights
  assert.throws(()=>catchFish(f,f.guest,18.02,12),/Invalid tournament catch/);
  assert.equal(f.game.view(f.room).entries.find(e=>e.id==='guest').points,1799);
 });
-test('Suncrest total-weight tournament includes all local species and has private on-demand catch lists',()=>{
+test('Map-wide total-weight tournament accepts species from every biome with per-biome weight limits and on-demand catch lists',()=>{
  const f=setup();
  assert.throws(()=>f.game.action(f.host,{...f.create,mode:'weight',island:2}),/Invalid tournament format/);
  f.game.action(f.host,{...f.create,mode:'weight'});
  let view=f.game.action(f.guest,f.joinGuest);
  assert.equal(view.mode,'weight');assert.equal(view.species,-1);
  f.setTime(6000);f.game.tick(f.room);
- catchFish(f,f.guest,17.9,11,{species:8});
- catchFish(f,f.guest,14,12,{species:3});
- assert.throws(()=>catchFish(f,f.guest,2,13,{species:19}),/does not match/);
+ assert.equal(view.islandName,'Entire Fishing Map');
+ catchFish(f,f.guest,17.9,11,{island:0,species:8});
+ catchFish(f,f.guest,14,12,{island:1,species:3});
+ catchFish(f,f.guest,100,13,{island:2,species:8}); // Exceeds Suncrest cap, legal Deep Ocean Bigeye.
+ catchFish(f,f.guest,200,14,{island:3,species:19});
+ catchFish(f,f.guest,50,15,{island:4,species:23});
+ assert.throws(()=>catchFish(f,f.guest,2,16,{island:0,species:19}),/does not match/);
+ assert.throws(()=>catchFish(f,f.guest,2,16,{island:99,species:8}),/does not match/);
+ assert.throws(()=>catchFish(f,f.guest,2,16,{island:1.5,species:8}),/does not match/);
+ assert.throws(()=>catchFish(f,f.guest,271,16,{island:2,species:8}),/Invalid tournament catch/);
  view=f.game.view(f.room);
  const row=view.entries.find(e=>e.id==='guest');
- assert.equal(row.catches,2);assert(Math.abs(row.totalKg-31.9)<1e-5);
- assert.equal(row.points,3190);assert.equal(view.biggestSpecies,8);
+ assert.equal(row.catches,5);assert(Math.abs(row.totalKg-381.9)<1e-5);
+ assert.equal(row.points,38190);assert.equal(view.biggestSpecies,19);
  assert(!JSON.stringify(view).includes('history')); // 10 Hz snapshots do not leak full lists.
  assert.throws(()=>f.game.catches(f.host,{id:tid,player:f.guest.id}),/not available/);
  f.setTime(366000);view=f.game.view(f.room);
  assert.equal(view.winnerId,'guest');
  const list=f.game.catches(f.host,{id:tid,player:f.guest.id});
- assert.equal(list.catches.length,2);
- assert.deepEqual(list.catches.map(c=>c.name),['Bigeye Tuna','Yellowtail']);
- assert(Math.abs(list.totalKg-31.9)<1e-5);
+ assert.equal(list.catches.length,5);
+ assert.deepEqual(list.catches.map(c=>c.name),['Bigeye Tuna','Yellowtail','Bigeye Tuna','Mako Shark','Great Barracuda']);
+ assert(Math.abs(list.totalKg-381.9)<1e-5);
  assert.throws(()=>f.game.catches(f.host,{id:tid,player:'unknown'}),/not found/);
 });
