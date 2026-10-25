@@ -68,6 +68,9 @@ public sealed class FishIndexLivePreview : MonoBehaviour
         FishWorldSize.SetLength(model,2f);
         // All fish prefabs use +Z for their nose; +90 yaw faces screen right.
         model.transform.localRotation=Quaternion.Euler(0,90,0);
+        // Index-only roll: show the flounder's brown upper side to the camera.
+        if(species==FishCatalog.WinterFlounderId)
+            model.transform.localRotation*=Quaternion.AngleAxis(-90f,Vector3.forward);
         if(!animated)
         {
             fallbackTail=model.transform.Find("Tail");
