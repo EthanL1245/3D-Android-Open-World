@@ -43,6 +43,7 @@ public static class FishCatalog
     public const int BluefinTrevallyId=24;
     public const int GoldenTrevallyId=25;
     public const int GiantTrevallyId=26;
+    public const int WinterFlounderId=27;
 
     // These embedded definitions are deliberately retained as a safe legacy fallback.
     // Editable min/max weight, health, value and catch odds live in Resources/FishingTuning.
@@ -74,11 +75,12 @@ public static class FishCatalog
         new FishSpeciesDefinition("Great Barracuda",new Color(.64f,.70f,.72f),new Color(.20f,.26f,.28f),3.2f,48f,.83f,0f,720),
         new FishSpeciesDefinition("Bluefin Trevally",new Color(.18f,.43f,.64f),new Color(.33f,.75f,.80f),1f,70f,.93f,0f,286),
         new FishSpeciesDefinition("Golden Trevally",new Color(.91f,.68f,.22f),new Color(.97f,.86f,.42f),1f,70f,.90f,0f,260),
-        new FishSpeciesDefinition("Giant Trevally",new Color(.27f,.32f,.36f),new Color(.67f,.73f,.76f),1.8f,126f,1f,0f,572)
+        new FishSpeciesDefinition("Giant Trevally",new Color(.27f,.32f,.36f),new Color(.67f,.73f,.76f),1.8f,126f,1f,0f,572),
+        new FishSpeciesDefinition("Winter Flounder",new Color(.35f,.27f,.16f),new Color(.85f,.83f,.75f),.25f,3.6f,.68f,26f,150)
     };
 
     public static int Count=>Species.Length;
-    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26};
+    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27};
     public static int CanonicalId(int id)=>id==4?YellowfinTunaId:id;
 
     public static FishSpeciesDefinition Get(int id)

@@ -1,0 +1,14 @@
+{
+  "mesh_count": 7,
+  "triangles": 1604,
+  "bones": 6,
+  "bounds_xyz": [
+    2.0374670028686523,
+    4.285884857177734,
+    0.47349977493286133
+  ],
+  "uv0": true,
+  "dorsal_side_up": true,
+  "animation_motion": true,
+  "loop_seam": true
+}

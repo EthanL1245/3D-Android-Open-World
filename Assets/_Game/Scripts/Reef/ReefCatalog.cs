@@ -43,6 +43,7 @@ public static class ReefCatalog
         if(species==4)return 0f;
         float configured;
         if(FishingTuning.TryGetChance(species,0,0,out configured))return configured;
+        if(species==FishCatalog.WinterFlounderId)return Starter.weights[FishCatalog.RedSnapperId];
         return species>=0&&species<Starter.weights.Length?Starter.weights[species]:0f;
     }
     public static string Rarity(int id)=>Weight(id)>=18?"Common":Weight(id)>=10?"Uncommon":Weight(id)>=4?"Rare":"Very rare";
@@ -80,7 +81,14 @@ public static class ReefCatalog
             pelagic[FishCatalog.GiantTrevallyId]=3f;
             return pelagic;
         }
-        var original=BaseEquippedWeights(bait);if(biome<=0||biome>=Zones.Length)return original;
+        var original=BaseEquippedWeights(bait);
+        if(biome<=0||biome>=Zones.Length)
+        {
+            var starter=new float[FishCatalog.Count];
+            System.Array.Copy(original,starter,original.Length);
+            starter[FishCatalog.WinterFlounderId]=starter[FishCatalog.RedSnapperId];
+            return starter;
+        }
         var weights=new float[original.Length];
         for(int i=0;i<weights.Length;i++)weights[i]=i<Zones[biome].weights.Length && i<Starter.weights.Length && Starter.weights[i]>0?original[i]*Zones[biome].weights[i]/Starter.weights[i]:0;
         // Invalid tuning must not reintroduce snappers into Deep Ocean catches.

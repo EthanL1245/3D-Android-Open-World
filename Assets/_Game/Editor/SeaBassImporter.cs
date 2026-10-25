@@ -10,7 +10,7 @@ public static class SeaBassImporter
     private const string Folder="Assets/_Game/Reef/Source";
     public const string PrefabPath="Assets/Resources/Fishing/SeaBass.prefab";
     public static void Install() => InstallModel("SeaBass",PrefabPath);
-    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null)
+    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null,bool preserveWorldUp=false)
     {
         string folder=sourceFolder??Folder;
         string fbx=folder+"/"+assetName+".fbx", png=texturePath??(folder+"/"+assetName+"Texture.png");
@@ -66,7 +66,9 @@ public static class SeaBassImporter
             var tail=model.GetComponentsInChildren<Transform>(true).FirstOrDefault(t=>t.name=="Bone.004");
             if(head==null||tail==null)throw new InvalidOperationException("Fish five-bone rig is missing.");
             var forward=(head.position-tail.position).normalized;
-            var up=Vector3.ProjectOnPlane(model.transform.up,forward).normalized;
+            // Flatfish are exported lying on their side; keep world up instead of
+            // undoing their authored roll via the FBX root/armature up vector.
+            var up=Vector3.ProjectOnPlane(preserveWorldUp?Vector3.up:model.transform.up,forward).normalized;
             if(up.sqrMagnitude<0.01f)up=Vector3.up;
             visual.transform.rotation=Quaternion.Inverse(Quaternion.LookRotation(forward,up))*visual.transform.rotation;
             var bounds=BoundsOf(root);

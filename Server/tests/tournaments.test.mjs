@@ -156,3 +156,15 @@ test('Map-wide total-weight tournament accepts species from every biome with per
  assert(Math.abs(list.totalKg-381.9)<1e-5);
  assert.throws(()=>f.game.catches(f.host,{id:tid,player:'unknown'}),/not found/);
 });
+
+test('Winter Flounder is accepted only in Suncrest with the matching hotspot and Charm ceiling',()=>{
+ const island=tournamentIslands.find(i=>i.id===0);
+ const fish=island.fish.find(f=>f.id===27);
+ assert.ok(fish);
+ for(const other of tournamentIslands.filter(i=>i.id!==0))assert.equal(other.fish.some(f=>f.id===27),false);
+ const f=setup({random:()=>island.fish.findIndex(s=>s.id===27)});
+ f.start();assert.equal(f.room.tournament.target.id,27);
+ catchFish(f,f.guest,fish.maxKg*2,11);
+ assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
+ assert.throws(()=>catchFish(f,f.guest,1,12,{island:1}),/does not match/);
+});
