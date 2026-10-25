@@ -138,19 +138,22 @@ public sealed class BoatSystem : MonoBehaviour
         // Placement intentionally stays close to the player. This keeps the ghost
         // easy to judge and prevents dropping a boat a long distance offshore.
         Ray ray=view.ViewportPointToRay(new Vector3(.5f,.5f));
-        bool hitWater=Physics.Raycast(ray,out var hit,PlacementDistance,1<<LayerMask.NameToLayer("Water"),QueryTriggerInteraction.Collide);
+        // The old BoatPlacementWater collider ends at the original terrain edge.
+        // Use the ocean datum for aiming; BoatClearance still validates the entire
+        // hull against real terrain and props before allowing a spawn.
+        bool hitWater = BoatClearance.TryGetWaterTarget(ray, Water, PlacementDistance, out float waterDistance);
         valid=false;
         if(ghost!=null)ghost.SetActive(hitWater);
         if(hitWater && ghost!=null)
         {
-            target=hit.point;target.y=Water.GetSurfaceHeight(target);
+            target=ray.GetPoint(waterDistance);target.y=Water.GetSurfaceHeight(target);
             heading=Quaternion.Euler(0,view.transform.eulerAngles.y,0);
             target.y=BoatController.FloatingHeight(Selected,Water,target,heading);
             ghost.transform.SetPositionAndRotation(target,heading);
             valid=BoatClearance.Valid(Selected,target,heading,Water,ActiveBoat!=null?ActiveBoat.transform:null,transform);
 
             // Do not place through a rock/wall before the water hit.
-            foreach(var obstruction in Physics.RaycastAll(ray,hit.distance,~(1<<LayerMask.NameToLayer("Water")),QueryTriggerInteraction.Ignore))
+            foreach(var obstruction in Physics.RaycastAll(ray,waterDistance,~(1<<LayerMask.NameToLayer("Water")),QueryTriggerInteraction.Ignore))
                 if(!obstruction.transform.IsChildOf(transform) && !(ActiveBoat!=null && obstruction.transform.IsChildOf(ActiveBoat.transform)))valid=false;
 
             if(ghostMaterial!=null)ghostMaterial.SetColor("_BaseColor",valid?new Color(.1f,.9f,.35f,.6f):new Color(1,.12f,.12f,.6f));

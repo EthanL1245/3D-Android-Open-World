@@ -337,13 +337,7 @@ public sealed class FishingCastQualityRuntime : MonoBehaviour
 
     private float StableWaterDepthSigned(Vector3 position)
     {
-        if (terrain == null || ocean == null) return 0f;
-        TerrainData data = terrain.terrainData;
-        Vector3 local = position - terrain.transform.position;
-        if (local.x < 0f || local.z < 0f || local.x > data.size.x || local.z > data.size.z)
-            return 0f;
-
-        float ground = terrain.SampleHeight(position) + terrain.transform.position.y;
+        if (ocean == null || !WorldTerrain.TryGetHeight(position, out float ground)) return 0f;
         return ocean.BaseWaterLevel - ground;
     }
 

@@ -90,12 +90,8 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         if (savedLayout && Terrain != null)
         {
-            Vector3 q = p - Terrain.transform.position;
-            Vector3 size = Terrain.terrainData.size;
-            // Preserve the authored main map; sample the new tile only outside it.
-            if ((q.x < 0f || q.z < 0f || q.x > size.x || q.z > size.z) &&
-                SouthSeabedTerrain.TryGetHeight(p, out float southHeight)) return southHeight;
-            return Terrain.SampleHeight(p) + Terrain.transform.position.y;
+            if (WorldTerrain.TryGetHeight(p, out float ground)) return ground;
+            return sea - Config.OceanDepth;
         }
         return SeabedRelief.Height(p.x,p.z,PelagicIslandGeometry.Height(p,PelagicCenter,sea,BaseHeight(p)),sea);
     }

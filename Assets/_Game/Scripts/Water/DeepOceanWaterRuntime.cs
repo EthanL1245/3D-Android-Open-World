@@ -13,6 +13,7 @@ using UnityEngine;
 public sealed class DeepOceanWaterRuntime : MonoBehaviour
 {
     private const float DeepWaveMultiplier = 4.5f;
+    private const float BrinebreakWaveMultiplier = DeepWaveMultiplier * .90f;
     private const float DeepWaveSpeedMultiplier = 1.35f;
     private const float DeepAlpha = 0.82f;
     private const float BrinebreakSmoothness = 0.55f;
@@ -99,7 +100,9 @@ public sealed class DeepOceanWaterRuntime : MonoBehaviour
             // Rough-water progression is specifically an outer-ocean effect. At
             // the shelf edge it starts at normal ocean strength and builds over the
             // next ~180 m, avoiding the previous instant wave jump.
-            if (biome == 2)
+            if (biome == 1 && BrinebreakRockRegion.HasRocks)
+                targetRough = Mathf.InverseLerp(1f, DeepWaveMultiplier, BrinebreakWaveMultiplier);
+            else if (biome == 2)
             {
                 float offshore = expansion.OffshoreAt(player.position);
                 targetRough = Mathf.SmoothStep(0f, 1f, offshore);

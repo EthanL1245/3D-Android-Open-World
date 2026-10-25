@@ -194,8 +194,6 @@ public class FishingSystem : MonoBehaviour
         0.16f
     };
 
-    private Terrain terrain;
-
     private const string YellowfinPreviewGrantKey =
         "OpenWorld.YellowfinTunaPreviewGrant.v2";
 
@@ -304,7 +302,6 @@ public class FishingSystem : MonoBehaviour
             return;
         }
 
-        terrain = Terrain.activeTerrain;
         hotspots = GetComponent<FishingHotspotManager>();
         if (hotspots == null) hotspots = gameObject.AddComponent<FishingHotspotManager>();
 
@@ -1804,31 +1801,8 @@ public class FishingSystem : MonoBehaviour
         Vector3 worldPosition,
         float requiredDepth)
     {
-        if (terrain == null)
+        if (!WorldTerrain.TryGetHeight(worldPosition, out float ground))
             return true;
-
-        TerrainData data =
-            terrain.terrainData;
-
-        Vector3 local =
-            worldPosition -
-            terrain.transform.position;
-
-        // Outside the finite terrain there is no shoreline/ground mesh under
-        // the infinite ocean, so it is valid deep water.
-        if (local.x < 0f ||
-            local.z < 0f ||
-            local.x > data.size.x ||
-            local.z > data.size.z)
-        {
-            return true;
-        }
-
-        float ground =
-            terrain.SampleHeight(
-                worldPosition
-            ) +
-            terrain.transform.position.y;
 
         float water =
             oceanWater.GetSurfaceHeight(
@@ -2551,7 +2525,8 @@ public class FishingSystem : MonoBehaviour
             ) -
             0.08f;
 
-        if (!MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) ||
+        if (!WorldTerrain.SurfaceSegmentClear(current,candidate,oceanWater,.40f) ||
+            !MarinaDockExtensionRuntime.WaterSegmentClear(current,candidate,.25f) ||
             !SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
             !BrinebreakRockRegion.SurfaceSegmentClear(current,candidate,.40f) ||
             !BluewaterCayRockCollision.SurfaceSegmentClear(current,candidate,.40f) ||
@@ -2639,7 +2614,8 @@ public class FishingSystem : MonoBehaviour
 
         // Treat a subdued fish reaching any authored island rock exactly like reaching
         // shallow terrain: stop at the obstacle and complete the existing catch.
-        if (!SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
+        if (!WorldTerrain.SurfaceSegmentClear(current,candidate,oceanWater,.40f) ||
+            !SnapperRockFishObstacles.SurfaceSegmentClear(current,candidate,.40f) ||
             !BrinebreakRockRegion.SurfaceSegmentClear(current,candidate,.40f) ||
             !BluewaterCayRockCollision.SurfaceSegmentClear(current,candidate,.40f) ||
             !SuncrestMainRockCollision.SurfaceSegmentClear(current,candidate,.40f))
@@ -2751,29 +2727,9 @@ public class FishingSystem : MonoBehaviour
 
         depth = 1000f;
 
-        if (terrain == null)
+        if (!WorldTerrain.TryGetHeight(worldPosition, out float sampledGround))
             return false;
-
-        TerrainData data =
-            terrain.terrainData;
-
-        Vector3 local =
-            worldPosition -
-            terrain.transform.position;
-
-        if (local.x < 0f ||
-            local.z < 0f ||
-            local.x > data.size.x ||
-            local.z > data.size.z)
-        {
-            return false;
-        }
-
-        ground =
-            terrain.SampleHeight(
-                worldPosition
-            ) +
-            terrain.transform.position.y;
+        ground = sampledGround;
 
         depth =
             water -

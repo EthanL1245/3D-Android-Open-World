@@ -45,7 +45,6 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     private FishingSystem fishing;
     private FishingHUD hud;
     private OceanWater ocean;
-    private Terrain terrain;
     private float plannerCooldown;
     private float nextPhaseShuffle;
     private float routeSideTimer;
@@ -71,7 +70,6 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     {
         fishing = GetComponent<FishingSystem>();
         hud = FindFirstObjectByType<FishingHUD>();
-        terrain = Terrain.activeTerrain;
         ocean = fishing != null && OceanWaterField != null ? OceanWaterField.GetValue(fishing) as OceanWater : null;
         nextPhaseShuffle = UnityEngine.Random.Range(0.55f, 1.35f);
 
@@ -95,7 +93,6 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
 
         if (hud == null) hud = FindFirstObjectByType<FishingHUD>();
         if (ocean == null && OceanWaterField != null) ocean = OceanWaterField.GetValue(fishing) as OceanWater;
-        if (terrain == null) terrain = Terrain.activeTerrain;
 
         bool reeling = hud != null && hud.ActionInput != null && hud.ActionInput.IsHeld;
         bool unconscious = (bool)UnconsciousField.GetValue(fishing);
@@ -399,12 +396,7 @@ public sealed class FishingFightMovementRuntime : MonoBehaviour
     {
         if (!MarinaDockExtensionRuntime.WaterClear(position,.4f))return 0f;
         if (!RockFishPointClear(position,.40f))return 0f;
-        if (terrain == null || ocean == null) return 1000f;
-        TerrainData data = terrain.terrainData;
-        Vector3 local = position - terrain.transform.position;
-        if (local.x < 0f || local.z < 0f || local.x > data.size.x || local.z > data.size.z)
-            return 1000f;
-        float ground = terrain.SampleHeight(position) + terrain.transform.position.y;
+        if (ocean == null || !WorldTerrain.TryGetHeight(position, out float ground)) return 1000f;
         return ocean.BaseWaterLevel - ground;
     }
 

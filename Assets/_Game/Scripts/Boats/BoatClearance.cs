@@ -25,9 +25,9 @@ public static class BoatClearance
         // Motorboat may navigate water 1.6 m shallower before pre-braking.
         // Other boats retain their existing navigation margins.
         float requiredDepth=data.ID=="sailboat" ? MotorboatBrakingDepth(data) : draft+.65f;
-        foreach(var terrain in Terrain.activeTerrains)
+        foreach(var terrain in WorldTerrain.Tiles)
         {
-            if(terrain==null || terrain.terrainData==null)continue;
+            if(terrain==null || !terrain.isActiveAndEnabled || terrain.terrainData==null)continue;
             Vector3 min=terrain.transform.position, dimensions=terrain.terrainData.size;
             // Four footprint corners plus the hull centre: stable through swells.
             for(int x=-1;x<=1;x+=2)
@@ -47,6 +47,14 @@ public static class BoatClearance
         return false;
     }
 
+    public static bool TryGetWaterTarget(Ray ray, OceanWater water, float maxDistance, out float distance)
+    {
+        distance = 0f;
+        return water != null && ray.direction.y < -.0001f &&
+            new Plane(Vector3.up, new Vector3(0f, water.BaseWaterLevel, 0f)).Raycast(ray, out distance) &&
+            distance <= maxDistance;
+    }
+
     public static bool Valid(BoatData data, Vector3 position, Quaternion rotation, OceanWater water, Transform ignored=null, Transform player=null)
     {
         if(data==null || water==null || PondWater.TrySurface(position,out _))return false;
@@ -64,7 +72,7 @@ public static class BoatClearance
         Vector3 buffer=authoredRaft?new Vector3(.18f,0,.35f):new Vector3(1,0,1);
         Vector3 half=hullSize*.5f+buffer;
         float requiredDepth=motorboat ? MotorboatBrakingDepth(data)+MotorboatPlacementMargin : draft+.8f;
-        var terrains=Terrain.activeTerrains;
+        var terrains=WorldTerrain.Tiles;
         for(float x=-half.x;x<=half.x+.01f;x+=Mathf.Max(.08f,half.x/3f))
         for(float z=-half.z;z<=half.z+.01f;z+=Mathf.Max(.08f,half.z/4f))
         {
@@ -72,6 +80,7 @@ public static class BoatClearance
             bool found=false;
             foreach(var terrain in terrains)
             {
+                if(terrain==null || !terrain.isActiveAndEnabled || terrain.terrainData==null)continue;
                 Vector3 local=p-terrain.transform.position;Vector3 size=terrain.terrainData.size;
                 if(local.x<0 || local.z<0 || local.x>size.x || local.z>size.z)continue;
                 found=true;

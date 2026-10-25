@@ -9,7 +9,6 @@ public class AmbientFishManager : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField,Range(4,16)] private int fishCount=12;
     [SerializeField] private float minRadius=7f, maxRadius=32f;
-    private Terrain terrain;
     private Camera view;
     private int poolBiome,pendingBiome;
     private float biomeChangedAt;
@@ -18,7 +17,6 @@ public class AmbientFishManager : MonoBehaviour
     public bool InReef => ShopDimensionManager.Instance==null || !ShopDimensionManager.Instance.InDimension;
     private IEnumerator Start()
     {
-        terrain=Terrain.activeTerrain;
         if(oceanWater==null)oceanWater=FindFirstObjectByType<OceanWater>();
         if(player==null){var p=FindFirstObjectByType<FirstPersonController>();if(p!=null)player=p.transform;}
         if(player!=null)view=player.GetComponentInChildren<Camera>();
@@ -85,7 +83,7 @@ public class AmbientFishManager : MonoBehaviour
     public bool IsTooFar(Vector3 position) => player==null || (position-player.position).sqrMagnitude>48f*48f;
     public bool Safe(Vector3 position,float clearance=0.6f,int biome=-1)
     {
-        if(!InReef||oceanWater==null||terrain==null)return false;
+        if(!InReef||oceanWater==null)return false;
         if(biome>=0 && SnapperIslandGeometry.ResolveBiome(position)!=biome)return false;
         var world=IslandExpansionWorld.Active;
         if(biome==3 && world!=null && PelagicIslandGeometry.DistanceFromShore(position,world.PelagicCenter)+clearance>PelagicIslandGeometry.FishingMargin && !BluewaterCayRockRegion.ContainsBiome(position,clearance))return false;
@@ -101,18 +99,14 @@ public class AmbientFishManager : MonoBehaviour
         // Ocean-sized ambient fish must not be recycled into the tiny-fish pond.
         if(PondWater.Active!=null && PondWater.Active.Contains(position))return false;
         if(ReefZone.Active!=null&&!ReefZone.Active.Contains(position))return false;
-        var p=position-terrain.transform.position;var size=terrain.terrainData.size;
-        if(p.x<0||p.z<0||p.x>size.x||p.z>size.z)return false;
-        // Check a footprint, not only the fish's centre: steep banks can intersect
-        // the nose/body while the centre still sits over deep water.
-        float floor=terrain.SampleHeight(position)+terrain.transform.position.y;
+        // Check each footprint sample against its own tile, including seams.
+        if(!WorldTerrain.TryGetHeight(position,out float floor))return false;
         for(int i=0;i<8;i++)
         {
             float angle=i*Mathf.PI*.25f;
             Vector3 sample=position+new Vector3(Mathf.Cos(angle),0f,Mathf.Sin(angle))*clearance;
-            Vector3 local=sample-terrain.transform.position;
-            if(local.x<0f || local.z<0f || local.x>size.x || local.z>size.z)return false;
-            floor=Mathf.Max(floor,terrain.SampleHeight(sample)+terrain.transform.position.y);
+            if(!WorldTerrain.TryGetHeight(sample,out float sampleFloor))return false;
+            floor=Mathf.Max(floor,sampleFloor);
         }
         return position.y>floor+clearance && position.y<oceanWater.GetSurfaceHeight(position)-clearance;
     }
@@ -127,12 +121,12 @@ public class AmbientFishManager : MonoBehaviour
     public bool TryGetSwimPoint(out Vector3 point) => TryGetSwimPoint(out point,0.6f);
     public bool TryGetSwimPoint(out Vector3 point,float clearance,int biome=-1)
     {
-        point=Vector3.zero;if(player==null||oceanWater==null||terrain==null||!InReef)return false;
+        point=Vector3.zero;if(player==null||oceanWater==null||!InReef)return false;
         for(int attempt=0;attempt<32;attempt++)
         {
             Vector2 d=Random.insideUnitCircle.normalized*Random.Range(minRadius,maxRadius);
             var p=player.position+new Vector3(d.x,0,d.y);
-            float floor=terrain.SampleHeight(p)+terrain.transform.position.y;
+            if(!WorldTerrain.TryGetHeight(p,out float floor))continue;
             float surface=oceanWater.GetSurfaceHeight(p);
             if(surface-floor<clearance*2+0.25f)continue;
             p.y=Random.Range(Mathf.Max(floor+clearance+0.12f,surface-6f),surface-clearance-0.12f);
@@ -287,12 +281,13 @@ public class AmbientFishAgent : MonoBehaviour
             transform.rotation=facing;
             recoveryTurning=false;
         }
-        // The fish are transform-driven: terrain route checks, not just colliders,
-        // caused the stall. Bypass those checks for this bounded 2-metre escape.
+        // Recovery is transform-driven too: validate the escape against terrain
+        // so a stalled fish cannot tunnel through the new southern seabed.
         float step=Mathf.Min(recoveryRemaining,speed*Time.deltaTime);
         Vector3 recovered=transform.position+recoveryDirection*step;
         // Do not let the legacy stall-recovery mode tunnel through authored rocks.
-        if(!SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance) ||
+        if(!manager.ClearRoute(transform.position,recovered,clearance,spawnBiome) ||
+            !SnapperRockFishObstacles.AmbientSegmentClear(transform.position,recovered,clearance) ||
             !BrinebreakRockRegion.AmbientSegmentClear(transform.position,recovered,clearance) ||
             !BluewaterCayRockCollision.AmbientSegmentClear(transform.position,recovered,clearance) ||
             !SuncrestMainRockCollision.AmbientSegmentClear(transform.position,recovered,clearance))

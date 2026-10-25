@@ -206,7 +206,9 @@ public class OceanWater : MonoBehaviour
         propertyBlock.SetVector("_WavePhases", wavePhases);
         propertyBlock.SetVector("_IslandWavePhases", islandWavePhases);
         var expansion=IslandExpansionWorld.Active;
-        bool expanded=expansion!=null && expansion.Ready;
+        // Relocated Brinebreak uses the same amplitude path as deep ocean, at 90%.
+        // Disable the legacy extra island multiplier on both CPU and GPU.
+        bool expanded=expansion!=null && expansion.Ready && !BrinebreakRockRegion.HasRocks;
         propertyBlock.SetFloat("_IslandWaveEnabled",expanded?1:0);
         if(expanded)
         {
@@ -318,7 +320,7 @@ public class OceanWater : MonoBehaviour
     {
         float blend = 0f, multiplier = 1f;
         var expansion = IslandExpansionWorld.Active;
-        if (expansion != null && expansion.Ready)
+        if (expansion != null && expansion.Ready && !BrinebreakRockRegion.HasRocks)
         {
             float inner = Mathf.Max(expansion.Config.IslandRadii.x, expansion.Config.IslandRadii.y) + 40f;
             blend = IslandGeometry.StormBlend(new Vector3(p.x, 0f, p.y), expansion.NewCenter,
@@ -370,7 +372,7 @@ public class OceanWater : MonoBehaviour
 
         float calm=Mathf.Sin(phase)*amplitude;
         var expansion=IslandExpansionWorld.Active;
-        if(expansion==null || !expansion.Ready)return calm;
+        if(expansion==null || !expansion.Ready || BrinebreakRockRegion.HasRocks)return calm;
         float inner=Mathf.Max(expansion.Config.IslandRadii.x,expansion.Config.IslandRadii.y)+40;
         float blend=IslandGeometry.StormBlend(new Vector3(position.x,0,position.y),expansion.NewCenter,inner,inner+expansion.Config.WaveBlendDistance);
         float roughPhase=Vector2.Dot(position,dir)*frequency+islandTemporalPhase;
