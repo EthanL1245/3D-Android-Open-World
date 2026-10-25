@@ -136,9 +136,11 @@ public sealed class ShopPreview : MonoBehaviour
         else
         {
             model.transform.localRotation=rodPreview || gear=="RodAssembly"?Quaternion.Euler(0,-90,40):Quaternion.Euler(0,faceRight?90:-90,0);
-            // Fish-index cards/silhouettes use the same brown-side view as the live index.
-            if(gear==null && fitWholeFish && faceRight && species==FishCatalog.WinterFlounderId)
-                model.transform.localRotation*=Quaternion.AngleAxis(-90f,Vector3.forward);
+            // All fish UI previews show the flounder's brown upper side, like the fish index.
+            // The default bag/transfer thumbnails face left; index cards face right.
+            // Reverse the roll for left-facing previews so both show the same brown side.
+            if(gear==null && species==FishCatalog.WinterFlounderId)
+                model.transform.localRotation*=Quaternion.AngleAxis(faceRight?-90f:90f,Vector3.forward);
         }
 
         var renderers=model.GetComponentsInChildren<Renderer>().Where(r=>r.enabled).ToArray();
