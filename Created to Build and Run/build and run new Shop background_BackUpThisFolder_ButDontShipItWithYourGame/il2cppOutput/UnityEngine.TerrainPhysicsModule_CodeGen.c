@@ -22,8 +22,8 @@ static const int32_t s_InvokerIndices[4] =
 {
 	15098,
 	11375,
-	24918,
-	22170,
+	24921,
+	22173,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_TerrainPhysicsModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_TerrainPhysicsModule_CodeGenModule = 
