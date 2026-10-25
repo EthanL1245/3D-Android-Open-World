@@ -307,7 +307,7 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         if(SnapperIslandRuntime.Ready && SnapperCavesRockRegion.ContainsBiome(p))
             return ReefCatalog.SnapperBiomeId;
-        // The relocated Brinebreak is ONLY the union of two 150m rock circles.
+        // The relocated Brinebreak is ONLY the union of two 220m rock circles.
         bool newBrinebreak=BrinebreakRockRegion.HasRocks;
         if(newBrinebreak && BrinebreakRockRegion.ContainsBiome(p))return 1;
         if(PelagicIslandGeometry.Contains(p,PelagicCenter) || BluewaterCayRockRegion.ContainsBiome(p))

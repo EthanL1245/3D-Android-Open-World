@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class BrinebreakRockRegion
 {
-    public const float BiomeRadius = 150f;
+    public const float BiomeRadius = 220f;
     private const string MainName = "Brinebreak Isle Main rock";
     private static readonly List<Collider> Rocks = new List<Collider>(12);
     private static readonly HashSet<Collider> RockSet = new HashSet<Collider>();
@@ -90,13 +90,13 @@ public static class BrinebreakRockRegion
             Debug.LogError("[BRINEBREAK ROCKS] The two new meshes have no usable solid colliders.");
         else
             Debug.Log("[BRINEBREAK ROCKS] " + Rocks.Count + " solid colliders, " +
-                Anchors.Count + " fishing-biome mesh centres; radius 150m each.");
+                Anchors.Count + " fishing-biome mesh centres; radius 220m each.");
         return Rocks.Count > 0;
     }
 
     public static bool HasRocks { get { return Ensure(); } }
 
-    /// <summary>Exactly 150 horizontal metres from either imported rock mesh centre.</summary>
+    /// <summary>Exactly 220 horizontal metres from either imported rock mesh centre.</summary>
     public static bool ContainsBiome(Vector3 point, float edgeInset = 0f)
     {
         if (!Ensure()) return false;
@@ -195,7 +195,6 @@ public static class BrinebreakRockRegion
     {
         position = marker;
         if (capsule == null || !Ensure()) return false;
-        Terrain terrain = IslandExpansionWorld.Active != null ? IslandExpansionWorld.Active.Terrain : Terrain.activeTerrain;
         Vector3 scale = capsule.transform.lossyScale;
         float radius = Mathf.Max(.15f,capsule.radius*Mathf.Max(Mathf.Abs(scale.x),Mathf.Abs(scale.z)));
         float half = Mathf.Max(radius,capsule.height*Mathf.Abs(scale.y)*.5f);
@@ -203,7 +202,15 @@ public static class BrinebreakRockRegion
         float feetOffset = centerY-half;
         float cylinderHalf = Mathf.Max(0f,half-radius);
         float sea = SeaLevel();
-        float[] offsets = {0f,.7f,-.7f,1.5f,-1.5f,3f,-3f};
+        float[] offsets = {0f,.7f,-.7f,1.5f,-1.5f,3f,-3f,5f,-5f,8f,-8f,12f,-12f,18f,-18f,24f,-24f};
+        // Start outside every terrain/rock volume. An overlap query alone cannot
+        // detect a capsule fully enclosed by a non-convex rock mesh.
+        float rayTop = marker.y+100f;
+        foreach (Terrain tile in WorldTerrain.Tiles)
+            if (tile != null && tile.terrainData != null)
+                rayTop = Mathf.Max(rayTop,tile.transform.position.y+tile.terrainData.size.y+10f);
+        foreach (Collider rock in Rocks)
+            if (rock != null) rayTop = Mathf.Max(rayTop,rock.bounds.max.y+10f);
         bool found = false;
         float best = float.PositiveInfinity;
         Physics.SyncTransforms();
@@ -211,36 +218,31 @@ public static class BrinebreakRockRegion
         for (int iz = 0; iz < offsets.Length; iz++)
         {
             float x = marker.x+offsets[ix], z = marker.z+offsets[iz];
-            Ray ray = new Ray(new Vector3(x,marker.y+100f,z),Vector3.down);
-            float y = float.NegativeInfinity;
-            float difference = float.PositiveInfinity;
-            if (terrain != null && terrain.terrainData != null)
-            {
-                Vector3 origin = terrain.transform.position, size = terrain.terrainData.size;
-                if (x >= origin.x && z >= origin.z && x <= origin.x+size.x && z <= origin.z+size.z)
-                {
-                    float ground = terrain.SampleHeight(new Vector3(x,0f,z))+origin.y;
-                    if (ground > sea+.3f)
-                    { y = ground; difference = Mathf.Abs(marker.y-ground); }
-                }
-            }
-            for (int i = 0; i < Rocks.Count; i++)
-            {
-                Collider c = Rocks[i];
-                if (c == null || !c.enabled || !c.gameObject.activeInHierarchy) continue;
-                if (!c.Raycast(ray,out RaycastHit hit,230f) || hit.normal.y < .65f ||
-                    hit.point.y < sea+.3f) continue;
-                float candidateDifference = Mathf.Abs(hit.point.y-marker.y);
-                if (candidateDifference < difference)
-                { y = hit.point.y; difference = candidateDifference; }
-            }
+            float horizontal = Vector2.Distance(new Vector2(x,z),new Vector2(marker.x,marker.z));
+            if (horizontal > 24f) continue;
+            // Take the TOPMOST solid hit, never the terrain closest in elevation
+            // to the marker when another rock encloses that terrain surface.
+            if (!TryArrivalSurface(x,z,rayTop,sea,out float y)) continue;
+            float difference = Mathf.Abs(marker.y-y);
             if (difference > 30f) continue;
+            float highest = y;
+            bool supported = true;
+            for (int sample = 0; sample < 8; sample++)
+            {
+                float angle = sample*Mathf.PI*.25f;
+                if (!TryArrivalSurface(x+Mathf.Cos(angle)*radius,z+Mathf.Sin(angle)*radius,
+                    rayTop,sea,out float edge) || Mathf.Abs(edge-y) > .4f)
+                { supported = false; break; }
+                highest = Mathf.Max(highest,edge);
+            }
+            if (!supported) continue;
+            y = highest;
             Vector3 candidate = new Vector3(x,y+.36f-feetOffset,z);
             Vector3 center = candidate+Vector3.up*centerY;
             if (Physics.CheckCapsule(center-Vector3.up*cylinderHalf,
-                center+Vector3.up*cylinderHalf,Mathf.Max(.05f,radius-.02f),
+                center+Vector3.up*cylinderHalf,radius+.05f,
                 ~0,QueryTriggerInteraction.Ignore)) continue;
-            float score = Mathf.Sqrt(offsets[ix]*offsets[ix]+offsets[iz]*offsets[iz])*2f +
+            float score = horizontal*2f +
                 difference*.3f;
             if (score >= best) continue;
             best = score; position = candidate; found = true;
@@ -248,4 +250,17 @@ public static class BrinebreakRockRegion
         if (!found) Debug.LogError("[BRINEBREAK TRAVEL] No safe footing at the former SeaGrape_0350 marker.");
         return found;
     }
+
+    private static bool TryArrivalSurface(float x, float z, float rayTop, float sea, out float height)
+    {
+        height = 0f;
+        if (!Physics.Raycast(new Ray(new Vector3(x,rayTop,z),Vector3.down),out RaycastHit hit,
+            rayTop-sea,~0,QueryTriggerInteraction.Ignore)) return false;
+        // Foliage/boats/props may obstruct a candidate but cannot become its floor.
+        if (!(hit.collider is TerrainCollider) && !RockSet.Contains(hit.collider)) return false;
+        if (hit.normal.y < .75f || hit.point.y < sea+.3f) return false;
+        height = hit.point.y;
+        return true;
+    }
+
 }
