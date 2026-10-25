@@ -4,6 +4,24 @@ using UnityEngine.UI;
 public sealed class IslandDiscovery : MonoBehaviour
 {
     public int Biome=1;
+
+    private void Start()
+    {
+        if (Biome != 1 || !BrinebreakRockRegion.TryGetWorldBounds(out Bounds rockBounds))
+            return;
+        // Fit the physical trigger to the entire new cluster plus the biome radius.
+        // Discovery still requires dry footing inside the 200m rock region.
+        BoxCollider box = GetComponent<BoxCollider>();
+        if (box == null) return;
+        transform.position = rockBounds.center;
+        box.center = Vector3.zero;
+        float diameter = BrinebreakRockRegion.BiomeRadius * 2f + 4f;
+        box.size = new Vector3(rockBounds.size.x + diameter,
+            Mathf.Max(160f, rockBounds.size.y + 100f),
+            rockBounds.size.z + diameter);
+        Physics.SyncTransforms();
+    }
+
     private void OnTriggerStay(Collider other)
     {
         var player=other.GetComponentInParent<FirstPersonController>();
@@ -18,10 +36,10 @@ public sealed class IslandDiscovery : MonoBehaviour
             // Cave islands are imported rock meshes, not raised Unity Terrain.
             if(!SnapperCavesRockRegion.ContainsBiome(p))return;
         }
-        else if(Biome==1 && BrinebreakRockRegion.HasRocks)
+        else if(Biome==1)
         {
-            // Brinebreak has moved to the two imported rocks, not the old ellipse.
-            if(!BrinebreakRockRegion.ContainsBiome(p))return;
+            // The retired Brinebreak ellipse can never unlock the new island.
+            if(!BrinebreakRockRegion.HasRocks || !BrinebreakRockRegion.ContainsBiome(p))return;
             float floor=world.Terrain.SampleHeight(p)+world.Terrain.transform.position.y;
             if(!BrinebreakRockRegion.StandingOnRock(p) &&
                (floor<world.Water.BaseWaterLevel+.2f || Mathf.Abs(p.y-floor)>.6f))return;

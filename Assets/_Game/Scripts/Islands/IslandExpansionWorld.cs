@@ -307,12 +307,12 @@ public sealed class IslandExpansionWorld : MonoBehaviour
     {
         if(SnapperIslandRuntime.Ready && SnapperCavesRockRegion.ContainsBiome(p))
             return ReefCatalog.SnapperBiomeId;
-        // The relocated Brinebreak is ONLY the union of two 220m rock circles.
+        // The relocated Brinebreak is ONLY the union of 200m circles around its stalagmite meshes.
         bool newBrinebreak=BrinebreakRockRegion.HasRocks;
         if(newBrinebreak && BrinebreakRockRegion.ContainsBiome(p))return 1;
         if(PelagicIslandGeometry.Contains(p,PelagicCenter) || BluewaterCayRockRegion.ContainsBiome(p))
             return PelagicIslandGeometry.BiomeId;
-        if(!newBrinebreak)return IslandGeometry.Biome(p,reef.center,NewCenter);
+        // Never fall back to the retired Brinebreak ellipse when its old rocks are deleted.
         // Preserve the original Suncrest boundary; moving Brinebreak must not
         // inflate Suncrest's fishing waters or leave the old Brinebreak biome.
         Vector3 oldBrinebreak=reef.center+

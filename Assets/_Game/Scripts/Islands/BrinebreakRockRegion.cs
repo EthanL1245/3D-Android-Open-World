@@ -4,17 +4,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// The two authored meshes beneath "Brinebreak Isle Main rock" are the new
-/// Brinebreak coast. Preserves every user-authored transform and terrain height.
-/// Solid non-convex mesh colliders support walking, objects, ambient fish and fights.
+/// Uses the artist-authored Brinebreak Isle Stalagmite Rocks model and its individual
+/// mesh pieces as the coast. Preserves authored transforms, mesh geometry and terrain.
+/// Static mesh colliders serve player/boat/object physics and fish spawn/fight checks.
 /// </summary>
 public static class BrinebreakRockRegion
 {
-    public const float BiomeRadius = 220f;
-    private const string MainName = "Brinebreak Isle Main rock";
-    private static readonly List<Collider> Rocks = new List<Collider>(12);
+    public const float BiomeRadius = 200f;
+    private const string MainName = "Brinebreak Isle Stalagmite Rocks";
+    private static readonly List<Collider> Rocks = new List<Collider>(96);
     private static readonly HashSet<Collider> RockSet = new HashSet<Collider>();
-    private static readonly List<Vector2> Anchors = new List<Vector2>(4);
+    private static readonly List<Vector2> Anchors = new List<Vector2>(48);
     private static readonly Collider[] Overlaps = new Collider[128];
     private static int sceneHandle = -1;
     private static bool cached;
@@ -47,7 +47,7 @@ public static class BrinebreakRockRegion
     {
         Scene scene = SceneManager.GetSceneByName("PrototypeWorld");
         if (!scene.IsValid() || !scene.isLoaded) return false;
-        if (cached && sceneHandle == scene.handle) return Rocks.Count != 0;
+        if (cached && sceneHandle == scene.handle) return Rocks.Count != 0 && Anchors.Count != 0;
         sceneHandle = scene.handle; cached = true;
         Rocks.Clear(); RockSet.Clear(); Anchors.Clear(); water = null;
         GameObject main = FindMain(scene);
@@ -87,16 +87,28 @@ public static class BrinebreakRockRegion
             Rocks.Add(collider);
         }
         if (Rocks.Count == 0 || Anchors.Count == 0)
-            Debug.LogError("[BRINEBREAK ROCKS] The two new meshes have no usable solid colliders.");
+            Debug.LogError("[BRINEBREAK ROCKS] The stalagmite rock meshes have no usable solid colliders.");
         else
             Debug.Log("[BRINEBREAK ROCKS] " + Rocks.Count + " solid colliders, " +
-                Anchors.Count + " fishing-biome mesh centres; radius 220m each.");
+                Anchors.Count + " fishing-biome mesh centres; radius 200m each.");
         return Rocks.Count > 0;
     }
 
     public static bool HasRocks { get { return Ensure(); } }
 
-    /// <summary>Exactly 220 horizontal metres from either imported rock mesh centre.</summary>
+    // Fits the discovery trigger to the imported mesh cluster at Play without
+    // changing any artist-placed rock, terrain height, material or scale.
+    public static bool TryGetWorldBounds(out Bounds bounds)
+    {
+        bounds = default;
+        if (!Ensure()) return false;
+        bounds = Rocks[0].bounds;
+        for (int i = 1; i < Rocks.Count; i++)
+            if (Rocks[i] != null) bounds.Encapsulate(Rocks[i].bounds);
+        return true;
+    }
+
+    /// <summary>Union of 200m horizontal circles around all authored stalagmite mesh pieces.</summary>
     public static bool ContainsBiome(Vector3 point, float edgeInset = 0f)
     {
         if (!Ensure()) return false;
@@ -190,7 +202,7 @@ public static class BrinebreakRockRegion
         return false;
     }
 
-    /// <summary>Find clear footing beside the exact former SeaGrape_0350 location.</summary>
+    /// <summary>Find clear footing near the saved SeaGrape_0194 arrival point.</summary>
     public static bool TryGetArrival(Vector3 marker, CharacterController capsule, out Vector3 position)
     {
         position = marker;
@@ -247,7 +259,7 @@ public static class BrinebreakRockRegion
             if (score >= best) continue;
             best = score; position = candidate; found = true;
         }
-        if (!found) Debug.LogError("[BRINEBREAK TRAVEL] No safe footing at the former SeaGrape_0350 marker.");
+        if (!found) Debug.LogError("[BRINEBREAK TRAVEL] No safe footing near the new SeaGrape_0194 arrival.");
         return found;
     }
 
