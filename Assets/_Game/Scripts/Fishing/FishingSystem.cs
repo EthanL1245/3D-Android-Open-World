@@ -3468,11 +3468,11 @@ public class FishingSystem : MonoBehaviour
             Vector3.zero;
 
         // Keep the fish vertical while presenting almost its full side.
-        // Flounder only: 35 degrees counter-clockwise viewed from above.
+        // Flounder only: 80 degrees counter-clockwise viewed from above.
         // The existing mouth correction below keeps the line attachment fixed.
         heldFishBaseRotation =
             Quaternion.AngleAxis(
-                heldRecord != null && heldRecord.speciesId == FishCatalog.WinterFlounderId ? 51f : 86f,
+                heldRecord != null && heldRecord.speciesId == FishCatalog.WinterFlounderId ? 6f : 86f,
                 Vector3.up
             ) *
             Quaternion.Euler(

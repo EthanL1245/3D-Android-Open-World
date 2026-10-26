@@ -616,7 +616,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         heldFish.GetComponent<RedSnapperPresentation>()?.SetHeld(true);
         heldFish.GetComponent<MackerelPresentation>()?.SetHeld(true);
         heldFish.GetComponent<YellowtailPresentation>()?.SetHeld(true);
-        heldFish.transform.localRotation = Quaternion.AngleAxis(heldSpecies == FishCatalog.WinterFlounderId ? 51f : 86f, Vector3.up) * Quaternion.Euler(-90f, 0f, 0f);
+        heldFish.transform.localRotation = Quaternion.AngleAxis(heldSpecies == FishCatalog.WinterFlounderId ? 6f : 86f, Vector3.up) * Quaternion.Euler(-90f, 0f, 0f);
         // Exactly the same authored/bone/geometry mouth lookup used by first person.
         Vector3 mouthWorld = heldFish.transform.TransformPoint(FishingSystem.FindFishMouthLocalPosition(heldFish));
         Transform head = FishingRemoteAvatarAsset.FindBone(heldFish.transform, "Bone");
@@ -702,7 +702,7 @@ public sealed class FishingRemotePlayer : MonoBehaviour
         Vector3 stringDirection = (Vector3.down * .10f + transform.rotation * swayOffset).normalized;
         Vector3 mouth = top + stringDirection * .10f;
         // Match the local held pose; mouth pinning preserves the existing string endpoints.
-        heldFish.transform.rotation = transform.rotation * Quaternion.AngleAxis(heldSpecies == FishCatalog.WinterFlounderId ? 51f : 86f, Vector3.up) *
+        heldFish.transform.rotation = transform.rotation * Quaternion.AngleAxis(heldSpecies == FishCatalog.WinterFlounderId ? 6f : 86f, Vector3.up) *
             Quaternion.Euler(-90f, 0f, 0f) * swayRotation;
         heldFish.transform.position += mouth - heldMouth.position;
         if (heldString != null)
