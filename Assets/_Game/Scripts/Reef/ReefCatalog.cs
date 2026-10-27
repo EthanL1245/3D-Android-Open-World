@@ -71,8 +71,8 @@ public static class ReefCatalog
         if(biome==SnapperBiomeId)
         {
             var snapper=new float[FishCatalog.Count];
-            var original=Zones[SnapperBiomeId].weights;
-            System.Array.Copy(original,snapper,System.Math.Min(original.Length,snapper.Length));
+            var snapperBaseline=Zones[SnapperBiomeId].weights;
+            System.Array.Copy(snapperBaseline,snapper,System.Math.Min(snapperBaseline.Length,snapper.Length));
             snapper[FishCatalog.MahoganySnapperId]=snapper[FishCatalog.YellowtailSnapperId];
             return snapper;
         }
