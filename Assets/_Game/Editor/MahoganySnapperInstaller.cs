@@ -336,20 +336,31 @@ public static class MahoganySnapperInstaller
     [MenuItem("Tools/Open World/Locate Mahogany Snapper Files")]
     public static void LocateFiles()
     {
-        // Only needed if files are outside the usual folders.
-        string fbx = EditorUtility.OpenFilePanel("Select animated Mahogany Snapper FBX",
-                                                  Application.dataPath, "fbx");
-        if (string.IsNullOrEmpty(fbx)) return;
-        string png = FindFile(true, Path.GetDirectoryName(fbx));
+        // Also accepts the original .blend when the source is not in Downloads.
+        string model = EditorUtility.OpenFilePanel("Select Mahogany Snapper Blender or animated FBX",
+                                                    Application.dataPath, "");
+        if (string.IsNullOrEmpty(model)) return;
+        string ext = Path.GetExtension(model);
+        bool blend = string.Equals(ext, ".blend", StringComparison.OrdinalIgnoreCase);
+        if (!blend && !string.Equals(ext, ".fbx", StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.LogError("[MAHOGANY SNAPPER] Please select a .blend or .fbx model.");
+            return;
+        }
+        string png = FindFile(true, Path.GetDirectoryName(model));
         if (png == null)
             png = EditorUtility.OpenFilePanel("Select Mahogany Snapper texture",
-                                                Path.GetDirectoryName(fbx), "png");
+                                                Path.GetDirectoryName(model), "png");
         if (string.IsNullOrEmpty(png)) return;
         if (installing) return;
         installing = true;
         try
         {
-            Copy(fbx, FbxName);
+            if (blend)
+            {
+                if (!ExportBlenderSource(model)) return;
+            }
+            else Copy(model, FbxName);
             Copy(png, PngName);
             ImportSources();
             BuildPrefab();
