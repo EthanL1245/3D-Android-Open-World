@@ -3468,11 +3468,11 @@ public class FishingSystem : MonoBehaviour
             Vector3.zero;
 
         // Keep the fish vertical while presenting almost its full side.
-        // Flatfish only: 90 degrees counter-clockwise viewed from above.
+        // Species-specific yaw only; stingrays add 10 degrees clockwise.
         // The existing mouth correction below keeps the line attachment fixed.
         heldFishBaseRotation =
             Quaternion.AngleAxis(
-                heldRecord != null && FishCatalog.IsFlatfish(heldRecord.speciesId) ? -4f : 86f,
+                heldRecord != null ? FishCatalog.HeldYaw(heldRecord.speciesId) : 86f,
                 Vector3.up
             ) *
             Quaternion.Euler(
@@ -4312,6 +4312,7 @@ public class FishingSystem : MonoBehaviour
         return material;
     }
 }
+
 
 
 
