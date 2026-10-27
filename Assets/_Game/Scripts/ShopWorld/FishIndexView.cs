@@ -72,6 +72,7 @@ public sealed class FishIndexView : MonoBehaviour
         if(back!=null)bannerButton.onClick.AddListener(back);
         var art=Picture(banner,"IslandArtwork");art.texture=island;
         Anchor(art.rectTransform,0,0,.27f,1,12,12,-8,-12);
+        IslandIndexArtwork.Round(art);
         // Same texture as the island-index card, with no generated substitute.
         var title=Label(banner,ReefCatalog.Zones[biome].name.ToUpperInvariant(),32,Color.white);
         Anchor(title.rectTransform,.29f,.48f,.78f,1,0,0,-8,-13);
@@ -304,3 +305,4 @@ public sealed class FishIndexView : MonoBehaviour
         if(live!=null)live.Clear();
     }
 }
+
