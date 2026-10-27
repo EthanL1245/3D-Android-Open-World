@@ -33,7 +33,8 @@ public static class FishSizeTable
         GameplayCurve(18f,36), // Golden trevally gameplay approximation kg = 18 * metres^3
         GameplayCurve(17f,36), // Giant trevally uses the 1.8x Bluefin formula below
         GameplayCurve(10f,14), // Winter flounder gameplay approximation: kg = 10 * metres^3
-        GameplayCurve(10f,14) // Roughtail stingray: same gameplay size curve as flounder
+        GameplayCurve(10f,14), // Roughtail stingray: same gameplay size curve as flounder
+        GameplayCurve(10f,14) // Leopard stingray: identical size curve to Roughtail
     };
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)

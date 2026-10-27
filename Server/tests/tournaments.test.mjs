@@ -180,3 +180,15 @@ test('Roughtail Stingray is accepted only in Suncrest with the matching hotspot 
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
  assert.throws(()=>catchFish(f,f.guest,1,12,{island:1}),/does not match/);
 });
+
+test('Leopard Stingray is accepted only in Suncrest with the matching hotspot and Charm ceiling',()=>{
+ const island=tournamentIslands.find(i=>i.id===0);
+ const fish=island.fish.find(f=>f.id===29);
+ assert.ok(fish);
+ for(const other of tournamentIslands.filter(i=>i.id!==0))assert.equal(other.fish.some(f=>f.id===29),false);
+ const f=setup({random:()=>island.fish.findIndex(s=>s.id===29)});
+ f.start();assert.equal(f.room.tournament.target.id,29);
+ catchFish(f,f.guest,fish.maxKg*2,11);
+ assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
+ assert.throws(()=>catchFish(f,f.guest,1,12,{island:1}),/does not match/);
+});

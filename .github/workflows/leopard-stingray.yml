@@ -1,0 +1,54 @@
+name: Build Leopard Stingray and mirrored Roughtail held wings
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ArtSources/LeopardStingray.blend'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender 5.2.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/blender.tar.xz" https://download.blender.org/release/Blender5.2/blender-5.2.3-linux-x64.tar.xz
+          tar -xJf "$RUNNER_TEMP/blender.tar.xz" -C "$RUNNER_TEMP"
+          BLENDER=$(find "$RUNNER_TEMP" -maxdepth 3 -type f -name blender | head -1)
+          test -n "$BLENDER"
+          echo "BLENDER=$BLENDER" >> "$GITHUB_ENV"
+      - name: Mirror the two held-struggling wings and export both Stingrays
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp Assets/_Game/Reef/Source/RoughtailStingray.fbx "$RUNNER_TEMP/roughtail-before.fbx"
+          "$BLENDER" --background ArtSources/RoughtailStingray.blend --python Tools/RoughtailStingray/mirror_held_wings.py
+          "$BLENDER" --background ArtSources/RoughtailStingray.blend --python Tools/RoughtailStingray/export_stingray.py -- Assets/_Game/Reef/Source/RoughtailStingray.fbx
+          "$BLENDER" --background --python Tools/RoughtailStingray/verify_export.py
+          "$BLENDER" --background --python Tools/RoughtailStingray/verify_static_after_motion.py -- "$RUNNER_TEMP/roughtail-before.fbx" Assets/_Game/Reef/Source/RoughtailStingray.fbx
+          "$BLENDER" --background ArtSources/LeopardStingray.blend --python Tools/RoughtailStingray/mirror_held_wings.py
+          "$BLENDER" --background ArtSources/LeopardStingray.blend --python Tools/RoughtailStingray/export_stingray.py -- Assets/_Game/Reef/Source/LeopardStingray.fbx
+          "$BLENDER" --background --python Tools/LeopardStingray/verify_export.py
+      - name: Verify gameplay and tournaments
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test Server/tests/*.test.mjs
+          dotnet run --project Tools/WinterFlounder/Checks -- . 27
+          dotnet run --project Tools/WinterFlounder/Checks -- . 28
+          dotnet run --project Tools/WinterFlounder/Checks -- . 29
+      - name: Push verified FBX and mirrored source actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- ArtSources/RoughtailStingray.blend Assets/_Game/Reef/Source/RoughtailStingray.fbx ArtSources/LeopardStingray.blend Assets/_Game/Reef/Source/LeopardStingray.fbx
+          git diff --cached --name-only
+          git commit -m 'Export Leopard Stingray and enforce mirrored held wings for both rays'
+          git push origin HEAD:main

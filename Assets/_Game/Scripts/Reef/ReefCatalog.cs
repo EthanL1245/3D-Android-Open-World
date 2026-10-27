@@ -88,6 +88,7 @@ public static class ReefCatalog
             System.Array.Copy(original,starter,original.Length);
             starter[FishCatalog.WinterFlounderId]=starter[FishCatalog.RedSnapperId];
             starter[FishCatalog.RoughtailStingrayId]=starter[FishCatalog.RedSnapperId];
+            starter[FishCatalog.LeopardStingrayId]=starter[FishCatalog.RedSnapperId];
             return starter;
         }
         var weights=new float[original.Length];
