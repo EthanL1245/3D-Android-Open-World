@@ -14,10 +14,10 @@ class Program
   foreach(string f in Directory.GetFiles(Path.Combine(Resources.Root,"Assets"),"*.cs",SearchOption.AllDirectories))
    Check(!CSharpSyntaxTree.ParseText(File.ReadAllText(f)).GetDiagnostics().Any(d=>d.Severity==DiagnosticSeverity.Error),"C# syntax: "+f);
   FishingTuning.Reload();Check(FishingTuning.IsValid,FishingTuning.ValidationError);
-  int id=FishCatalog.WinterFlounderId;
-  Check(id==27 && FishCatalog.Count==28 && FishCatalog.CanonicalId(4)==5,"Save-safe appended ID");
+  int id=args.Length>1?int.Parse(args[1]):FishCatalog.WinterFlounderId;
+  Check(FishCatalog.WinterFlounderId==27 && FishCatalog.RoughtailStingrayId==28 && FishCatalog.Count==29 && FishCatalog.CanonicalId(4)==5,"Save-safe appended ID");
   Check(FishCatalog.Get(id).Difficulty==FishCatalog.Get(3).Difficulty,"Yellowtail difficulty");
-  Check(FishingTuning.TryGetSpeciesStats(id,out var stats),"Flounder stats");
+  Check(FishingTuning.TryGetSpeciesStats(id,out var stats),"Flatfish stats");
   Check(FishingTuning.TryGetSpeciesStats(3,out var yellow),"Yellowtail stats");
   Check(stats.MinHealth==yellow.MinHealth && stats.MaxHealth==yellow.MaxHealth && stats.YellowSpeedMps==yellow.YellowSpeedMps,"Yellowtail health and speed");
   for(int b=0;b<5;b++)for(int bait=0;bait<5;bait++)for(int lure=0;lure<(bait==4?5:1);lure++)

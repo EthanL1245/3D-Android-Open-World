@@ -10,7 +10,7 @@ public static class SeaBassImporter
     private const string Folder="Assets/_Game/Reef/Source";
     public const string PrefabPath="Assets/Resources/Fishing/SeaBass.prefab";
     public static void Install() => InstallModel("SeaBass",PrefabPath);
-    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null,bool preserveWorldUp=false)
+    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null,bool preserveWorldUp=false,bool importHeldStruggle=false)
     {
         string folder=sourceFolder??Folder;
         string fbx=folder+"/"+assetName+".fbx", png=texturePath??(folder+"/"+assetName+"Texture.png");
@@ -22,10 +22,21 @@ public static class SeaBassImporter
         importer.importCameras=false;importer.importLights=false;
         importer.materialImportMode=ModelImporterMaterialImportMode.None;
         importer.optimizeGameObjects=false;importer.isReadable=true;importer.SaveAndReimport();
-        var take=importer.defaultClipAnimations.OrderByDescending(c=>c.lastFrame-c.firstFrame).FirstOrDefault();
-        if(take==null)throw new InvalidOperationException("Fish authored animation take is missing.");
+        var takes=importer.defaultClipAnimations;
+        var take=importHeldStruggle
+            ? takes.FirstOrDefault(c=>c.takeName.IndexOf("Swim",StringComparison.OrdinalIgnoreCase)>=0)
+            : takes.OrderByDescending(c=>c.lastFrame-c.firstFrame).FirstOrDefault();
+        if(take==null)throw new InvalidOperationException("Fish authored swim take is missing.");
         take.name="Swim";take.loopTime=true;take.loopPose=true;
-        importer.clipAnimations=new[]{take};importer.SaveAndReimport();
+        if(importHeldStruggle)
+        {
+            var struggle=takes.FirstOrDefault(c=>c.takeName.IndexOf("HeldStruggle",StringComparison.OrdinalIgnoreCase)>=0);
+            if(struggle==null)throw new InvalidOperationException("Fish authored HeldStruggle take is missing.");
+            struggle.name=CaughtFishFlop.HeldStruggleStateName;struggle.loopTime=true;struggle.loopPose=true;
+            importer.clipAnimations=new[]{take,struggle};
+        }
+        else importer.clipAnimations=new[]{take};
+        importer.SaveAndReimport();
         var clip=AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>().First(c=>c.name=="Swim");
         string controllerPath=folder+"/"+assetName+".controller";
         var controller=AssetDatabase.LoadAssetAtPath<AnimatorController>(controllerPath);
@@ -33,6 +44,16 @@ public static class SeaBassImporter
         var machine=controller.layers[0].stateMachine;
         var state=machine.states.Select(s=>s.state).FirstOrDefault(s=>s.name=="Swim")??machine.AddState("Swim");
         state.motion=clip;machine.defaultState=state;EditorUtility.SetDirty(controller);
+        if(importHeldStruggle)
+        {
+            var heldClip=AssetDatabase.LoadAllAssetsAtPath(fbx).OfType<AnimationClip>()
+                .First(c=>c.name==CaughtFishFlop.HeldStruggleStateName);
+            var heldState=machine.states.Select(s=>s.state).FirstOrDefault(s=>s.name==CaughtFishFlop.HeldStruggleStateName)
+                ??machine.AddState(CaughtFishFlop.HeldStruggleStateName);
+            heldState.motion=heldClip;
+            // No automatic transition: only ConfigurePlayerHeld may select this state.
+            EditorUtility.SetDirty(controller);
+        }
         string matPath=folder+"/"+assetName+".mat";
         var material=AssetDatabase.LoadAssetAtPath<Material>(matPath);
         if(material==null)

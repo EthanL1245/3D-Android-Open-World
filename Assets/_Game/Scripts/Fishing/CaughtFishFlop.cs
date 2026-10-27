@@ -6,6 +6,7 @@ using UnityEngine.Playables;
 [DefaultExecutionOrder(900)]
 public sealed class CaughtFishFlop : MonoBehaviour
 {
+    public const string HeldStruggleStateName = "HeldStruggle";
     public System.Action PoseUpdated;
     public float SwingBoost { get; private set; }
     private Transform[] bones;
@@ -27,6 +28,8 @@ public sealed class CaughtFishFlop : MonoBehaviour
     private bool playerHeld;
     private int heldSwimState;
     private float heldRestPhase;
+    private AnimationClip authoredHeldClip;
+    private float heldAnimationStart;
 
     // The market keeps its existing playback. Player-held fish use the same
     // imported controller that swims in the aquarium, with explicit sampling.
@@ -52,9 +55,21 @@ public sealed class CaughtFishFlop : MonoBehaviour
         int swimState = Animator.StringToHash("Base Layer.Swim");
         heldSwimState = animator.HasState(0, swimState)
             ? swimState : animator.GetCurrentAnimatorStateInfo(0).fullPathHash;
+        // Optional dedicated held animation. Swimming remains the controller default
+        // in ambient fish, fights, aquariums, UI previews and market displays.
+        authoredHeldClip = null;
+        int struggleState = Animator.StringToHash("Base Layer." + HeldStruggleStateName);
+        if (animator.HasState(0, struggleState))
+        {
+            foreach (var clip in animator.runtimeAnimatorController.animationClips)
+                if (clip != null && clip.name == HeldStruggleStateName && clip.length > 0f)
+                { authoredHeldClip = clip; break; }
+            if (authoredHeldClip != null) heldSwimState = struggleState;
+        }
+        heldAnimationStart = Time.time;
         heldRestPhase = swim != null && swim.length > 0f
             ? Mathf.Clamp01(5f / Mathf.Max(1f, swim.frameRate) / swim.length) : 0f;
-        animator.Play(heldSwimState, 0, heldRestPhase);
+        animator.Play(heldSwimState, 0, authoredHeldClip != null ? 0f : heldRestPhase);
         animator.Update(0f);
         transform.localPosition = position;
         transform.localRotation = rotation;
@@ -141,6 +156,22 @@ public sealed class CaughtFishFlop : MonoBehaviour
     private void Awake() => Initialize();
     private void LateUpdate()
     {
+        if (playerHeld && authoredHeldClip != null && animator != null)
+        {
+            // Play the entire struggle at its authored speed, without the generic
+            // swim-burst/rest override flattening the ray's fin animation.
+            Vector3 heldPosition = transform.localPosition, heldScale = transform.localScale;
+            Quaternion heldRotation = transform.localRotation;
+            animator.speed = 0f;
+            float phase = Mathf.Repeat((Time.time - heldAnimationStart) / authoredHeldClip.length, 1f);
+            animator.Play(heldSwimState, 0, phase);
+            animator.Update(0f);
+            transform.localPosition = heldPosition;
+            transform.localRotation = heldRotation;
+            transform.localScale = heldScale;
+            PoseUpdated?.Invoke(); // Keep the string pinned after the struggling pose.
+            return;
+        }
         // Do not compress an entire long authored motion into 0.22 seconds.
         // Held catches play at up to 2.5x authored speed, with enough screen
         // time to see the full body bend. The market retains its own timing.
@@ -208,6 +239,11 @@ public sealed class CaughtFishFlop : MonoBehaviour
         if (graph.IsValid()) graph.Destroy();
         if (animator != null)
         {
+            if (authoredHeldClip != null && animator.runtimeAnimatorController != null)
+            {
+                int swimState = Animator.StringToHash("Base Layer.Swim");
+                if (animator.HasState(0, swimState)) animator.Play(swimState, 0, 0f);
+            }
             animator.enabled = animatorWasEnabled;
             animator.speed = previousSpeed;
             animator.cullingMode = previousCulling;
