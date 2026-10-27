@@ -133,6 +133,7 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
         if (BiomeThumbnailMethod != null)
             picture.texture = BiomeThumbnailMethod.Invoke(hud, new object[] { biome }) as Texture;
         picture.color = unlocked ? Color.white : new Color(.38f, .38f, .38f, 1f);
+        IslandIndexArtwork.Round(picture);
 
         Text title = Label(card.transform,
             entry.name.ToUpperInvariant() + "   •   " + (unlocked ? "UNLOCKED" : "LOCKED"),
@@ -286,4 +287,5 @@ public sealed class IslandBiomeIndexPatchRuntime : MonoBehaviour
         rect.offsetMax = new Vector2(right, top);
     }
 }
+
 
