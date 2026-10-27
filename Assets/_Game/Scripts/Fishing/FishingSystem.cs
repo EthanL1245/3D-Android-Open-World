@@ -3223,6 +3223,12 @@ public class FishingSystem : MonoBehaviour
         Material lineMaterial =
             new Material(lineShader);
 
+        // The ocean and FishingUnlit both default to Transparent (3000).
+        // Sorting them by renderer distance can draw water over the line as
+        // the camera moves. Draw this line after water, retaining depth tests
+        // against opaque scenery and leaving other FishingUnlit users alone.
+        lineMaterial.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent + 1;
+
         if (lineMaterial.HasProperty("_BaseColor"))
         {
             lineMaterial.SetColor(
