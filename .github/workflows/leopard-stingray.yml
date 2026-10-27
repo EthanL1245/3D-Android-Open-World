@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'ArtSources/LeopardStingray.blend'
+      - '.github/workflows/leopard-stingray.yml'
   workflow_dispatch:
 permissions:
   contents: write
@@ -34,6 +35,17 @@ jobs:
           "$BLENDER" --background ArtSources/LeopardStingray.blend --python Tools/RoughtailStingray/mirror_held_wings.py
           "$BLENDER" --background ArtSources/LeopardStingray.blend --python Tools/RoughtailStingray/export_stingray.py -- Assets/_Game/Reef/Source/LeopardStingray.fbx
           "$BLENDER" --background --python Tools/LeopardStingray/verify_export.py
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Pin compatible .NET 8 SDK for Roslyn checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDK8=$(dotnet --list-sdks | awk '$1 ~ /^8\\./ { version=$1 } END { print version }')
+          test -n "$SDK8"
+          printf '{"sdk":{"version":"%s"}}\\n' "$SDK8" > global.json
+          dotnet --version
       - name: Verify gameplay and tournaments
         shell: bash
         run: |
@@ -49,6 +61,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- ArtSources/RoughtailStingray.blend Assets/_Game/Reef/Source/RoughtailStingray.fbx ArtSources/LeopardStingray.blend Assets/_Game/Reef/Source/LeopardStingray.fbx
+          git rm -- .github/workflows/leopard-stingray.yml
           git diff --cached --name-only
           git commit -m 'Export Leopard Stingray and enforce mirrored held wings for both rays'
           git push origin HEAD:main
