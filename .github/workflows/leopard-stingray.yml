@@ -42,9 +42,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SDK8=$(dotnet --list-sdks | awk '$1 ~ /^8\\./ { version=$1 } END { print version }')
+          SDK8=$(dotnet --list-sdks | awk 'substr($1,1,2)=="8." { version=$1 } END { print version }')
           test -n "$SDK8"
-          printf '{"sdk":{"version":"%s"}}\\n' "$SDK8" > global.json
+          echo "{\"sdk\":{\"version\":\"$SDK8\"}}" > global.json
           dotnet --version
       - name: Verify gameplay and tournaments
         shell: bash
