@@ -10,15 +10,37 @@ Catches weigh 0.25–4.1 kg. Sale range 40–250 coins.
 Uses the shared fish visual and presentation factory, including index/shop,
 inventory, held fish, aquarium, ambient previews, multiplayer and tournaments.
 
-IMPORTANT: A textured **rigged, animated FBX** from the Blender source
-is required for the authored appearance. An STL does not contain that rig,
-UVs or swim animation. The supplied .blend/.stl/.png are not yet committed
-as repo binary assets. Unity must have these exact files:
-Assets/_Game/Reef/Source/MahoganySnapper.fbx
-Assets/_Game/Reef/Source/MahoganySnapperTexture.png
+## Automatic local FBX / texture import
 
-When added, Unity regenerates Resources/Fishing/MahoganySnapper.prefab
-automatically using SeaBassImporter, or run Tools > Open World >
-Rebuild Mahogany Snapper. Without them, the generic fish shape is used rather
-than failing a build. No special flatfish rotation or held struggle clip.
-Unity Play Mode and visual animation verification remain outstanding.
+The Unity Editor automatically searches for these locally saved files when it
+opens, recompiles the installer or sees either asset added under `Assets`:
+
+- `Mahogany Snapper.fbx` (also accepts `MahoganySnapper.fbx` and names such
+  as `Mahogany Snapper Swimming.fbx`)
+- `Mahogany Snapper Texture.png` (also accepts `MahoganySnapperTexture.png`)
+
+It searches recursively inside this project's `Assets` directory, and scans
+the project root, `ArtSources`, Desktop, Downloads and Documents (including
+immediate subfolders and standard OneDrive Desktop locations).
+It copies the files into `Assets/_Game/Reef/Source/` with canonical names and
+calls `SeaBassImporter.InstallModel` to generate
+`Assets/Resources/Fishing/MahoganySnapper.prefab` with the authored swim
+animation, atlas, mouth pin and standard fish presentation.
+
+The local FBX must contain the rigged animated fish with the shared snapper
+five-bone naming and UVs. The STL is a static mesh, not a replacement for the
+animated FBX. If Unity reports that the FBX lacks a swim take or expected rig,
+the source needs to be re-exported from Blender.
+
+Normally just pull the code, leave the FBX and PNG in a searched folder on
+**the same computer**, and open Unity. If they are stored elsewhere, use
+`Tools > Open World > Locate Mahogany Snapper Files` once. The
+`Tools > Open World > Rebuild Mahogany Snapper` command forces regeneration.
+
+The FBX and PNG are **not** uploaded to GitHub by the Editor auto-import.
+Generated model, material, atlas, controller and prefab live locally unless
+the user also commits and pushes the binary assets. Other computers cannot
+obtain locally generated artwork via `git pull` alone. Fish gameplay works
+with its generic fallback if no local source is available.
+
+Unity Editor compilation and Play Mode visual verification are still required.
