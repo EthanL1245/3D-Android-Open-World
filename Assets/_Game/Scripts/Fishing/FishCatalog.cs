@@ -46,6 +46,8 @@ public static class FishCatalog
     public const int WinterFlounderId=27;
     public const int RoughtailStingrayId=28;
     public const int LeopardStingrayId=29;
+    // Positive Unity yaw is clockwise viewed from above. Keep pitch/roll and mouth pinning unchanged.
+    public static float HeldYaw(int id)=>id==RoughtailStingrayId || id==LeopardStingrayId ? 6f : IsFlatfish(id) ? -4f : 86f;
     public static bool IsFlatfish(int id)=>id==WinterFlounderId || id==RoughtailStingrayId || id==LeopardStingrayId;
 
     // These embedded definitions are deliberately retained as a safe legacy fallback.
@@ -138,4 +140,5 @@ public static class FishCatalog
 
     public static float GetVisualScale(int speciesId,float weightKg)=>FishSizeTable.LengthMetres(speciesId,weightKg);
 }
+
 
