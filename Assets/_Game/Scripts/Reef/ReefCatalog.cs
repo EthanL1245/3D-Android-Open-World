@@ -68,7 +68,14 @@ public static class ReefCatalog
 
     private static float[] EquippedWeights(int bait,int biome)
     {
-        if(biome==SnapperBiomeId)return Zones[SnapperBiomeId].weights;
+        if(biome==SnapperBiomeId)
+        {
+            var snapper=new float[FishCatalog.Count];
+            var original=Zones[SnapperBiomeId].weights;
+            System.Array.Copy(original,snapper,System.Math.Min(original.Length,snapper.Length));
+            snapper[FishCatalog.MahoganySnapperId]=snapper[FishCatalog.YellowtailSnapperId];
+            return snapper;
+        }
         // Legacy fallback only: keep the trevally species exclusive to Bluewater Cay,
         // even when the editable fishing tables are temporarily invalid.
         if(biome==PelagicIslandGeometry.BiomeId)

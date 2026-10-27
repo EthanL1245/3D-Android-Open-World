@@ -15,7 +15,7 @@ class Program
    Check(!CSharpSyntaxTree.ParseText(File.ReadAllText(f)).GetDiagnostics().Any(d=>d.Severity==DiagnosticSeverity.Error),"C# syntax: "+f);
   FishingTuning.Reload();Check(FishingTuning.IsValid,FishingTuning.ValidationError);
   int id=args.Length>1?int.Parse(args[1]):FishCatalog.WinterFlounderId;
-  Check(FishCatalog.WinterFlounderId==27 && FishCatalog.RoughtailStingrayId==28 && FishCatalog.LeopardStingrayId==29 && FishCatalog.Count==30 && FishCatalog.CanonicalId(4)==5,"Save-safe appended ID");
+  Check(FishCatalog.WinterFlounderId==27 && FishCatalog.RoughtailStingrayId==28 && FishCatalog.LeopardStingrayId==29 && FishCatalog.Count==31 && FishCatalog.CanonicalId(4)==5,"Save-safe appended ID");
   Check(FishCatalog.Get(id).Difficulty==FishCatalog.Get(3).Difficulty,"Yellowtail difficulty");
   Check(FishingTuning.TryGetSpeciesStats(id,out var stats),"Flatfish stats");
   Check(FishingTuning.TryGetSpeciesStats(3,out var yellow),"Yellowtail stats");

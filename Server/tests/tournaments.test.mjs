@@ -192,3 +192,18 @@ test('Leopard Stingray is accepted only in Suncrest with the matching hotspot an
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
  assert.throws(()=>catchFish(f,f.guest,1,12,{island:1}),/does not match/);
 });
+
+test('Mahogany Snapper is a Snapper Island-only catch, with hotspot and Charm ceilings',()=>{
+ const island=tournamentIslands.find(i=>i.id===4);
+ const fish=island.fish.find(f=>f.id===30);
+ assert.ok(fish);
+ for(const other of tournamentIslands.filter(i=>i.id!==4))
+  assert.equal(other.fish.some(f=>f.id===30),false);
+ const f=setup();
+ f.game.action(f.host,{...f.create,mode:'weight'});
+ f.game.action(f.guest,f.joinGuest);
+ f.setTime(6000);f.game.tick(f.room);
+ catchFish(f,f.guest,fish.maxKg*2,11,{island:4,species:30});
+ assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12,{island:4,species:30}),/Invalid tournament catch/);
+ assert.throws(()=>catchFish(f,f.guest,1,12,{island:0,species:30}),/does not match/);
+});

@@ -305,7 +305,8 @@ export const tournamentIslands = [
         "id": 23,
         "name": "Great Barracuda",
         "maxKg": 72.0
-      }
+      },
+      {"id": 30, "name": "Mahogany Snapper", "maxKg": 6.1499999999999995}
     ]
   }
 ];
