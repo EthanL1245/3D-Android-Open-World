@@ -385,6 +385,7 @@ public sealed class ShopWorldHUD : MonoBehaviour
             var picture=new GameObject("Island preview",typeof(RectTransform),typeof(RawImage));picture.transform.SetParent(card.transform,false);
             Anchor(picture.GetComponent<RectTransform>(),0,0,.29f,1,18,20,0,-20);
             picture.GetComponent<RawImage>().texture=BiomeThumbnail(selectedBiome);picture.GetComponent<RawImage>().raycastTarget=false;
+            IslandIndexArtwork.Round(picture.GetComponent<RawImage>());
             SetAvailability(card,entry.Unlocked);
         }
 
@@ -417,6 +418,8 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private Texture2D bluewaterThumbnail,snapperThumbnail;
     private Texture2D BiomeThumbnail(int biome)
     {
+        var artwork = IslandIndexArtwork.Load(biome);
+        if (artwork != null) return artwork;
         if(biome==0)return IslandThumbnail();
         if(biome==4 && snapperThumbnail!=null)return snapperThumbnail;
         if(biome==3 && bluewaterThumbnail!=null)return bluewaterThumbnail;
@@ -715,3 +718,4 @@ public sealed class ShopWorldHUD : MonoBehaviour
     private static void Rect(RectTransform r,Vector2 min,Vector2 max,Vector2 pivot,Vector2 pos,Vector2 size) {r.anchorMin=min;r.anchorMax=max;r.pivot=pivot;r.sizeDelta=size;r.anchoredPosition=pos;}
     private static void Anchor(RectTransform r,float x0,float y0,float x1,float y1,float l,float b,float right,float top) { r.anchorMin=new Vector2(x0,y0);r.anchorMax=new Vector2(x1,y1);r.offsetMin=new Vector2(l,b);r.offsetMax=new Vector2(right,top); }
 }
+
