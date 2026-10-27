@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 // Uses the same animated fish pipeline as the other snapper species. The local
-// FBX and PNG can be in Assets or the user's Desktop/Downloads: git does not
-// need to contain those binary files for this computer to import them.
+// FBX or Blender .blend and PNG can be in Assets or the user's Desktop/Downloads.
+// When only .blend is available the local Blender executable exports the rig.
 [InitializeOnLoad]
 public static class MahoganySnapperInstaller
 {
@@ -63,7 +64,7 @@ public static class MahoganySnapperInstaller
                 if (!warned)
                 {
                     warned = true;
-                    Debug.LogWarning("[MAHOGANY SNAPPER] Animated FBX/PNG not found. " +
+                    Debug.LogWarning("[MAHOGANY SNAPPER] Animated FBX (or Blender .blend) and PNG not found. " +
                         "Put them anywhere under Unity Assets, Desktop or Downloads, " +
                         "then reopen Unity. Or use Tools > Open World > Locate Mahogany Snapper Files. " +
                         "The generic fish remains usable meanwhile.");
@@ -91,6 +92,12 @@ public static class MahoganySnapperInstaller
         if (!missingFbx && !missingPng) return true;
         string fbx = missingFbx ? FindFile(false) : null;
         string png = missingPng ? FindFile(true) : null;
+        if (missingFbx && fbx == null && (png != null || !missingPng))
+        {
+            string blend = FindFile(false, png != null ? Path.GetDirectoryName(png) : null, "*.blend");
+            if (blend != null && ExportBlenderSource(blend))
+                missingFbx = false; // Exported directly into the canonical Unity FBX location.
+        }
         if ((missingFbx && fbx == null) || (missingPng && png == null)) return false;
 
         Directory.CreateDirectory(Path.GetDirectoryName(FullPath(FbxName)));
@@ -99,6 +106,123 @@ public static class MahoganySnapperInstaller
         ImportSources();
         Debug.Log("[MAHOGANY SNAPPER] Found local model and texture; copied into " + Source);
         return true;
+    }
+
+    // Runs the Blender exporter shipped with the project. No manual FBX export
+    // is necessary provided Blender is installed on this computer.
+    private static bool ExportBlenderSource(string blend)
+    {
+        string blender = FindBlenderExecutable();
+        if (blender == null)
+        {
+            Debug.LogError("[MAHOGANY SNAPPER] Found " + blend +
+                " but no Blender executable. A .blend cannot be animated/imported " +
+                "as an FBX without Blender. Install Blender, then reopen Unity.");
+            return false;
+        }
+        string exporter = Path.Combine(Root, "Tools", "MahoganySnapper", "export_snapper.py");
+        if (!File.Exists(exporter))
+        {
+            Debug.LogError("[MAHOGANY SNAPPER] Missing exporter script: " + exporter);
+            return false;
+        }
+        string destination = FullPath(FbxName);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination));
+        string temporary = Path.Combine(Path.GetDirectoryName(destination), "MahoganySnapper-exporting.fbx");
+        if (File.Exists(temporary)) File.Delete(temporary);
+        string args = "--background " + Quote(blend) + " --python " + Quote(exporter) +
+                      " -- " + Quote(temporary);
+        var info = new System.Diagnostics.ProcessStartInfo(blender, args)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        var log = new StringBuilder();
+        try
+        {
+            using (var process = new System.Diagnostics.Process { StartInfo = info })
+            {
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (e.Data != null) lock (log) log.AppendLine(e.Data);
+                };
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (e.Data != null) lock (log) log.AppendLine(e.Data);
+                };
+                Debug.Log("[MAHOGANY SNAPPER] Exporting local Blender fish animation from " + blend);
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                if (!process.WaitForExit(180000))
+                {
+                    process.Kill();
+                    Debug.LogError("[MAHOGANY SNAPPER] Blender FBX export exceeded 3 minutes.");
+                    return false;
+                }
+                process.WaitForExit(); // Flush output callbacks before reporting.
+                if (process.ExitCode != 0 || !File.Exists(temporary) ||
+                    new FileInfo(temporary).Length < 1024)
+                {
+                    Debug.LogError("[MAHOGANY SNAPPER] Blender FBX export failed (exit " +
+                        process.ExitCode + "). Blender output:\n" + log);
+                    return false;
+                }
+            }
+            if (File.Exists(destination)) File.Delete(destination);
+            File.Move(temporary, destination);
+            Debug.Log("[MAHOGANY SNAPPER] Animated FBX successfully exported from .blend.");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("[MAHOGANY SNAPPER] Could not launch Blender exporter: " + e);
+            return false;
+        }
+        finally
+        {
+            if (File.Exists(temporary)) File.Delete(temporary);
+        }
+    }
+
+    private static string Quote(string value) => "\"" + value.Replace("\"", "\\\"") + "\"";
+
+    private static string FindBlenderExecutable()
+    {
+        var paths = new List<string>();
+        var env = Environment.GetEnvironmentVariable("BLENDER_BIN");
+        if (!string.IsNullOrEmpty(env)) paths.Add(env.Trim('"'));
+        string pathEnv = Environment.GetEnvironmentVariable("PATH") ?? "";
+        foreach (string dir in pathEnv.Split(Path.PathSeparator))
+            if (!string.IsNullOrEmpty(dir)) paths.Add(Path.Combine(dir.Trim('"'), "blender.exe"));
+        var programLocations = new[] {
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+        };
+        foreach (string program in programLocations)
+        {
+            if (string.IsNullOrEmpty(program)) continue;
+            foreach (string parent in new[] {
+                Path.Combine(program, "Blender Foundation"),
+                Path.Combine(program, "Programs", "Blender Foundation")
+            })
+            {
+                if (!Directory.Exists(parent)) continue;
+                try
+                {
+                    paths.Add(Path.Combine(parent, "blender.exe"));
+                    foreach (string version in Directory.GetDirectories(parent, "Blender*")
+                        .OrderByDescending(p => p, StringComparer.OrdinalIgnoreCase))
+                        paths.Add(Path.Combine(version, "blender.exe"));
+                }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+        return paths.FirstOrDefault(File.Exists);
     }
 
     private static void Copy(string from, string name)
@@ -116,7 +240,7 @@ public static class MahoganySnapperInstaller
         AssetDatabase.ImportAsset(Source + "/" + PngName, ImportAssetOptions.ForceSynchronousImport);
     }
 
-    private static string FindFile(bool png, string preferredFolder = null)
+    private static string FindFile(bool png, string preferredFolder = null, string extensionPattern = null)
     {
         var roots = new List<string>();
         if (!string.IsNullOrEmpty(preferredFolder)) roots.Add(preferredFolder);
@@ -142,7 +266,7 @@ public static class MahoganySnapperInstaller
                 bool assets = string.Equals(Path.GetFullPath(folder),
                     Path.GetFullPath(Application.dataPath), StringComparison.OrdinalIgnoreCase);
                 if (assets)
-                    files.AddRange(Directory.GetFiles(folder, png ? "*.png" : "*.fbx",
+                    files.AddRange(Directory.GetFiles(folder, extensionPattern ?? (png ? "*.png" : "*.fbx"),
                         SearchOption.AllDirectories).Where(f => Rank(f, png) < 100));
                 else
                 {
@@ -153,7 +277,7 @@ public static class MahoganySnapperInstaller
                     {
                         try
                         {
-                            files.AddRange(Directory.GetFiles(dir, png ? "*.png" : "*.fbx",
+                            files.AddRange(Directory.GetFiles(dir, extensionPattern ?? (png ? "*.png" : "*.fbx"),
                                 SearchOption.TopDirectoryOnly).Where(f => Rank(f, png) < 100));
                         }
                         catch (IOException) { }
@@ -202,7 +326,7 @@ public static class MahoganySnapperInstaller
         try
         {
             if (!FindAndStageSources())
-                throw new InvalidOperationException("Mahogany Snapper sources not found. " +
+                throw new InvalidOperationException("Mahogany Snapper animated FBX / Blender .blend and PNG not available. " +
                     "Use Tools > Open World > Locate Mahogany Snapper Files.");
             BuildPrefab();
         }
@@ -249,6 +373,7 @@ public sealed class MahoganySnapperFileWatcher : AssetPostprocessor
     {
         string ext = Path.GetExtension(path);
         return (string.Equals(ext, ".fbx", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ext, ".blend", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase)) &&
                Path.GetFileName(path).Replace(" ", "").ToLowerInvariant().Contains("mahoganysnapper");
     }
