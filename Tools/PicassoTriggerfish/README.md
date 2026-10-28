@@ -1,12 +1,13 @@
 # Picasso Triggerfish — stable species ID 31
 
 Added to the fishing species catalog without renumbering previous IDs.
-Default habitat is **Suncrest Reef** (internal `suncrest-reef`). Since no
-spawning area or chance was specified, use a low **3% catch chance** for
-all nine bait/lure entries. Only 2 percentage points were removed from Blue
-Mackerel and 1 from Sea Bass in the Suncrest tables, keeping all existing
-Red Snapper / Flounder / Stingray odds unchanged and each row at 100%.
-Every other biome remains at zero chance and an unavailable weight range.
+Habitat is the Suncrest Beach coastal fishing biome (internal
+`suncrest-reef`). **Shrimp = 20%** catch chance, updated alongside the
+Titan Triggerfish introduction (Titan also has 20% with shrimp). The Picasso
+Triggerfish remains at 3% for the other eight bait/lure rows. All Suncrest
+chance rows sum to exactly 100%; other fish shares were proportionally
+rebalanced in the shrimp row while preserving Red Snapper / Flounder /
+Stingray parity. Every other biome remains unavailable for Picasso.
 
 ## Physically realistic weight and length
 
