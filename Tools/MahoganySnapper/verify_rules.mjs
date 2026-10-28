@@ -5,7 +5,8 @@ const rows=readFileSync(root+'BiomeBaitSpeciesChance.csv','utf8').trim().split(/
 const header=rows.find(x=>x.startsWith('biomeId,')).split(',');
 const y=header.findIndex(x=>x.startsWith('16_'));
 const m=header.findIndex(x=>x.startsWith('30_'));
-assert.equal(m,header.length-1);
+assert.equal(m,header.length-2);
+assert.ok(header[header.length-1].startsWith('31_picasso_triggerfish'));
 let total=0;
 for(const row of rows){
  if(row.startsWith('#')||row.startsWith('biomeId,'))continue;
