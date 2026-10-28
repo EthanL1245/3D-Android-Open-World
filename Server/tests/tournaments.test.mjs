@@ -207,3 +207,19 @@ test('Mahogany Snapper is a Snapper Island-only catch, with hotspot and Charm ce
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12,{island:4,species:30}),/Invalid tournament catch/);
  assert.throws(()=>catchFish(f,f.guest,1,12,{island:0,species:30}),/does not match/);
 });
+
+test('Titan Triggerfish tournament catch validates only in Suncrest and enforces an authoritative weight ceiling',()=>{
+ const island=tournamentIslands.find(x=>x.id===0);
+ const targetIndex=island.fish.findIndex(x=>x.id===32);
+ assert(targetIndex>=0,'Suncrest tournament should include Titan Triggerfish');
+ const fish=island.fish[targetIndex];
+ assert.equal(fish.name,'Titan Triggerfish');
+ assert(Math.abs(fish.maxKg-16.98)<.0001,'normal weight including 50% hotspot');
+ for(const other of tournamentIslands.filter(x=>x.id!==0))
+   assert(!other.fish.some(f=>f.id===32),'Titan is exclusive to Suncrest');
+ const f=setup({random:()=>targetIndex});
+ f.start();
+ assert.equal(f.room.tournament.target.id,32);
+ catchFish(f,f.host,1);
+ assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+1,11),/Invalid tournament catch/);
+});
