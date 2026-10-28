@@ -97,8 +97,21 @@ public static class ReefCatalog
             starter[FishCatalog.WinterFlounderId]=starter[FishCatalog.RedSnapperId];
             starter[FishCatalog.RoughtailStingrayId]=starter[FishCatalog.RedSnapperId];
             starter[FishCatalog.LeopardStingrayId]=starter[FishCatalog.RedSnapperId];
-            starter[FishCatalog.PicassoTriggerfishId]=bait==2?20f:3f;
-            starter[FishCatalog.TitanTriggerfishId]=bait==2?20f:3f;
+            // When editable tables are invalid, retain the requested triggerfish
+            // probabilities instead of diluting 20% shrimp by merely appending
+            // weights to the old starter total. All other fish stay proportional.
+            float triggerChance=bait==2?20f:3f;
+            float otherTotal=0f;
+            for(int i=0;i<starter.Length;i++)
+                if(i!=FishCatalog.PicassoTriggerfishId && i!=FishCatalog.TitanTriggerfishId)
+                    otherTotal+=Mathf.Max(0f,starter[i]);
+            float otherShare=100f-2f*triggerChance;
+            if(otherTotal>0f)
+                for(int i=0;i<starter.Length;i++)
+                    if(i!=FishCatalog.PicassoTriggerfishId && i!=FishCatalog.TitanTriggerfishId)
+                        starter[i]*=otherShare/otherTotal;
+            starter[FishCatalog.PicassoTriggerfishId]=triggerChance;
+            starter[FishCatalog.TitanTriggerfishId]=triggerChance;
             return starter;
         }
         var weights=new float[original.Length];
