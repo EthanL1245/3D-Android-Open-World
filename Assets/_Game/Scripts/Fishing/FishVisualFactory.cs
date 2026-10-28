@@ -92,6 +92,7 @@ public static class FishVisualFactory
             case FishCatalog.RoughtailStingrayId:return "Fishing/RoughtailStingray";
             case FishCatalog.LeopardStingrayId:return "Fishing/LeopardStingray";
             case FishCatalog.MahoganySnapperId:return "Fishing/MahoganySnapper";
+            case FishCatalog.PicassoTriggerfishId:return "Fishing/PicassoTriggerfish";
             default:return null;
         }
     }
