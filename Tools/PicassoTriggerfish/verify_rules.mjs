@@ -7,7 +7,8 @@ const rows=readFileSync(root+'BiomeBaitSpeciesChance.csv','utf8')
   .trim().split(/\r?\n/).filter(line=>line && !line.startsWith('#'));
 const header=rows.shift().split(',');
 const newIndex=header.findIndex(x=>x.startsWith('31_picasso_triggerfish'));
-assert.equal(newIndex,header.length-1,'Append without changing stable species IDs');
+assert.equal(newIndex,header.length-2,'Retain Picasso stable species ID');
+assert.ok(header[header.length-1].startsWith('32_titan_triggerfish'));
 const redIndex=header.findIndex(x=>x.startsWith('1_red_snapper'));
 const flounderIndex=header.findIndex(x=>x.startsWith('27_winter_flounder'));
 const stingrayIndex=header.findIndex(x=>x.startsWith('28_roughtail_stingray'));
@@ -19,7 +20,7 @@ for(const line of rows){
  assert.equal(columns.slice(2).reduce((sum,x)=>sum+Number(x),0),100);
  assert.ok(columns.slice(2).every(x=>Number.isInteger(+x)&&+x>=0));
  if(columns[0]==='suncrest-reef'){
-   assert.equal(+columns[newIndex],3,'Triggerfish only at Suncrest');
+   assert.equal(+columns[newIndex],columns[1]==='shrimp'?20:3,'Picasso shrimp odds 20%, all other Suncrest odds 3%');
    assert.equal(columns[redIndex],columns[flounderIndex],'Keep Red Snapper/Flounder parity');
    assert.equal(columns[redIndex],columns[stingrayIndex],'Keep Roughtail parity');
    assert.equal(columns[redIndex],columns[leopardIndex],'Keep Leopard parity');
