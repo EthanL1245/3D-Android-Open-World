@@ -42,9 +42,11 @@ Downloads/Desktop/Documents and common OneDrive folders. It copies them to:
 
 Then `SeaBassImporter.InstallModel` generates:
 `Assets/Resources/Fishing/TitanTriggerfish.prefab` with textured skinned
-rig, swimming take, held-struggle take, correct mouth pin and
-`RedSnapperPresentation`. The two unnamed FBX animation takes are
-processed in their authored order, consistent with the Picasso importer.
+rig, the single supplied swimming take, standard procedural held-fish motion, correct mouth pin and
+`RedSnapperPresentation`. The supplied FBX contains **one** `ArmatureAction.001` animation stack,
+so the normal Swim controller is generated from that take. As with other
+snappers, `CaughtFishFlop` supplies held-fish struggling motion; do not try
+to import a second nonexistent HeldStruggle take.
 Manual fallback: **Tools > Open World > Locate Titan Triggerfish Files**;
 forced rebuild: **Tools > Open World > Rebuild Titan Triggerfish**.
 
