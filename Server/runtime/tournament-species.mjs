@@ -57,7 +57,8 @@ export const tournamentIslands = [
       {"id": 27, "name": "Winter Flounder", "maxKg": 2.312807183365},
       {"id": 28, "name": "Roughtail Stingray", "maxKg": 2.312807183365},
       {"id": 29, "name": "Leopard Stingray", "maxKg": 2.312807183365},
-      {"id": 31, "name": "Picasso Triggerfish", "maxKg": 0.84}
+      {"id": 31, "name": "Picasso Triggerfish", "maxKg": 0.84},
+      {"id": 32, "name": "Titan Triggerfish", "maxKg": 16.98}
     ]
   },
   {
