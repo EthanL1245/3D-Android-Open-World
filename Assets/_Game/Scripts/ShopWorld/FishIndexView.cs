@@ -180,9 +180,13 @@ public sealed class FishIndexView : MonoBehaviour
             TextRow("Catch this fish to reveal its details.",21,muted,60);
         else
         {
-            TextRow("Chance in "+ReefCatalog.Zones[biome].name+" when a fish bites.",18,muted,46,TextAnchor.MiddleLeft);
+            bool emperorFamily=family==FishCatalog.EmperorAngelfishId;
+            int baitSpecies=emperorFamily?FishCatalog.EmperorAngelfishId:variant;
+            if(emperorFamily)
+                TextRow("Juveniles are the smallest 30% of the 10–50 cm range (22 cm or less).",18,muted,60,TextAnchor.MiddleLeft);
+            TextRow((emperorFamily?"Combined chance for both variants in ":"Chance in ")+ReefCatalog.Zones[biome].name+" when a fish bites.",18,muted,emperorFamily?60:46,TextAnchor.MiddleLeft);
             var options=FishIndexCatalog.Baits();
-            options.Sort((a,b)=>Chance(variant,b.Key).CompareTo(Chance(variant,a.Key)));
+            options.Sort((a,b)=>Chance(baitSpecies,b.Key).CompareTo(Chance(baitSpecies,a.Key)));
             foreach(var bait in options)
             {
                 var row=Row(76);
@@ -192,7 +196,7 @@ public sealed class FishIndexView : MonoBehaviour
                 snapshots.Attach(icon,0,1f,bait.PreviewKey,false,true);
                 var name=Label(row,bait.Name,21,Color.white);
                 Anchor(name.rectTransform,.31f,0,.81f,1,0,6,-8,-6);
-                bool available=FishingTuning.TryGetChance(variant,bait.Key,biome,out float percent);
+                bool available=FishingTuning.TryGetChance(baitSpecies,bait.Key,biome,out float percent);
                 var odds=Label(row,available?percent.ToString("0.##")+"%":"—",25,available && percent>0?gold:muted,TextAnchor.MiddleRight);
                 Anchor(odds.rectTransform,.81f,0,1,1,0,0,-2,0);
             }

@@ -17,7 +17,7 @@ const stats=csv('FishStats').slice(1),red=stats.find(x=>x[0]==='1');
 for(const id of [33,34]){
  const row=stats.find(x=>+x[0]===id);assert.deepEqual(row.slice(4),red.slice(4));
  assert(Math.abs(+row[2]-.01738*10**2.88/1000)<1e-8);
- assert(Math.abs(+row[3]-.01738*40**2.88/1000)<1e-8);
+ assert(Math.abs(+row[3]-.01738*50**2.88/1000)<1e-8);
  const ranges=csv('BiomeFishWeights').slice(1).filter(x=>+x[1]===id);assert.equal(ranges.length,5);
  for(const x of ranges)assert.equal(+x[4]>0,x[0]==='suncrest-reef');
  assert.deepEqual(tournamentIslands.filter(x=>x.fish.some(f=>f.id===id)).map(x=>x.id),[0]);
@@ -26,7 +26,7 @@ assert(!tournamentTargets(tournamentIslands[0]).some(x=>x.id===34));assert.equal
 const system=read('Assets/_Game/Scripts/Fishing/FishingSystem.cs');
 assert(system.indexOf('hookedSpeciesId=FishCatalog.ResolveSizeVariant')>system.indexOf('hookedWeightKg *= Progression'));
 const catalog=read('Assets/_Game/Scripts/Fishing/FishCatalog.cs');
-assert(catalog.includes('weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.16f)'));
+assert(catalog.includes('weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.22f)'));
 for(const name of ['EmperorAngelfish','JuvenileEmperorAngelfish']){
  const fbx=readFileSync('Assets/_Game/Reef/Source/'+name+'.fbx');
  assert(fbx.subarray(0,18).toString().startsWith('Kaydara FBX Binary'));
@@ -37,10 +37,21 @@ for(const name of ['EmperorAngelfish','JuvenileEmperorAngelfish']){
 }
 console.log('PASS: 45 bait tables, exclusive Suncrest angelfish, shared combat, physical endpoints, size selection order, both supplied animated assets and tournament family.');
 
-// Physical boundary is length-based, not an independent 20% variant roll.
-const weights=Array.from({length:8},(_,i)=>.01738*((i+1)*5)**2.88/1000);
-const threshold=weights[2]+(weights[3]-weights[2])*.2;
-const length=kg=>{let hi=1;while(hi<7&&weights[hi]<kg)hi++;return (hi+(kg-weights[hi-1])/(weights[hi]-weights[hi-1]))*.05;};
-assert(Math.abs(length(threshold)-.16)<1e-8);
-assert(length(threshold-1e-6)<.16);assert(length(threshold+1e-6)>.16);
-assert(length(threshold*1.5)>.16,'Hotspot can promote a juvenile-size roll to adult');
+// Physical boundary is length-based, not an independent 30% variant roll.
+const weights=Array.from({length:10},(_,i)=>.01738*((i+1)*5)**2.88/1000);
+const threshold=weights[3]+(weights[4]-weights[3])*.4;
+const length=kg=>{let hi=1;while(hi<9&&weights[hi]<kg)hi++;return (hi+(kg-weights[hi-1])/(weights[hi]-weights[hi-1]))*.05;};
+assert(Math.abs(length(threshold)-.22)<1e-8);
+assert(length(threshold-1e-6)<.22);assert(length(threshold+1e-6)>.22);
+assert(length(threshold*1.5)>.22,'Hotspot can promote a juvenile-size roll to adult');
+
+const index=read('Assets/_Game/Scripts/ShopWorld/FishIndexCatalog.cs');
+assert(index.includes('new[] { FishCatalog.EmperorAngelfishId, FishCatalog.JuvenileEmperorAngelfishId }'));
+assert(index.includes('new[] { FishCatalog.MakoSharkId, FishCatalog.BattleScarredMakoSharkId }'));
+const view=read('Assets/_Game/Scripts/ShopWorld/FishIndexView.cs');
+assert(view.includes('FishIndexCatalog.FoundVariants(progress.Data,family)+" / "+variants.Length'));
+assert(view.includes('int baitSpecies=emperorFamily?FishCatalog.EmperorAngelfishId:variant;'));
+for(const id of [33,34]){
+ assert(Math.abs(tournamentIslands[0].fish.find(f=>f.id===id).maxKg-.01738*50**2.88/1000*1.5)<1e-8);
+}
+console.log('PASS: 50 cm endpoint, 22 cm juvenile boundary, shared Mako-style index registration and updated server caps.');

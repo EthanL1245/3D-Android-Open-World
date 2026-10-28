@@ -5,7 +5,8 @@ using System.Collections.Generic;
 public static class FishIndexCatalog
 {
     private static readonly int[][] VariantFamilies = {
-        new[] { FishCatalog.MakoSharkId, FishCatalog.BattleScarredMakoSharkId }
+        new[] { FishCatalog.MakoSharkId, FishCatalog.BattleScarredMakoSharkId },
+        new[] { FishCatalog.EmperorAngelfishId, FishCatalog.JuvenileEmperorAngelfishId }
     };
 
     public sealed class BaitOption

@@ -34,5 +34,5 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 30,Mahogany Snapper,0.25,4.1,96,315,40,250,2.9
 31,Picasso Triggerfish,0.06,0.56,115,342,40,300,3.152
 32,Titan Triggerfish,0.1,11.32,230,684,80,600,3.152
-33,Emperor Angelfish,0.013184078,0.714467613,115,342,40,300,3.152
-34,Juvenile Emperor Angelfish,0.013184078,0.714467613,115,342,40,300,3.152
+33,Emperor Angelfish,0.013184078,1.358574268,115,342,40,300,3.152
+34,Juvenile Emperor Angelfish,0.013184078,1.358574268,115,342,40,300,3.152

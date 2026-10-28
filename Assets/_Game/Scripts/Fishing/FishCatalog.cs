@@ -92,8 +92,8 @@ public static class FishCatalog
         new FishSpeciesDefinition("Mahogany Snapper",new Color(.66f,.34f,.35f),new Color(.52f,.81f,.86f),.25f,4.1f,.48f,13f,48),
         new FishSpeciesDefinition("Picasso Triggerfish",new Color(.76f,.67f,.45f),new Color(.13f,.32f,.58f),.06f,.56f,.42f,3f,40),
         new FishSpeciesDefinition("Titan Triggerfish",new Color(.55f,.45f,.24f),new Color(.85f,.70f,.35f),.10f,11.32f,.84f,3f,80),
-        new FishSpeciesDefinition("Emperor Angelfish",new Color(.1f,.3f,.7f),new Color(1f,.8f,.1f),0.013184078f,0.714467613f,.42f,30f,40),
-        new FishSpeciesDefinition("Juvenile Emperor Angelfish",new Color(.05f,.08f,.15f),new Color(.2f,.6f,1f),0.013184078f,0.714467613f,.42f,0f,40)
+        new FishSpeciesDefinition("Emperor Angelfish",new Color(.1f,.3f,.7f),new Color(1f,.8f,.1f),0.013184078f,1.358574268f,.42f,30f,40),
+        new FishSpeciesDefinition("Juvenile Emperor Angelfish",new Color(.05f,.08f,.15f),new Color(.2f,.6f,1f),0.013184078f,1.358574268f,.42f,0f,40)
     };
 
     public static int Count=>Species.Length;
@@ -117,8 +117,8 @@ public static class FishCatalog
     public static int ResolveSizeVariant(int id,float weightKg)
     {
         if(id!=EmperorAngelfishId && id!=JuvenileEmperorAngelfishId)return id;
-        // Bottom 20% of the 10–40 cm length range, evaluated AFTER size bonuses.
-        return weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.16f)
+        // Bottom 30% of the 10–50 cm length range, evaluated AFTER size bonuses.
+        return weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.22f)
             ?JuvenileEmperorAngelfishId:EmperorAngelfishId;
     }
 

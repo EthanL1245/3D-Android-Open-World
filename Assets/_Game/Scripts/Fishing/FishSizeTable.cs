@@ -70,7 +70,7 @@ public static class FishSizeTable
 
     private static float[] EmperorAngelfishCurve()
     {
-        var row=new float[8];
+        var row=new float[10];
         for(int i=0;i<row.Length;i++)row[i]=(float)(0.01738*Math.Pow((i+1)*5.0,2.88)/1000.0);
         return row;
     }
