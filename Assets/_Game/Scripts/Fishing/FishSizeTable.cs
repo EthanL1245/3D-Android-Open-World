@@ -35,8 +35,22 @@ public static class FishSizeTable
         GameplayCurve(10f,14), // Winter flounder gameplay approximation: kg = 10 * metres^3
         GameplayCurve(10f,14), // Roughtail stingray: same gameplay size curve as flounder
         GameplayCurve(10f,14), // Leopard stingray: identical size curve to Roughtail
-        GameplayCurve(10f,16) // Mahogany snapper: same length curve as Yellowtail Snapper
+        GameplayCurve(10f,16), // Mahogany snapper: same length curve as Yellowtail Snapper
+        RhinecanthusAculeatusCurve() // Picasso triggerfish: measured species-specific W(g)=0.1559*TL(cm)^2.4059
     };
+
+    // Edwards et al. (2011), Rodrigues lagoon measurements, n=17 (14-27 cm TL).
+    // Five-centimetre samples extrapolate to the FishBase 30 cm maximum; metres in game.
+    private static float[] RhinecanthusAculeatusCurve()
+    {
+        var row=new float[6];
+        for(int i=0;i<row.Length;i++)
+        {
+            double totalLengthCm=(i+1)*5.0;
+            row[i]=(float)(0.1559*Math.Pow(totalLengthCm,2.4059)/1000.0);
+        }
+        return row;
+    }
 
     private static float[] GameplayCurve(float kgAtOneMetre,int samples)
     { var row=new float[samples];for(int i=0;i<samples;i++){float m=(i+1)*.05f;row[i]=kgAtOneMetre*m*m*m;}return row; }
