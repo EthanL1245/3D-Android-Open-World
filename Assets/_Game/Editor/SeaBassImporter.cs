@@ -10,7 +10,7 @@ public static class SeaBassImporter
     private const string Folder="Assets/_Game/Reef/Source";
     public const string PrefabPath="Assets/Resources/Fishing/SeaBass.prefab";
     public static void Install() => InstallModel("SeaBass",PrefabPath);
-    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null,bool preserveWorldUp=false,bool importHeldStruggle=false)
+    public static void InstallModel(string assetName,string prefabPath,string sourceFolder=null,string texturePath=null,bool preserveWorldUp=false,bool importHeldStruggle=false,bool useIndexedSwimAndStruggle=false)
     {
         string folder=sourceFolder??Folder;
         string fbx=folder+"/"+assetName+".fbx", png=texturePath??(folder+"/"+assetName+"Texture.png");
@@ -24,14 +24,18 @@ public static class SeaBassImporter
         importer.optimizeGameObjects=false;importer.isReadable=true;importer.SaveAndReimport();
         var takes=importer.defaultClipAnimations;
         var take=importHeldStruggle
-            ? takes.FirstOrDefault(c=>c.takeName.IndexOf("Swim",StringComparison.OrdinalIgnoreCase)>=0)
+            ? (useIndexedSwimAndStruggle ? takes.FirstOrDefault() : takes.FirstOrDefault(c=>c.takeName.IndexOf("Swim",StringComparison.OrdinalIgnoreCase)>=0))
             : takes.OrderByDescending(c=>c.lastFrame-c.firstFrame).FirstOrDefault();
         if(take==null)throw new InvalidOperationException("Fish authored swim take is missing.");
         take.name="Swim";take.loopTime=true;take.loopPose=true;
         if(importHeldStruggle)
         {
-            var struggle=takes.FirstOrDefault(c=>c.takeName.IndexOf("HeldStruggle",StringComparison.OrdinalIgnoreCase)>=0);
+            var struggle=useIndexedSwimAndStruggle ? takes.Skip(1).FirstOrDefault() :
+                takes.FirstOrDefault(c=>c.takeName.IndexOf("HeldStruggle",StringComparison.OrdinalIgnoreCase)>=0);
             if(struggle==null)throw new InvalidOperationException("Fish authored HeldStruggle take is missing.");
+            // Some user-supplied FBX files contain two generic ArmatureAction takes.
+            // The opt-in mode preserves their authored export order: swim first,
+            // held struggle second. Existing species keep their named-take behavior.
             struggle.name=CaughtFishFlop.HeldStruggleStateName;struggle.loopTime=true;struggle.loopPose=true;
             importer.clipAnimations=new[]{take,struggle};
         }
