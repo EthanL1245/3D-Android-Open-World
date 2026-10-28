@@ -64,7 +64,7 @@ public static class TitanTriggerfishInstaller
                 var animator = prefab.GetComponentInChildren<Animator>(true);
                 ready = animator.runtimeAnimatorController != null &&
                         animator.runtimeAnimatorController.animationClips.Any(clip =>
-                            clip != null && clip.name == CaughtFishFlop.HeldStruggleStateName);
+                            clip != null && clip.name == "Swim");
             }
             if (ready && !SourceNewerThanPrefab()) return;
 
@@ -194,8 +194,9 @@ public static class TitanTriggerfishInstaller
     {
         if (!File.Exists(SourcePath(ModelName)) || !File.Exists(SourcePath(TextureName)))
             throw new InvalidOperationException("Titan Triggerfish FBX or texture is missing.");
-        SeaBassImporter.InstallModel("TitanTriggerfish", PrefabPath, Source,
-            importHeldStruggle:true, useIndexedSwimAndStruggle:true);
+        // The supplied FBX has ONE authored animation stack. Install it as Swim;
+        // CaughtFishFlop supplies the standard held-fish motion, as for snappers.
+        SeaBassImporter.InstallModel("TitanTriggerfish", PrefabPath, Source);
         Debug.Log("[TITAN TRIGGERFISH] Animated prefab installed: swimming, held fish, " +
                   "aquariums, multiplayer visuals, fish index and inventory.");
     }
