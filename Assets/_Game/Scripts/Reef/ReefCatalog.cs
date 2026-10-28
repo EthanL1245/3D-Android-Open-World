@@ -44,7 +44,7 @@ public static class ReefCatalog
         float configured;
         if(FishingTuning.TryGetChance(species,0,0,out configured))return configured;
         if(FishCatalog.IsFlatfish(species))return Starter.weights[FishCatalog.RedSnapperId];
-        if(species==FishCatalog.PicassoTriggerfishId)return 3f;
+        if(species==FishCatalog.PicassoTriggerfishId || species==FishCatalog.TitanTriggerfishId)return 3f;
         return species>=0&&species<Starter.weights.Length?Starter.weights[species]:0f;
     }
     public static string Rarity(int id)=>Weight(id)>=18?"Common":Weight(id)>=10?"Uncommon":Weight(id)>=4?"Rare":"Very rare";
@@ -97,7 +97,8 @@ public static class ReefCatalog
             starter[FishCatalog.WinterFlounderId]=starter[FishCatalog.RedSnapperId];
             starter[FishCatalog.RoughtailStingrayId]=starter[FishCatalog.RedSnapperId];
             starter[FishCatalog.LeopardStingrayId]=starter[FishCatalog.RedSnapperId];
-            starter[FishCatalog.PicassoTriggerfishId]=3f;
+            starter[FishCatalog.PicassoTriggerfishId]=bait==2?20f:3f;
+            starter[FishCatalog.TitanTriggerfishId]=bait==2?20f:3f;
             return starter;
         }
         var weights=new float[original.Length];
