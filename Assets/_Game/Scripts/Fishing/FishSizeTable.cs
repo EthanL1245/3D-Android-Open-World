@@ -36,7 +36,8 @@ public static class FishSizeTable
         GameplayCurve(10f,14), // Roughtail stingray: same gameplay size curve as flounder
         GameplayCurve(10f,14), // Leopard stingray: identical size curve to Roughtail
         GameplayCurve(10f,16), // Mahogany snapper: same length curve as Yellowtail Snapper
-        RhinecanthusAculeatusCurve() // Picasso triggerfish: measured species-specific W(g)=0.1559*TL(cm)^2.4059
+        RhinecanthusAculeatusCurve(), // Picasso triggerfish: measured species-specific W(g)=0.1559*TL(cm)^2.4059
+        BalistoidesViridescensCurve() // Titan triggerfish: FishBase Bayesian W(g)=0.03631*TL(cm)^2.93
     };
 
     // Edwards et al. (2011), Rodrigues lagoon measurements, n=17 (14-27 cm TL).
@@ -48,6 +49,19 @@ public static class FishSizeTable
         {
             double totalLengthCm=(i+1)*5.0;
             row[i]=(float)(0.1559*Math.Pow(totalLengthCm,2.4059)/1000.0);
+        }
+        return row;
+    }
+
+    // FishBase (Balistoides viridescens), Bayesian species length–weight model.
+    // Total length is centimetres; normal fish range is about 15–75 cm.
+    private static float[] BalistoidesViridescensCurve()
+    {
+        var row=new float[15];
+        for(int i=0;i<row.Length;i++)
+        {
+            double lengthCm=(i+1)*5.0;
+            row[i]=(float)(0.03631*Math.Pow(lengthCm,2.93)/1000.0);
         }
         return row;
     }
