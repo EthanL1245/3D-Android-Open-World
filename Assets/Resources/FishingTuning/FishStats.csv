@@ -32,3 +32,4 @@ speciesId,speciesName,minWeightKg,maxWeightKg,minHealth,maxHealth,minCostCoins,m
 28,Roughtail Stingray,0.25,3.6,240,603,150,1100,3.438
 29,Leopard Stingray,0.25,3.6,240,603,150,1100,3.438
 30,Mahogany Snapper,0.25,4.1,96,315,40,250,2.9
+31,Picasso Triggerfish,0.06,0.56,115,342,40,300,3.152
