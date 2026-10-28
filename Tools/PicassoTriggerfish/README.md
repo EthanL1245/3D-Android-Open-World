@@ -46,7 +46,7 @@ and remote-player presentation. Server tournament max includes the existing
 ## Import from supplied files
 
 The user provided a Blender source, an **animated FBX**, and a PNG texture.
-The FBX is already exported; Blender is not needed on the game PC.
+The FBX is already exported; Blender is not needed on the game PC.\nThe FBX contains two 0.792-second takes (both named ArmatureAction variants).\nThe first take drives the regular Swim state; the second is installed as\nthe HeldStruggle state used by CaughtFishFlop. Both use the nine-bone rig,\nand the game shares the usual mouth anchor and held-fish placement.\nThe second animation's intended presentation still needs a Unity visual check.
 
 The repository includes `Assets/_Game/Editor/PicassoTriggerfishInstaller.cs`.
 Upon Unity Editor startup or before building, it discovers these local files
