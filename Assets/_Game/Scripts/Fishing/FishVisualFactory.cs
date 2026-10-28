@@ -94,6 +94,8 @@ public static class FishVisualFactory
             case FishCatalog.MahoganySnapperId:return "Fishing/MahoganySnapper";
             case FishCatalog.PicassoTriggerfishId:return "Fishing/PicassoTriggerfish";
             case FishCatalog.TitanTriggerfishId:return "Fishing/TitanTriggerfish";
+            case FishCatalog.EmperorAngelfishId:return "Fishing/EmperorAngelfish";
+            case FishCatalog.JuvenileEmperorAngelfishId:return "Fishing/JuvenileEmperorAngelfish";
             default:return null;
         }
     }

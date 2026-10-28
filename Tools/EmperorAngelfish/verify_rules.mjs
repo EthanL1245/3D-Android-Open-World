@@ -1,0 +1,46 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+import {tournamentIslands,tournamentTargets,tournamentSpeciesId} from '../../Server/runtime/tournament-species.mjs';
+const read=p=>readFileSync(p,'utf8');
+const csv=p=>read('Assets/Resources/FishingTuning/'+p+'.csv').trim().split(/\r?\n/).filter(x=>!x.startsWith('#')).map(x=>x.split(','));
+const [head,...rows]=csv('BiomeBaitSpeciesChance');
+const a=head.findIndex(x=>x.startsWith('33_')),j=head.findIndex(x=>x.startsWith('34_'));
+assert(a>0&&j===a+1);
+for(const row of rows){
+ assert.equal(row.length,head.length);assert.equal(row.slice(2).reduce((s,x)=>s+ +x,0),100);
+ assert(row.slice(2).every(x=>Number.isInteger(+x)&&+x>=0));
+ assert.equal(+row[a],row[0]==='suncrest-reef'&&['worms','worms-legacy'].includes(row[1])?30:0);
+ assert.equal(+row[j],0);
+}
+assert.equal(rows.length,45);
+const stats=csv('FishStats').slice(1),red=stats.find(x=>x[0]==='1');
+for(const id of [33,34]){
+ const row=stats.find(x=>+x[0]===id);assert.deepEqual(row.slice(4),red.slice(4));
+ assert(Math.abs(+row[2]-.01738*10**2.88/1000)<1e-8);
+ assert(Math.abs(+row[3]-.01738*40**2.88/1000)<1e-8);
+ const ranges=csv('BiomeFishWeights').slice(1).filter(x=>+x[1]===id);assert.equal(ranges.length,5);
+ for(const x of ranges)assert.equal(+x[4]>0,x[0]==='suncrest-reef');
+ assert.deepEqual(tournamentIslands.filter(x=>x.fish.some(f=>f.id===id)).map(x=>x.id),[0]);
+}
+assert(!tournamentTargets(tournamentIslands[0]).some(x=>x.id===34));assert.equal(tournamentSpeciesId(34),33);
+const system=read('Assets/_Game/Scripts/Fishing/FishingSystem.cs');
+assert(system.indexOf('hookedSpeciesId=FishCatalog.ResolveSizeVariant')>system.indexOf('hookedWeightKg *= Progression'));
+const catalog=read('Assets/_Game/Scripts/Fishing/FishCatalog.cs');
+assert(catalog.includes('weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.16f)'));
+for(const name of ['EmperorAngelfish','JuvenileEmperorAngelfish']){
+ const fbx=readFileSync('Assets/_Game/Reef/Source/'+name+'.fbx');
+ assert(fbx.subarray(0,18).toString().startsWith('Kaydara FBX Binary'));
+ for(const bone of ['Bone','Bone.001','Bone.002','Bone.003','Bone.004'])assert(fbx.includes(Buffer.from(bone)));
+ assert(fbx.includes(Buffer.from('Armature|ArmatureAction')));
+ assert(fbx.includes(Buffer.from('LayerElementUV')));
+ const png=readFileSync('Assets/_Game/Reef/Source/'+name+'Texture.png');assert.equal(png.subarray(1,4).toString(),'PNG');
+}
+console.log('PASS: 45 bait tables, exclusive Suncrest angelfish, shared combat, physical endpoints, size selection order, both supplied animated assets and tournament family.');
+
+// Physical boundary is length-based, not an independent 20% variant roll.
+const weights=Array.from({length:8},(_,i)=>.01738*((i+1)*5)**2.88/1000);
+const threshold=weights[2]+(weights[3]-weights[2])*.2;
+const length=kg=>{let hi=1;while(hi<7&&weights[hi]<kg)hi++;return (hi+(kg-weights[hi-1])/(weights[hi]-weights[hi-1]))*.05;};
+assert(Math.abs(length(threshold)-.16)<1e-8);
+assert(length(threshold-1e-6)<.16);assert(length(threshold+1e-6)>.16);
+assert(length(threshold*1.5)>.16,'Hotspot can promote a juvenile-size roll to adult');

@@ -112,6 +112,13 @@ public static class ReefCatalog
                         starter[i]*=otherShare/otherTotal;
             starter[FishCatalog.PicassoTriggerfishId]=triggerChance;
             starter[FishCatalog.TitanTriggerfishId]=triggerChance;
+            if(bait!=2 && bait!=3 && bait!=ShopCatalog.StarterLure)
+            {
+                for(int i=0;i<starter.Length;i++)
+                    if(i!=FishCatalog.PicassoTriggerfishId && i!=FishCatalog.TitanTriggerfishId)
+                        starter[i]*=64f/94f;
+                starter[FishCatalog.EmperorAngelfishId]=30f;
+            }
             return starter;
         }
         var weights=new float[original.Length];

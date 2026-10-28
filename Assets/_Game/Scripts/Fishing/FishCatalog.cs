@@ -49,6 +49,8 @@ public static class FishCatalog
     public const int MahoganySnapperId=30;
     public const int PicassoTriggerfishId=31;
     public const int TitanTriggerfishId=32;
+    public const int EmperorAngelfishId=33;
+    public const int JuvenileEmperorAngelfishId=34;
     // Positive Unity yaw is clockwise viewed from above. Keep pitch/roll and mouth pinning unchanged.
     public static float HeldYaw(int id)=>id==RoughtailStingrayId || id==LeopardStingrayId ? 16f : IsFlatfish(id) ? -4f : 86f;
     public static bool IsFlatfish(int id)=>id==WinterFlounderId || id==RoughtailStingrayId || id==LeopardStingrayId;
@@ -89,12 +91,36 @@ public static class FishCatalog
         new FishSpeciesDefinition("Leopard Stingray",new Color(.16f,.15f,.14f),new Color(.83f,.81f,.76f),.25f,3.6f,.68f,26f,150),
         new FishSpeciesDefinition("Mahogany Snapper",new Color(.66f,.34f,.35f),new Color(.52f,.81f,.86f),.25f,4.1f,.48f,13f,48),
         new FishSpeciesDefinition("Picasso Triggerfish",new Color(.76f,.67f,.45f),new Color(.13f,.32f,.58f),.06f,.56f,.42f,3f,40),
-        new FishSpeciesDefinition("Titan Triggerfish",new Color(.55f,.45f,.24f),new Color(.85f,.70f,.35f),.10f,11.32f,.84f,3f,80)
+        new FishSpeciesDefinition("Titan Triggerfish",new Color(.55f,.45f,.24f),new Color(.85f,.70f,.35f),.10f,11.32f,.84f,3f,80),
+        new FishSpeciesDefinition("Emperor Angelfish",new Color(.1f,.3f,.7f),new Color(1f,.8f,.1f),0.013184078f,0.714467613f,.42f,30f,40),
+        new FishSpeciesDefinition("Juvenile Emperor Angelfish",new Color(.05f,.08f,.15f),new Color(.2f,.6f,1f),0.013184078f,0.714467613f,.42f,0f,40)
     };
 
     public static int Count=>Species.Length;
-    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
+    public static readonly int[] ActiveIds={0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34};
     public static int CanonicalId(int id)=>id==4?YellowfinTunaId:id;
+
+    // Tournament identity is deliberately separate from save/render identity.
+    public static int TournamentSpeciesId(int id)
+    {
+        switch(CanonicalId(id))
+        {
+            case BattleScarredMakoSharkId:return MakoSharkId;
+            case GreatBarracudaId:return BlackfinBarracudaId;
+            case GiantTrevallyId:return BluefinTrevallyId;
+            case LeopardStingrayId:return RoughtailStingrayId;
+            case JuvenileEmperorAngelfishId:return EmperorAngelfishId;
+            default:return CanonicalId(id);
+        }
+    }
+
+    public static int ResolveSizeVariant(int id,float weightKg)
+    {
+        if(id!=EmperorAngelfishId && id!=JuvenileEmperorAngelfishId)return id;
+        // Bottom 20% of the 10–40 cm length range, evaluated AFTER size bonuses.
+        return weightKg<=FishSizeTable.WeightForLength(EmperorAngelfishId,.16f)
+            ?JuvenileEmperorAngelfishId:EmperorAngelfishId;
+    }
 
     public static FishSpeciesDefinition Get(int id)
     {

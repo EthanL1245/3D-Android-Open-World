@@ -157,7 +157,7 @@ public sealed partial class FishingTournament : MonoBehaviour
     public void ReportCatch(CaughtFishRecord fish,int island,int cast)
     {
         if(current==null || current.phase!="running" || Mine()?.status!="joined" || !session.Connected ||
-            (current.mode!="weight" && (island!=current.island || FishCatalog.CanonicalId(fish.speciesId)!=current.species)))return;
+            (current.mode!="weight" && (island!=current.island || FishCatalog.TournamentSpeciesId(fish.speciesId)!=FishCatalog.TournamentSpeciesId(current.species))))return;
         commands.Enqueue(new Command{op="catch",id=current.id,island=island,species=FishCatalog.CanonicalId(fish.speciesId),cast=cast,kg=fish.weightKg});
     }
     private bool Reserve(string id,int amount,out TournamentWager entry)
@@ -296,7 +296,7 @@ public sealed partial class FishingTournament : MonoBehaviour
         }
         else if(screen=="announcement")body.text=(current.mode=="weight"
             ?"CATCH FISH FROM ANY BIOME\n\nAll competitors start at Suncrest Beach.\nMost total kilograms caught in six minutes wins. Only NEW casts during the tournament count, across the entire fishing map."
-            :"CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Other species do not score.")
+            :"CATCH "+current.speciesName.ToUpperInvariant()+"\n\n"+current.islandName+" • Six minutes • 100 points per kg\nOnly new casts in these island waters score. Normal and variant forms score equally. Other species do not score.")
             +"\n\nStarts in "+Mathf.CeilToInt(Mathf.Max(0,current.startSeconds-(Time.realtimeSinceStartup-receivedAt)))+" seconds";
         else if(screen=="results")
         {

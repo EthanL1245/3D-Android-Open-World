@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, renameSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { tournamentIslands } from './tournament-species.mjs';
+import { tournamentIslands, tournamentSpeciesId, tournamentTargets } from './tournament-species.mjs';
 
 const validId=v=>typeof v==='string' && /^[a-f0-9]{32}$/.test(v);
 const fail=message=>{throw Object.assign(new Error(message),{status:400});};
@@ -56,7 +56,7 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(t.entries.every(e=>e.status!=='pending')){
         const joined=t.entries.filter(e=>e.status==='joined');
         if(joined.length<2){finish(t,true,'At least two players must join. Entry fees refunded.');return;}
-        const choices=tournamentIslands[t.island].fish;
+        const choices=tournamentTargets(tournamentIslands[t.island]);
         t.target=t.mode==='weight'?null:choices[random(choices.length)];
         t.phase='countdown';t.startsAt=clock()+5000;t.endsAt=t.startsAt+360000;
       }
@@ -107,7 +107,7 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       if(t.phase!=='running'||!e||e.status!=='joined')fail('Tournament is not accepting catches.');
       if(!Number.isInteger(c.cast)||c.cast<=e.startSequence||c.cast!==p.pose.castSequence)fail('Only new tournament casts count.');
       if(e.seen.has(c.cast))return view(room);
-      if(p.pose.world!==0 || (t.mode==='species' && (c.island!==t.island || c.species!==t.target.id)))
+      if(p.pose.world!==0 || (t.mode==='species' && (c.island!==t.island || tournamentSpeciesId(c.species)!==tournamentSpeciesId(t.target.id))))
         fail('This catch does not match the tournament.');
       // Each species max already includes the 1.5x hotspot bonus. Charm can add
       // another 100% on top; the old ceiling incorrectly rejected real record fish.
@@ -116,7 +116,7 @@ export function createTournaments({clock=Date.now,random=randomInt,ledgerPath=nu
       // remain biome-specific, including the existing max Charm allowance.
       const biome=Number.isInteger(c.island) && c.island>=0 && c.island<tournamentIslands.length
         ?tournamentIslands[c.island]:null;
-      const species=t.mode==='weight'?biome?.fish.find(f=>f.id===c.species):t.target;
+      const species=biome?.fish.find(f=>f.id===c.species); // Validate the actual variant's biome and cap.
       if(!species)fail('This catch does not match the tournament.');
       if(typeof c.kg!=='number'||!Number.isFinite(c.kg)||c.kg<=0||c.kg>species.maxKg*2+.01||e.catches>=120)
         fail('Invalid tournament catch.');

@@ -1151,6 +1151,8 @@ public class FishingSystem : MonoBehaviour
             if(!pondCast) hookedWeightKg*=castHotspotMultiplier;
             hookedWeightKg *= Progression != null ? Progression.Multiplier(5) : 1f;
 
+            hookedSpeciesId=FishCatalog.ResolveSizeVariant(hookedSpeciesId,hookedWeightKg);
+
             fishUnconscious = false;
             fishOnShore = false;
             fishHealth = 1f;

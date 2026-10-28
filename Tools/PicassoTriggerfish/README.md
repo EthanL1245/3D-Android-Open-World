@@ -47,7 +47,15 @@ and remote-player presentation. Server tournament max includes the existing
 ## Import from supplied files
 
 The user provided a Blender source, an **animated FBX**, and a PNG texture.
-The FBX is already exported; Blender is not needed on the game PC.\nThe FBX contains two 0.792-second takes (both named ArmatureAction variants).\nThe first take drives the regular Swim state; the second is installed as\nthe HeldStruggle state used by CaughtFishFlop. Both use the nine-bone rig,\nand the game shares the usual mouth anchor and held-fish placement.\nThe second animation's intended presentation still needs a Unity visual check.
+The FBX is already exported; Blender is not needed on the game PC.
+Picasso now uses the same animation configuration as Titan Triggerfish:
+the shared importer selects the longest authored take as looping `Swim`
+(first exported take when durations tie), used by the fish index, aquarium
+and normal swimming. Holding uses standard `CaughtFishFlop` motion instead
+of Picasso's former dedicated `HeldStruggle` take. Existing prefabs with
+that state are automatically rebuilt and the stale controller state is removed.
+Picasso's mesh, texture, size, stats, placement and catch rules are unchanged.
+Unity visual verification is still required on the game PC.
 
 The repository includes `Assets/_Game/Editor/PicassoTriggerfishInstaller.cs`.
 Upon Unity Editor startup or before building, it discovers these local files

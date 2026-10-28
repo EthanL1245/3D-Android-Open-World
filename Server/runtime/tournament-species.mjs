@@ -1,4 +1,8 @@
 // Generated from the fishing weight/chance tables. Maximum includes the 50% hotspot bonus.
+// Only explicit gameplay variants share tournament targets. Their actual catch
+// weights score at the same 100 points/kg; no variant multiplier is applied.
+export const tournamentSpeciesId = id => ({4:5,20:19,23:22,26:24,29:28,34:33})[id] ?? id;
+export const tournamentTargets = island => island.fish.filter(f => tournamentSpeciesId(f.id)===f.id);
 export const tournamentIslands = [
   {
     "id": 0,
@@ -58,7 +62,9 @@ export const tournamentIslands = [
       {"id": 28, "name": "Roughtail Stingray", "maxKg": 2.312807183365},
       {"id": 29, "name": "Leopard Stingray", "maxKg": 2.312807183365},
       {"id": 31, "name": "Picasso Triggerfish", "maxKg": 0.84},
-      {"id": 32, "name": "Titan Triggerfish", "maxKg": 16.98}
+      {"id": 32, "name": "Titan Triggerfish", "maxKg": 16.98},
+      {"id": 33, "name": "Emperor Angelfish", "maxKg": 1.071701420},
+      {"id": 34, "name": "Juvenile Emperor Angelfish", "maxKg": 1.071701420}
     ]
   },
   {

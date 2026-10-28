@@ -4,7 +4,7 @@ import { mkdtempSync,rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createTournaments } from '../runtime/tournaments.mjs';
-import { tournamentIslands } from '../runtime/tournament-species.mjs';
+import { tournamentIslands, tournamentTargets, tournamentSpeciesId } from '../runtime/tournament-species.mjs';
 
 const tid='a'.repeat(32),ht='b'.repeat(32),gt='c'.repeat(32),third='d'.repeat(32);
 function setup(options={}) {
@@ -162,7 +162,7 @@ test('Winter Flounder is accepted only in Suncrest with the matching hotspot and
  const fish=island.fish.find(f=>f.id===27);
  assert.ok(fish);
  for(const other of tournamentIslands.filter(i=>i.id!==0))assert.equal(other.fish.some(f=>f.id===27),false);
- const f=setup({random:()=>island.fish.findIndex(s=>s.id===27)});
+ const f=setup({random:()=>tournamentTargets(island).findIndex(s=>s.id===27)});
  f.start();assert.equal(f.room.tournament.target.id,27);
  catchFish(f,f.guest,fish.maxKg*2,11);
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
@@ -174,7 +174,7 @@ test('Roughtail Stingray is accepted only in Suncrest with the matching hotspot 
  const fish=island.fish.find(f=>f.id===28);
  assert.ok(fish);
  for(const other of tournamentIslands.filter(i=>i.id!==0))assert.equal(other.fish.some(f=>f.id===28),false);
- const f=setup({random:()=>island.fish.findIndex(s=>s.id===28)});
+ const f=setup({random:()=>tournamentTargets(island).findIndex(s=>s.id===28)});
  f.start();assert.equal(f.room.tournament.target.id,28);
  catchFish(f,f.guest,fish.maxKg*2,11);
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
@@ -186,8 +186,8 @@ test('Leopard Stingray is accepted only in Suncrest with the matching hotspot an
  const fish=island.fish.find(f=>f.id===29);
  assert.ok(fish);
  for(const other of tournamentIslands.filter(i=>i.id!==0))assert.equal(other.fish.some(f=>f.id===29),false);
- const f=setup({random:()=>island.fish.findIndex(s=>s.id===29)});
- f.start();assert.equal(f.room.tournament.target.id,29);
+ const f=setup({random:()=>tournamentTargets(island).findIndex(s=>s.id===28)});
+ f.start();assert.equal(f.room.tournament.target.id,28);
  catchFish(f,f.guest,fish.maxKg*2,11);
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+.02,12),/Invalid tournament catch/);
  assert.throws(()=>catchFish(f,f.guest,1,12,{island:1}),/does not match/);
@@ -217,9 +217,33 @@ test('Titan Triggerfish tournament catch validates only in Suncrest and enforces
  assert(Math.abs(fish.maxKg-16.98)<.0001,'normal weight including 50% hotspot');
  for(const other of tournamentIslands.filter(x=>x.id!==0))
    assert(!other.fish.some(f=>f.id===32),'Titan is exclusive to Suncrest');
- const f=setup({random:()=>targetIndex});
+ const f=setup({random:()=>tournamentTargets(island).findIndex(x=>x.id===32)});
  f.start();
  assert.equal(f.room.tournament.target.id,32);
  catchFish(f,f.host,1);
  assert.throws(()=>catchFish(f,f.guest,fish.maxKg*2+1,11),/Invalid tournament catch/);
+});
+
+for(const [variant,normal,islandId,kg] of [[20,19,2,200],[23,22,4,50],[26,24,3,100],[29,28,0,1],[34,33,0,.04]]) {
+ test(`variant ${variant} shares normal ${normal} target and scoring`,()=>{
+  const island=tournamentIslands[islandId],choices=tournamentTargets(island);
+  assert(!choices.some(f=>f.id===variant));
+  assert.equal(tournamentSpeciesId(variant),normal);
+  const f=setup({random:()=>choices.findIndex(x=>x.id===normal)});
+  f.create.island=islandId;f.start();
+  assert.equal(f.room.tournament.target.id,normal);
+  catchFish(f,f.host,kg,11,{island:islandId,species:variant});
+  catchFish(f,f.guest,kg,11,{island:islandId,species:normal});
+  const entries=f.game.view(f.room).entries;
+  assert.equal(entries.find(x=>x.id==='host').points,Math.max(1,Math.round(kg*100)));
+  assert.equal(entries.find(x=>x.id==='host').points,entries.find(x=>x.id==='guest').points);
+  assert.throws(()=>catchFish(f,f.host,kg,12,{island:(islandId+1)%5,species:variant}),/does not match/);
+  assert.throws(()=>catchFish(f,f.host,kg,12,{island:islandId,species:0}),/does not match/);
+ });
+}
+test('angelfish total-weight catches remain Suncrest-only',()=>{
+ const f=setup();f.create.mode='weight';f.start();
+ catchFish(f,f.host,.4,11,{species:33});catchFish(f,f.host,.04,12,{species:34});
+ assert.throws(()=>catchFish(f,f.host,.4,13,{island:1,species:33}),/does not match/);
+ assert.throws(()=>catchFish(f,f.host,10,13,{species:33}),/Invalid tournament catch/);
 });

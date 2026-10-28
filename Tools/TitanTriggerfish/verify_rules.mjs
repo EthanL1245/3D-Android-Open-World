@@ -8,8 +8,8 @@ const lines=read(dir+'BiomeBaitSpeciesChance.csv').split(/\r?\n/)
 const header=lines.shift().split(',');
 const find=id=>header.findIndex(x=>x.startsWith(id+'_'));
 const titan=find(32),picasso=find(31),red=find(1),winter=find(27),roughtail=find(28),leopard=find(29);
-assert.equal(titan,header.length-1,'New stable species ID is appended');
-assert.equal(picasso,header.length-2,'Picasso ID unchanged');
+assert.equal(titan,33,'Titan stable ID column');
+assert.equal(picasso,32,'Picasso ID unchanged');
 let count=0,shrimp=0,homeOther=0;
 for(const line of lines){
  const columns=line.split(',');

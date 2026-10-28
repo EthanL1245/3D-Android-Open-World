@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -64,7 +65,10 @@ public static class PicassoTriggerfishInstaller
                 var animator = prefab.GetComponentInChildren<Animator>(true);
                 ready = animator.runtimeAnimatorController != null &&
                         animator.runtimeAnimatorController.animationClips.Any(clip =>
-                            clip != null && clip.name == CaughtFishFlop.HeldStruggleStateName);
+                            clip != null && clip.name == "Swim") &&
+                        animator.runtimeAnimatorController is AnimatorController controller &&
+                        !controller.layers[0].stateMachine.states.Any(child =>
+                            child.state.name == CaughtFishFlop.HeldStruggleStateName);
             }
             if (ready && !SourceNewerThanPrefab()) return;
 
@@ -194,8 +198,19 @@ public static class PicassoTriggerfishInstaller
     {
         if (!File.Exists(SourcePath(ModelName)) || !File.Exists(SourcePath(TextureName)))
             throw new InvalidOperationException("Picasso Triggerfish FBX or texture is missing.");
-        SeaBassImporter.InstallModel("PicassoTriggerfish", PrefabPath, Source,
-            importHeldStruggle:true, useIndexedSwimAndStruggle:true);
+        // Match Titan: use the shared Swim selection for index/aquarium/fight,
+        // and standard CaughtFishFlop motion when held. Keep Picasso art and rig.
+        SeaBassImporter.InstallModel("PicassoTriggerfish", PrefabPath, Source);
+        // InstallModel reuses controllers; explicitly migrate old Picasso installs
+        // so their previous HeldStruggle state cannot override standard held motion.
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(Source + "/PicassoTriggerfish.controller");
+        if (controller == null) throw new InvalidOperationException("Picasso animation controller is missing.");
+        var machine = controller.layers[0].stateMachine;
+        foreach (var child in machine.states)
+            if (child.state.name == CaughtFishFlop.HeldStruggleStateName)
+                machine.RemoveState(child.state);
+        EditorUtility.SetDirty(controller);
+        AssetDatabase.SaveAssets();
         Debug.Log("[PICASSO TRIGGERFISH] Animated prefab installed: swimming, held fish, " +
                   "aquariums, multiplayer visuals, fish index and inventory.");
     }

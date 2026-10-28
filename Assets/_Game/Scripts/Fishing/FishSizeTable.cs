@@ -37,7 +37,9 @@ public static class FishSizeTable
         GameplayCurve(10f,14), // Leopard stingray: identical size curve to Roughtail
         GameplayCurve(10f,16), // Mahogany snapper: same length curve as Yellowtail Snapper
         RhinecanthusAculeatusCurve(), // Picasso triggerfish: measured species-specific W(g)=0.1559*TL(cm)^2.4059
-        BalistoidesViridescensCurve() // Titan triggerfish: FishBase Bayesian W(g)=0.03631*TL(cm)^2.93
+        BalistoidesViridescensCurve(), // Titan triggerfish: FishBase Bayesian W(g)=0.03631*TL(cm)^2.93
+        EmperorAngelfishCurve(), // Pomacanthus imperator, FishBase Bayesian estimate
+        EmperorAngelfishCurve() // Juvenile: same physical curve
     };
 
     // Edwards et al. (2011), Rodrigues lagoon measurements, n=17 (14-27 cm TL).
@@ -63,6 +65,13 @@ public static class FishSizeTable
             double lengthCm=(i+1)*5.0;
             row[i]=(float)(0.03631*Math.Pow(lengthCm,2.93)/1000.0);
         }
+        return row;
+    }
+
+    private static float[] EmperorAngelfishCurve()
+    {
+        var row=new float[8];
+        for(int i=0;i<row.Length;i++)row[i]=(float)(0.01738*Math.Pow((i+1)*5.0,2.88)/1000.0);
         return row;
     }
 
