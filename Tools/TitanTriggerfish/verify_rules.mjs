@@ -60,6 +60,7 @@ assert.equal(where.length,1);
 assert.equal(where[0].id,0);
 assert.ok(where[0].maxKg>=11.32*1.5-.0001);
 const importer=read('Assets/_Game/Editor/TitanTriggerfishInstaller.cs');
-assert.ok(importer.includes('importHeldStruggle:true, useIndexedSwimAndStruggle:true'));
+assert.ok(importer.includes('SeaBassImporter.InstallModel("TitanTriggerfish", PrefabPath, Source);'));
+assert.ok(!importer.includes('importHeldStruggle:true'),'Supplied FBX has a single swim take');
 assert.ok(importer.includes('FindLocalFile(false)')&&importer.includes('FindLocalFile(true)'));
 console.log('PASS Titan Triggerfish:',count,'complete chance tables, 20% shrimp for both triggerfish, 2x fight difficulty, scientific sizes, animations, island/server restrictions');
