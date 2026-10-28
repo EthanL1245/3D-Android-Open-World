@@ -59,6 +59,13 @@ public static class PicassoTriggerfishInstaller
             bool ready = prefab != null &&
                          prefab.GetComponent<RedSnapperPresentation>() != null &&
                          prefab.GetComponentInChildren<Animator>(true) != null;
+            if (ready)
+            {
+                var animator = prefab.GetComponentInChildren<Animator>(true);
+                ready = animator.runtimeAnimatorController != null &&
+                        animator.runtimeAnimatorController.animationClips.Any(clip =>
+                            clip != null && clip.name == CaughtFishFlop.HeldStruggleStateName);
+            }
             if (ready && !SourceNewerThanPrefab()) return;
 
             if (!StageSources())
@@ -187,7 +194,8 @@ public static class PicassoTriggerfishInstaller
     {
         if (!File.Exists(SourcePath(ModelName)) || !File.Exists(SourcePath(TextureName)))
             throw new InvalidOperationException("Picasso Triggerfish FBX or texture is missing.");
-        SeaBassImporter.InstallModel("PicassoTriggerfish", PrefabPath, Source);
+        SeaBassImporter.InstallModel("PicassoTriggerfish", PrefabPath, Source,
+            importHeldStruggle:true, useIndexedSwimAndStruggle:true);
         Debug.Log("[PICASSO TRIGGERFISH] Animated prefab installed: swimming, held fish, " +
                   "aquariums, multiplayer visuals, fish index and inventory.");
     }
