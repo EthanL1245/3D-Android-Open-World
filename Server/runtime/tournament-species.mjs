@@ -65,7 +65,8 @@ export const tournamentIslands = [
       {"id": 32, "name": "Titan Triggerfish", "maxKg": 16.98},
       {"id": 33, "name": "Emperor Angelfish", "maxKg": 2.037861402},
       {"id": 34, "name": "Juvenile Emperor Angelfish", "maxKg": 2.037861402},
-      {"id": 35, "name": "Panther Grouper", "maxKg": 10.689598570}
+      {"id": 35, "name": "Panther Grouper", "maxKg": 10.689598570},
+      {"id": 36, "name": "Coral Grouper", "maxKg": 2.517108640}
     ]
   },
   {

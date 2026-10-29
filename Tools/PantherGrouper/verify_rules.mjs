@@ -7,7 +7,7 @@ const parse=s=>s.trim().split(/\r?\n/).filter(x=>!x.startsWith('#')).map(x=>x.sp
 const dir='Assets/Resources/FishingTuning/';
 const [h,...rows]=parse(read(dir+'BiomeBaitSpeciesChance.csv'));
 const col=id=>h.findIndex(x=>x.startsWith(id+'_'));
-assert.equal(col(35),h.length-1);
+assert.equal(h[col(35)],'35_panther_grouper');
 const baseline=parse(execFileSync('git',['show','HEAD:'+dir+'BiomeBaitSpeciesChance.csv'],{encoding:'utf8'})).slice(1);
 for(const [i,r] of rows.entries()){
  assert.equal(r.length,h.length);assert(r.slice(2).every(x=>Number.isInteger(+x)&&+x>=0));
@@ -15,7 +15,7 @@ for(const [i,r] of rows.entries()){
  const worms=r[0]==='suncrest-reef'&&['worms','worms-legacy'].includes(r[1]);
  assert.equal(+r[col(35)],worms?30:0);
  if(worms){
-  assert.equal(+r[col(33)],30);assert.equal(+r[col(31)],3);assert.equal(+r[col(32)],3);
+  assert.equal(+r[col(33)],30);assert.equal(+r[col(31)],1);assert.equal(+r[col(32)],1);
   for(const id of [27,28,29])assert.equal(r[col(id)],r[col(1)]);
  }else if(baseline[i].length===h.length-1)assert.deepEqual(r.slice(0,-1),baseline[i],'Existing other bait/biome odds unchanged');
 }
