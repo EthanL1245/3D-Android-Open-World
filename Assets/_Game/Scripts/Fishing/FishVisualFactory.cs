@@ -96,6 +96,7 @@ public static class FishVisualFactory
             case FishCatalog.TitanTriggerfishId:return "Fishing/TitanTriggerfish";
             case FishCatalog.EmperorAngelfishId:return "Fishing/EmperorAngelfish";
             case FishCatalog.JuvenileEmperorAngelfishId:return "Fishing/JuvenileEmperorAngelfish";
+            case FishCatalog.PantherGrouperId:return "Fishing/PantherGrouper";
             default:return null;
         }
     }
