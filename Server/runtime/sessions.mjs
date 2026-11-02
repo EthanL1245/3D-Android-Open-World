@@ -38,7 +38,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
     if (!value || !['x','y','z','yaw'].every(k => typeof value[k] === 'number' && Number.isFinite(value[k]))) fail(400, 'Invalid player position.');
     if (['x','y','z'].some(k => Math.abs(value[k]) > 100000) || ![0,1,2].includes(value.world)) fail(400, 'Invalid world position.');
     // Optional fields preserve compatibility with older walking-only clients.
-    for (const [key, max] of [['rodTier',4],['castSequence',2147483647]])
+    for (const [key, max] of [['rodTier',5],['castSequence',2147483647]])
       if (value[key] !== undefined && (!Number.isInteger(value[key]) || value[key] < 0 || value[key] > max)) fail(400, 'Invalid fishing animation state.');
     if (value.castAge !== undefined && (typeof value.castAge !== 'number' || !Number.isFinite(value.castAge) || value.castAge < -1 || value.castAge > 60)) fail(400, 'Invalid cast age.');
     if (value.castDuration !== undefined && (typeof value.castDuration !== 'number' || !Number.isFinite(value.castDuration) || value.castDuration < .1 || value.castDuration > 60)) fail(400, 'Invalid cast duration.');
@@ -121,7 +121,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
         if (room.players.size >= 8) fail(409, 'This room is full (8 players).');
       }
       const p = add(room, data);
-      return { ok:true, id:p.id, token:p.token, code:room.code, hostId:room.host, players:snapshot(room),tournament:tournaments.view(room) };
+      return { ok:true, id:p.id, token:p.token, code:room.code, hostId:room.host, players:snapshot(room),tournament:tournaments.view(room),maxRodTier:5 };
     }
     const p = sessions.get(token);
     if (!p) fail(401, 'Session ended. The host may have left. Open or join again.');
@@ -141,7 +141,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
     }
     acceptBoatRide(p,previous); pruneBoatRiders(p.room);
     if(path==='/v1/tournament')tournaments.action(p,data.tournament);
-    return { ok:true, code:p.room.code, hostId:p.room.host, players:snapshot(p.room),tournament:tournaments.view(p.room) };
+    return { ok:true, code:p.room.code, hostId:p.room.host, players:snapshot(p.room),tournament:tournaments.view(p.room),maxRodTier:5 };
   }
   const server = http.createServer({ requestTimeout:5000, headersTimeout:5000, maxHeaderSize:8192 }, async (req, res) => {
     const reply = (status, value) => { if (!res.destroyed) { res.writeHead(status, {'Content-Type':'application/json','Cache-Control':'no-store'}); res.end(JSON.stringify(value)); } };
@@ -152,7 +152,7 @@ export function createSessionServer({ clock = Date.now, timeout = 30000, ledgerP
       limit = { start:clock(), count:0, opens:0 }; limits.set(ip,limit);
     }
     if (++limit.count > 100) { reply(429,{ok:false,error:'Too many requests.'});req.resume();return; }
-    if (req.method === 'GET' && req.url === '/health') { reply(200,{ok:true,protocol:PROTOCOL});return; }
+    if (req.method === 'GET' && req.url === '/health') { reply(200,{ok:true,protocol:PROTOCOL,maxRodTier:5});return; }
     if (req.method !== 'POST' || !['/v1/open','/v1/join','/v1/state','/v1/leave','/v1/tournament','/v1/tournament-receipt','/v1/tournament-catches'].includes(req.url)) {reply(404,{ok:false,error:'Not found.'});req.resume();return;}
     if ((req.url === '/v1/open' || req.url === '/v1/join') && ++limit.opens > 4) {reply(429,{ok:false,error:'Wait a moment before trying again.'});req.resume();return;}
     if (!(req.headers['content-type'] || '').startsWith('application/json')) {reply(415,{ok:false,error:'JSON required.'});req.resume();return;}

@@ -454,3 +454,22 @@ test('right passenger seat is not enabled on yachts or rafts',async t=>{
     assert.notEqual(reply.players.find(p=>p.id===guest.id).rideSeat,2);
   }
 });
+
+test('level 6 rod capability upgrades legacy-safe handshake and reaches other players',async t=>{
+  const post=await fixture(t);
+  const host=await post('/v1/open',{...hello,pose:{...pose(),rodEquipped:true,rodTier:4}});
+  assert.equal(host.ok,true); assert.equal(host.maxRodTier,5);
+  const guest=await post('/v1/join',{...hello,code:host.code});
+  assert.equal(guest.ok,true); assert.equal(guest.maxRodTier,5);
+  const upgraded=await post('/v1/state',{pose:{...pose(),rodEquipped:true,rodTier:host.maxRodTier}},host.token);
+  assert.equal(upgraded.ok,true); assert.equal(upgraded.maxRodTier,5);
+  let seen=await post('/v1/state',{pose:pose()},guest.token);
+  assert.equal(seen.players.find(p=>p.id===host.id).rodTier,5);
+  await post('/v1/state',{pose:{...pose(),rodEquipped:true,rodTier:4}},host.token);
+  seen=await post('/v1/state',{pose:pose()},guest.token);
+  assert.equal(seen.players.find(p=>p.id===host.id).rodTier,4);
+  await post('/v1/state',{pose:{...pose(),rodEquipped:false,rodTier:0}},host.token);
+  seen=await post('/v1/state',{pose:pose()},guest.token);
+  assert.equal(seen.players.find(p=>p.id===host.id).rodEquipped,false);
+  assert.equal((await post('/v1/state',{pose:{...pose(),rodEquipped:true,rodTier:6}},host.token)).status,400);
+});
